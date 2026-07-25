@@ -1,0 +1,15 @@
+# SOT-IF-020 SOT-ENG-015: フラグ、環境変数、設定ファイル、既定値の順で優先する。
+env XDG_CONFIG_HOME=$WORK/config-home
+env JAPANESE_LAW_MCP_REQUEST_TIMEOUT=20s
+env JAPANESE_LAW_MCP_ALLOWED_ORIGINS=https://env.example
+exec japanese-law-mcp-test --config=config.yaml --request-timeout=10s --allowed-origin=https://flag.example --allowed-origin=https://second.example
+cmp stdout want.txt
+! stderr .
+
+-- config.yaml --
+transport: streamable-http
+requestTimeout: 40s
+allowedOrigins:
+  - https://file.example
+-- want.txt --
+{"transport":"streamable-http","requestTimeout":"10s","listenAddress":"127.0.0.1:8080","allowedOrigins":["https://flag.example","https://second.example"],"diagnostics":false}

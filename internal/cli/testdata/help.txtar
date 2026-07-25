@@ -1,0 +1,8 @@
+# SOT-IF-019 SOT-ENG-015: ヘルプは設定を読み込まず、日本語で表示する。
+env JAPANESE_LAW_MCP_TRANSPORT=invalid
+exec japanese-law-mcp-test --help
+stdout '使用方法:'
+stdout '利用可能なコマンド:'
+stdout 'フラグ:'
+! stdout 'Usage:'
+! stderr .

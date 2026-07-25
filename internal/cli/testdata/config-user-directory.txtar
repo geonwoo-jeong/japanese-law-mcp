@@ -1,0 +1,10 @@
+# SOT-IF-020 SOT-ENG-015: 明示設定がない場合は利用者設定ディレクトリの config.yaml を読む。
+env XDG_CONFIG_HOME=$WORK/config-home
+exec japanese-law-mcp-test
+cmp stdout want.txt
+! stderr .
+
+-- config-home/japanese-law-mcp/config.yaml --
+requestTimeout: 11s
+-- want.txt --
+{"transport":"stdio","requestTimeout":"11s","listenAddress":"127.0.0.1:8080","allowedOrigins":[],"diagnostics":false}

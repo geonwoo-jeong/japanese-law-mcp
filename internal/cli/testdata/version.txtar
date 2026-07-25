@@ -1,0 +1,8 @@
+# SOT-IF-019 SOT-ENG-015: version は設定を読み込まず、ビルドバージョンを表示する。
+env JAPANESE_LAW_MCP_TRANSPORT=invalid
+exec japanese-law-mcp-test version
+cmp stdout want.txt
+! stderr .
+
+-- want.txt --
+japanese-law-mcp test-version

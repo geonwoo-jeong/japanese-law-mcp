@@ -1,0 +1,8 @@
+# SOT-IF-005 SOT-IF-019 SOT-ENG-015: 引数なしの実行では既定の stdio 設定を Runner へ渡す。
+env XDG_CONFIG_HOME=$WORK/config-home
+exec japanese-law-mcp-test
+cmp stdout want.txt
+! stderr .
+
+-- want.txt --
+{"transport":"stdio","requestTimeout":"30s","listenAddress":"127.0.0.1:8080","allowedOrigins":[],"diagnostics":false}

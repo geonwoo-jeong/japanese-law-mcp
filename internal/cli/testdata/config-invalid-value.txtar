@@ -1,0 +1,5 @@
+# SOT-IF-005 SOT-IF-021 SOT-ENG-015: 無効な設定値を起動前に拒否する。
+env XDG_CONFIG_HOME=$WORK/config-home
+! exec japanese-law-mcp-test --request-timeout=500ms
+stderr 'requestTimeout'
+! stdout .

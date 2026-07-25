@@ -1,0 +1,13 @@
+# SOT-IF-020 SOT-ENG-015: 空の環境変数で設定ファイルの許可 Origin を上書きする。
+env XDG_CONFIG_HOME=$WORK/config-home
+env JAPANESE_LAW_MCP_ALLOWED_ORIGINS=
+exec japanese-law-mcp-test --config=config.yaml
+cmp stdout want.txt
+! stderr .
+
+-- config.yaml --
+transport: streamable-http
+allowedOrigins:
+  - https://file.example
+-- want.txt --
+{"transport":"streamable-http","requestTimeout":"30s","listenAddress":"127.0.0.1:8080","allowedOrigins":[],"diagnostics":false}

@@ -1,0 +1,8 @@
+# SOT-IF-005 SOT-IF-020 SOT-ENG-015: 未知の設定項目を拒否する。
+env XDG_CONFIG_HOME=$WORK/config-home
+! exec japanese-law-mcp-test --config=config.yaml
+stderr '未知の設定項目'
+! stdout .
+
+-- config.yaml --
+unknownKey: value

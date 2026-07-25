@@ -1,0 +1,17 @@
+# 30 アーキテクチャ SOT 索引
+
+- [01-request-pipeline.md](01-request-pipeline.md)
+- [02-transport-boundary.md](02-transport-boundary.md)
+- [03-application-boundary.md](03-application-boundary.md)
+- [04-source-adapter-boundary.md](04-source-adapter-boundary.md)
+- [05-ephemeral-request-lifecycle.md](05-ephemeral-request-lifecycle.md)
+- [06-mcp-tool-boundary.md](06-mcp-tool-boundary.md)
+- [07-dependency-direction.md](07-dependency-direction.md)
+- [08-ephemeral-diagnostics.md](08-ephemeral-diagnostics.md)
+- [09-capability-source-ports.md](09-capability-source-ports.md)
+- [10-provider-isolation.md](10-provider-isolation.md)
+- [11-source-normalization.md](11-source-normalization.md)
+- [12-provider-registry.md](12-provider-registry.md)
+- [13-source-composition.md](13-source-composition.md)
+- [14-ephemeral-source-artifacts.md](14-ephemeral-source-artifacts.md)
+- [15-startup-configuration-boundary.md](15-startup-configuration-boundary.md)

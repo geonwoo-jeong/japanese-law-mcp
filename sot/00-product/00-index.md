@@ -1,0 +1,9 @@
+# 00 製品 SOT 索引
+
+- [01-product-definition.md](01-product-definition.md)
+- [02-product-scope.md](02-product-scope.md)
+- [03-legal-source-eligibility.md](03-legal-source-eligibility.md)
+- [04-feature-adoption.md](04-feature-adoption.md)
+- [05-derived-information.md](05-derived-information.md)
+- [06-related-public-information-boundary.md](06-related-public-information-boundary.md)
+- [07-source-acquisition-policy.md](07-source-acquisition-policy.md)

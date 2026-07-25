@@ -1,0 +1,12 @@
+# 60 提供とリリース SOT 索引
+
+- [01-stdio.md](01-stdio.md)
+- [02-streamable-http.md](02-streamable-http.md)
+- [03-official-distributions.md](03-official-distributions.md)
+- [04-release-consistency.md](04-release-consistency.md)
+- [05-execution-paths.md](05-execution-paths.md)
+- [06-http-authorization.md](06-http-authorization.md)
+- [07-interface-change-disclosure.md](07-interface-change-disclosure.md)
+- [08-http-resource-limits.md](08-http-resource-limits.md)
+- [09-hosting-non-retention.md](09-hosting-non-retention.md)
+- [10-desktop-binaries.md](10-desktop-binaries.md)

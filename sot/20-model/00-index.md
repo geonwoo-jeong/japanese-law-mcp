@@ -1,0 +1,16 @@
+# 20 情報モデル SOT 索引
+
+- [01-law-summary.md](01-law-summary.md)
+- [02-law-document.md](02-law-document.md)
+- [03-legal-source.md](03-legal-source.md)
+- [04-citation.md](04-citation.md)
+- [05-error-result.md](05-error-result.md)
+- [06-law-search-result.md](06-law-search-result.md)
+- [07-law-content-match.md](07-law-content-match.md)
+- [08-law-content-search-result.md](08-law-content-search-result.md)
+- [09-json-serialization.md](09-json-serialization.md)
+- [10-information-source.md](10-information-source.md)
+- [11-source-resource-key.md](11-source-resource-key.md)
+- [12-provenance.md](12-provenance.md)
+- [13-provider-capability.md](13-provider-capability.md)
+- [14-source-page.md](14-source-page.md)

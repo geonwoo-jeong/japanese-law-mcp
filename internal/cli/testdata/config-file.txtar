@@ -1,0 +1,15 @@
+# SOT-IF-005 SOT-IF-020 SOT-ENG-015: 明示した YAML 設定を読み込む。
+env XDG_CONFIG_HOME=$WORK/config-home
+exec japanese-law-mcp-test --config=config.yaml
+cmp stdout want.txt
+! stderr .
+
+-- config.yaml --
+transport: streamable-http
+requestTimeout: 15s
+listenAddress: 127.0.0.1:9090
+allowedOrigins:
+  - https://example.test
+diagnostics: true
+-- want.txt --
+{"transport":"streamable-http","requestTimeout":"15s","listenAddress":"127.0.0.1:9090","allowedOrigins":["https://example.test"],"diagnostics":true}

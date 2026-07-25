@@ -1,0 +1,7 @@
+# SOT-IF-021 SOT-ENG-015: Runner の内部エラーを漏らさず、実行エラーとして一度だけ表示する。
+env XDG_CONFIG_HOME=$WORK/config-home
+env JAPANESE_LAW_MCP_TEST_RUNTIME_ERROR=1
+! exec japanese-law-mcp-test
+stderr -count=1 'サーバーを実行できません'
+! stderr 'テスト用の内部エラー'
+! stdout .

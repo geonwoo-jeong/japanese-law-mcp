@@ -1,0 +1,6 @@
+# SOT-IF-019 SOT-IF-021 SOT-ENG-015: 位置引数を日本語の利用方法エラーとして拒否する。
+env XDG_CONFIG_HOME=$WORK/config-home
+! exec japanese-law-mcp-test unexpected
+stderr '位置引数'
+! stderr 'Usage:'
+! stdout .

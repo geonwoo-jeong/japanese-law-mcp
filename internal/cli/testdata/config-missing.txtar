@@ -1,0 +1,5 @@
+# SOT-IF-020 SOT-IF-021 SOT-ENG-015: 明示した設定ファイルがなければ設定エラーにする。
+env XDG_CONFIG_HOME=$WORK/config-home
+! exec japanese-law-mcp-test --config=missing.yaml
+stderr '指定した設定ファイル'
+! stdout .

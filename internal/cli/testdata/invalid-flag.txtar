@@ -1,0 +1,6 @@
+# SOT-IF-019 SOT-IF-021 SOT-ENG-015: 未知のフラグを日本語の利用方法エラーとして拒否する。
+env XDG_CONFIG_HOME=$WORK/config-home
+! exec japanese-law-mcp-test --unknown
+stderr '--help'
+! stderr 'unknown flag'
+! stdout .
