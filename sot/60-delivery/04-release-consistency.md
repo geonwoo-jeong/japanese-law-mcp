@@ -10,13 +10,13 @@
 
 - リリースが提供する機能と未実装の SOT 差分をリリース情報で識別できる。
 - 提供対象となる有効な SOT に、適用可能な実装または検証方法が関連付けられている。
-- `SOT-ENG-011` の検証ゲートが成功する。
+- `SOT-ENG-020` の検証ゲートが成功する。
 - 各公式配布物が同じ MCP ツール一覧と結果契約を提供する。
 - 配布物のバージョンと生成元のコミットを確認できる。
 
 ## 関連
 
 - [SOT-ENG-005: SOT と変更の整合](../50-engineering/05-sot-change-unit.md)
-- [SOT-ENG-011: 変更の検証ゲート](../50-engineering/11-verification-gate.md)
+- [SOT-ENG-020: 変更の検証ゲート](../50-engineering/20-verification-gate.md)
 - [SOT-DEL-011: ローカル公式配布物](11-local-distributions.md)
 - [SOT-DEL-007: インターフェース変更の告知](07-interface-change-disclosure.md)

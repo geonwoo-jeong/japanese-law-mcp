@@ -14,7 +14,7 @@ CLI 実装は Cobra によるコマンドの解釈、Viper による起動時設
 - サーバーの実行は、CLI へ注入した実行処理に委譲する。CLI は MCP、ユースケースまたは情報源の処理を実装しない。
 - Viper は起動ごとに独立したインスタンスを一つ生成し、パッケージ大域のインスタンスを使用しない。設定値を型付きの実行設定へ変換して検証した後は、Viper のインスタンスを下位へ渡さない。
 - ビルド情報は `internal/buildinfo` から注入し、コマンドの構築時に固定する。
-- 製品コードでは、`os.Exit` を `cmd/japanese-law-mcp/main.go` だけで呼び出す。CLI 以下のパッケージは終了コードを返し、プロセスを直接終了しない。別プロセスの終了コードを観測する CLI 契約テストに限り、テスト用コマンドが返された終了コードで子プロセスを終了できる。
+- 製品コードでは、`os.Exit` を `cmd/japanese-law-mcp/main.go` の `main` 関数だけで呼び出す。CLI 以下のパッケージは終了コードを返し、プロセスを直接終了しない。`cmd/quality-gate`、`cmd/git-hook` などの開発用コマンドも、その `main` 関数に限り、検査結果をプロセス終了コードとして呼出し元へ伝えるために `os.Exit` を使用できる。別プロセスの終了コードを観測する CLI 契約テストに限り、テスト用コマンドが返された終了コードで子プロセスを終了できる。
 
 ## 確認
 
@@ -26,3 +26,4 @@ CLI 実装は Cobra によるコマンドの解釈、Viper による起動時設
 - [SOT-IF-019: コマンドラインインターフェース](../40-interfaces/19-command-line-interface.md)
 - [SOT-IF-021: プロセス終了コード](../40-interfaces/21-process-exit-codes.md)
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
+- [SOT-ENG-021: Git フックによる段階的検証](21-git-hook-staged-verification.md)

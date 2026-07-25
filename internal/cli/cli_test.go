@@ -34,7 +34,7 @@ func TestCLIContract(t *testing.T) {
 			env.Vars = filterScriptEnvironment(env.Vars)
 			env.Setenv("XDG_CONFIG_HOME", filepath.Join(env.WorkDir, "config-home"))
 			coverDir := filepath.Join(env.WorkDir, "gocoverdir")
-			if err := os.MkdirAll(coverDir, 0o755); err != nil {
+			if err := os.MkdirAll(coverDir, 0o750); err != nil {
 				return err
 			}
 			env.Setenv("GOCOVERDIR", coverDir)
@@ -334,11 +334,16 @@ func TestHelpCommand(t *testing.T) {
 func TestExecuteHandlesMissingOptionsAndOutputFailure(t *testing.T) {
 	t.Parallel()
 
+	var missingContextStderr bytes.Buffer
 	if code := Execute(Options{
 		Args:    []string{"version"},
+		Stderr:  &missingContextStderr,
 		Version: "test-version",
-	}); code != ExitSuccess {
-		t.Fatalf("SOT-ENG-014: 終了コード = %d", code)
+	}); code != ExitRuntime {
+		t.Fatalf("SOT-ENG-010: 終了コード = %d、stderr = %q", code, missingContextStderr.String())
+	}
+	if !strings.Contains(missingContextStderr.String(), "実行コンテキスト") {
+		t.Fatalf("SOT-ENG-010: stderr = %q", missingContextStderr.String())
 	}
 
 	var stderr bytes.Buffer

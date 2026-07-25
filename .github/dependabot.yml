@@ -1,0 +1,50 @@
+version: 2
+
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    groups:
+      product-go-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: gomod
+    directory: /tools
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:15"
+      timezone: Asia/Tokyo
+    groups:
+      shared-quality-tools:
+        patterns:
+          - "*"
+
+  - package-ecosystem: gomod
+    directory: /tools/gitleaks
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:30"
+      timezone: Asia/Tokyo
+    groups:
+      secret-scanning-tools:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:45"
+      timezone: Asia/Tokyo
+    groups:
+      github-actions:
+        patterns:
+          - "*"

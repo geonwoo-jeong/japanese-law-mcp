@@ -18,3 +18,6 @@
 - [16-provider-resource-budgets.md](16-provider-resource-budgets.md)
 - [17-provider-conformance-matrix.md](17-provider-conformance-matrix.md)
 - [18-provider-onboarding-fitness-gate.md](18-provider-onboarding-fitness-gate.md)
+- [19-static-analysis-and-coding-style.md](19-static-analysis-and-coding-style.md)
+- [20-verification-gate.md](20-verification-gate.md)
+- [21-git-hook-staged-verification.md](21-git-hook-staged-verification.md)

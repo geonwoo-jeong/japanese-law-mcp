@@ -11,6 +11,8 @@
 - [SOT-IF-013](../sot/40-interfaces/13-mcp-protocol-version.md) に従う MCP `2025-11-25` の初期化と `tools` capability
 - [SOT-DEL-001](../sot/60-delivery/01-stdio.md) に従う、ローカル子プロセスとして動作する stdio トランスポート
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
+- [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
+- [SOT-ENG-021](../sot/50-engineering/21-git-hook-staged-verification.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
 - [SOT-MODEL-009](../sot/20-model/09-json-serialization.md)、[SOT-MODEL-010](../sot/20-model/10-information-source.md)、[SOT-MODEL-013](../sot/20-model/13-provider-capability.md) および [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) に従う、不変なプロバイダーメタデータ型、検証および JSON 表現
 - [SOT-ARCH-012](../sot/30-architecture/12-provider-registry.md) のうち、`providerId` と能力 ID・メジャーバージョンの宣言を起動時に検証して保持する不変な descriptor registry
 

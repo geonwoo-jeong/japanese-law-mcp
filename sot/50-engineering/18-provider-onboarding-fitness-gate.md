@@ -48,6 +48,6 @@ go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 ## 関連
 
 - [SOT-ARCH-016: プロバイダーの段階的な追加](../30-architecture/16-incremental-provider-onboarding.md)
-- [SOT-ENG-011: 変更の検証ゲート](11-verification-gate.md)
+- [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-013: プロバイダー契約の検証](13-provider-contract-verification.md)
 - [SOT-ENG-017: プロバイダー適合性 matrix](17-provider-conformance-matrix.md)

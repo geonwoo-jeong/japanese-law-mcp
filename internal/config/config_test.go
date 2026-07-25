@@ -142,7 +142,7 @@ func TestLoadReadsUserConfigWhenPresent(t *testing.T) {
 
 	dir := t.TempDir()
 	configDir := filepath.Join(dir, "japanese-law-mcp")
-	if err := os.MkdirAll(configDir, 0o755); err != nil {
+	if err := os.MkdirAll(configDir, 0o750); err != nil {
 		t.Fatal(err)
 	}
 	writeFile(t, filepath.Join(configDir, "config.yaml"), "requestTimeout: 12s\n")
@@ -409,7 +409,7 @@ func TestLoadRejectsUserConfigErrors(t *testing.T) {
 
 	dir := t.TempDir()
 	configDir := filepath.Join(dir, "japanese-law-mcp")
-	if err := os.MkdirAll(configDir, 0o755); err != nil {
+	if err := os.MkdirAll(configDir, 0o750); err != nil {
 		t.Fatal(err)
 	}
 	writeFile(t, filepath.Join(configDir, "config.yaml"), "invalid: [\n")

@@ -1,0 +1,131 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -eq 0 ]; then
+  echo "Git hook の管理操作を指定してください" >&2
+  exit 1
+fi
+operation=$1
+case "$operation" in
+  install | uninstall)
+    create_cache=1
+    ;;
+  check | pre-commit | pre-push)
+    create_cache=0
+    ;;
+  *)
+    echo "未対応の Git hook 管理操作です: $operation" >&2
+    exit 1
+    ;;
+esac
+
+git_command=$(command -v git)
+go_command=$(command -v go)
+case "$git_command:$go_command" in
+  /*:/*) ;;
+  *)
+    echo "git または go の絶対パスを解決できませんでした" >&2
+    exit 1
+    ;;
+esac
+go_directory=${go_command%/*}
+git_directory=${git_command%/*}
+PATH="${go_directory}:${git_directory}:/usr/local/bin:/usr/bin:/bin"
+export PATH
+find_command=$(command -v find)
+mkdir_command=$(command -v mkdir)
+case "$find_command:$mkdir_command" in
+  /*:/*) ;;
+  *)
+    echo "find または mkdir の絶対パスを解決できませんでした" >&2
+    exit 1
+    ;;
+esac
+
+LANG=C
+LC_ALL=C
+GIT_NO_REPLACE_OBJECTS=1
+export LANG LC_ALL GIT_NO_REPLACE_OBJECTS
+repository=$("$git_command" rev-parse --show-toplevel)
+cd "$repository"
+git_common=$("$git_command" rev-parse --path-format=absolute --git-common-dir)
+case "$git_common" in
+  /*) ;;
+  *)
+    echo "Git common directory の絶対パスを取得できませんでした" >&2
+    exit 1
+    ;;
+esac
+case "$git_common" in
+  *'
+'*)
+    echo "Git common directory の応答が不正です" >&2
+    exit 1
+    ;;
+esac
+if ! git_common=$(
+  CDPATH=
+  cd -P "$git_common"
+  pwd -P
+); then
+  echo "Git common directory の実体を解決できませんでした" >&2
+  exit 1
+fi
+
+validate_cache_directory() {
+  cache_directory=$1
+  if ! unsafe_cache=$(
+    "$find_command" "$cache_directory" -prune \
+      \( ! -type d -o -type l -o -perm -020 -o -perm -002 \) \
+      -print 2>/dev/null
+  ); then
+    echo "Git hook 用 cache directory を確認できませんでした: $cache_directory" >&2
+    exit 1
+  fi
+  if [ -n "$unsafe_cache" ]; then
+    echo "Git hook 用 cache directory が安全ではありません: $cache_directory" >&2
+    exit 1
+  fi
+}
+
+ensure_cache_directory() {
+  cache_directory=$1
+  if [ ! -d "$cache_directory" ]; then
+    if [ "$create_cache" -ne 1 ]; then
+      echo "Git hook 用 cache directory がありません: $cache_directory" >&2
+      exit 1
+    fi
+    if ! "$mkdir_command" -m 0750 "$cache_directory"; then
+      echo "Git hook 用 cache directory を作成できませんでした: $cache_directory" >&2
+      exit 1
+    fi
+  fi
+  validate_cache_directory "$cache_directory"
+}
+
+validate_cache_directory "$git_common"
+cache_root="${git_common}/japanese-law-mcp-quality-cache"
+GOCACHE="${cache_root}/go-build"
+GOLANGCI_LINT_CACHE="${cache_root}/golangci"
+umask 027
+ensure_cache_directory "$cache_root"
+ensure_cache_directory "$GOCACHE"
+ensure_cache_directory "$GOLANGCI_LINT_CACHE"
+
+GOENV=off
+GOTOOLCHAIN=local
+GOWORK=off
+GOFLAGS='-mod=readonly'
+GOPROXY=off
+GOSUMDB=sum.golang.org
+GOPRIVATE=
+GONOPROXY=
+GONOSUMDB=
+GOINSECURE=
+GOVCS='public:git,private:off'
+unset GOOS GOARCH GOEXPERIMENT GO111MODULE CGO_ENABLED
+export GOENV GOTOOLCHAIN GOWORK GOFLAGS GOPROXY GOSUMDB
+export GOPRIVATE GONOPROXY GONOSUMDB GOINSECURE GOVCS
+export GOCACHE GOLANGCI_LINT_CACHE
+
+exec "$go_command" run ./cmd/git-hook "$@"

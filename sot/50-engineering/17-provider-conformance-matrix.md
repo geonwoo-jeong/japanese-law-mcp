@@ -114,7 +114,7 @@ missing case は warning にせず failure とし、80% coverage または個別
 
 ## 関連
 
-- [SOT-ENG-011: 変更の検証ゲート](11-verification-gate.md)
+- [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-013: プロバイダー契約の検証](13-provider-contract-verification.md)
 - [SOT-ENG-016: プロバイダー資源予算](16-provider-resource-budgets.md)
 - [SOT-IF-014: ProviderDescriptor](../40-interfaces/14-provider-descriptor.md)

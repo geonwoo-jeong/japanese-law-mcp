@@ -25,8 +25,18 @@ func runtimeError() error {
 	}
 }
 
-func invalidArgumentsError() error {
-	return usageError("コマンドライン引数を解釈できません。--help で利用方法を確認してください。")
+func missingContextError() *commandError {
+	return &commandError{
+		code:    ExitRuntime,
+		message: "実行コンテキストが設定されていません。",
+	}
+}
+
+func invalidArgumentsError() *commandError {
+	return &commandError{
+		code:    ExitUsage,
+		message: "コマンドライン引数を解釈できません。--help で利用方法を確認してください。",
+	}
 }
 
 func positionalArgumentsError(args []string) error {

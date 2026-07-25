@@ -71,7 +71,7 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	command := exec.Command(os.Args[0], "-test.run=^TestMCPServerProcess$")
+	command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestMCPServerProcess$") //nolint:gosec // SOT-ENG-015: テスト自身を固定引数で子プロセスとして起動する。
 	command.Env = isolatedServerEnvironment(t.TempDir())
 	var stderr bytes.Buffer
 	command.Stderr = &stderr

@@ -38,5 +38,5 @@ PDF は、暗号化、埋込みファイル、壊れた xref または object st
 ## 関連
 
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
-- [SOT-ENG-011: 変更の検証ゲート](11-verification-gate.md)
+- [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-IF-017: 情報源エラーの正規化](../40-interfaces/17-source-error-normalization.md)

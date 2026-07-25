@@ -1,0 +1,13 @@
+title = "Japanese Law MCP の秘密情報検査"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "SOT-ENG-019: Git の管理領域、追跡を禁止するローカル検証キャッシュ、および検証ゲート自身が生成するカバレッジを作業ツリー検査から除外する。Git 履歴は別のゲートで検査する。"
+paths = [
+  '''^\.cache($|/)''',
+  '''^\.git($|/)''',
+  '''^\.tmp($|/)''',
+  '''^coverage\.out$''',
+]

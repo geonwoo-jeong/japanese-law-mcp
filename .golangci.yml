@@ -1,0 +1,36 @@
+version: "2"
+
+run:
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - contextcheck
+    - errcheck
+    - errorlint
+    - gocritic
+    - gosec
+    - ineffassign
+    - nilerr
+    - noctx
+    - nolintlint
+    - staticcheck
+    - unused
+  settings:
+    gosec:
+      excludes:
+        # SOT-ENG-019: G104 は errcheck と同じ未処理エラーを重複して報告する。
+        - G104
+    nolintlint:
+      allow-unused: false
+      require-explanation: true
+      require-specific: true
+
+formatters:
+  enable:
+    - gofmt
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

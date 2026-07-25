@@ -14,13 +14,17 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/transport/stdio"
 )
 
-var errStreamableHTTPNotImplemented = errors.New("Streamable HTTP はまだ実装されていません")
+var errStreamableHTTPNotImplemented = errors.New("トランスポート Streamable HTTP はまだ実装されていません")
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	code := run(ctx)
+	stop()
+	os.Exit(code)
+}
 
-	code := cli.Execute(cli.Options{
+func run(ctx context.Context) int {
+	return cli.Execute(cli.Options{ //nolint:contextcheck // SOT-ENG-010: ctx は Options.Context を介して Cobra の ExecuteContextC へ渡す。
 		Context:       ctx,
 		Args:          os.Args[1:],
 		Stdin:         os.Stdin,
@@ -30,7 +34,6 @@ func main() {
 		UserConfigDir: os.UserConfigDir,
 		Run:           newServerRunner(buildinfo.Version(), stdio.Run),
 	})
-	os.Exit(code)
 }
 
 type stdioRunner func(context.Context, stdio.Server) error

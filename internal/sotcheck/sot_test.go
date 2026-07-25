@@ -33,7 +33,7 @@ func TestDevelopmentPrinciplesChecksum(t *testing.T) {
 		t.Fatalf("開発原則のチェックサム形式が正しくありません: %q", checksumText)
 	}
 
-	content, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(fields[1])))
+	content, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(fields[1]))) //nolint:gosec // SOT-ENG-004: 固定したチェックサムファイルが指すリポジトリ内の対象だけを読む。
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func repositoryRoot(t *testing.T) string {
 func readText(t *testing.T, path string) string {
 	t.Helper()
 
-	file, err := os.Open(path)
+	file, err := os.Open(path) //nolint:gosec // SOT-ENG-004: 呼出し元が列挙したリポジトリ内の検証対象だけを読む。
 	if err != nil {
 		t.Fatal(err)
 	}

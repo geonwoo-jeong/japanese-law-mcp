@@ -27,10 +27,6 @@ type Options struct {
 
 // Execute は、新しいコマンドツリーを生成して一度だけ実行する。
 func Execute(options Options) int {
-	ctx := options.Context
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	in := options.Stdin
 	if in == nil {
 		in = &emptyReader{}
@@ -43,6 +39,11 @@ func Execute(options Options) int {
 	if errOut == nil {
 		errOut = io.Discard
 	}
+	if options.Context == nil {
+		classified := missingContextError()
+		_, _ = fmt.Fprintf(errOut, "エラー: %s\n", classified.message)
+		return classified.code
+	}
 
 	command := newCommand(commandOptions{
 		in:            in,
@@ -54,14 +55,14 @@ func Execute(options Options) int {
 	})
 	command.SetArgs(options.Args)
 
-	_, err := command.ExecuteContextC(ctx)
+	_, err := command.ExecuteContextC(options.Context)
 	if err == nil {
 		return ExitSuccess
 	}
 
 	var classified *commandError
 	if !errors.As(err, &classified) {
-		classified = invalidArgumentsError().(*commandError)
+		classified = invalidArgumentsError()
 	}
 	_, _ = fmt.Fprintf(errOut, "エラー: %s\n", classified.message)
 	return classified.code

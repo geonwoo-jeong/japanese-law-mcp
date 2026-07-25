@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+script_path=$0
+case "$script_path" in
+  */*) ;;
+  *) script_path="./$script_path" ;;
+esac
+if ! script_directory=$(
+  CDPATH=
+  cd -P "${script_path%/*}"
+  pwd -P
+); then
+  echo "Git hook directory の実体を解決できませんでした" >&2
+  exit 1
+fi
+
+exec "$script_directory/manage" pre-commit "$@"

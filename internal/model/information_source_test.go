@@ -104,7 +104,7 @@ func TestInformationSourceRejectsInvalidValues(t *testing.T) {
 			Authority:  valid.Authority,
 			ServiceURL: "/api/2/",
 		},
-		"認証情報を含む URL": {
+		"認証情報を含む URL": { //nolint:gosec // SOT-MODEL-010: 認証情報を含む URL の拒否を確認する固定テスト値である。
 			ID:         valid.ID,
 			Name:       valid.Name,
 			Publisher:  valid.Publisher,

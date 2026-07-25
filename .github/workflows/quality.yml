@@ -1,0 +1,109 @@
+name: 品質ゲート
+
+on:
+  push: {}
+  pull_request: {}
+  workflow_dispatch: {}
+  schedule:
+    - cron: "17 9 * * 2"
+      timezone: "Asia/Tokyo"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  minimum-go:
+    name: Go 1.25 最小互換性
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GOENV: "off"
+      GOFLAGS: "-mod=readonly"
+      GONOPROXY: ""
+      GONOSUMDB: ""
+      GOPRIVATE: ""
+      GOPROXY: "https://proxy.golang.org"
+      GOSUMDB: "sum.golang.org"
+      GOTOOLCHAIN: "local"
+      GOVCS: "public:git,private:off"
+      GOWORK: "off"
+
+    steps:
+      - name: リポジトリを取得する
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: 最小 Go バージョンを設定する
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.25.0"
+          check-latest: false
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            tools/go.sum
+            tools/gitleaks/go.sum
+
+      - name: 製品コードの最小互換性を検証する
+        run: |
+          go vet ./...
+          go test -count=1 ./...
+          go build ./...
+
+      - name: 固定済み検証ツールの最小互換性を検証する
+        run: |
+          go build -modfile=tools/go.mod -o "$RUNNER_TEMP/golangci-lint" github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+          go build -modfile=tools/go.mod -o "$RUNNER_TEMP/actionlint" github.com/rhysd/actionlint/cmd/actionlint
+          go build -modfile=tools/go.mod -o "$RUNNER_TEMP/govulncheck" golang.org/x/vuln/cmd/govulncheck
+          go build -modfile=tools/gitleaks/go.mod -o "$RUNNER_TEMP/gitleaks" github.com/zricethezav/gitleaks/v8
+
+  verify:
+    name: 静的解析・テスト・セキュリティ
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GOENV: "off"
+      GOFLAGS: "-mod=readonly"
+      GONOPROXY: ""
+      GONOSUMDB: ""
+      GOPRIVATE: ""
+      GOPROXY: "https://proxy.golang.org"
+      GOSUMDB: "sum.golang.org"
+      GOTOOLCHAIN: "local"
+      GOVCS: "public:git,private:off"
+      GOWORK: "off"
+
+    steps:
+      - name: リポジトリを取得する
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Go を設定する
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          # 製品モジュールの最小バージョンは上げず、CI の実行環境だけをパッチ版まで固定する。
+          go-version: "1.26.5"
+          check-latest: false
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            tools/go.sum
+            tools/gitleaks/go.sum
+
+      - name: 品質ゲートのビルドキャッシュを復元する
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .git/japanese-law-mcp-quality-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.5-${{ hashFiles('go.sum', 'tools/go.sum', 'tools/gitleaks/go.sum', '.golangci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.5-
+
+      - name: 権威ある品質ゲートを実行する
+        run: go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
