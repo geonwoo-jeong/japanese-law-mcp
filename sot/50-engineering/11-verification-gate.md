@@ -14,6 +14,7 @@ Go コードまたは SOT を変更した成果物は、対象に応じた共通
 - Go のテスト対象コードについて、全体のステートメントカバレッジが 80% 以上である。
 - SOT の ID、状態、番号、索引および相対リンクの静的検査が成功する。
 - 有効なインターフェース SOT に対応する契約テストが成功する。
+- 新しい provider または capability binding を含む場合は、ローカルと CI の両方で `SOT-ENG-018` の `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` が成功する。
 
 ## 確認
 
@@ -22,4 +23,5 @@ Go コードまたは SOT を変更した成果物は、対象に応じた共通
 ## 関連
 
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
+- [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
 - [SOT-DEL-004: リリース整合性](../60-delivery/04-release-consistency.md)

@@ -29,7 +29,7 @@
 
 ## 関連
 
-- [SOT-IF-003: MCP `get_article`](../40-interfaces/03-mcp-get-article.md)
+- [SOT-IF-032: MCP `get_article`](../40-interfaces/32-mcp-get-article.md)
 - [SOT-MODEL-004: Citation](../20-model/04-citation.md)
 - [SOT-IF-012: e-Gov 条文取得マッピング](../40-interfaces/12-egov-article-mapping.md)
 - [SOT-ARCH-005: リクエスト情報の一時性](../30-architecture/05-ephemeral-request-lifecycle.md)

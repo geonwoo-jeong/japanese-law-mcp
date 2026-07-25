@@ -10,3 +10,6 @@
 - [08-http-resource-limits.md](08-http-resource-limits.md)
 - [09-hosting-non-retention.md](09-hosting-non-retention.md)
 - [10-desktop-binaries.md](10-desktop-binaries.md)
+- [11-local-distributions.md](11-local-distributions.md)
+- [12-local-execution-paths.md](12-local-execution-paths.md)
+- [13-local-streamable-http.md](13-local-streamable-http.md)

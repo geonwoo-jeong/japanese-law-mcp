@@ -19,6 +19,7 @@
 
 ## 関連
 
-- [SOT-IF-005: 実行設定](../40-interfaces/05-runtime-configuration.md)
+- [SOT-IF-029: ローカル実行設定](../40-interfaces/29-local-runtime-configuration.md)
 - [SOT-IF-020: 設定ソースと優先順位](../40-interfaces/20-configuration-sources-and-precedence.md)
+- [SOT-IF-026: プロバイダールーティング設定](../40-interfaces/26-provider-routing-configuration.md)
 - [SOT-ARCH-007: 依存方向](07-dependency-direction.md)

@@ -12,6 +12,7 @@
 
 - `InformationSource`
 - `SourceResourceKey`
+- `SourceResourceRef`
 - `Provenance`
 - `ProviderCapability`
 - `SourcePage`
@@ -39,5 +40,6 @@
 ## 関連
 
 - [SOT-MODEL-011: SourceResourceKey](../20-model/11-source-resource-key.md)
+- [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-MODEL-012: Provenance](../20-model/12-provenance.md)
 - [SOT-ENG-002: 境界型の分離](../50-engineering/02-boundary-types.md)

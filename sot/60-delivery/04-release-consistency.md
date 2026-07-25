@@ -18,5 +18,5 @@
 
 - [SOT-ENG-005: SOT と変更の整合](../50-engineering/05-sot-change-unit.md)
 - [SOT-ENG-011: 変更の検証ゲート](../50-engineering/11-verification-gate.md)
-- [SOT-DEL-003: 公式配布物](03-official-distributions.md)
+- [SOT-DEL-011: ローカル公式配布物](11-local-distributions.md)
 - [SOT-DEL-007: インターフェース変更の告知](07-interface-change-disclosure.md)

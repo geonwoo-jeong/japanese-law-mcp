@@ -1,10 +1,12 @@
 # SOT-IF-005: 実行設定
 
-- 状態: 有効
+- 状態: 廃止
 
 ## 規定
 
 実行設定は、トランスポート、外部リクエストのタイムアウト、HTTP の待受先と許可する Origin、および一時診断の有効化を指定する一つの設定インターフェースとして提供する。
+
+この規定は `SOT-IF-029` に置き換えられた。ローカル実行の現在の設定には `SOT-IF-029` を使用する。
 
 ## 設定項目
 
@@ -18,6 +20,8 @@
 
 `allowedOrigins` が空の場合、`Origin` ヘッダーを含むリクエストを許可しない。`Origin` ヘッダーのない非ブラウザー接続は受け付ける。
 
+`streamable-http` の `listenAddress` は、非 loopback 公開に必要な TLS と HTTP 認可の設定契約を定義する後継 SOT が採用されるまで、loopback アドレスだけを許可する。`0.0.0.0`、公開 IP、外部解決名その他の非 loopback 待受先は起動時にエラーとして扱う。
+
 未知の設定項目、無効な形式および必要条件を満たさない組合せは、起動時にエラーとして扱う。
 
 ## 関連
@@ -25,3 +29,4 @@
 - [SOT-DEL-001: stdio](../60-delivery/01-stdio.md)
 - [SOT-DEL-002: Streamable HTTP](../60-delivery/02-streamable-http.md)
 - [SOT-ARCH-008: 一時的な診断](../30-architecture/08-ephemeral-diagnostics.md)
+- [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)

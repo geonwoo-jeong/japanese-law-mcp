@@ -23,6 +23,8 @@
 | 不動産 | `real-estate.transaction.search`、`real-estate.geospatial.read` | 取引情報と空間情報 |
 | 開示 | `disclosure.filing.list`、`disclosure.artifact.read`、`xbrl.fact.read` | 提出書類、配布物および XBRL fact |
 
+この表は能力候補の語彙と分割の方向を示すものであり、能力 ID の採用、異なる文書種別の意味的一致または binding の登録を完了したことを表さない。通達、通知、指針、裁決要旨、裁決全文その他の意味が異なる資源は、能力別 SOT が同じ入力、出力および欠落時の扱いを定義できない限り、より小さい別の能力またはプロバイダー固有能力に分ける。
+
 一つのプロバイダーは、実際に同じ意味を提供できるポートだけを実装する。未対応の能力を空の結果、既定値または推測値で実装しない。
 
 `law.content.search` を共通能力として採用する場合は、検索語、論理条件、対象範囲および一致位置をプロバイダーに依存しない型で別の SOT に定義する。e-Gov の検索式は既存 `search_law_content` の互換インターフェースに留め、他のプロバイダーへ e-Gov の文法を要求しない。
@@ -40,4 +42,4 @@
 - [SOT-ARCH-003: ユースケース境界](03-application-boundary.md)
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)
 - [SOT-PROD-006: 関連公的情報の統合境界](../00-product/06-related-public-information-boundary.md)
-- [SOT-IF-008: MCP `search_law_content`](../40-interfaces/08-mcp-search-law-content.md)
+- [SOT-IF-033: MCP `search_law_content`](../40-interfaces/33-mcp-search-law-content.md)

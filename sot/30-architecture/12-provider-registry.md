@@ -20,6 +20,8 @@
 
 composition root は、能力 ID とメジャーバージョンごとに、選択方法、既定の `providerId` および集約時の順序付き `providerId` を route として構成する。route が参照する binding の欠落、重複または版の不一致は起動エラーとする。ユースケースは既定プロバイダー ID を直書きせず、この route から能力別ポートを受け取る。
 
+入力に `SourceResourceRef` を持つ能力は、route の既定値ではなく `ref.providerId` の binding を選択し、記述子の `source.id` と `ref.key.sourceId` の一致を外部呼出し前に確認する。該当 binding がない場合は別の provider へ fallback しない。既存の公開 facade が情報源固有の識別子しか持たない場合は、その facade の mapping SOT が primary route から `SourceResourceRef` を組み立てる。
+
 ## 構成状態
 
 任意のプロバイダーに必要な認証情報がない場合は、そのプロバイダーを `misconfigured` と判別できる状態にし、ネットワーク呼び出し前に失敗させる。既存の公開機能に必要な既定プロバイダーが構成できない場合は起動を失敗させる。
@@ -30,4 +32,5 @@ composition root は、能力 ID とメジャーバージョンごとに、選�
 
 - [SOT-IF-014: ProviderDescriptor](../40-interfaces/14-provider-descriptor.md)
 - [SOT-IF-018: プロバイダー設定境界](../40-interfaces/18-provider-configuration.md)
+- [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-ARCH-007: 依存方向](07-dependency-direction.md)

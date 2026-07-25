@@ -16,7 +16,11 @@
 
 - MCP ツールとユースケース
 - e-Gov 法令 API Version 2 アダプター
-- Streamable HTTP トランスポート、認可およびリソース制限
-- 公式配布物を生成するリリース処理
+- [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) から [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) に定義した provider registry、capability、route、継続取得および provider 設定
+- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) の機械検証
+- loopback 限定の Streamable HTTP トランスポートとリソース制限
+- ローカル公式配布物を生成するリリース処理
 
 引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールはまだ登録されていないため、初期ツール一覧は空配列となる。Streamable HTTP を指定した場合は、未実装であることを示す終了コード `1` を返す。
+
+現在の CLI 設定実装は、provider routing と credential environment reference をまだ扱わない。設計上の現在の定義元は [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) と [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) であり、実装開始後にこの差分を解消する。

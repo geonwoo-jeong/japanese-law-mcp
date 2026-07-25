@@ -14,3 +14,7 @@
 - [12-provenance.md](12-provenance.md)
 - [13-provider-capability.md](13-provider-capability.md)
 - [14-source-page.md](14-source-page.md)
+- [15-law-article-fragment.md](15-law-article-fragment.md)
+- [16-source-resource-ref.md](16-source-resource-ref.md)
+- [17-law-document-representation.md](17-law-document-representation.md)
+- [18-law-article-location.md](18-law-article-location.md)

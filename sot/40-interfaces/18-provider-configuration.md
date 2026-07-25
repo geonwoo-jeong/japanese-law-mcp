@@ -18,12 +18,17 @@
 
 HTTP クライアントは、許可した origin 以外への redirect を追従しない。名前解決後の接続先が loopback、private、link-local または multicast のアドレスである場合と、IP literal または Unix domain socket を接続先として指定した場合は拒否する。接続時にも解決先を検証し、検証後の名前解決差替えを許さない。
 
-既存の実行設定へ公開する名前、環境変数および配布方式は、各プロバイダー機能を採用するときに `SOT-IF-005` と整合する別の設定 SOT で定義する。`SOT-IF-020` が許可する最上位項目にプロバイダー設定は含まれないため、認証または個別設定を必要とするプロバイダーを有効にする前に、設定項目と優先順位を定義する後継 SOT を採用する。
+プロバイダー HTTP クライアントは、`HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` その他の実行環境が暗黙に与える proxy 設定を既定で使用しない。proxy を許可する場合は、そのプロバイダーのインターフェース SOT で採用条件、接続先、認証方式および検証方法を定義し、明示設定で有効化したときだけ使用する。
+
+許可した proxy を経由する場合も、最終的に到達する origin、名前解決後のアドレス、redirect および認証情報の到達範囲へ、direct 接続と同じ検証を適用する。別の origin、別の利用主体または別の認証スコープへ認証情報を転送しない。
+
+プロバイダーの有効化、credential の環境変数参照および能力別 route は `SOT-IF-026` に従う。各プロバイダーを有効にする前に、そのプロバイダー固有の接続先、credential slot、設定 scope fingerprint の入力および検証方法をインターフェース SOT で定義する。
 
 ## 関連
 
-- [SOT-IF-005: 実行設定](05-runtime-configuration.md)
+- [SOT-IF-029: ローカル実行設定](29-local-runtime-configuration.md)
 - [SOT-IF-020: 設定ソースと優先順位](20-configuration-sources-and-precedence.md)
+- [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-014: ProviderDescriptor](14-provider-descriptor.md)
 - [SOT-ARCH-012: プロバイダーの登録](../30-architecture/12-provider-registry.md)
 - [SOT-ARCH-015: 起動時設定境界](../30-architecture/15-startup-configuration-boundary.md)

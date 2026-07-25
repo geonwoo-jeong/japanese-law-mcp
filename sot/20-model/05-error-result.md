@@ -23,7 +23,7 @@
 
 ## 関連
 
-- [SOT-IF-006: エラー契約](../40-interfaces/06-error-contract.md)
+- [SOT-IF-027: 公開情報源エラー契約](../40-interfaces/27-public-source-error-contract.md)
 - [SOT-IF-007: MCP ツール結果](../40-interfaces/07-mcp-tool-result.md)
 - [SOT-MODEL-009: JSON シリアライズ](09-json-serialization.md)
 - [開発原則 6](../../docs/development-principles.md#6-一時的な情報処理と明確な結果)

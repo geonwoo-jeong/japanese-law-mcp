@@ -16,10 +16,10 @@
 
 ## 確認
 
-各失敗経路が `SOT-IF-006` のいずれかの結果または MCP のプロトコルエラーへ到達し、成功結果へ変換されないことをテストする。
+各失敗経路が `SOT-IF-027` のいずれかの結果または MCP のプロトコルエラーへ到達し、成功結果へ変換されないことをテストする。
 
 ## 関連
 
-- [SOT-IF-006: エラー契約](../40-interfaces/06-error-contract.md)
+- [SOT-IF-027: 公開情報源エラー契約](../40-interfaces/27-public-source-error-contract.md)
 - [SOT-IF-007: MCP ツール結果](../40-interfaces/07-mcp-tool-result.md)
 - [SOT-MODEL-005: ErrorResult](../20-model/05-error-result.md)

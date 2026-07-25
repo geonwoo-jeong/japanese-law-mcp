@@ -22,5 +22,5 @@ Japanese Law MCP は、MCP クライアントが利用者の環境で子プロ�
 - [SOT-ARCH-002: MCP トランスポート境界](../30-architecture/02-transport-boundary.md)
 - [SOT-ARCH-005: リクエスト情報の一時性](../30-architecture/05-ephemeral-request-lifecycle.md)
 - [SOT-ARCH-008: 一時的な診断](../30-architecture/08-ephemeral-diagnostics.md)
-- [SOT-IF-005: 実行設定](../40-interfaces/05-runtime-configuration.md)
-- [SOT-DEL-005: 実行経路](05-execution-paths.md)
+- [SOT-IF-029: ローカル実行設定](../40-interfaces/29-local-runtime-configuration.md)
+- [SOT-DEL-012: ローカル実行経路](12-local-execution-paths.md)

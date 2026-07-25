@@ -34,5 +34,6 @@ Windows 用のアーカイブには `japanese-law-mcp.exe`、macOS 用のアー�
 ## 関連
 
 - [SOT-DEL-001: stdio](01-stdio.md)
-- [SOT-DEL-003: 公式配布物](03-official-distributions.md)
+- [SOT-DEL-011: ローカル公式配布物](11-local-distributions.md)
+- [SOT-DEL-012: ローカル実行経路](12-local-execution-paths.md)
 - [SOT-DEL-004: リリース整合性](04-release-consistency.md)

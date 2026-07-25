@@ -22,4 +22,4 @@ Japanese Law MCP は MCP 仕様 `2025-11-25` を実装基準とし、初期化�
 - [MCP Specification `2025-11-25`](https://modelcontextprotocol.io/specification/2025-11-25)
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)
 - [SOT-DEL-001: stdio](../60-delivery/01-stdio.md)
-- [SOT-DEL-002: Streamable HTTP](../60-delivery/02-streamable-http.md)
+- [SOT-DEL-013: ローカル Streamable HTTP](../60-delivery/13-local-streamable-http.md)

@@ -10,7 +10,7 @@
 
 | 形式 | 動作 |
 |---|---|
-| `japanese-law-mcp [flags]` | 検証済みの実行設定でサーバーを起動する。設定を上書きしない場合は `SOT-IF-005` の既定値に従い `stdio` を使用する |
+| `japanese-law-mcp [flags]` | 検証済みの実行設定でサーバーを起動する。設定を上書きしない場合は `SOT-IF-029` の既定値に従い `stdio` を使用する |
 | `japanese-law-mcp --help` | 利用方法、使用できるフラグおよび `version` コマンドを日本語で標準出力へ表示する |
 | `japanese-law-mcp version` | 実行ファイルへ埋め込まれたバージョンを標準出力へ一行で出力する |
 
@@ -28,7 +28,9 @@
 | `--allowed-origin` | `allowedOrigins` | Origin ごとに繰り返し指定 |
 | `--diagnostics` | `diagnostics` | boolean |
 
-各設定値の意味、制約および既定値は `SOT-IF-005` を定義元とする。利用者向けの説明とエラーは日本語で出力し、サーバーの `stdio` 実行中は `SOT-DEL-001` に従って標準出力を MCP メッセージ専用とする。
+各設定値の意味、制約および既定値は `SOT-IF-029` を定義元とする。利用者向けの説明とエラーは日本語で出力し、サーバーの `stdio` 実行中は `SOT-DEL-001` に従って標準出力を MCP メッセージ専用とする。
+
+`providers` と `providerRoutes` の構造を個別のコマンドライン引数へ展開しない。既定値を変更する場合は `--config` で選択した設定ファイルに、`SOT-IF-026` の完全な型付き構造を記載する。秘密値そのものはコマンドライン引数で受け取らない。
 
 ## 確認
 
@@ -36,7 +38,8 @@
 
 ## 関連
 
-- [SOT-IF-005: 実行設定](05-runtime-configuration.md)
+- [SOT-IF-029: ローカル実行設定](29-local-runtime-configuration.md)
 - [SOT-IF-020: 設定ソースと優先順位](20-configuration-sources-and-precedence.md)
+- [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-021: プロセス終了コード](21-process-exit-codes.md)
 - [SOT-DEL-001: stdio](../60-delivery/01-stdio.md)

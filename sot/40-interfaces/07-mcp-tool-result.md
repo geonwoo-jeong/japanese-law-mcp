@@ -31,5 +31,5 @@
 
 - [SOT-MODEL-005: ErrorResult](../20-model/05-error-result.md)
 - [SOT-MODEL-009: JSON シリアライズ](../20-model/09-json-serialization.md)
-- [SOT-IF-006: エラー契約](06-error-contract.md)
+- [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
 - [SOT-IF-013: MCP プロトコル基準](13-mcp-protocol-version.md)

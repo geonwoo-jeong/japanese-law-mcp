@@ -23,13 +23,30 @@
 
 ## 共通情報源との対応
 
-情報源ポートの内部では `InformationSource` を情報源メタデータの定義元とし、法令向けの公開境界で必要な場合に限り、`id`、`name`、`authority` および `serviceUrl` を同名項目へ変換して `LegalSource` を作る。
+情報源ポートの内部では `InformationSource` を情報源メタデータの定義元とし、法令向けの公開境界で必要な場合に限り、次の決定的な投影で `LegalSource` を作る。
 
-一つの法令情報源について、これらの値を `LegalSource` 用と `InformationSource` 用に別々の事実として定義しない。
+| `InformationSource` | `LegalSource` |
+|---|---|
+| `id` | `id` へ文字列を変更せず設定する |
+| `name` | `name` へ文字列を変更せず設定する |
+| `authority` | `authority` へ列挙値を変更せず設定する |
+| `serviceUrl` | `serviceUrl` へ URL を変更せず設定する |
+| `publisher` | 対応項目を作らず、他の項目へ連結または代入しない |
+
+投影時に trimming、大文字小文字の変更、URL の再正規化、別名への置換または `publisher` の付加を行わない。一つの法令情報源について、投影対象の四項目を `LegalSource` 用と `InformationSource` 用に別々の事実として定義しない。
+
+この投影は `publisher` を持たないため可逆変換ではない。`LegalSource` から `InformationSource` を復元、推測または既定化しない。
+
+同じ `SourcedResource<T>` 内の `LawSummary.source` と `Citation.source` は、`Provenance.source` および `ProviderDescriptor.source` と同じ `InformationSource` からこの規則で投影した値とする。
+
+## 確認
+
+各法令 provider の descriptor fixture から投影を二回実行して同じ `LegalSource` を得ること、四項目が byte 単位で一致すること、および `publisher` が `name` その他の公開項目へ混入しないことを確認する。`LawSummary`、`Citation`、`Provenance` および descriptor の情報源を同じ fixture で照合する。
 
 ## 関連
 
 - [SOT-MODEL-010: InformationSource](10-information-source.md)
+- [SOT-MODEL-012: Provenance](12-provenance.md)
 - [SOT-PROD-003: 法情報の採用基準](../00-product/03-legal-source-eligibility.md)
 - [SOT-MODEL-004: Citation](04-citation.md)
 - [SOT-MODEL-009: JSON シリアライズ](09-json-serialization.md)

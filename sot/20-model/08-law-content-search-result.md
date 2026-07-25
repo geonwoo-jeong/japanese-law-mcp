@@ -24,4 +24,4 @@
 
 - [SOT-MODEL-007: LawContentMatch](07-law-content-match.md)
 - [SOT-MODEL-009: JSON シリアライズ](09-json-serialization.md)
-- [SOT-IF-008: MCP `search_law_content`](../40-interfaces/08-mcp-search-law-content.md)
+- [SOT-IF-033: MCP `search_law_content`](../40-interfaces/33-mcp-search-law-content.md)

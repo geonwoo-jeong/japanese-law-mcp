@@ -30,6 +30,6 @@
 
 ## 関連
 
-- [SOT-IF-008: MCP `search_law_content`](../40-interfaces/08-mcp-search-law-content.md)
+- [SOT-IF-033: MCP `search_law_content`](../40-interfaces/33-mcp-search-law-content.md)
 - [SOT-MODEL-008: LawContentSearchResult](../20-model/08-law-content-search-result.md)
 - [SOT-ARCH-005: リクエスト情報の一時性](../30-architecture/05-ephemeral-request-lifecycle.md)

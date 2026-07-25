@@ -30,6 +30,6 @@
 
 ## 関連
 
-- [SOT-IF-002: MCP `get_law`](../40-interfaces/02-mcp-get-law.md)
+- [SOT-IF-031: MCP `get_law`](../40-interfaces/31-mcp-get-law.md)
 - [SOT-MODEL-002: LawDocument](../20-model/02-law-document.md)
 - [SOT-ARCH-005: リクエスト情報の一時性](../30-architecture/05-ephemeral-request-lifecycle.md)

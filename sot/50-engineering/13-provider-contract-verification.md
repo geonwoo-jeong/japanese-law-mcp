@@ -10,7 +10,8 @@
 
 - `ProviderDescriptor` の識別子、能力 ID、版および宣言順
 - 宣言した能力と実装した型付きポートの一致
-- `SourceResourceKey` の安定性と外部識別子の無変換
+- `SourceResourceRef` の provider、情報源および外部識別子の安定性と無変換
+- 検索結果の `SourceResourceRef` を読み取り能力へ渡したときの同一 provider・資源・版の roundtrip
 - 必須の `Provenance` と変換種別
 - 欠落値の推測禁止、空の検索結果と `not_found` の区別
 - 継続トークンの往復、条件不一致、改変および期限切れ

@@ -15,3 +15,6 @@
 - [13-provider-contract-verification.md](13-provider-contract-verification.md)
 - [14-cli-implementation-boundary.md](14-cli-implementation-boundary.md)
 - [15-txtar-cli-contract-tests.md](15-txtar-cli-contract-tests.md)
+- [16-provider-resource-budgets.md](16-provider-resource-budgets.md)
+- [17-provider-conformance-matrix.md](17-provider-conformance-matrix.md)
+- [18-provider-onboarding-fitness-gate.md](18-provider-onboarding-fitness-gate.md)

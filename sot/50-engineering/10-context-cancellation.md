@@ -19,5 +19,5 @@
 
 ## 関連
 
-- [SOT-IF-005: 実行設定](../40-interfaces/05-runtime-configuration.md)
+- [SOT-IF-029: ローカル実行設定](../40-interfaces/29-local-runtime-configuration.md)
 - [SOT-ARCH-001: リクエスト処理パイプライン](../30-architecture/01-request-pipeline.md)

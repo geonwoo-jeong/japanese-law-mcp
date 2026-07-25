@@ -22,6 +22,8 @@
 
 正確な `SourceResourceKey` による取得は、別の情報源へ自動で fallback しない。fallback は、入力、意味、対象時点および欠落時の扱いが同じであることを能力別 SOT が定義した場合だけ許可する。
 
+`SourceResourceRef` を入力に持つ取得は `explicit` とし、`ref.providerId` の provider だけを使用する。primary route は、既存 facade が情報源固有の識別子から最初の `SourceResourceRef` を組み立てる場合にだけ使用し、すでに存在する ref の provider または key を置き換えない。
+
 異なる情報源の資源は、公式の共通識別子または確認済みの対応表がある場合だけ同一視する。名称、題名、住所、本文または検索順位の類似性だけで重複排除または結合を行わない。
 
 複数情報源の値が競合する場合は、任意に一つを選ばず、それぞれの値と `Provenance` を保持する。フィールド単位の優先順位は、能力別 SOT が根拠とともに定義した場合だけ適用する。
@@ -35,6 +37,7 @@
 - [SOT-MODEL-011: SourceResourceKey](../20-model/11-source-resource-key.md)
 - [SOT-MODEL-012: Provenance](../20-model/12-provenance.md)
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
+- [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-PROD-005: 加工情報の区別](../00-product/05-derived-information.md)
-- [SOT-IF-001: MCP `search_laws`](../40-interfaces/01-mcp-search-laws.md)
-- [SOT-IF-008: MCP `search_law_content`](../40-interfaces/08-mcp-search-law-content.md)
+- [SOT-IF-030: MCP `search_laws`](../40-interfaces/30-mcp-search-laws.md)
+- [SOT-IF-033: MCP `search_law_content`](../40-interfaces/33-mcp-search-law-content.md)

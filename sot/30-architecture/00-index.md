@@ -15,3 +15,4 @@
 - [13-source-composition.md](13-source-composition.md)
 - [14-ephemeral-source-artifacts.md](14-ephemeral-source-artifacts.md)
 - [15-startup-configuration-boundary.md](15-startup-configuration-boundary.md)
+- [16-incremental-provider-onboarding.md](16-incremental-provider-onboarding.md)

@@ -20,11 +20,15 @@
 
 | 項目 | 型 | 必須 | 意味 |
 |---|---|---:|---|
-| `key` | `SourceResourceKey` | はい | 情報源上の資源と版 |
+| `ref` | `SourceResourceRef` | はい | 取得に使用したプロバイダーと情報源上の資源と版 |
 | `provenance` | `Provenance[]` | はい | 取得、抽出、正規化または加工の経路 |
 | `data` | `T` | はい | 能力 SOT が定義する一つの具体的な型付き情報モデル |
 
 `T` を無型の辞書、外部レスポンス型またはプロバイダー固有 DTO にしない。
+
+`provenance` は一件以上とし、各要素の `resourceKey.sourceId` は、別の入力資源を明示する `derived` の `inputKeys` を除き `ref.key.sourceId` と一致する。最後の要素は `data` を生成した変換を表し、その `resourceKey` は `ref.key` と一致する。
+
+`ref` は `data` の根拠となる主資源を示し、一覧または検索結果の item ID を兼ねるとは限らない。item identity は能力別 SOT を定義元とし、共通処理は `ref` だけを使って item を重複排除、上書きまたは結合しない。
 
 この共通契約は情報取得だけを対象とする。外部システムへの登録、変更、削除、提出または処理開始は、利用シナリオと副作用を別の SOT で採用するまで共通能力へ含めない。
 
@@ -44,4 +48,5 @@
 - [SOT-MODEL-011: SourceResourceKey](../20-model/11-source-resource-key.md)
 - [SOT-MODEL-012: Provenance](../20-model/12-provenance.md)
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
+- [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-ENG-010: コンテキストによるキャンセル](../50-engineering/10-context-cancellation.md)

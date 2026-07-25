@@ -1,10 +1,12 @@
 # SOT-DEL-002: Streamable HTTP
 
-- 状態: 有効
+- 状態: 廃止
 
 ## 規定
 
 Japanese Law MCP は、独立して起動したプロセスへ複数の MCP クライアントが接続できる、無状態の Streamable HTTP 実行方式を公式に提供する。
+
+この規定は `SOT-DEL-013` に置き換えられた。ローカルの Streamable HTTP には `SOT-DEL-013` を使用する。
 
 ## 動作
 
@@ -15,7 +17,8 @@ Japanese Law MCP は、独立して起動したプロセスへ複数の MCP ク�
 - `MCP-Session-Id` を発行せず、セッション再開とメッセージ再送を提供しない。
 - ローカル実行時の既定公開先はループバックアドレスとする。
 - `Origin` ヘッダーがある場合は `allowedOrigins` と照合し、一致しない値には `403 Forbidden` を返す。
-- ループバック以外へ公開する場合は、TLS と `SOT-DEL-006` の認可を適用する。
+- 非 loopback 公開に必要な TLS と `SOT-DEL-006` の認可設定を定義する後継 SOT が採用されるまでは、`listenAddress` は loopback アドレスだけを許可し、非 loopback の待受先は起動エラーとする。
+- 後継 SOT の採用後にループバック以外へ公開する場合は、TLS と `SOT-DEL-006` の認可を適用する。
 
 ## 完了条件
 
