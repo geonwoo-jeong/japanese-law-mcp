@@ -78,6 +78,37 @@ func (r ProviderRegistry) Descriptor(providerID string) (model.ProviderDescripto
 	return descriptor, exists
 }
 
+// DescriptorForResourceRef は、参照の構造と登録済み情報源を検証して記述子を返す。
+func (r ProviderRegistry) DescriptorForResourceRef(
+	ref model.SourceResourceRef,
+) (model.ProviderDescriptor, error) {
+	if err := ref.Validate(); err != nil {
+		return model.ProviderDescriptor{}, fmt.Errorf(
+			"SourceResourceRef が有効ではありません: %w",
+			err,
+		)
+	}
+
+	descriptor, exists := r.Descriptor(ref.ProviderID())
+	if !exists {
+		return model.ProviderDescriptor{}, fmt.Errorf(
+			"providerId %q は登録されていません",
+			ref.ProviderID(),
+		)
+	}
+	sourceID := descriptor.Source().ID()
+	refSourceID := ref.Key().SourceID()
+	if sourceID != refSourceID {
+		return model.ProviderDescriptor{}, fmt.Errorf(
+			"providerId %q の source.id %q と key.sourceId %q が一致しません",
+			ref.ProviderID(),
+			sourceID,
+			refSourceID,
+		)
+	}
+	return descriptor, nil
+}
+
 // DeclaredCapability は、完全一致する能力宣言を返す。
 func (r ProviderRegistry) DeclaredCapability(
 	providerID string,
