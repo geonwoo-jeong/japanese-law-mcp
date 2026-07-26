@@ -1,6 +1,7 @@
 package lawdocumentread_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
@@ -19,6 +20,19 @@ func TestRequest(t *testing.T) {
 	if !exists || asOf.String() != "2026-01-01" {
 		t.Fatalf("SOT-IF-024: asOf = %q, %t", asOf.String(), exists)
 	}
+	if got.Resource().Key().ResourceID() != "325AC0000000105" {
+		t.Fatalf("SOT-IF-024: resource = %#v", got.Resource())
+	}
+
+	withoutAsOf, err := lawdocumentread.NewRequest(lawdocumentread.RequestValues{
+		Resource: newLawResourceRef(t, "325AC0000000105", "325AC0000000105_rev1"),
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-024: versionId だけの NewRequest() のエラー = %v", err)
+	}
+	if _, exists := withoutAsOf.AsOf(); exists {
+		t.Fatal("SOT-IF-024: 省略した asOf が存在します")
+	}
 }
 
 func TestRequestRejectsInvalidValues(t *testing.T) {
@@ -34,6 +48,19 @@ func TestRequestRejectsInvalidValues(t *testing.T) {
 		"leading_space_resource_id": {
 			Resource: newLawResourceRef(t, " law", ""),
 		},
+		"trailing_space_resource_id": {
+			Resource: newLawResourceRef(t, "law ", ""),
+		},
+		"control_resource_id": {
+			Resource: newLawResourceRef(t, "law\nid", ""),
+		},
+		"long_resource_id": {
+			Resource: newLawResourceRef(t, strings.Repeat("a", 257), ""),
+		},
+		"long_version_id": {
+			Resource: newLawResourceRef(t, "law", strings.Repeat("a", 513)),
+		},
+		"missing_resource": {},
 	}
 	for name, values := range testCases {
 		t.Run(name, func(t *testing.T) {
