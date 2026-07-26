@@ -10,6 +10,7 @@
 - txtar による CLI 契約テスト
 - [SOT-IF-013](../sot/40-interfaces/13-mcp-protocol-version.md) に従う MCP `2025-11-25` の初期化と `tools` capability
 - [SOT-DEL-001](../sot/60-delivery/01-stdio.md) に従う、ローカル子プロセスとして動作する stdio トランスポート
+- [SOT-DEL-013](../sot/60-delivery/13-local-streamable-http.md) と [SOT-DEL-008](../sot/60-delivery/08-http-resource-limits.md) に従う、`127.0.0.0/8` または `::1` の IP literal だけで待ち受ける無状態の Streamable HTTP、`/mcp` の単一 endpoint、Origin 許可リスト、1 MiB の本文上限、接続元 IP ごとの同時 tool 呼出し上限 4、および session ID を発行しない五つの公開ツール
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
 - [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
 - [SOT-ENG-021](../sot/50-engineering/21-git-hook-staged-verification.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
@@ -37,9 +38,8 @@
 
 ## 未実装
 
-- loopback 限定の Streamable HTTP トランスポートとリソース制限
 - ローカル公式配布物を生成するリリース処理
 
-引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールは `search_laws`、`get_law`、`get_article`、`search_law_content` および `list_law_updates` の五つである。Streamable HTTP を指定した場合は、未実装であることを示す終了コード `1` を返す。
+引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールは `search_laws`、`get_law`、`get_article`、`search_law_content` および `list_law_updates` の五つである。`streamable-http` を指定した場合は、検証済みの loopback 待受先で `/mcp` を提供し、stdio と同じ五つのツールを公開する。
 
 現在は e-Gov 法令 API Version 2 の四つと、e-Gov 法令 API Version 1 の `law.update.list@1` の、合計五つの組込み primary route を起動時に構成する。公開 MCP ツールも、それぞれの route へ到達する五つを提供する。利用者は設定ファイルで provider の有効化、能力別 primary route および rollback override を指定でき、無効な組合せは transport の開始前に終了コード `2` で拒否する。現在の組込み二 provider は provider-specific setting と credential slot を持たず、能力も重複しないため、非空の `settings`、`credentialEnvRefs` および相互 rollback は受け付けない。

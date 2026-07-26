@@ -52,7 +52,26 @@ func validateListenAddress(address string) error {
 	if err != nil || port < 1 || port > 65535 {
 		return fmt.Errorf("listenAddress の port は 1 以上 65535 以下でなければなりません")
 	}
+	if !isAllowedLoopbackLiteral(host) {
+		return fmt.Errorf("listenAddress は 127.0.0.0/8 または ::1 の IP literal でなければなりません")
+	}
 	return nil
+}
+
+func isAllowedLoopbackLiteral(host string) bool {
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return false
+	}
+
+	if ipv4 := ip.To4(); ipv4 != nil {
+		if strings.Contains(host, ":") {
+			return false
+		}
+		return ipv4[0] == 127
+	}
+
+	return ip.Equal(net.IPv6loopback)
 }
 
 func validateOrigin(origin string) error {
@@ -72,6 +91,14 @@ func validateOrigin(origin string) error {
 		parsed.Fragment != "" ||
 		parsed.Opaque != "" {
 		return fmt.Errorf("allowedOrigins の値 %q は HTTPS Origin ではありません", origin)
+	}
+	if portText := parsed.Port(); portText != "" {
+		port, conversionErr := strconv.Atoi(portText)
+		if conversionErr != nil || port < 1 || port > 65535 {
+			return fmt.Errorf("allowedOrigins の値 %q は有効な HTTPS port を持ちません", origin)
+		}
+	} else if strings.HasSuffix(parsed.Host, ":") {
+		return fmt.Errorf("allowedOrigins の値 %q は有効な HTTPS port を持ちません", origin)
 	}
 	return nil
 }

@@ -17,19 +17,19 @@ func TestDefaultConfig(t *testing.T) {
 	got := Default()
 
 	if got.Transport() != TransportStdio {
-		t.Fatalf("SOT-IF-005: transport = %q、期待値 = %q", got.Transport(), TransportStdio)
+		t.Fatalf("SOT-IF-029: transport = %q、期待値 = %q", got.Transport(), TransportStdio)
 	}
 	if got.RequestTimeout() != 30*time.Second {
-		t.Fatalf("SOT-IF-005: requestTimeout = %s、期待値 = 30s", got.RequestTimeout())
+		t.Fatalf("SOT-IF-029: requestTimeout = %s、期待値 = 30s", got.RequestTimeout())
 	}
 	if got.ListenAddress() != "127.0.0.1:8080" {
-		t.Fatalf("SOT-IF-005: listenAddress = %q", got.ListenAddress())
+		t.Fatalf("SOT-IF-029: listenAddress = %q", got.ListenAddress())
 	}
 	if len(got.AllowedOrigins()) != 0 {
-		t.Fatalf("SOT-IF-005: allowedOrigins = %v、期待値 = 空", got.AllowedOrigins())
+		t.Fatalf("SOT-IF-029: allowedOrigins = %v、期待値 = 空", got.AllowedOrigins())
 	}
 	if got.Diagnostics() {
-		t.Fatal("SOT-IF-005: diagnostics = true、期待値 = false")
+		t.Fatal("SOT-IF-029: diagnostics = true、期待値 = false")
 	}
 }
 
@@ -67,16 +67,23 @@ func TestNewRejectsInvalidValues(t *testing.T) {
 	}
 
 	tests := map[string]Values{
-		"トランスポート":         withTransport(valid, "invalid"),
-		"タイムアウトの下限":       withTimeout(valid, 999*time.Millisecond),
-		"タイムアウトの上限":       withTimeout(valid, 121*time.Second),
-		"待受先":             withListenAddress(valid, "127.0.0.1"),
-		"空白を含む待受先":        withListenAddress(valid, "invalid host:8080"),
-		"HTTP Origin":     withOrigins(valid, "http://example.test"),
-		"パスを含む Origin":    withOrigins(valid, "https://example.test/path"),
-		"利用者情報を含む Origin": withOrigins(valid, "https://user@example.test"),
-		"stdio の Origin":  withTransport(valid, string(TransportStdio)),
-		"stdio の待受先変更":    withListenAddress(withTransport(valid, string(TransportStdio)), "127.0.0.1:9090"),
+		"トランスポート":              withTransport(valid, "invalid"),
+		"タイムアウトの下限":            withTimeout(valid, 999*time.Millisecond),
+		"タイムアウトの上限":            withTimeout(valid, 121*time.Second),
+		"待受先":                  withListenAddress(valid, "127.0.0.1"),
+		"空白を含む待受先":             withListenAddress(valid, "invalid host:8080"),
+		"hostname の待受先":        withListenAddress(valid, "localhost:8080"),
+		"wildcard の待受先":        withListenAddress(valid, "0.0.0.0:8080"),
+		"private address の待受先": withListenAddress(valid, "10.0.0.1:8080"),
+		"mapped IPv6 の待受先":     withListenAddress(valid, "[::ffff:127.0.0.1]:8080"),
+		"HTTP Origin":          withOrigins(valid, "http://example.test"),
+		"パスを含む Origin":         withOrigins(valid, "https://example.test/path"),
+		"利用者情報を含む Origin":      withOrigins(valid, "https://user@example.test"),
+		"範囲外 port の Origin":    withOrigins(valid, "https://example.test:65536"),
+		"port 0 の Origin":      withOrigins(valid, "https://example.test:0"),
+		"空 port の Origin":      withOrigins(valid, "https://example.test:"),
+		"stdio の Origin":       withTransport(valid, string(TransportStdio)),
+		"stdio の待受先変更":         withListenAddress(withTransport(valid, string(TransportStdio)), "127.0.0.1:9090"),
 	}
 
 	for name, input := range tests {
@@ -84,9 +91,26 @@ func TestNewRejectsInvalidValues(t *testing.T) {
 			t.Parallel()
 
 			if _, err := New(input); err == nil {
-				t.Fatal("SOT-IF-005: New() のエラー = nil")
+				t.Fatal("SOT-IF-029: New() のエラー = nil")
 			}
 		})
+	}
+}
+
+func TestNewAcceptsIPv6LoopbackListenAddress(t *testing.T) {
+	t.Parallel()
+
+	got, err := New(Values{
+		Transport:      string(TransportStreamableHTTP),
+		RequestTimeout: 30 * time.Second,
+		ListenAddress:  "[::1]:8080",
+		AllowedOrigins: []string{"https://example.test"},
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-029: New() のエラー = %v", err)
+	}
+	if got.ListenAddress() != "[::1]:8080" {
+		t.Fatalf("SOT-IF-029: listenAddress = %q", got.ListenAddress())
 	}
 }
 
@@ -228,10 +252,10 @@ func TestLoadRejectsInvalidConfiguration(t *testing.T) {
 				UserConfigDir: fixedUserConfigDir(t.TempDir()),
 			})
 			if err == nil {
-				t.Fatal("SOT-IF-005 SOT-IF-020: Load() のエラー = nil")
+				t.Fatal("SOT-IF-029 SOT-IF-020: Load() のエラー = nil")
 			}
 			if !strings.Contains(err.Error(), test.want) {
-				t.Fatalf("SOT-IF-005 SOT-IF-020: エラー = %q、期待する内容 = %q", err, test.want)
+				t.Fatalf("SOT-IF-029 SOT-IF-020: エラー = %q、期待する内容 = %q", err, test.want)
 			}
 		})
 	}

@@ -27,9 +27,9 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/stdio"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/streamablehttp"
+	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
-
-var errStreamableHTTPNotImplemented = errors.New("トランスポート Streamable HTTP はまだ実装されていません")
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -54,6 +54,20 @@ func run(ctx context.Context) int {
 type stdioRunner func(context.Context, stdio.Server) error
 
 func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
+	return newServerRunnerWithTransports(version, runStdio, streamablehttp.Run)
+}
+
+type streamableHTTPRunner func(
+	context.Context,
+	*sdk.Server,
+	streamablehttp.Options,
+) error
+
+func newServerRunnerWithTransports(
+	version string,
+	runStdio stdioRunner,
+	runHTTP streamableHTTPRunner,
+) cli.Runner {
 	return func(ctx context.Context, cfg config.Config) error {
 		registry, routes, err := newProviderRoutes(cfg)
 		if err != nil {
@@ -63,103 +77,180 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 			return err
 		}
 
+		server, err := newPublicServer(
+			version,
+			cfg,
+			registry,
+			routes,
+			cfg.Transport() == config.TransportStreamableHTTP,
+		)
+		if err != nil {
+			return err
+		}
+
 		switch cfg.Transport() {
 		case config.TransportStdio:
-			provider, err := lawv2.NewSearchLawsFacade()
-			if err != nil {
-				return fmt.Errorf("公開 search_laws facade を初期化できません: %w", err)
-			}
-			searchLaws, err := searchlaws.NewService(
-				provider,
-				cfg.RequestTimeout(),
-			)
-			if err != nil {
-				return fmt.Errorf("公開 search_laws service を初期化できません: %w", err)
-			}
-			searchLawContentProvider, err := lawv2.NewSearchLawContentFacade()
-			if err != nil {
-				return fmt.Errorf("公開 search_law_content facade を初期化できません: %w", err)
-			}
-			searchLawContent, err := searchlawcontent.NewService(
-				searchLawContentProvider,
-				cfg.RequestTimeout(),
-			)
-			if err != nil {
-				return fmt.Errorf("公開 search_law_content service を初期化できません: %w", err)
-			}
-			documentReader, exists := routes.LawDocumentRead()
-			if !exists {
-				return errors.New("primary law.document.read binding がありません")
-			}
-			documentProviderID, exists := routes.ProviderID(
-				lawdocumentread.CapabilityID,
-				lawdocumentread.MajorVersion,
-			)
-			if !exists {
-				return errors.New("primary law.document.read provider がありません")
-			}
-			documentProvider, exists := registry.Descriptor(documentProviderID)
-			if !exists {
-				return errors.New("primary law.document.read descriptor がありません")
-			}
-			getLaw, err := getlaw.NewService(
-				documentReader,
-				documentProvider,
-				cfg.RequestTimeout(),
-			)
-			if err != nil {
-				return fmt.Errorf("公開 get_law service を初期化できません: %w", err)
-			}
-			articleReader, exists := routes.LawArticleRead()
-			if !exists {
-				return errors.New("primary law.article.read binding がありません")
-			}
-			articleProviderID, exists := routes.ProviderID(
-				lawarticleread.CapabilityID,
-				lawarticleread.MajorVersion,
-			)
-			if !exists {
-				return errors.New("primary law.article.read provider がありません")
-			}
-			articleProvider, exists := registry.Descriptor(articleProviderID)
-			if !exists {
-				return errors.New("primary law.article.read descriptor がありません")
-			}
-			getArticle, err := getarticle.NewService(
-				articleReader,
-				articleProvider,
-				cfg.RequestTimeout(),
-			)
-			if err != nil {
-				return fmt.Errorf("公開 get_article service を初期化できません: %w", err)
-			}
-			updateLister, exists := routes.LawUpdateList()
-			if !exists {
-				return errors.New("primary law.update.list binding がありません")
-			}
-			listLawUpdates, err := listlawupdates.NewService(
-				updateLister,
-				cfg.RequestTimeout(),
-			)
-			if err != nil {
-				return fmt.Errorf("公開 list_law_updates service を初期化できません: %w", err)
-			}
-			return runStdio(ctx, projectmcp.NewServerWithDependencies(
-				version,
-				projectmcp.Dependencies{
-					SearchLaws:       searchLaws,
-					SearchLawContent: searchLawContent,
-					GetLaw:           getLaw,
-					GetArticle:       getArticle,
-					ListLawUpdates:   listLawUpdates,
-				},
-			))
+			return runStdio(ctx, server)
 		case config.TransportStreamableHTTP:
-			return errStreamableHTTPNotImplemented
+			return runHTTP(ctx, server, streamablehttp.Options{
+				ListenAddress:  cfg.ListenAddress(),
+				AllowedOrigins: cfg.AllowedOrigins(),
+			})
 		default:
 			return errors.New("対応していないトランスポートです")
 		}
 	}
+}
+
+func newPublicServer(
+	version string,
+	cfg config.Config,
+	registry application.ProviderBindingRegistry,
+	routes application.ProviderRoutes,
+	sessionless bool,
+) (*sdk.Server, error) {
+	dependencies, err := newPublicDependencies(cfg, registry, routes)
+	if err != nil {
+		return nil, err
+	}
+	if sessionless {
+		return projectmcp.NewSessionlessServerWithDependencies(
+			version,
+			dependencies,
+		), nil
+	}
+	return projectmcp.NewServerWithDependencies(version, dependencies), nil
+}
+
+func newPublicDependencies(
+	cfg config.Config,
+	registry application.ProviderBindingRegistry,
+	routes application.ProviderRoutes,
+) (projectmcp.Dependencies, error) {
+	provider, err := lawv2.NewSearchLawsFacade()
+	if err != nil {
+		return projectmcp.Dependencies{},
+			fmt.Errorf("公開 search_laws facade を初期化できません: %w", err)
+	}
+	searchLaws, err := searchlaws.NewService(provider, cfg.RequestTimeout())
+	if err != nil {
+		return projectmcp.Dependencies{},
+			fmt.Errorf("公開 search_laws service を初期化できません: %w", err)
+	}
+
+	searchLawContentProvider, err := lawv2.NewSearchLawContentFacade()
+	if err != nil {
+		return projectmcp.Dependencies{},
+			fmt.Errorf("公開 search_law_content facade を初期化できません: %w", err)
+	}
+	searchLawContent, err := searchlawcontent.NewService(
+		searchLawContentProvider,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return projectmcp.Dependencies{},
+			fmt.Errorf("公開 search_law_content service を初期化できません: %w", err)
+	}
+
+	getLaw, err := newGetLawService(cfg, registry, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
+	getArticle, err := newGetArticleService(cfg, registry, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
+	listLawUpdates, err := newListLawUpdatesService(cfg, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
+	return projectmcp.Dependencies{
+		SearchLaws:       searchLaws,
+		SearchLawContent: searchLawContent,
+		GetLaw:           getLaw,
+		GetArticle:       getArticle,
+		ListLawUpdates:   listLawUpdates,
+	}, nil
+}
+
+func newGetLawService(
+	cfg config.Config,
+	registry application.ProviderBindingRegistry,
+	routes application.ProviderRoutes,
+) (*getlaw.Service, error) {
+	documentReader, exists := routes.LawDocumentRead()
+	if !exists {
+		return nil, errors.New("primary law.document.read binding がありません")
+	}
+	documentProviderID, exists := routes.ProviderID(
+		lawdocumentread.CapabilityID,
+		lawdocumentread.MajorVersion,
+	)
+	if !exists {
+		return nil, errors.New("primary law.document.read provider がありません")
+	}
+	documentProvider, exists := registry.Descriptor(documentProviderID)
+	if !exists {
+		return nil, errors.New("primary law.document.read descriptor がありません")
+	}
+	getLaw, err := getlaw.NewService(
+		documentReader,
+		documentProvider,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("公開 get_law service を初期化できません: %w", err)
+	}
+	return getLaw, nil
+}
+
+func newGetArticleService(
+	cfg config.Config,
+	registry application.ProviderBindingRegistry,
+	routes application.ProviderRoutes,
+) (*getarticle.Service, error) {
+	articleReader, exists := routes.LawArticleRead()
+	if !exists {
+		return nil, errors.New("primary law.article.read binding がありません")
+	}
+	articleProviderID, exists := routes.ProviderID(
+		lawarticleread.CapabilityID,
+		lawarticleread.MajorVersion,
+	)
+	if !exists {
+		return nil, errors.New("primary law.article.read provider がありません")
+	}
+	articleProvider, exists := registry.Descriptor(articleProviderID)
+	if !exists {
+		return nil, errors.New("primary law.article.read descriptor がありません")
+	}
+	getArticle, err := getarticle.NewService(
+		articleReader,
+		articleProvider,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("公開 get_article service を初期化できません: %w", err)
+	}
+	return getArticle, nil
+}
+
+func newListLawUpdatesService(
+	cfg config.Config,
+	routes application.ProviderRoutes,
+) (*listlawupdates.Service, error) {
+	updateLister, exists := routes.LawUpdateList()
+	if !exists {
+		return nil, errors.New("primary law.update.list binding がありません")
+	}
+	listLawUpdates, err := listlawupdates.NewService(
+		updateLister,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("公開 list_law_updates service を初期化できません: %w", err)
+	}
+	return listLawUpdates, nil
 }
 
 func validateCompatibilityFacadeRoutes(routes application.ProviderRoutes) error {

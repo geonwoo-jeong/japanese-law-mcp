@@ -3,6 +3,9 @@ package mcp
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -10,6 +13,40 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
+
+func TestNewSessionlessServerDoesNotIssueSessionID(t *testing.T) {
+	t.Parallel()
+
+	server := NewSessionlessServerWithDependencies("test-version", Dependencies{})
+	handler := sdk.NewStreamableHTTPHandler(
+		func(*http.Request) *sdk.Server {
+			return server
+		},
+		&sdk.StreamableHTTPOptions{
+			Stateless:    true,
+			JSONResponse: true,
+		},
+	)
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/mcp",
+		strings.NewReader(
+			`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`,
+		),
+	)
+	request.Header.Set("Accept", "application/json, text/event-stream")
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+
+	handler.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body = %q", recorder.Code, http.StatusOK, recorder.Body.String())
+	}
+	if values := recorder.Header().Values("Mcp-Session-Id"); len(values) != 0 {
+		t.Fatalf("Mcp-Session-Id = %#v, want absent", values)
+	}
+}
 
 func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	t.Parallel()

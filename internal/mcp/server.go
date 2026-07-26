@@ -29,6 +29,22 @@ func NewServerWithDependencies(
 	version string,
 	dependencies Dependencies,
 ) *sdk.Server {
+	return newServer(version, dependencies, nil)
+}
+
+// NewSessionlessServerWithDependencies は、HTTP session ID を発行しない MCP サーバーを返す。
+func NewSessionlessServerWithDependencies(
+	version string,
+	dependencies Dependencies,
+) *sdk.Server {
+	return newServer(version, dependencies, func() string { return "" })
+}
+
+func newServer(
+	version string,
+	dependencies Dependencies,
+	getSessionID func() string,
+) *sdk.Server {
 	server := sdk.NewServer(
 		&sdk.Implementation{
 			Name:    "japanese-law-mcp",
@@ -39,6 +55,7 @@ func NewServerWithDependencies(
 			Capabilities: &sdk.ServerCapabilities{
 				Tools: &sdk.ToolCapabilities{},
 			},
+			GetSessionID: getSessionID,
 		},
 	)
 	if dependencies.SearchLaws != nil {
