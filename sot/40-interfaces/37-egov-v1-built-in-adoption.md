@@ -29,14 +29,14 @@ providerRoutes:
 - `e-gov-law-api-v1` は provider-specific setting と credential slot を持たない。組込み値から設定または credential を解決せず、固定された公式 endpoint だけを使用する。
 - この追加は既存の四能力の provider、結果、順序、継続位置、continuation token の構成 scope および rollback の選択を変更しない。
 - `law.update.list@1` は完全な一日分を返し、continuation と組込み rollback を使用しない。
-- この採用は内部 capability route の到達性を有効にするものであり、公開 MCP ツールを追加しない。公開ツールは引き続き `search_laws`、`get_law`、`get_article` および `search_law_content` の四つとする。
+- この採用が直接追加するのは内部 capability route の到達性だけであり、同じ変更の責任として公開 MCP ツールを追加しない。後続の `list_law_updates` と現在の公開ツール構成は `SOT-IF-038` が定義する。
 - 利用者指定の `providers`、`providerRoutes`、credential environment reference および rollback override の設定入力は、この採用の範囲に含めない。
 
 ## 確認
 
 - composition root が e-Gov Version 1 と Version 2 の descriptor を登録し、五つの組込み primary route を正しい型付き port へ解決することを確認する。
 - e-Gov Version 1 の conformance matrix row を `implemented` とし、この SOT を適用規定として参照する。
-- stdio MCP のツール一覧が従来の四つから変わらないことを確認する。
+- 内部 route の組込み採用と、`SOT-IF-038` による公開ツール追加を独立して検証できることを確認する。
 
 ## 関連
 
@@ -44,4 +44,5 @@ providerRoutes:
 - [SOT-IF-034: `law.update.list` capability v1](34-law-update-list-capability.md)
 - [SOT-IF-035: e-Gov 法令 API Version 1 更新一覧](35-source-egov-law-api-v1.md)
 - [SOT-IF-036: e-Gov 更新法令一覧マッピング](36-egov-law-update-list-mapping.md)
+- [SOT-IF-038: MCP `list_law_updates`](38-mcp-list-law-updates.md)
 - [SOT-ARCH-016: プロバイダーの段階的追加](../30-architecture/16-incremental-provider-onboarding.md)

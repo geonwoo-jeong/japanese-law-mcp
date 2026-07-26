@@ -4,3 +4,4 @@
 - [02-get-law.md](02-get-law.md)
 - [03-get-article.md](03-get-article.md)
 - [04-search-law-content.md](04-search-law-content.md)
+- [05-list-law-updates.md](05-list-law-updates.md)

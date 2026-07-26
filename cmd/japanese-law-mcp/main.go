@@ -17,6 +17,7 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
@@ -134,6 +135,17 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 			if err != nil {
 				return fmt.Errorf("公開 get_article service を初期化できません: %w", err)
 			}
+			updateLister, exists := routes.LawUpdateList()
+			if !exists {
+				return errors.New("primary law.update.list binding がありません")
+			}
+			listLawUpdates, err := listlawupdates.NewService(
+				updateLister,
+				cfg.RequestTimeout(),
+			)
+			if err != nil {
+				return fmt.Errorf("公開 list_law_updates service を初期化できません: %w", err)
+			}
 			return runStdio(ctx, projectmcp.NewServerWithDependencies(
 				version,
 				projectmcp.Dependencies{
@@ -141,6 +153,7 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 					SearchLawContent: searchLawContent,
 					GetLaw:           getLaw,
 					GetArticle:       getArticle,
+					ListLawUpdates:   listLawUpdates,
 				},
 			))
 		case config.TransportStreamableHTTP:
