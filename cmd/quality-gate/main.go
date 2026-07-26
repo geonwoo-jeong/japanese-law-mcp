@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/qualitygate"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/qualitygate"
 )
 
 func main() {

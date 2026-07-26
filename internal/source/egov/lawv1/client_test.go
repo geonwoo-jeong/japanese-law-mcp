@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestClientは429と5xxだけを上限付き再試行する(t *testing.T) {

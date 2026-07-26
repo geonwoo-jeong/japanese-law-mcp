@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/qualitygate"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/qualitygate"
 )
 
 func TestRunParsesProfileRepositoryAndRepeatedGitRanges(t *testing.T) {

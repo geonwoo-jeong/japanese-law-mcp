@@ -13,8 +13,8 @@ func TestSuppressionPolicyAnalyzer(t *testing.T) {
 		t,
 		analysistest.TestData(),
 		SuppressionPolicyAnalyzer,
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/suppressionbad",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/suppressiongood",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/suppressiongenerated",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/suppressionbad",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/suppressiongood",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/suppressiongenerated",
 	)
 }

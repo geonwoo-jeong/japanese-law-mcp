@@ -3,7 +3,7 @@ package listlawupdates
 import (
 	"fmt"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 // ResultValues は、公開更新一覧結果の作成に必要な値を保持する。

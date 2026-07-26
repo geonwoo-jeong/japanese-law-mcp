@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/sotvet"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/sotvet"
 	"golang.org/x/tools/go/analysis/multichecker"
 )
 

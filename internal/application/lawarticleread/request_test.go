@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawarticleread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestRequest(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getlaw"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

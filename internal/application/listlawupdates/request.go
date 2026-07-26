@@ -4,7 +4,7 @@ package listlawupdates
 import (
 	"fmt"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 // RequestValues は、公開 list_law_updates 入力の境界値を保持する。

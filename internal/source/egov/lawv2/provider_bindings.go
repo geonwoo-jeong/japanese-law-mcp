@@ -3,8 +3,8 @@ package lawv2
 import (
 	"fmt"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/continuation"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/continuation"
 )
 
 // NewProviderBindings は、e-Gov Version 2 の四つの共通 capability binding を一括構成する。

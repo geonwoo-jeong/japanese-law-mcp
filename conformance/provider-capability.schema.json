@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/japanese-law-mcp/japanese-law-mcp/conformance/provider-capability.schema.json",
+  "$id": "https://github.com/geonwoo-jeong/japanese-law-mcp/conformance/provider-capability.schema.json",
   "title": "Japanese Law MCP provider capability conformance matrix",
   "type": "object",
   "required": [

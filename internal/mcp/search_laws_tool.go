@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	"github.com/google/jsonschema-go/jsonschema"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

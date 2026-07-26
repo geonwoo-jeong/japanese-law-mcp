@@ -3,7 +3,7 @@ package lawv1
 import (
 	"fmt"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
 )
 
 // NewProviderBindings は、e-Gov Version 1 更新一覧の binding を構成する。

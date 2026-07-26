@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestParserはXML構造と資源予算を検証する(t *testing.T) {

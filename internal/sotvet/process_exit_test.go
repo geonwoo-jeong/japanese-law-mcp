@@ -14,18 +14,18 @@ func TestProcessExitAnalyzer(t *testing.T) {
 		t,
 		analysistest.TestData(),
 		ProcessExitAnalyzer,
-		"github.com/japanese-law-mcp/japanese-law-mcp/cmd/quality",
-		"github.com/japanese-law-mcp/japanese-law-mcp/cmd/japanese-law-mcp",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/processexitbad",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/processexitgood",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/processtestbad",
-		"github.com/japanese-law-mcp/japanese-law-mcp/internal/generatedallowed",
+		"github.com/geonwoo-jeong/japanese-law-mcp/cmd/quality",
+		"github.com/geonwoo-jeong/japanese-law-mcp/cmd/japanese-law-mcp",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/processexitbad",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/processexitgood",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/processtestbad",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/generatedallowed",
 	)
 	analysistest.Run(
 		t,
 		filepath.Join(analysistest.TestData(), "processexit"),
 		ProcessExitAnalyzer,
-		"github.com/japanese-law-mcp/japanese-law-mcp/cmd/japanese-law-mcp",
+		"github.com/geonwoo-jeong/japanese-law-mcp/cmd/japanese-law-mcp",
 	)
 }

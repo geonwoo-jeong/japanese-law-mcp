@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 // Service は、公開法令検索へ一リクエスト単位の期限を適用する。

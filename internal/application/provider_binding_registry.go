@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawarticleread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 // ProviderBindings は、一つの記述子と実装済みの型付き能力ポートを結び付ける。

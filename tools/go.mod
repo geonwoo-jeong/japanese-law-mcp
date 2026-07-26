@@ -1,4 +1,4 @@
-module github.com/japanese-law-mcp/japanese-law-mcp/tools
+module github.com/geonwoo-jeong/japanese-law-mcp/tools
 
 go 1.25.0
 

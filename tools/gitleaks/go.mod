@@ -1,4 +1,4 @@
-module github.com/japanese-law-mcp/japanese-law-mcp/tools/gitleaks
+module github.com/geonwoo-jeong/japanese-law-mcp/tools/gitleaks
 
 go 1.25.0
 

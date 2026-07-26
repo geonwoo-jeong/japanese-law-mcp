@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/githook"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/githook"
 )
 
 func main() {

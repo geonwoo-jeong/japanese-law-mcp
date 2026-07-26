@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 )
 
 func TestBuildLawContentKeywordGolden(t *testing.T) {

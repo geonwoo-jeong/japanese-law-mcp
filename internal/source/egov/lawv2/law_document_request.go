@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"unicode/utf8"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 const lawDataEndpointPath = "/api/2/law_data/"

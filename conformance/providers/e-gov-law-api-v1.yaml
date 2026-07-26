@@ -60,6 +60,6 @@ rows:
       - source_processing_limit
       - unsafe_source_content
     parserContractVersion: "1.0.0"
-    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv1
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1
     conformanceTarget: ./internal/source/egov/lawv1
     status: implemented

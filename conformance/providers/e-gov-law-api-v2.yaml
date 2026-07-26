@@ -63,7 +63,7 @@ rows:
       - source_processing_limit
       - unsafe_source_content
     parserContractVersion: "1.0.0"
-    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
     status: implemented
 
@@ -124,7 +124,7 @@ rows:
       - source_processing_limit
       - unsafe_source_content
     parserContractVersion: "1.0.0"
-    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
     status: implemented
 
@@ -189,7 +189,7 @@ rows:
       - source_processing_limit
       - unsafe_source_content
     parserContractVersion: "1.0.0"
-    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
     status: implemented
 
@@ -249,6 +249,6 @@ rows:
       - source_processing_limit
       - unsafe_source_content
     parserContractVersion: "1.0.0"
-    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
     status: implemented

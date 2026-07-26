@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/provideronboarding"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/provideronboarding"
 )
 
 func TestPrePushChecksUniqueCommitsForMultipleRefsAndSkipsDeletion(t *testing.T) {

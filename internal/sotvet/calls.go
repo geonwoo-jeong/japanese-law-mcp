@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	projectModulePath  = "github.com/japanese-law-mcp/japanese-law-mcp"
+	projectModulePath  = "github.com/geonwoo-jeong/japanese-law-mcp"
 	productCommandPath = projectModulePath + "/cmd/japanese-law-mcp"
 	projectCLIPackage  = projectModulePath + "/internal/cli"
 )

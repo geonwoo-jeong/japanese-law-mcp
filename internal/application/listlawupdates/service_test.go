@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestServiceCallsCommonPortWithTimeoutAndProjectsResult(t *testing.T) {

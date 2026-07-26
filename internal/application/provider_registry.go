@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 type providerCapabilityKey struct {

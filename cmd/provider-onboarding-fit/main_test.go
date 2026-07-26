@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/provideronboarding"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/provideronboarding"
 )
 
 // SOT-ENG-018: --base-ref は一回だけ必須で、位置引数を受け付けない。

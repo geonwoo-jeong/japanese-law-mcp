@@ -3,9 +3,9 @@ package lawv2
 import (
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/continuation"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/continuation"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func lawContentConditionFingerprint(

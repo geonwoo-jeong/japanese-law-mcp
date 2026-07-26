@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestRequestConstants(t *testing.T) {

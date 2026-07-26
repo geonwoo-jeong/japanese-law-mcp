@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/providerconformance"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/providerconformance"
 )
 
 func loadCanonicalRows(repository string) ([]matrixRow, error) {

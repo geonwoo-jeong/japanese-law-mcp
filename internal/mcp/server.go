@@ -2,11 +2,11 @@
 package mcp
 
 import (
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getarticle"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getlaw"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/listlawupdates"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlawcontent"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/provideronboarding"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/provideronboarding"
 )
 
 const maximumPushInputLine = 1024 * 1024

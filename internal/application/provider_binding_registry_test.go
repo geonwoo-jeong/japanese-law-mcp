@@ -4,13 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawarticleread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {

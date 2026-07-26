@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestLegalSourceProjectsInformationSource(t *testing.T) {

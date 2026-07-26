@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func newDocumentLegalSource(t *testing.T) model.LegalSource {

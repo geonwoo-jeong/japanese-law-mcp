@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/config"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	"github.com/spf13/cobra"
 )
 

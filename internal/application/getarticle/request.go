@@ -3,8 +3,8 @@ package getarticle
 import (
 	"fmt"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getlaw"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 // RequestValues は、公開 get_article 入力の境界値を保持する。

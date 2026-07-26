@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawarticleread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 )
 
 func TestSentinelErrorsSupportErrorsIs(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlawcontent"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestSearchLawContentFacadePreservesRawQueryAndOmittedAsOf(t *testing.T) {

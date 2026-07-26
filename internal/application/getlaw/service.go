@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 // Service は、primary provider の共通本文取得能力を公開 get_law へ投影する。

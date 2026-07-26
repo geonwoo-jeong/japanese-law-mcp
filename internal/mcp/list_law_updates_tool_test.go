@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/listlawupdates"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

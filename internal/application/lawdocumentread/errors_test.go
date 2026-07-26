@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 )
 
 func TestErrNotFoundSupportsErrorsIs(t *testing.T) {

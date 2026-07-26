@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestListは公式五件fixtureを損失なく対応する(t *testing.T) {

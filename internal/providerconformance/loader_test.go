@@ -49,7 +49,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		v1Row.BudgetKey != "update-law-list-xml" ||
 		v1Row.FixtureSet != "law-update-list-v1" ||
 		v1Row.ImplementedBy !=
-			"github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv1" ||
+			"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1" ||
 		v1Row.ConformanceTarget != "./internal/source/egov/lawv1" ||
 		v1Row.Status != "implemented" {
 		t.Fatalf("v1 row = %#v", v1Row)
@@ -94,7 +94,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		if row.ParserContractVersion != "1.0.0" {
 			t.Errorf("%s の parserContractVersion = %q、期待値は 1.0.0 です", row.CapabilityID, row.ParserContractVersion)
 		}
-		if row.ImplementedBy != "github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2" {
+		if row.ImplementedBy != "github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2" {
 			t.Errorf("%s の implementedBy = %q、期待値と異なります", row.CapabilityID, row.ImplementedBy)
 		}
 		if row.ConformanceTarget != "./internal/source/egov/lawv2" {
@@ -522,7 +522,7 @@ func validRowYAML(providerID, capabilityID, operation, budgetKey string) string 
     publicErrorSet:
       - invalid_argument
     parserContractVersion: 1.0.0
-    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/test/provider
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/test/provider
     conformanceTarget: ./internal/source/test/provider
     status: planned`, providerID, capabilityID, operation, budgetKey)
 }

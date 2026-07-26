@@ -3,8 +3,8 @@ package application_test
 import (
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestProviderRegistryResolvesDescriptorForSourceResourceRef(t *testing.T) {

@@ -2,7 +2,7 @@ package model_test
 
 import "testing"
 
-import "github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+import "github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 
 func TestNewLawDocumentFromRepresentation(t *testing.T) {
 	representation, err := model.NewLawDocumentRepresentation(model.LawDocumentRepresentationValues{

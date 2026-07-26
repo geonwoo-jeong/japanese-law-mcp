@@ -14,7 +14,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/config"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	"github.com/rogpeppe/go-internal/testscript"
 	"golang.org/x/tools/txtar"
 )

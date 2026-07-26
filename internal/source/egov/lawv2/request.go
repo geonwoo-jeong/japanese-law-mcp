@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 const lawsEndpoint = "https://laws.e-gov.go.jp/api/2/laws"

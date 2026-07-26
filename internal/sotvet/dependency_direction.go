@@ -7,7 +7,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-const modulePath = "github.com/japanese-law-mcp/japanese-law-mcp"
+const modulePath = "github.com/geonwoo-jeong/japanese-law-mcp"
 
 type dependencyRule struct {
 	owner  string

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
 func TestClientの依存関係と異常応答を拒否する(t *testing.T) {

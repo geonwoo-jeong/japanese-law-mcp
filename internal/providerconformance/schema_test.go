@@ -202,7 +202,7 @@ func validSchemaInstance() map[string]any {
 				"supportsAuth":          false,
 				"publicErrorSet":        []any{"invalid_argument"},
 				"parserContractVersion": "1.0.0",
-				"implementedBy":         "github.com/japanese-law-mcp/japanese-law-mcp/internal/source/test/provider",
+				"implementedBy":         "github.com/geonwoo-jeong/japanese-law-mcp/internal/source/test/provider",
 				"conformanceTarget":     "./internal/source/test/provider",
 				"status":                "planned",
 			},
