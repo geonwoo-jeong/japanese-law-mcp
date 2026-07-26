@@ -7,3 +7,5 @@
 - [05-derived-information.md](05-derived-information.md)
 - [06-related-public-information-boundary.md](06-related-public-information-boundary.md)
 - [07-source-acquisition-policy.md](07-source-acquisition-policy.md)
+- [08-egov-law-core-scope.md](08-egov-law-core-scope.md)
+- [09-selectable-legal-information-extension-packs.md](09-selectable-legal-information-extension-packs.md)

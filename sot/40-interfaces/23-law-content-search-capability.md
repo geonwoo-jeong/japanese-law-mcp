@@ -141,7 +141,7 @@
 - [SOT-MODEL-007: LawContentMatch](../20-model/07-law-content-match.md)
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
-- [SOT-ARCH-009: 能力別情報源ポート](../30-architecture/09-capability-source-ports.md)
+- [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](../30-architecture/13-source-composition.md)
 - [SOT-IF-004: e-Gov 法令 API Version 2](04-source-egov-law-api-v2.md)
 - [SOT-IF-033: MCP `search_law_content`](33-mcp-search-law-content.md)

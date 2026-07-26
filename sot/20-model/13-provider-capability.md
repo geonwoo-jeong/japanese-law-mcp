@@ -17,7 +17,7 @@
 
 ## 制約
 
-`id` は、各 segment を小文字の ASCII 英数字と内部のハイフンで構成し、二つ以上の segment を `.` で連結する。`law.search`、`law.content.search` および `disclosure.artifact.read` はこの形式の例である。
+`id` は、各 segment を小文字の ASCII 英数字と内部のハイフンで構成し、二つ以上の segment を `.` で連結する。`law.search`、`law.content.search` および `parliament.speech.search` はこの形式の例である。
 
 共通能力の `id` はプロジェクトが所有し、プロバイダーは対応する入出力スキーマを変更しない。
 
@@ -31,5 +31,5 @@
 
 ## 関連
 
-- [SOT-ARCH-009: 能力別情報源ポート](../30-architecture/09-capability-source-ports.md)
+- [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
 - [SOT-IF-014: ProviderDescriptor](../40-interfaces/14-provider-descriptor.md)

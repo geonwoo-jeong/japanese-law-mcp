@@ -12,7 +12,7 @@
 |---|---|
 | `ProviderCapability.id` | `law.update.list` |
 | `ProviderCapability.majorVersion` | `1` |
-| `ProviderCapability.level` | `extended` |
+| `ProviderCapability.level` | `core` |
 | `ProviderCapability.stability` | `stable` |
 
 ## 型付き入力
@@ -79,6 +79,6 @@
 - [SOT-MODEL-019: LawUpdate](../20-model/19-law-update.md)
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
-- [SOT-ARCH-009: 能力別情報源ポート](../30-architecture/09-capability-source-ports.md)
+- [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
 - [SOT-IF-015: 情報源操作の共通契約](15-source-operation-contract.md)
 - [SOT-IF-017: 情報源エラーの正規化](17-source-error-normalization.md)

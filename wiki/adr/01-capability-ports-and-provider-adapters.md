@@ -5,7 +5,7 @@
 
 ## 背景
 
-日本の政府、法律および公共データの提供方法は、版管理された API、版を持たない HTML、PDF、ZIP および一括 download に分かれる。外部項目名が似ていても、法令、議案、会議録、通達、裁決、統計および法人情報では識別子、時点、欠落および本文の意味が異なる。
+日本の法情報の提供方法は、版管理された API、版を持たない HTML、PDF、ZIP および一括 download に分かれる。外部項目名が似ていても、法令、議案、会議録、通達、裁決および裁判例では識別子、時点、欠落および本文の意味が異なる。
 
 実装は provider ごとに段階的に行う。一方で、新しい provider を追加するたびに共通層または既存 provider を作り直す構造にはしない。現在の公開 MCP ツールとの互換性も維持する。
 
@@ -48,7 +48,7 @@
 
 ### 一つの巨大な共通 model
 
-すべての公共データを多数の optional field と `extensions` object へ入れる案は採用しない。
+多様な法情報を多数の optional field と `extensions` object へ入れる案は採用しない。
 
 - 同じ名前で意味が異なる日付、状態および識別子を誤って同一視する。
 - provider が持たない値を空値または推測値で埋める圧力が生じる。
@@ -83,7 +83,7 @@
 9. provider ごとの package、SOT、fixture および conformance file を分け、他 provider の変更を onboarding gate で禁止する。
 10. 利用者のローカル binary を前提とし、運用障害検知、`liveness`、`readiness` および常時監視を設計対象にしない。
 
-採用した規定の定義元は、[SOT-ARCH-009](../../sot/30-architecture/09-capability-source-ports.md)、[SOT-ARCH-010](../../sot/30-architecture/10-provider-isolation.md)、[SOT-ARCH-016](../../sot/30-architecture/16-incremental-provider-onboarding.md)、[SOT-IF-014](../../sot/40-interfaces/14-provider-descriptor.md) から [SOT-IF-018](../../sot/40-interfaces/18-provider-configuration.md)、および [SOT-ENG-017](../../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../../sot/50-engineering/18-provider-onboarding-fitness-gate.md) とする。
+採用した規定の定義元は、[SOT-ARCH-017](../../sot/30-architecture/17-approved-capability-families.md)、[SOT-ARCH-018](../../sot/30-architecture/18-pack-scoped-normalization-boundary.md)、[SOT-ARCH-010](../../sot/30-architecture/10-provider-isolation.md)、[SOT-ARCH-016](../../sot/30-architecture/16-incremental-provider-onboarding.md)、[SOT-IF-014](../../sot/40-interfaces/14-provider-descriptor.md) から [SOT-IF-018](../../sot/40-interfaces/18-provider-configuration.md)、および [SOT-ENG-017](../../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../../sot/50-engineering/18-provider-onboarding-fitness-gate.md) とする。
 
 ## 帰結
 

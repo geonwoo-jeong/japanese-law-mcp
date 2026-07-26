@@ -18,5 +18,6 @@
 
 ## 関連
 
-- [SOT-PROD-002: 製品範囲](02-product-scope.md)
+- [SOT-PROD-008: e-Gov 法令コアの製品範囲](08-egov-law-core-scope.md)
+- [SOT-PROD-009: 選択型法情報拡張パックの境界](09-selectable-legal-information-extension-packs.md)
 - [SOT-ENG-005: SOT と変更の整合](../50-engineering/05-sot-change-unit.md)

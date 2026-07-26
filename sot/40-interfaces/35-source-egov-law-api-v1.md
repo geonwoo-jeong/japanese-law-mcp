@@ -29,7 +29,7 @@ e-Gov 法令 API Version 1 の更新法令一覧 API を、`law.update.list@1` �
 | `verifiedAt` | `2026-07-26` |
 | `interfaceType` | `api` |
 | `credentialRequired` | `false` |
-| `capabilities` | `law.update.list@1`、`extended`、`stable` |
+| `capabilities` | `law.update.list@1`、`core`、`stable` |
 
 接続 origin、path、HTTP method を利用者設定で変更できない。ambient proxy、provider-specific setting および credential slot は使用しない。日付は path segment へ `yyyyMMdd` で埋め込み、query を送らない。
 

@@ -18,5 +18,5 @@ Japanese Law MCP は、日本で公開されている法情報を、人または
 
 ## 関連
 
-- [SOT-PROD-002: 製品範囲](02-product-scope.md)
+- [SOT-PROD-008: e-Gov 法令コアの製品範囲](08-egov-law-core-scope.md)
 - [SOT-PROD-003: 法情報の採用基準](03-legal-source-eligibility.md)

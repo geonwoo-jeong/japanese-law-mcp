@@ -16,3 +16,5 @@
 - [14-ephemeral-source-artifacts.md](14-ephemeral-source-artifacts.md)
 - [15-startup-configuration-boundary.md](15-startup-configuration-boundary.md)
 - [16-incremental-provider-onboarding.md](16-incremental-provider-onboarding.md)
+- [17-approved-capability-families.md](17-approved-capability-families.md)
+- [18-pack-scoped-normalization-boundary.md](18-pack-scoped-normalization-boundary.md)

@@ -56,7 +56,7 @@ optional field の追加であっても、既存フィールドと重複する�
 
 ## 関連
 
-- [SOT-ARCH-009: 能力別情報源ポート](09-capability-source-ports.md)
+- [SOT-ARCH-017: 採用可能な能力群](17-approved-capability-families.md)
 - [SOT-ARCH-010: プロバイダーの分離](10-provider-isolation.md)
 - [SOT-ARCH-012: プロバイダーの登録](12-provider-registry.md)
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)

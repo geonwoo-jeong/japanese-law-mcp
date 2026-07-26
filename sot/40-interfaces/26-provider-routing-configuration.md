@@ -75,6 +75,8 @@ providerRoutes:
 
 新しく追加した provider は、その provider の公開採用と組込み既定値の変更を定義する別の SOT が有効になるまで、この組込み `providers` または `providerRoutes` へ自動追加しない。追加しただけの provider は無設定時に有効化せず、既存の primary route を置き換えない。
 
+`SOT-PROD-009` の選択型拡張パックに属する provider が既存 capability ID を再利用する場合、pack-aware な有効化方法または route 選択方法を定義する後継 SOT が有効になるまで、その provider を既存の組込み `providerRoutes.{capabilityId}@{majorVersion}` に参加させてはならない。無設定起動では法令コアの既定 route を保持し、拡張 provider は独立した公開機能、`selection: explicit` の route、または provider-specific capability を採用したときにだけ到達可能にする。
+
 ## 制約
 
 `providerId` は `SOT-IF-014` に従う。`providers` に存在しない `providerId`、コンパイル時に登録されていない `providerId`、または同じ `providerId` への重複定義を許可しない。

@@ -14,6 +14,8 @@ internal/source/
 ├── egov/
 │   ├── lawv2/
 │   └── lawv1/
+├── courts/
+│   └── hanrei/
 ├── ndl/
 │   └── kokkai/
 ├── shugiin/
@@ -21,24 +23,16 @@ internal/source/
 ├── sangiin/
 │   └── bills/
 ├── nta/
-│   ├── circulars/
-│   ├── corporationv4/
-│   └── invoicev1/
+│   └── circulars/
 ├── kfs/
 │   └── decisions/
 ├── mhlw/
 │   └── guidance/
 ├── jaish/
 │   └── guidance/
-├── estat/
-│   └── v3/
-├── mlit/
-│   └── reinfolib/
-└── fsa/
-    └── edinetv2/
 ```
 
-この構成は接続可能な境界を示し、各情報源を公開機能として採用したことを意味しない。
+この構成は、`SOT-PROD-008` と `SOT-PROD-009` が採用を許可する法情報源の接続境界だけを示し、各情報源を公開機能として採用したことを意味しない。
 
 ## パッケージの責務
 
@@ -56,10 +50,11 @@ internal/source/
 
 `shared` には情報の意味を持たない HTTP、安全な展開、文字コード変換および上限検査だけを置く。プロバイダー固有の DTO、selector、列挙値、ページ規則または mapping を置かない。
 
-各パッケージの実装を開始する前に、その情報源の公式仕様と採用範囲を定義する独立したインターフェース SOT、および実装する能力ごとの mapping SOT を用意する。
+各パッケージの実装を開始する前に、その情報源の公式仕様または取得方法、採用範囲、利用条件および実装する能力ごとの mapping を定義する独立した SOT を用意する。`jaish` のような補助情報源は、公式情報源とは別の権威区分と採用理由を個別 SOT に定義しなければならない。
 
 ## 関連
 
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
 - [SOT-ARCH-010: プロバイダーの分離](../30-architecture/10-provider-isolation.md)
-- [SOT-PROD-006: 関連公的情報の統合境界](../00-product/06-related-public-information-boundary.md)
+- [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
+- [SOT-PROD-009: 選択型法情報拡張パックの境界](../00-product/09-selectable-legal-information-extension-packs.md)

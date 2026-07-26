@@ -44,7 +44,8 @@
 
 ## 関連
 
-- [SOT-ARCH-009: 能力別情報源ポート](../30-architecture/09-capability-source-ports.md)
+- [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
+- [SOT-ARCH-018: 拡張パック単位の正規化境界](../30-architecture/18-pack-scoped-normalization-boundary.md)
 - [SOT-MODEL-011: SourceResourceKey](../20-model/11-source-resource-key.md)
 - [SOT-MODEL-012: Provenance](../20-model/12-provenance.md)
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
