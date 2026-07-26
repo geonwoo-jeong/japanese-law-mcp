@@ -107,3 +107,63 @@ func TestBuildLawContentHTTPRequestUsesFixedQueryAndPercentEncoding(t *testing.T
 		t.Fatalf("SOT-IF-028: percent-encoding = %q", request.URL.RawQuery)
 	}
 }
+
+func TestBuildPublicLawContentHTTPRequestPreservesRawDSLAndOmittedAsOf(t *testing.T) {
+	t.Parallel()
+
+	request, err := buildPublicLawContentHTTPRequest(
+		context.Background(),
+		publicLawContentSearchRequest{
+			keyword: "情報公開|個人情報",
+			limit:   20,
+			offset:  40,
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-010: HTTP request 生成のエラー = %v", err)
+	}
+	query := request.URL.Query()
+	if query.Get("keyword") != "情報公開|個人情報" {
+		t.Fatalf("SOT-IF-010: keyword = %q", query.Get("keyword"))
+	}
+	if query.Has("asof") {
+		t.Fatalf("SOT-IF-010: 省略した asof を送信した: %q", query.Get("asof"))
+	}
+	if query.Get("limit") != "20" ||
+		query.Get("offset") != "40" ||
+		query.Get("response_format") != "json" ||
+		query.Get("order") != "+law_info.law_id" ||
+		query.Get("highlight_tag") != "mark" {
+		t.Fatalf("SOT-IF-010: query = %#v", query)
+	}
+	if query.Has("sentences_limit") {
+		t.Fatal("SOT-IF-010: sentences_limit を送信した")
+	}
+	if strings.Contains(request.URL.RawQuery, "情報公開|個人情報") {
+		t.Fatalf("SOT-IF-010: keyword が percent-encoding されていない: %q", request.URL.RawQuery)
+	}
+}
+
+func TestBuildPublicLawContentHTTPRequestSendsExplicitAsOf(t *testing.T) {
+	t.Parallel()
+
+	asOf := mustDate("2026-07-26")
+	request, err := buildPublicLawContentHTTPRequest(
+		context.Background(),
+		publicLawContentSearchRequest{
+			keyword: "第?条",
+			asOf:    &asOf,
+			limit:   1,
+			offset:  2147483647,
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-010: HTTP request 生成のエラー = %v", err)
+	}
+	query := request.URL.Query()
+	if query.Get("keyword") != "第?条" ||
+		query.Get("asof") != "2026-07-26" ||
+		query.Get("offset") != "2147483647" {
+		t.Fatalf("SOT-IF-010: query = %#v", query)
+	}
+}

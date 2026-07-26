@@ -10,6 +10,7 @@ import (
 
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getarticle"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getlaw"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli"
@@ -58,6 +59,17 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 			if err != nil {
 				return fmt.Errorf("公開 search_laws service を初期化できません: %w", err)
 			}
+			searchLawContentProvider, err := lawv2.NewSearchLawContentFacade()
+			if err != nil {
+				return fmt.Errorf("公開 search_law_content facade を初期化できません: %w", err)
+			}
+			searchLawContent, err := searchlawcontent.NewService(
+				searchLawContentProvider,
+				cfg.RequestTimeout(),
+			)
+			if err != nil {
+				return fmt.Errorf("公開 search_law_content service を初期化できません: %w", err)
+			}
 			documentReader, err := lawv2.NewLawDocumentAdapter()
 			if err != nil {
 				return fmt.Errorf("e-Gov law.document.read adapter を初期化できません: %w", err)
@@ -85,9 +97,10 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 			return runStdio(ctx, projectmcp.NewServerWithDependencies(
 				version,
 				projectmcp.Dependencies{
-					SearchLaws: searchLaws,
-					GetLaw:     getLaw,
-					GetArticle: getArticle,
+					SearchLaws:       searchLaws,
+					SearchLawContent: searchLawContent,
+					GetLaw:           getLaw,
+					GetArticle:       getArticle,
 				},
 			))
 		case config.TransportStreamableHTTP:

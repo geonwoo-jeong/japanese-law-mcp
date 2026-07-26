@@ -93,12 +93,13 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	if err != nil {
 		t.Fatalf("子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 3 ||
+	if tools.Tools == nil || len(tools.Tools) != 4 ||
 		tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "search_laws" {
+		tools.Tools[2].Name != "search_law_content" ||
+		tools.Tools[3].Name != "search_laws" {
 		t.Fatalf(
-			"公開ツール一覧 = %#v, want get_article、get_law、search_laws",
+			"公開ツール一覧 = %#v, want get_article、get_law、search_law_content、search_laws",
 			tools.Tools,
 		)
 	}
