@@ -25,6 +25,7 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 			Dependencies{
 				SearchLaws: stubSearchLawsPort{},
 				GetLaw:     stubGetLawPort{},
+				GetArticle: &recordingGetArticlePort{},
 			},
 		).Run(ctx, serverTransport)
 	}()
@@ -70,11 +71,18 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 2 {
-		t.Fatalf("ツール数 = %d, want 2", len(tools.Tools))
+	if len(tools.Tools) != 3 {
+		t.Fatalf("ツール数 = %d, want 3", len(tools.Tools))
 	}
-	if tools.Tools[0].Name != "get_law" || tools.Tools[1].Name != "search_laws" {
-		t.Fatalf("tool names = %q, %q", tools.Tools[0].Name, tools.Tools[1].Name)
+	if tools.Tools[0].Name != "get_article" ||
+		tools.Tools[1].Name != "get_law" ||
+		tools.Tools[2].Name != "search_laws" {
+		t.Fatalf(
+			"tool names = %q, %q, %q",
+			tools.Tools[0].Name,
+			tools.Tools[1].Name,
+			tools.Tools[2].Name,
+		)
 	}
 	for _, tool := range tools.Tools {
 		if tool.InputSchema == nil || tool.OutputSchema == nil {

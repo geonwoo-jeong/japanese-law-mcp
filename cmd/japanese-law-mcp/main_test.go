@@ -93,10 +93,14 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	if err != nil {
 		t.Fatalf("子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 2 ||
-		tools.Tools[0].Name != "get_law" ||
-		tools.Tools[1].Name != "search_laws" {
-		t.Fatalf("公開ツール一覧 = %#v, want get_law と search_laws", tools.Tools)
+	if tools.Tools == nil || len(tools.Tools) != 3 ||
+		tools.Tools[0].Name != "get_article" ||
+		tools.Tools[1].Name != "get_law" ||
+		tools.Tools[2].Name != "search_laws" {
+		t.Fatalf(
+			"公開ツール一覧 = %#v, want get_article、get_law、search_laws",
+			tools.Tools,
+		)
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("子プロセスの MCP セッションを終了できません: %v\n標準エラー:\n%s", err, stderr.String())
