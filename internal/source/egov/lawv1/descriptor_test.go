@@ -37,9 +37,9 @@ func TestDescriptorはVersion1更新一覧だけを宣言する(t *testing.T) {
 	capability := capabilities[0]
 	if capability.ID() != lawupdatelist.CapabilityID ||
 		capability.MajorVersion() != lawupdatelist.MajorVersion ||
-		capability.Level() != model.CapabilityLevelExtended ||
+		capability.Level() != model.CapabilityLevelCore ||
 		capability.Stability() != model.CapabilityStabilityStable {
-		t.Fatalf("capability = %#v", capability)
+		t.Fatalf("SOT-IF-034/035: capability = %#v", capability)
 	}
 }
 

@@ -371,7 +371,7 @@ func mustListLawUpdatesSourceError(
 	capability, err := model.NewProviderCapability(model.ProviderCapabilityValues{
 		ID:           lawupdatelist.CapabilityID,
 		MajorVersion: lawupdatelist.MajorVersion,
-		Level:        model.CapabilityLevelExtended,
+		Level:        model.CapabilityLevelCore,
 		Stability:    model.CapabilityStabilityStable,
 	})
 	if err != nil {
