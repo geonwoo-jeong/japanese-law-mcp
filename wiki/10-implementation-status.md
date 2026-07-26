@@ -18,6 +18,7 @@
 - [SOT-MODEL-012](../sot/20-model/12-provenance.md) に従う、不変な出典、変換種別ごとの従属制約、日時・MIME type・ダイジェストの検証および JSON 表現
 - [SOT-MODEL-014](../sot/20-model/14-source-page.md) に従う、不変なページ情報、`totalCount` と `totalRelation` の従属制約、継続トークン省略規則および JSON 表現
 - [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) に従う、`SourceResourceRef`、一件以上の `Provenance` および検証可能な型付き data を結び付ける不変な `SourcedResource<T>` と出典経路の整合検証
+- [SOT-IF-017](../sot/40-interfaces/17-source-error-normalization.md) に従う、十三分類、固定された安全な日本語メッセージおよび再試行可否を持ち、[SOT-IF-027](../sot/40-interfaces/27-public-source-error-contract.md) が許可する二分類に限って明示された `retryAfter` を保持する不変な `SourceError`
 - [SOT-ARCH-012](../sot/30-architecture/12-provider-registry.md) のうち、`providerId` と能力 ID・メジャーバージョンの宣言を起動時に検証して保持し、`SourceResourceRef` の provider と情報源の一致を照合する不変な descriptor registry
 
 ## 未実装
