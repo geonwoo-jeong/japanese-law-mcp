@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: japanese-law-mcp
+
+builds:
+  - id: japanese-law-mcp
+    main: ./cmd/japanese-law-mcp
+    binary: japanese-law-mcp
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - >-
+        -s -w -X github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo.version={{ .Version }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: desktop
+    ids:
+      - japanese-law-mcp
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - none*
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+source:
+  enabled: false
+
+release:
+  draft: true
+  replace_existing_draft: true
+  target_commitish: "{{ .FullCommit }}"
+  prerelease: auto
+  include_meta: true

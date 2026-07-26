@@ -35,10 +35,11 @@
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.article.read@1` binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md) および [SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.content.search@1` binding、構造化条件からの決定的な検索式生成、安全な JSON 解析、一致位置単位の共通モデル mapping、fixture および continuation
 - e-Gov 法令 API Version 2 を使用する MCP `search_laws`、`get_law`、`get_article` および `search_law_content` と、[SOT-IF-038](../sot/40-interfaces/38-mcp-list-law-updates.md) に従い e-Gov 法令 API Version 1 の一日分の完全な更新一覧を返す MCP `list_law_updates` の公開 facade と stdio 経由の提供
+- [SOT-DEL-004](../sot/60-delivery/04-release-consistency.md)、[SOT-DEL-007](../sot/60-delivery/07-interface-change-disclosure.md)、[SOT-DEL-010](../sot/60-delivery/10-desktop-binaries.md)、[SOT-DEL-011](../sot/60-delivery/11-local-distributions.md) および [SOT-DEL-012](../sot/60-delivery/12-local-execution-paths.md) に従う、macOS・Windows の amd64・arm64 向け四 archive、SHA-256 checksum、版・生成元 metadata、必須リリース情報、公開前の配布物検査および各対象環境での実行確認を備えた公式ローカル配布処理
 
 ## 未実装
 
-- ローカル公式配布物を生成するリリース処理
+- 現在確認されている未実装差分はない。
 
 引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールは `search_laws`、`get_law`、`get_article`、`search_law_content` および `list_law_updates` の五つである。`streamable-http` を指定した場合は、検証済みの loopback 待受先で `/mcp` を提供し、stdio と同じ五つのツールを公開する。
 
