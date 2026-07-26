@@ -186,6 +186,41 @@ func TestBuildPlanPrePushIsDeterministicAndExcludesVulnerabilityDB(t *testing.T)
 	}
 }
 
+func TestBuildPlanAssignsGoNetworkPolicyByProfile(t *testing.T) {
+	t.Parallel()
+
+	snapshot := writeValidPrinciples(t)
+	writeWorkflowFile(t, snapshot, "quality.yml")
+	prePush, err := buildPlan(planInput{
+		profile:    ProfilePrePush,
+		repository: "/repo",
+		snapshot:   snapshot,
+		gitRanges:  []string{"main..HEAD"},
+	})
+	if err != nil {
+		t.Fatalf("pre-push 計画の作成に失敗しました: %v", err)
+	}
+	for _, current := range prePush {
+		if current.command != nil && current.command.path == "go" && current.command.network {
+			t.Fatalf("pre-push の Go コマンドがネットワークを許可しています: %s", current.key)
+		}
+	}
+
+	ci, err := buildPlan(planInput{
+		profile:    ProfileCI,
+		repository: "/repo",
+		snapshot:   snapshot,
+	})
+	if err != nil {
+		t.Fatalf("CI 計画の作成に失敗しました: %v", err)
+	}
+	for _, current := range ci {
+		if current.command != nil && current.command.path == "go" && !current.command.network {
+			t.Fatalf("CI の Go コマンドがネットワークを許可していません: %s", current.key)
+		}
+	}
+}
+
 func TestBuildPlanCIAddsAllVulnerabilityAndHistoryChecks(t *testing.T) {
 	t.Parallel()
 

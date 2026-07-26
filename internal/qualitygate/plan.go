@@ -70,6 +70,7 @@ func buildPrePushPlan(input planInput) []step {
 	steps := buildSnapshotPlan(
 		input.snapshot,
 		[]step{snapshotCachePolicyStep(input.snapshot)},
+		false,
 	)
 	for index, gitRange := range input.gitRanges {
 		steps = append(steps, gitSecretsStep(
@@ -78,6 +79,7 @@ func buildPrePushPlan(input planInput) []step {
 			input.repository,
 			input.snapshot,
 			true,
+			false,
 			"--log-opts="+gitleaksLogOptions+" "+gitRange,
 		))
 	}
@@ -85,7 +87,7 @@ func buildPrePushPlan(input planInput) []step {
 }
 
 func buildCIPlan(input planInput) []step {
-	steps := buildSnapshotPlan(input.snapshot, ciCachePolicySteps(input.repository))
+	steps := buildSnapshotPlan(input.snapshot, ciCachePolicySteps(input.repository), true)
 	steps = append(steps,
 		productVulnerabilityStep(input.snapshot),
 		commonToolVulnerabilityStep(input.snapshot),
@@ -97,34 +99,35 @@ func buildCIPlan(input planInput) []step {
 			input.repository,
 			input.snapshot,
 			false,
+			true,
 			"--log-opts="+gitleaksLogOptions+" --all HEAD",
 		),
 	)
 	return steps
 }
 
-func buildSnapshotPlan(snapshot string, cachePolicy []step) []step {
+func buildSnapshotPlan(snapshot string, cachePolicy []step, network bool) []step {
 	steps := []step{checksumStep(snapshot)}
 	steps = append(steps, cachePolicy...)
 	steps = append(steps,
-		lintConfigStep(snapshot, true),
-		fullFormatStep(snapshot),
-		vetStep(snapshot),
-		sotAnalysisStep(snapshot),
-		lintStep(snapshot),
-		testStep(snapshot),
+		lintConfigStep(snapshot, network),
+		fullFormatStep(snapshot, network),
+		vetStep(snapshot, network),
+		sotAnalysisStep(snapshot, network),
+		lintStep(snapshot, network),
+		testStep(snapshot, network),
 		coverageStep(snapshot),
-		moduleTidyStep("root-tidy", "製品モジュールの整合性", snapshot),
-		moduleVerifyStep("root-verify", "製品モジュールの依存物", snapshot),
-		moduleTidyStep("tools-tidy", "共通検証ツールモジュールの整合性", filepath.Join(snapshot, "tools")),
-		moduleVerifyStep("tools-verify", "共通検証ツールモジュールの依存物", filepath.Join(snapshot, "tools")),
-		moduleTidyStep("gitleaks-tools-tidy", "秘密情報検査ツールモジュールの整合性", filepath.Join(snapshot, "tools", "gitleaks")),
-		moduleVerifyStep("gitleaks-tools-verify", "秘密情報検査ツールモジュールの依存物", filepath.Join(snapshot, "tools", "gitleaks")),
+		moduleTidyStep("root-tidy", "製品モジュールの整合性", snapshot, network),
+		moduleVerifyStep("root-verify", "製品モジュールの依存物", snapshot, network),
+		moduleTidyStep("tools-tidy", "共通検証ツールモジュールの整合性", filepath.Join(snapshot, "tools"), network),
+		moduleVerifyStep("tools-verify", "共通検証ツールモジュールの依存物", filepath.Join(snapshot, "tools"), network),
+		moduleTidyStep("gitleaks-tools-tidy", "秘密情報検査ツールモジュールの整合性", filepath.Join(snapshot, "tools", "gitleaks"), network),
+		moduleVerifyStep("gitleaks-tools-verify", "秘密情報検査ツールモジュールの依存物", filepath.Join(snapshot, "tools", "gitleaks"), network),
 	)
-	if actionLint, ok := actionLintStep(snapshot, true); ok {
+	if actionLint, ok := actionLintStep(snapshot, network); ok {
 		steps = append(steps, actionLint)
 	}
-	steps = append(steps, snapshotSecretsStep(snapshot))
+	steps = append(steps, snapshotSecretsStep(snapshot, network))
 	return steps
 }
 
@@ -287,58 +290,58 @@ func actionLintStep(snapshot string, network bool) (step, bool) {
 	), true
 }
 
-func fullFormatStep(snapshot string) step {
+func fullFormatStep(snapshot string, network bool) step {
 	return commandStep(
 		"format",
 		"Go ファイルの整形",
 		"SOT-ENG-019",
 		goToolCommand(
 			snapshot,
-			true,
+			network,
 			[]string{"tool", "-modfile=tools/go.mod", "golangci-lint", "fmt", "--diff"},
 		),
 	)
 }
 
-func vetStep(snapshot string) step {
+func vetStep(snapshot string, network bool) step {
 	return commandStep(
 		"vet",
 		"Go 標準静的解析",
 		"SOT-ENG-020",
-		goCommand(snapshot, true, "vet", "./..."),
+		goCommand(snapshot, network, "vet", "./..."),
 	)
 }
 
-func sotAnalysisStep(snapshot string) step {
+func sotAnalysisStep(snapshot string, network bool) step {
 	return commandStep(
 		"sot-analysis",
 		"SOT 固有の静的解析",
 		"SOT-ENG-019",
-		goCommand(snapshot, true, "run", "./cmd/sotvet", "--", "./..."),
+		goCommand(snapshot, network, "run", "./cmd/sotvet", "--", "./..."),
 	)
 }
 
-func lintStep(snapshot string) step {
+func lintStep(snapshot string, network bool) step {
 	return commandStep(
 		"lint",
 		"汎用リンター",
 		"SOT-ENG-019",
 		goToolCommand(
 			snapshot,
-			true,
+			network,
 			[]string{"tool", "-modfile=tools/go.mod", "golangci-lint", "run", "./..."},
 		),
 	)
 }
 
-func testStep(snapshot string) step {
+func testStep(snapshot string, network bool) step {
 	return commandStep(
 		"test",
 		"テストとカバレッジ計測",
 		"SOT-ENG-020",
 		goCommand(
 			snapshot,
-			true,
+			network,
 			"test",
 			"-count=1",
 			"-covermode=atomic",
@@ -360,12 +363,12 @@ func coverageStep(snapshot string) step {
 	)
 }
 
-func snapshotSecretsStep(snapshot string) step {
+func snapshotSecretsStep(snapshot string, network bool) step {
 	return commandStep(
 		"snapshot-secrets",
 		"検査スナップショットの秘密情報",
 		"SOT-ENG-020",
-		goToolCommand(snapshot, true, directoryGitleaksArgs()),
+		goToolCommand(snapshot, network, directoryGitleaksArgs()),
 	)
 }
 
@@ -443,27 +446,28 @@ func snapshotCachePolicyStep(snapshot string) step {
 	)
 }
 
-func moduleTidyStep(key, name, directory string) step {
+func moduleTidyStep(key, name, directory string, network bool) step {
 	return commandStep(
 		key,
 		name,
 		"SOT-ENG-020",
-		goCommand(directory, true, "mod", "tidy", "-diff"),
+		goCommand(directory, network, "mod", "tidy", "-diff"),
 	)
 }
 
-func moduleVerifyStep(key, name, directory string) step {
+func moduleVerifyStep(key, name, directory string, network bool) step {
 	return commandStep(
 		key,
 		name,
 		"SOT-ENG-020",
-		goCommand(directory, true, "mod", "verify"),
+		goCommand(directory, network, "mod", "verify"),
 	)
 }
 
 func gitSecretsStep(
 	key, name, repository, snapshot string,
 	preserveObjects bool,
+	network bool,
 	extra ...string,
 ) step {
 	args := []string{
@@ -479,7 +483,7 @@ func gitSecretsStep(
 	}
 	args = append(args, extra...)
 	args = append(args, repository)
-	command := withIsolatedGitConfig(goToolCommand(snapshot, true, args))
+	command := withIsolatedGitConfig(goToolCommand(snapshot, network, args))
 	command.preserveGitObjects = preserveObjects
 	return commandStep(
 		key,

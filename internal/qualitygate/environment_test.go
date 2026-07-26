@@ -225,8 +225,11 @@ func TestExecuteStepsAddsOfflineCacheGuidance(t *testing.T) {
 		&bytes.Buffer{},
 		&stderr,
 	)
-	if err == nil || !strings.Contains(err.Error(), "pre-push") {
+	if err == nil || !strings.Contains(err.Error(), ".githooks/manage install") {
 		t.Fatalf("オフラインキャッシュの案内がありません: %v", err)
+	}
+	if strings.Contains(err.Error(), "pre-push を一度実行") {
+		t.Fatalf("オフラインの pre-push を準備手順として案内しています: %v", err)
 	}
 
 	genericExecutor := &recordingExecutor{
@@ -246,7 +249,7 @@ func TestExecuteStepsAddsOfflineCacheGuidance(t *testing.T) {
 		&bytes.Buffer{},
 		&bytes.Buffer{},
 	)
-	if err == nil || strings.Contains(err.Error(), "pre-push") {
+	if err == nil || strings.Contains(err.Error(), ".githooks/manage install") {
 		t.Fatalf("一般的な Go エラーに依存解決の案内が付きました: %v", err)
 	}
 }

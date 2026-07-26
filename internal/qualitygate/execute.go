@@ -75,7 +75,7 @@ func executeSteps(
 				!current.command.network &&
 				isOfflineDependencyFailure(commandStderr) {
 				err = fmt.Errorf(
-					"%w（pre-commit はオフラインです。モジュールが不足する場合は pre-push を一度実行してください）",
+					"%w（pre-commit と pre-push はオフラインです。モジュールが不足する場合は、ネットワークに接続できる環境で .githooks/manage install を実行してください）",
 					err,
 				)
 			}

@@ -1,6 +1,7 @@
 package githook
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -45,6 +46,7 @@ func TestWarmUpToolsFailsClosedAndCleansTemporaryBuilds(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	repository := newGitRepository(t)
+	writeWarmUpModuleFiles(t, repository)
 
 	err := warmUpTools(ctx, repository)
 
@@ -61,6 +63,311 @@ func TestWarmUpToolsFailsClosedAndCleansTemporaryBuilds(t *testing.T) {
 	builds := toolBuilds(temporaryRoot)
 	if len(builds) != 4 || builds[0].name != "quality-gate" || builds[3].name != "gitleaks" {
 		t.Fatalf("固定済み build 一覧が不正です: %#v", builds)
+	}
+}
+
+type warmUpModuleFile struct {
+	modFile    string
+	sumFile    string
+	modContent string
+	sumContent string
+}
+
+func warmUpModuleFiles() []warmUpModuleFile {
+	return []warmUpModuleFile{
+		{
+			modFile:    "go.mod",
+			sumFile:    "go.sum",
+			modContent: "module example.invalid/root\n\ngo 1.24.0\n",
+			sumContent: "root の元の checksum\n",
+		},
+		{
+			modFile:    "tools/go.mod",
+			sumFile:    "tools/go.sum",
+			modContent: "module example.invalid/tools\n\ngo 1.24.0\n",
+			sumContent: "tools の元の checksum\n",
+		},
+		{
+			modFile:    "tools/gitleaks/go.mod",
+			sumFile:    "tools/gitleaks/go.sum",
+			modContent: "module example.invalid/gitleaks\n\ngo 1.24.0\n",
+			sumContent: "gitleaks の元の checksum\n",
+		},
+	}
+}
+
+func writeWarmUpModuleFiles(t *testing.T, repository string) []warmUpModuleFile {
+	t.Helper()
+
+	moduleFiles := warmUpModuleFiles()
+	for _, module := range moduleFiles {
+		writeFile(t, repository, module.modFile, module.modContent)
+		writeFile(t, repository, module.sumFile, module.sumContent)
+	}
+	return moduleFiles
+}
+
+func TestWarmUpToolsDownloadsModuleGraphsBeforeBuilding(t *testing.T) {
+	repository := newGitRepository(t)
+	moduleFiles := writeWarmUpModuleFiles(t, repository)
+
+	fakeDirectory := t.TempDir()
+	callLog := filepath.Join(fakeDirectory, "go-calls")
+	writeExecutable(
+		t,
+		filepath.Join(fakeDirectory, "go"),
+		"#!/bin/sh\n"+
+			"if [ \"$1\" = 'mod' ] && [ \"$2\" = 'download' ]; then\n"+
+			"  modfile=\n"+
+			"  for argument in \"$@\"; do\n"+
+			"    case \"$argument\" in\n"+
+			"      -modfile=*) modfile=${argument#-modfile=} ;;\n"+
+			"    esac\n"+
+			"  done\n"+
+			"  if [ -z \"$modfile\" ]; then\n"+
+			"    modfile=$PWD/go.mod\n"+
+			"  fi\n"+
+			"  sumfile=${modfile%.mod}.sum\n"+
+			"  case \"$modfile\" in\n"+
+			"    \"$PWD/go.mod\"|*/root.mod)\n"+
+			"      source_mod=$PWD/go.mod\n"+
+			"      source_sum=$PWD/go.sum\n"+
+			"      ;;\n"+
+			"    tools/go.mod|*/tools.mod)\n"+
+			"      source_mod=$PWD/tools/go.mod\n"+
+			"      source_sum=$PWD/tools/go.sum\n"+
+			"      ;;\n"+
+			"    tools/gitleaks/go.mod|*/gitleaks.mod)\n"+
+			"      source_mod=$PWD/tools/gitleaks/go.mod\n"+
+			"      source_sum=$PWD/tools/gitleaks/go.sum\n"+
+			"      ;;\n"+
+			"    *) exit 91 ;;\n"+
+			"  esac\n"+
+			"  temporary_directory=${modfile%/*}\n"+
+			"  if [ \"${modfile##*/}\" = 'root.mod' ] &&\n"+
+			"     { ! cmp -s \"$PWD/go.mod\" \"$temporary_directory/root.mod\" ||\n"+
+			"       ! cmp -s \"$PWD/go.sum\" \"$temporary_directory/root.sum\" ||\n"+
+			"       ! cmp -s \"$PWD/tools/go.mod\" \"$temporary_directory/tools.mod\" ||\n"+
+			"       ! cmp -s \"$PWD/tools/go.sum\" \"$temporary_directory/tools.sum\" ||\n"+
+			"       ! cmp -s \"$PWD/tools/gitleaks/go.mod\" \"$temporary_directory/gitleaks.mod\" ||\n"+
+			"       ! cmp -s \"$PWD/tools/gitleaks/go.sum\" \"$temporary_directory/gitleaks.sum\"; }; then\n"+
+			"    exit 92\n"+
+			"  fi\n"+
+			"  if ! cmp -s \"$source_mod\" \"$modfile\" ||\n"+
+			"     ! cmp -s \"$source_sum\" \"$sumfile\"; then\n"+
+			"    exit 92\n"+
+			"  fi\n"+
+			"  printf 'fake download checksum\\n' >> \"$sumfile\"\n"+
+			"fi\n"+
+			"{\n"+
+			"  printf '%s' \"$PWD\"\n"+
+			"  for argument in \"$@\"; do\n"+
+			"    printf '\\t%s' \"$argument\"\n"+
+			"  done\n"+
+			"  printf '\\t--environment--'\n"+
+			"  printf '\\tGOENV=%s' \"$GOENV\"\n"+
+			"  printf '\\tGOTOOLCHAIN=%s' \"$GOTOOLCHAIN\"\n"+
+			"  printf '\\tGOWORK=%s' \"$GOWORK\"\n"+
+			"  printf '\\tGOFLAGS=%s' \"$GOFLAGS\"\n"+
+			"  printf '\\tGOPROXY=%s' \"$GOPROXY\"\n"+
+			"  printf '\\tGOSUMDB=%s' \"$GOSUMDB\"\n"+
+			"  printf '\\n'\n"+
+			"} >> "+shellQuote(callLog)+"\n",
+	)
+	installTemporaryRoot := t.TempDir()
+	t.Setenv("TMPDIR", installTemporaryRoot)
+	t.Setenv("PATH", fakeDirectory+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("GOENV", "ambient")
+	t.Setenv("GOTOOLCHAIN", "auto")
+	t.Setenv("GOWORK", "ambient.work")
+	t.Setenv("GOFLAGS", "-mod=mod")
+	t.Setenv("GOPROXY", "off")
+	t.Setenv("GOSUMDB", "off")
+
+	if err := warmUpTools(t.Context(), repository); err != nil {
+		t.Fatalf("tool warm-up が失敗しました: %v", err)
+	}
+
+	for _, module := range moduleFiles {
+		got := readTestFile(t, filepath.Join(repository, filepath.FromSlash(module.sumFile)))
+		if !bytes.Equal(got, []byte(module.sumContent)) {
+			t.Fatalf("%s が download で変更されました: %q", module.sumFile, got)
+		}
+	}
+
+	resolvedRepository, err := filepath.EvalSymlinks(repository)
+	if err != nil {
+		t.Fatalf("リポジトリの実体を解決できませんでした: %v", err)
+	}
+	lines := strings.Split(strings.TrimSuffix(string(readTestFile(t, callLog)), "\n"), "\n")
+	if len(lines) != 7 {
+		t.Fatalf("go の呼出し回数 = %d, want 7: %q", len(lines), lines)
+	}
+	wantDownloadNames := []string{"root.mod", "tools.mod", "gitleaks.mod"}
+	wantBuilds := []struct {
+		name        string
+		modfile     string
+		packagePath string
+	}{
+		{name: "quality-gate", packagePath: "./cmd/quality-gate"},
+		{
+			name:        "golangci-lint",
+			modfile:     "tools/go.mod",
+			packagePath: "github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
+		},
+		{
+			name:        "actionlint",
+			modfile:     "tools/go.mod",
+			packagePath: "github.com/rhysd/actionlint/cmd/actionlint",
+		},
+		{
+			name:        "gitleaks",
+			modfile:     "tools/gitleaks/go.mod",
+			packagePath: "github.com/zricethezav/gitleaks/v8",
+		},
+	}
+	var downloadDirectory string
+	wantEnvironment := []string{
+		"GOENV=off",
+		"GOTOOLCHAIN=local",
+		"GOWORK=off",
+		"GOFLAGS=-mod=readonly",
+		"GOPROXY=https://proxy.golang.org",
+		"GOSUMDB=sum.golang.org",
+	}
+	for index, line := range lines {
+		fields := strings.Split(line, "\t")
+		environmentIndex := -1
+		for fieldIndex, field := range fields {
+			if field == "--environment--" {
+				environmentIndex = fieldIndex
+				break
+			}
+		}
+		if environmentIndex < 0 {
+			t.Fatalf("go 呼出しに環境区切りがありません: %q", line)
+		}
+		if fields[0] != resolvedRepository {
+			t.Fatalf("go 呼出しの作業 directory = %q, want %q", fields[0], resolvedRepository)
+		}
+		arguments := fields[1:environmentIndex]
+		if index < len(wantDownloadNames) {
+			if len(arguments) != 4 ||
+				arguments[0] != "mod" ||
+				arguments[1] != "download" ||
+				!strings.HasPrefix(arguments[2], "-modfile=") ||
+				arguments[3] != "all" {
+				t.Fatalf("download %d の引数が不正です: %#v", index, arguments)
+			}
+			modfile := strings.TrimPrefix(arguments[2], "-modfile=")
+			if !filepath.IsAbs(modfile) {
+				t.Fatalf("download %d の modfile が絶対パスではありません: %s", index, modfile)
+			}
+			if filepath.Base(modfile) != wantDownloadNames[index] {
+				t.Fatalf(
+					"download %d の modfile 名 = %q, want %q",
+					index,
+					filepath.Base(modfile),
+					wantDownloadNames[index],
+				)
+			}
+			if downloadDirectory == "" {
+				downloadDirectory = filepath.Dir(modfile)
+			} else if filepath.Dir(modfile) != downloadDirectory {
+				t.Fatalf("download の一時 directory が一致しません: %s != %s", filepath.Dir(modfile), downloadDirectory)
+			}
+		} else {
+			build := wantBuilds[index-len(wantDownloadNames)]
+			if len(arguments) < 4 ||
+				arguments[0] != "build" ||
+				arguments[len(arguments)-1] != build.packagePath {
+				t.Fatalf("%s build の引数が不正です: %#v", build.name, arguments)
+			}
+			var modfile string
+			var output string
+			for argumentIndex, argument := range arguments {
+				if strings.HasPrefix(argument, "-modfile=") {
+					modfile = strings.TrimPrefix(argument, "-modfile=")
+				}
+				if argument == "-o" && argumentIndex+1 < len(arguments) {
+					output = arguments[argumentIndex+1]
+				}
+			}
+			if modfile != build.modfile {
+				t.Fatalf("%s build の modfile = %q, want %q", build.name, modfile, build.modfile)
+			}
+			if filepath.Dir(output) != downloadDirectory || filepath.Base(output) != build.name {
+				t.Fatalf("%s build の出力先が不正です: %s", build.name, output)
+			}
+		}
+		environment := fields[environmentIndex+1:]
+		if strings.Join(environment, "\t") != strings.Join(wantEnvironment, "\t") {
+			t.Fatalf("go 呼出しの環境 = %#v, want %#v", environment, wantEnvironment)
+		}
+	}
+	relativeDownloadDirectory, err := filepath.Rel(installTemporaryRoot, downloadDirectory)
+	if err != nil ||
+		relativeDownloadDirectory == ".." ||
+		strings.HasPrefix(relativeDownloadDirectory, ".."+string(filepath.Separator)) {
+		t.Fatalf(
+			"download の modfile が install の一時領域外です: %s (%v)",
+			downloadDirectory,
+			err,
+		)
+	}
+	assertNotExists(t, downloadDirectory)
+}
+
+func TestWarmUpToolsFailsClosedWhenModuleFileIsMissing(t *testing.T) {
+	repository := newGitRepository(t)
+	for _, module := range warmUpModuleFiles() {
+		writeFile(t, repository, module.modFile, module.modContent)
+		if module.sumFile != "tools/gitleaks/go.sum" {
+			writeFile(t, repository, module.sumFile, module.sumContent)
+		}
+	}
+	fakeDirectory := t.TempDir()
+	goMarker := filepath.Join(fakeDirectory, "go-called")
+	writeExecutable(
+		t,
+		filepath.Join(fakeDirectory, "go"),
+		"#!/bin/sh\nprintf 'called' > "+shellQuote(goMarker)+"\n",
+	)
+	t.Setenv("PATH", fakeDirectory+string(os.PathListSeparator)+os.Getenv("PATH"))
+	temporaryRoot := t.TempDir()
+	t.Setenv("TMPDIR", temporaryRoot)
+
+	err := warmUpTools(t.Context(), repository)
+
+	if err == nil {
+		t.Fatal("go.sum が欠落しているのに tool warm-up が成功しました")
+	}
+	assertNotExists(t, goMarker)
+	entries, readErr := os.ReadDir(temporaryRoot)
+	if readErr != nil {
+		t.Fatalf("一時ディレクトリを確認できませんでした: %v", readErr)
+	}
+	if len(entries) != 0 {
+		t.Fatalf("module 読取失敗後に一時成果物が残っています: %v", entries)
+	}
+}
+
+func TestCopyModuleFilesFailsClosedOnWriteError(t *testing.T) {
+	sourceDirectory := t.TempDir()
+	writeFile(t, sourceDirectory, "source.mod", "module example.invalid/source\n")
+	writeFile(t, sourceDirectory, "source.sum", "source checksum\n")
+	targetDirectory := t.TempDir()
+	blockedModfile := filepath.Join(targetDirectory, "blocked.mod")
+	if err := os.Mkdir(blockedModfile, 0o700); err != nil {
+		t.Fatalf("書込失敗用 directory を作成できませんでした: %v", err)
+	}
+	download := moduleDownload{
+		sourceModfile:    filepath.Join(sourceDirectory, "source.mod"),
+		temporaryModfile: blockedModfile,
+	}
+
+	if err := copyModuleFiles(download); err == nil {
+		t.Fatal("module file の書込失敗が成功として扱われました")
 	}
 }
 

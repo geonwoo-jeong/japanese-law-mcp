@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func (app *application) install(ctx context.Context) error {
@@ -215,20 +216,99 @@ func warmUpTools(ctx context.Context, repository string) (result error) {
 			result = cleanupErr
 		}
 	}()
+	directory, err = filepath.Abs(directory)
+	if err != nil {
+		return fmt.Errorf("tool warm-up の一時ディレクトリを絶対パスにできませんでした: %w", err)
+	}
+
+	environment := environmentWithHookCaches(
+		controlledGoEnvironment(os.Environ(), true),
+		caches,
+	)
+	downloads := moduleDownloads(repository, directory)
+	for _, download := range downloads {
+		if copyErr := copyModuleFiles(download); copyErr != nil {
+			return fmt.Errorf("%s の module 定義を一時領域へ複製できませんでした: %w", download.name, copyErr)
+		}
+	}
+	for _, download := range downloads {
+		//nolint:gosec // SOT-ENG-021: 実行ファイルと download 対象は固定済み一覧だけから構築する。
+		command := exec.CommandContext(ctx, "go", download.arguments...)
+		command.Dir = repository
+		command.Env = environment
+		if output, runErr := command.CombinedOutput(); runErr != nil {
+			return fmt.Errorf("%s の依存モジュールを準備できませんでした: %w: %s", download.name, runErr, output)
+		}
+	}
 
 	for _, build := range toolBuilds(directory) {
 		//nolint:gosec // SOT-ENG-021: 実行ファイルと build 対象は固定済み一覧だけから構築する。
 		command := exec.CommandContext(ctx, "go", build.arguments...)
 		command.Dir = repository
-		command.Env = environmentWithHookCaches(
-			controlledGoEnvironment(os.Environ(), true),
-			caches,
-		)
+		command.Env = environment
 		if output, runErr := command.CombinedOutput(); runErr != nil {
 			return fmt.Errorf("%s の build に失敗しました: %w: %s", build.name, runErr, output)
 		}
 	}
 	return nil
+}
+
+type moduleDownload struct {
+	name             string
+	sourceModfile    string
+	temporaryModfile string
+	arguments        []string
+}
+
+func moduleDownloads(repository, directory string) []moduleDownload {
+	return []moduleDownload{
+		newModuleDownload(repository, directory, "go.mod", "root"),
+		newModuleDownload(repository, directory, "tools/go.mod", "tools"),
+		newModuleDownload(repository, directory, "tools/gitleaks/go.mod", "gitleaks"),
+	}
+}
+
+func newModuleDownload(repository, directory, name, temporaryName string) moduleDownload {
+	temporaryModfile := filepath.Join(directory, temporaryName+".mod")
+	return moduleDownload{
+		name:             name,
+		sourceModfile:    filepath.Join(repository, filepath.FromSlash(name)),
+		temporaryModfile: temporaryModfile,
+		arguments: []string{
+			"mod",
+			"download",
+			"-modfile=" + temporaryModfile,
+			"all",
+		},
+	}
+}
+
+func copyModuleFiles(download moduleDownload) error {
+	files := []struct {
+		source string
+		target string
+	}{
+		{source: download.sourceModfile, target: download.temporaryModfile},
+		{
+			source: moduleSumFile(download.sourceModfile),
+			target: moduleSumFile(download.temporaryModfile),
+		},
+	}
+	for _, file := range files {
+		content, err := os.ReadFile(file.source)
+		if err != nil {
+			return fmt.Errorf("%s を読み取れませんでした: %w", file.source, err)
+		}
+		//nolint:gosec // SOT-ENG-021: 書込先は private な一時領域内の固定 module ファイル名に限定する。
+		if err := os.WriteFile(file.target, content, 0o600); err != nil {
+			return fmt.Errorf("%s を書き込めませんでした: %w", file.target, err)
+		}
+	}
+	return nil
+}
+
+func moduleSumFile(modfile string) string {
+	return strings.TrimSuffix(modfile, filepath.Ext(modfile)) + ".sum"
 }
 
 type toolBuild struct {
