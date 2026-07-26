@@ -17,17 +17,26 @@
 - GitHub Actions の定義がある場合は、その静的解析が成功する。
 - Go の依存関係を変更した場合、または Go コードがある場合は、テスト用パッケージを含む製品コード、および固定済み検証ツールから到達可能な既知の脆弱性検査が、現在の脆弱性データベースに対して成功する。
 - 検査対象のソース状態と取得した Git 全履歴に対する秘密情報検査が成功する。
-- 新しい provider または capability binding を含む場合は、ローカルと CI の両方で `SOT-ENG-018` の `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` が成功する。
+- `SOT-ENG-018` が定義する適用変更または初回導入を含む場合は、ローカルと CI の両方で `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` と中央の品質ゲートが順に成功する。
 
 ## 実行
 
 検証ツールはリポジトリ内で固定したバージョンを使用し、中央の品質ゲート実行処理から同じ設定と引数で呼び出す。段階ごとの実行時点、検査スナップショットおよび外部状態の扱いは `SOT-ENG-021` に従う。
 
-変更完了を判定する標準コマンドは、clean checkout したリポジトリのルートから次のとおり実行する。
+変更完了を判定する中央の標準コマンドは、clean checkout したリポジトリのルートから次のとおり実行する。
 
 ```text
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 ```
+
+`SOT-ENG-018` の適用変更または初回導入では、clean checkout したリポジトリのルートから provider 固有の比較を行う command と中央の標準コマンドを次の順に実行し、両方の成功を変更完了の条件とする。
+
+```text
+go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
+go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
+```
+
+通常の pull request の CI は信頼できる event metadata が示す target commit を、push の CI は同じ metadata が示す変更前 commit を `<git-revision>` に渡し、変更側が指定した値で上書きしない。ローカル検証は統合先として意図する commit を明示する。初回導入のローカル検証と CI は、`SOT-ENG-018` が定める SOT-only commit の同じ不変 object ID を渡す。任意の古い commit、固定 branch、暗黙の既定 ref または一方の command だけの成功を完了判定に使用しない。
 
 品質ゲートは最初の失敗で非ゼロ終了し、脆弱性データベース、Git 全履歴または検査ツールへ到達できない状態を成功として扱わない。一つでも失敗した検査を警告へ緩和せず、原因を解消してすべての適用可能なゲートを再実行する。
 

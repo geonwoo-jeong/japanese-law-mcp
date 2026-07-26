@@ -41,6 +41,22 @@ go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 
 差分判定はファイル名だけで成功とせず、禁止された package import と conformance case をテストで確認する。
 
+## 初回導入
+
+初回導入の比較開始点は、この節、`SOT-ENG-020` の実行規定および `SOT-ENG-021` の CI 規定を新設した SOT-only commit そのものとする。この commit は親を一つだけ持ち、その親との差分がこのファイル、`20-verification-gate.md` および `21-git-hook-staged-verification.md` だけであり、その tree にこの節が存在することを機械的に確認する。さらに、その tree で `SOT-ENG-017` の canonical schema、`internal/providerconformance` の matrix loader および `cmd/provider-onboarding-fit` の command がいずれも存在しない場合に限り、これらを同時に有効化する変更を初回導入として扱う。
+
+canonical schema が存在するとは、`SOT-ENG-017` が定める正規 path に Git 管理下の通常ファイルが一つ存在することをいう。matrix loader と command が存在するとは、それぞれの正規 directory に Git 管理下の通常ファイルである `_test.go` 以外の Go source が一つ以上あり、通常の build context で package または command として build 対象になることをいう。symbolic link、空 directory、test-only package、三要素の一部だけがある状態は不在とはみなさず、初回導入を開始できない gate failure とする。その状態の回復条件は、実装を変更する前の別の SOT-only commit で定義する。
+
+初回導入の差分に含めてよいのは、canonical schema、全 row が `status: planned` である最初の provider matrix 一ファイル、共通 matrix loader とその test、`provider-onboarding-fit` command とその test、同じ command を実行する `.githooks/`、`.github/workflows/quality.yml`、`internal/qualitygate` または `cmd/quality-gate` の接続、loader または command から到達する固定依存だけを追加する root の `go.mod` と `go.sum`、および導入状況を示す `wiki/10-implementation-status.md` だけとする。loader または command から到達しない依存、provider package、fixture、`ProviderDescriptor`、capability binding、provider 設定 schema、provider route、組込み既定値、共通 model または共通 capability の変更を同じ差分へ含めない。
+
+module の変更では、loader または command の `_test.go` 以外の通常 source から空 import ではない import graph で到達し、実行時の読込または検証に必要な直接依存と、`go mod tidy` が導く推移依存の checksum だけを追加する。test-only import、空 import または到達しない package を依存追加の根拠にしない。既存依存の版更新または削除、`go` directive または `toolchain` directive の変更、`replace` directive、および `tools/` 配下の module 変更を初回導入へ含めない。
+
+初回導入で追加する `provider-onboarding-fit` 自身を、同じ差分に対して実行する。command は通常時と同じく base ref の解決、merge base、`HEAD`、index、working tree、未追跡ファイル、canonical matrix loader および通常の Go test を検査し、初回導入で許可していない差分が一つでもあれば失敗する。解決した base ref と merge base は初回導入の比較開始点に一致しなければならない。commit 前のローカル検証では `HEAD` が比較開始点そのものであることを、commit 後の CI 検証では比較開始点から `HEAD` までが初回導入の実装 commit 一つだけであることを確認する。
+
+比較開始点に canonical schema、matrix loader または command のいずれかが存在する場合、比較開始点が前記の SOT-only commit ではない場合、または比較開始点から `HEAD` までに二つ以上の commit がある場合は初回導入として扱わない。任意の過去 commit、固定 branch、暗黙の既定値、環境変数、設定ファイル、追加 flag または失敗時の fallback で初回導入判定を強制せず、導入後は常に通常の八条件を適用する。初回導入も `SOT-ENG-020` の適用変更とし、ローカルと CI の両方でこの command の成功を必須とする。
+
+初回導入の条件または許可範囲を採用、変更または廃止する SOT 変更は、初回導入の実装差分へ含めず、SOT だけの先行変更として検証とレビューを完了する。同じ比較範囲内の先行 commit へ置くだけでは分離したと扱わない。
+
 ## 成功条件
 
 八条件の一つでも確認できない場合は warning ではなく gate failure とする。プロバイダーをまだ実装しない SOT だけの変更では、SOT 静的検査と設計レビューを行い、実装開始後の最初の provider 変更からこの gate を必須にする。
