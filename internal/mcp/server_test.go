@@ -27,7 +27,8 @@ func TestNewSessionlessServerDoesNotIssueSessionID(t *testing.T) {
 			JSONResponse: true,
 		},
 	)
-	request := httptest.NewRequest(
+	request := httptest.NewRequestWithContext(
+		context.Background(),
 		http.MethodPost,
 		"/mcp",
 		strings.NewReader(

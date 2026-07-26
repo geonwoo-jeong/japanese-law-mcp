@@ -29,7 +29,12 @@ func TestHandlerRejectsGET(t *testing.T) {
 	t.Parallel()
 
 	handler := NewHandler(newTestServer(nil, nil), Options{})
-	request := httptest.NewRequest(http.MethodGet, "/mcp", nil)
+	request := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/mcp",
+		nil,
+	)
 	request.Header.Set("Origin", "https://not-allowed.example")
 
 	recorder := httptest.NewRecorder()
@@ -419,7 +424,12 @@ func newTestServer(started chan<- struct{}, release <-chan struct{}) *sdk.Server
 func newJSONRequest(t *testing.T, method, target, body string) *http.Request {
 	t.Helper()
 
-	request := httptest.NewRequest(method, target, strings.NewReader(body))
+	request := httptest.NewRequestWithContext(
+		context.Background(),
+		method,
+		target,
+		strings.NewReader(body),
+	)
 	request.Header.Set("Accept", "application/json, text/event-stream")
 	request.Header.Set("Content-Type", "application/json")
 	request.RemoteAddr = "127.0.0.1:40000"

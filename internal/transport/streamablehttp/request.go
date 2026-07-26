@@ -43,7 +43,9 @@ func readRequest(
 			"request body が必要です",
 		)
 	}
-	defer request.Body.Close()
+	defer func() {
+		_ = request.Body.Close()
+	}()
 
 	body, err := io.ReadAll(io.LimitReader(request.Body, maxRequestBodyBytes+1))
 	if err != nil {

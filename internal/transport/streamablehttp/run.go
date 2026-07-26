@@ -33,7 +33,8 @@ func Run(ctx context.Context, server *sdk.Server, options Options) error {
 		return err
 	}
 
-	listener, err := net.Listen("tcp", options.ListenAddress)
+	var listenConfig net.ListenConfig
+	listener, err := listenConfig.Listen(ctx, "tcp", options.ListenAddress)
 	if err != nil {
 		return fmt.Errorf("loopback HTTP listener を開始できません: %w", err)
 	}

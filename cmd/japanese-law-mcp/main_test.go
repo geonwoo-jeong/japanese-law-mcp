@@ -102,7 +102,8 @@ func TestServerRunnerUsesStreamableHTTP(t *testing.T) {
 			}
 
 			handler := streamablehttp.NewHandler(server, options)
-			request := httptest.NewRequest(
+			request := httptest.NewRequestWithContext(
+				gotContext,
 				http.MethodPost,
 				"/mcp",
 				strings.NewReader(
@@ -406,7 +407,8 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	reservation, err := net.Listen("tcp", "127.0.0.1:0")
+	var listenConfig net.ListenConfig
+	reservation, err := listenConfig.Listen(ctx, "tcp", "127.0.0.1:0")
 	if err != nil {
 		cancel()
 		t.Fatalf("loopback port を予約できません: %v", err)
@@ -515,7 +517,8 @@ func waitForTCP(
 	ticker := time.NewTicker(20 * time.Millisecond)
 	defer ticker.Stop()
 	for {
-		connection, err := net.DialTimeout("tcp", address, 100*time.Millisecond)
+		dialer := net.Dialer{Timeout: 100 * time.Millisecond}
+		connection, err := dialer.DialContext(ctx, "tcp", address)
 		if err == nil {
 			_ = connection.Close()
 			return

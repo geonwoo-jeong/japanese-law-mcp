@@ -1,6 +1,7 @@
 package streamablehttp
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http/httptest"
@@ -40,7 +41,12 @@ func TestReadRequestClassifiesMessages(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			request := httptest.NewRequest("POST", "/mcp", strings.NewReader(test.body))
+			request := httptest.NewRequestWithContext(
+				context.Background(),
+				"POST",
+				"/mcp",
+				strings.NewReader(test.body),
+			)
 			body, metadata, validationErr := readRequest(request)
 			if validationErr != nil {
 				t.Fatalf("readRequest() のエラー = %v", validationErr)
@@ -67,7 +73,12 @@ func TestReadRequestAcceptsExactBodyLimit(t *testing.T) {
 
 	prefix := initializeRequestBody()
 	body := prefix + strings.Repeat(" ", maxRequestBodyBytes-len(prefix))
-	request := httptest.NewRequest("POST", "/mcp", strings.NewReader(body))
+	request := httptest.NewRequestWithContext(
+		context.Background(),
+		"POST",
+		"/mcp",
+		strings.NewReader(body),
+	)
 
 	got, metadata, validationErr := readRequest(request)
 	if validationErr != nil {
@@ -115,7 +126,12 @@ func TestReadRequestRejectsInvalidEnvelope(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			request := httptest.NewRequest("POST", "/mcp", strings.NewReader(test.body))
+			request := httptest.NewRequestWithContext(
+				context.Background(),
+				"POST",
+				"/mcp",
+				strings.NewReader(test.body),
+			)
 			_, _, validationErr := readRequest(request)
 			if validationErr == nil {
 				t.Fatal("readRequest() が入力を受理しました")
@@ -130,7 +146,12 @@ func TestReadRequestRejectsInvalidEnvelope(t *testing.T) {
 func TestReadRequestRejectsBodyReadFailure(t *testing.T) {
 	t.Parallel()
 
-	request := httptest.NewRequest("POST", "/mcp", nil)
+	request := httptest.NewRequestWithContext(
+		context.Background(),
+		"POST",
+		"/mcp",
+		nil,
+	)
 	request.Body = io.NopCloser(errorReader{})
 
 	_, _, validationErr := readRequest(request)
