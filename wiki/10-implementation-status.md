@@ -16,6 +16,7 @@
 - [SOT-MODEL-009](../sot/20-model/09-json-serialization.md)、[SOT-MODEL-010](../sot/20-model/10-information-source.md)、[SOT-MODEL-013](../sot/20-model/13-provider-capability.md) および [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) に従う、不変なプロバイダーメタデータ型、検証および JSON 表現
 - [SOT-MODEL-011](../sot/20-model/11-source-resource-key.md) および [SOT-MODEL-016](../sot/20-model/16-source-resource-ref.md) に従う、不変な情報源資源キーとプロバイダー参照の構造検証および JSON 表現
 - [SOT-MODEL-012](../sot/20-model/12-provenance.md) に従う、不変な出典、変換種別ごとの従属制約、日時・MIME type・ダイジェストの検証および JSON 表現
+- [SOT-MODEL-014](../sot/20-model/14-source-page.md) に従う、不変なページ情報、`totalCount` と `totalRelation` の従属制約、継続トークン省略規則および JSON 表現
 - [SOT-ARCH-012](../sot/30-architecture/12-provider-registry.md) のうち、`providerId` と能力 ID・メジャーバージョンの宣言を起動時に検証して保持し、`SourceResourceRef` の provider と情報源の一致を照合する不変な descriptor registry
 
 ## 未実装
