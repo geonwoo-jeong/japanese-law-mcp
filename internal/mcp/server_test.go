@@ -22,7 +22,10 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	go func() {
 		serverResult <- NewServerWithDependencies(
 			"test-version",
-			Dependencies{SearchLaws: stubSearchLawsPort{}},
+			Dependencies{
+				SearchLaws: stubSearchLawsPort{},
+				GetLaw:     stubGetLawPort{},
+			},
 		).Run(ctx, serverTransport)
 	}()
 
@@ -67,11 +70,16 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 1 {
-		t.Fatalf("ツール数 = %d, want 1", len(tools.Tools))
+	if len(tools.Tools) != 2 {
+		t.Fatalf("ツール数 = %d, want 2", len(tools.Tools))
 	}
-	if tools.Tools[0].Name != "search_laws" {
-		t.Fatalf("tool name = %q, want search_laws", tools.Tools[0].Name)
+	if tools.Tools[0].Name != "get_law" || tools.Tools[1].Name != "search_laws" {
+		t.Fatalf("tool names = %q, %q", tools.Tools[0].Name, tools.Tools[1].Name)
+	}
+	for _, tool := range tools.Tools {
+		if tool.InputSchema == nil || tool.OutputSchema == nil {
+			t.Fatalf("%s の schema がありません", tool.Name)
+		}
 	}
 
 	if err := session.Close(); err != nil {

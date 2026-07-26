@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getlaw"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli"
@@ -56,9 +57,24 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 			if err != nil {
 				return fmt.Errorf("公開 search_laws service を初期化できません: %w", err)
 			}
+			documentReader, err := lawv2.NewLawDocumentAdapter()
+			if err != nil {
+				return fmt.Errorf("e-Gov law.document.read adapter を初期化できません: %w", err)
+			}
+			getLaw, err := getlaw.NewService(
+				documentReader,
+				lawv2.Descriptor(),
+				cfg.RequestTimeout(),
+			)
+			if err != nil {
+				return fmt.Errorf("公開 get_law service を初期化できません: %w", err)
+			}
 			return runStdio(ctx, projectmcp.NewServerWithDependencies(
 				version,
-				projectmcp.Dependencies{SearchLaws: searchLaws},
+				projectmcp.Dependencies{
+					SearchLaws: searchLaws,
+					GetLaw:     getLaw,
+				},
 			))
 		case config.TransportStreamableHTTP:
 			return errStreamableHTTPNotImplemented
