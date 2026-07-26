@@ -10,6 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawarticleread"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/config"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/transport/stdio"
@@ -64,6 +68,51 @@ func TestServerRunnerReportsHTTPImplementationGap(t *testing.T) {
 	err = newServerRunner("test-version", stdio.Run)(context.Background(), cfg)
 	if !errors.Is(err, errStreamableHTTPNotImplemented) {
 		t.Fatalf("サーバー実行エラー = %v, want %v", err, errStreamableHTTPNotImplemented)
+	}
+}
+
+func TestDefaultProviderRoutesActivateFourEGovBindings(t *testing.T) {
+	t.Parallel()
+
+	registry, routes, err := newDefaultProviderRoutes()
+	if err != nil {
+		t.Fatalf("provider runtime を初期化できません: %v", err)
+	}
+	if descriptor, exists := registry.Descriptor("e-gov-law-api-v2"); !exists ||
+		len(descriptor.Capabilities()) != 4 {
+		t.Fatalf("e-Gov descriptor = %#v, %t", descriptor, exists)
+	}
+	for _, capability := range []struct {
+		id      string
+		version int
+	}{
+		{lawarticleread.CapabilityID, lawarticleread.MajorVersion},
+		{lawcontentsearch.CapabilityID, lawcontentsearch.MajorVersion},
+		{lawdocumentread.CapabilityID, lawdocumentread.MajorVersion},
+		{lawsearch.CapabilityID, lawsearch.MajorVersion},
+	} {
+		providerID, exists := routes.ProviderID(capability.id, capability.version)
+		if !exists || providerID != "e-gov-law-api-v2" {
+			t.Fatalf(
+				"%s@%d provider = %q, %t",
+				capability.id,
+				capability.version,
+				providerID,
+				exists,
+			)
+		}
+	}
+	if port, exists := routes.LawSearch(); !exists || port == nil {
+		t.Fatal("law.search route に到達できません")
+	}
+	if port, exists := routes.LawContentSearch(); !exists || port == nil {
+		t.Fatal("law.content.search route に到達できません")
+	}
+	if port, exists := routes.LawDocumentRead(); !exists || port == nil {
+		t.Fatal("law.document.read route に到達できません")
+	}
+	if port, exists := routes.LawArticleRead(); !exists || port == nil {
+		t.Fatal("law.article.read route に到達できません")
 	}
 }
 

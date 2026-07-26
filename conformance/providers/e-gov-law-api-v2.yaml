@@ -65,7 +65,7 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
-    status: planned
+    status: implemented
 
   - providerId: e-gov-law-api-v2
     capabilityId: law.content.search
@@ -126,7 +126,7 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
-    status: planned
+    status: implemented
 
   - providerId: e-gov-law-api-v2
     capabilityId: law.document.read
@@ -191,7 +191,7 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
-    status: planned
+    status: implemented
 
   - providerId: e-gov-law-api-v2
     capabilityId: law.search
@@ -251,4 +251,4 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
     conformanceTarget: ./internal/source/egov/lawv2
-    status: planned
+    status: implemented

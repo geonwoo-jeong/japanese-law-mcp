@@ -71,8 +71,8 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		if row.ConformanceTarget != "./internal/source/egov/lawv2" {
 			t.Errorf("%s の conformanceTarget = %q、期待値と異なります", row.CapabilityID, row.ConformanceTarget)
 		}
-		if row.Status != "planned" {
-			t.Errorf("%s の status = %q、期待値は planned です", row.CapabilityID, row.Status)
+		if row.Status != "implemented" {
+			t.Errorf("%s の status = %q、期待値は implemented です", row.CapabilityID, row.Status)
 		}
 		assertCasesAreExplicit(t, row)
 		assertCanonicalPublicErrors(t, row)

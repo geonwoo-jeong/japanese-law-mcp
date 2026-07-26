@@ -27,18 +27,18 @@
 - [SOT-MODEL-007](../sot/20-model/07-law-content-match.md) と [SOT-IF-023](../sot/40-interfaces/23-law-content-search-capability.md) に従う、不変な本文一致モデル、構造化された型付き `law.content.search@1` 入力、継続条件、検索ページおよび能力別ポート
 - [SOT-MODEL-002](../sot/20-model/02-law-document.md)、[SOT-MODEL-004](../sot/20-model/04-citation.md)、[SOT-MODEL-017](../sot/20-model/17-law-document-representation.md) および [SOT-IF-024](../sot/40-interfaces/24-law-document-read-capability.md) に従う、不変な `Citation`、`LawDocumentRepresentation`、XML 専用の `LawDocument`、ならびに型付き `law.document.read@1` 入力と能力別ポート
 - [SOT-MODEL-015](../sot/20-model/15-law-article-fragment.md)、[SOT-MODEL-018](../sot/20-model/18-law-article-location.md) および [SOT-IF-025](../sot/40-interfaces/25-law-article-read-capability.md) に従う、不変な `LawArticleLocation` と `LawArticleFragment`、ならびに型付き `law.article.read@1` 入力、能力別ポート、`not_found` と `ambiguous_location` の区別
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-009](../sot/40-interfaces/09-egov-law-search-mapping.md) に従う、runtime から未到達の e-Gov 法令 API Version 2 `law.search@1` planned binding、固定 HTTP 要求、応答 parser、共通モデル mapping、fixture および continuation
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime から未到達の e-Gov 法令 API Version 2 `law.document.read@1` planned binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime から未到達の e-Gov 法令 API Version 2 `law.article.read@1` planned binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md) および [SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) に従う、runtime から未到達の e-Gov 法令 API Version 2 `law.content.search@1` planned binding、構造化条件からの決定的な検索式生成、安全な JSON 解析、一致位置単位の共通モデル mapping、fixture および continuation
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-009](../sot/40-interfaces/09-egov-law-search-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.search@1` binding、固定 HTTP 要求、応答 parser、共通モデル mapping、fixture および continuation
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.document.read@1` binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.article.read@1` binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md) および [SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.content.search@1` binding、構造化条件からの決定的な検索式生成、安全な JSON 解析、一致位置単位の共通モデル mapping、fixture および continuation
+- e-Gov 法令 API Version 2 を使用する MCP `search_laws`、`get_law`、`get_article` および `search_law_content` の公開互換 facade と stdio 経由の提供
 
 ## 未実装
 
-- MCP ツールとユースケース
-- e-Gov 法令 API Version 2 の組込み `ProviderDescriptor`、型付き capability binding、route、継続位置・snapshot・sort の provider 固有 mapping と呼出経路への組込み、`SourceResourceRef` と能力・構成状態の照合、および [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) から [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) に定義した残りの provider 設定と registry 処理
+- [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) に定義した利用者指定の `providers`、`providerRoutes`、credential environment reference および rollback override の設定入力
 - loopback 限定の Streamable HTTP トランスポートとリソース制限
 - ローカル公式配布物を生成するリリース処理
 
-引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールはまだ登録されていないため、初期ツール一覧は空配列となる。Streamable HTTP を指定した場合は、未実装であることを示す終了コード `1` を返す。
+引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールは `search_laws`、`get_law`、`get_article` および `search_law_content` の四つである。Streamable HTTP を指定した場合は、未実装であることを示す終了コード `1` を返す。
 
-現在の CLI 設定実装は、provider routing と credential environment reference をまだ扱わない。設計上の現在の定義元は [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) と [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) であり、実装開始後にこの差分を解消する。
+現在は e-Gov 法令 API Version 2 の四つの組込み primary route を起動時に構成する。利用者指定の provider routing と credential environment reference はまだ扱わない。設計上の現在の定義元は [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) と [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) であり、設定入力の実装開始後にこの差分を解消する。
