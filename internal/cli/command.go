@@ -57,6 +57,9 @@ func newCommand(options commandOptions) *cobra.Command {
 				if errors.Is(err, context.Canceled) {
 					return nil
 				}
+				if config.IsValidationError(err) {
+					return usageError(err.Error())
+				}
 				return runtimeError()
 			}
 			return nil

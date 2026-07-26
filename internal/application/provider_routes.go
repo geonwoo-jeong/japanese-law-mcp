@@ -274,5 +274,6 @@ func requiredProviderRouteKeys() []providerRouteKey {
 		lawContentSearchProviderRouteKey(),
 		lawDocumentReadProviderRouteKey(),
 		lawSearchProviderRouteKey(),
+		lawUpdateListProviderRouteKey(),
 	}
 }

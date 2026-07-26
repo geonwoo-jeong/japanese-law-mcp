@@ -78,6 +78,9 @@ func TestProviderRoutesRejectInvalidRoutes(t *testing.T) {
 		"必須 route の欠落": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
 			return values[1:]
 		},
+		"公開済み更新一覧 route の欠落": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
+			return values[:len(values)-1]
+		},
 		"route の重複": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
 			return append(values, values[0])
 		},

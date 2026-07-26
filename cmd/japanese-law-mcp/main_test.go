@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -75,7 +76,7 @@ func TestServerRunnerReportsHTTPImplementationGap(t *testing.T) {
 func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 	t.Parallel()
 
-	registry, routes, err := newDefaultProviderRoutes()
+	registry, routes, err := newProviderRoutes(config.Default())
 	if err != nil {
 		t.Fatalf("provider runtime を初期化できません: %v", err)
 	}
@@ -144,6 +145,155 @@ func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 	}
 	if port, exists := routes.LawUpdateList(); !exists || port == nil {
 		t.Fatal("law.update.list route に到達できません")
+	}
+}
+
+func TestProviderRoutesRejectInvalidStartupConfiguration(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]config.Values{
+		"未知の provider": withTestProviders(map[string]config.ProviderConfig{
+			"unknown-provider": {Enabled: true},
+		}),
+		"無効化した provider の route": withTestProviders(map[string]config.ProviderConfig{
+			"e-gov-law-api-v2": {Enabled: false},
+		}),
+		"provider 固有 setting": withTestProviders(map[string]config.ProviderConfig{
+			"e-gov-law-api-v2": {
+				Enabled:  true,
+				Settings: map[string]any{"origin": "https://example.test"},
+			},
+		}),
+		"credential slot": withTestProviders(map[string]config.ProviderConfig{
+			"e-gov-law-api-v1": {
+				Enabled: true,
+				CredentialEnvRefs: map[string]config.CredentialEnvRef{
+					"apiKey": {Type: "env", Name: "TEST_API_KEY"},
+				},
+			},
+		}),
+		"capability が一致しない provider": withTestProviderRoutes(map[string]config.ProviderRoute{
+			"law.search@1": {
+				Selection:         config.ProviderRouteSelectionPrimary,
+				DefaultProviderID: "e-gov-law-api-v1",
+			},
+		}),
+		"明示的に空の providers": withTestProviders(map[string]config.ProviderConfig{}),
+		"明示的に空の providerRoutes": withTestProviderRoutes(
+			map[string]config.ProviderRoute{},
+		),
+	}
+
+	for name, values := range tests {
+		name, values := name, values
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cfg, err := config.New(values)
+			if err != nil {
+				t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+			}
+			_, _, routeErr := newProviderRoutes(cfg)
+			if routeErr == nil {
+				t.Fatalf("SOT-IF-004/026/037: %s を受理しました", name)
+			}
+			if !config.IsValidationError(routeErr) {
+				t.Fatalf("SOT-IF-021: 設定エラーとして分類されませんでした: %v", routeErr)
+			}
+		})
+	}
+}
+
+func TestServerRunnerRejectsProviderConfigurationBeforeTransport(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withTestProviders(map[string]config.ProviderConfig{
+		"e-gov-law-api-v2": {Enabled: false},
+	}))
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+
+	called := false
+	run := func(context.Context, stdio.Server) error {
+		called = true
+		return nil
+	}
+	err = newServerRunner("test-version", run)(context.Background(), cfg)
+	if !config.IsValidationError(err) {
+		t.Fatalf("SOT-IF-021: 設定エラー = %v", err)
+	}
+	if called {
+		t.Fatal("SOT-ARCH-015: 無効な設定で transport を開始しました")
+	}
+}
+
+func TestServerRunnerRejectsProviderConfigurationBeforeHTTPImplementationGap(t *testing.T) {
+	t.Parallel()
+
+	values := withTestProviders(map[string]config.ProviderConfig{
+		"e-gov-law-api-v2": {Enabled: false},
+	})
+	values.Transport = string(config.TransportStreamableHTTP)
+	values.AllowedOrigins = []string{"https://example.com"}
+	cfg, err := config.New(values)
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+
+	called := false
+	run := func(context.Context, stdio.Server) error {
+		called = true
+		return nil
+	}
+	err = newServerRunner("test-version", run)(context.Background(), cfg)
+	if !config.IsValidationError(err) {
+		t.Fatalf("SOT-IF-021: HTTP 起動前の設定エラー = %v", err)
+	}
+	if called {
+		t.Fatal("SOT-ARCH-015: 無効な設定で transport を開始しました")
+	}
+}
+
+func TestInvalidProviderFileExitsAsUsageErrorBeforeTransport(t *testing.T) {
+	t.Parallel()
+
+	configDirectory := t.TempDir()
+	configPath := filepath.Join(configDirectory, "config.yaml")
+	if err := os.WriteFile(configPath, []byte(`
+providers:
+  e-gov-law-api-v2:
+    enabled: false
+`), 0o600); err != nil {
+		t.Fatalf("設定ファイルを作成できません: %v", err)
+	}
+
+	called := false
+	var stderr bytes.Buffer
+	code := cli.Execute(cli.Options{
+		Context: context.Background(),
+		Args:    []string{"--config=" + configPath},
+		Stdin:   strings.NewReader(""),
+		Stdout:  &bytes.Buffer{},
+		Stderr:  &stderr,
+		Version: "test-version",
+		Run: newServerRunner("test-version", func(context.Context, stdio.Server) error {
+			called = true
+			return nil
+		}),
+		UserConfigDir: func() (string, error) {
+			return configDirectory, nil
+		},
+	})
+
+	if code != cli.ExitUsage {
+		t.Fatalf("SOT-IF-021: 終了コード = %d、stderr = %q", code, stderr.String())
+	}
+	if called {
+		t.Fatal("SOT-ARCH-015: 無効な設定で transport を開始しました")
+	}
+	if !strings.Contains(stderr.String(), "provider route") {
+		t.Fatalf("SOT-IF-021: stderr = %q", stderr.String())
 	}
 }
 
@@ -222,4 +372,27 @@ func isolatedServerEnvironment(configDirectory string) []string {
 		testServerProcessEnvironment+"=1",
 		testConfigDirectoryEnvironment+"="+configDirectory,
 	)
+}
+
+func defaultTestConfigValues() config.Values {
+	defaults := config.Default()
+	return config.Values{
+		Transport:      string(defaults.Transport()),
+		RequestTimeout: defaults.RequestTimeout(),
+		ListenAddress:  defaults.ListenAddress(),
+		AllowedOrigins: defaults.AllowedOrigins(),
+		Diagnostics:    defaults.Diagnostics(),
+	}
+}
+
+func withTestProviders(providers map[string]config.ProviderConfig) config.Values {
+	values := defaultTestConfigValues()
+	values.Providers = providers
+	return values
+}
+
+func withTestProviderRoutes(routes map[string]config.ProviderRoute) config.Values {
+	values := defaultTestConfigValues()
+	values.ProviderRoutes = routes
+	return values
 }

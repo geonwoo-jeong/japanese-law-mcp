@@ -30,11 +30,15 @@ type LoadOptions struct {
 
 // Load は、すべての設定入力を優先順位どおりに集約して検証する。
 func Load(options LoadOptions) (Config, error) {
-	settings := viper.New()
+	settings := viper.NewWithOptions(viper.KeyDelimiter("::"))
 	settings.AllowEmptyEnv(true)
 
 	if err := readConfigFile(settings, options); err != nil {
 		return Config{}, err
+	}
+	providerValues, err := loadProviderFileValues(settings.ConfigFileUsed())
+	if err != nil {
+		return Config{}, NewValidationError(err)
 	}
 	if err := validateFileSettings(settings); err != nil {
 		return Config{}, err
@@ -52,6 +56,8 @@ func Load(options LoadOptions) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	values.Providers = providerValues.providers
+	values.ProviderRoutes = providerValues.providerRoutes
 	return New(values)
 }
 
@@ -128,13 +134,15 @@ func validateFileSettings(settings *viper.Viper) error {
 			if _, ok := value.(bool); !ok {
 				return fmt.Errorf("設定項目 diagnostics の型が正しくありません")
 			}
+		case keyProviders, keyProviderRoutes:
+			// provider 階層は、空 namespace と atomic object を保持する専用 decoder で検証する。
 		}
 	}
 	return nil
 }
 
 func knownConfigKey(key string) bool {
-	return canonicalConfigKey(key) != ""
+	return canonicalConfigKey(topLevelConfigKey(key)) != ""
 }
 
 func canonicalConfigKey(key string) string {
@@ -149,9 +157,18 @@ func canonicalConfigKey(key string) string {
 		return keyAllowedOrigins
 	case strings.ToLower(keyDiagnostics):
 		return keyDiagnostics
+	case strings.ToLower(keyProviders):
+		return keyProviders
+	case strings.ToLower(keyProviderRoutes):
+		return keyProviderRoutes
 	default:
 		return ""
 	}
+}
+
+func topLevelConfigKey(key string) string {
+	top, _, _ := strings.Cut(key, "::")
+	return top
 }
 
 func isStringSlice(value any) bool {

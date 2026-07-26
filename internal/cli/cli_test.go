@@ -129,6 +129,13 @@ func TestExecuteClassifiesResults(t *testing.T) {
 			wantCode:   ExitUsage,
 			wantStderr: "設定",
 		},
+		"起動処理で判明した設定エラー": {
+			runner: func(context.Context, config.Config) error {
+				return config.NewValidationError(errors.New("プロバイダー設定が有効ではありません"))
+			},
+			wantCode:   ExitUsage,
+			wantStderr: "プロバイダー設定",
+		},
 		"実行エラー": {
 			runner:     func(context.Context, config.Config) error { return errors.New("テスト用の内部エラー") },
 			wantCode:   ExitRuntime,
