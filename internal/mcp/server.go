@@ -1,11 +1,27 @@
 // Package mcp は、公開する MCP capability とツールを組み立てる。
 package mcp
 
-import sdk "github.com/modelcontextprotocol/go-sdk/mcp"
+import (
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
+	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
+)
 
-// NewServer は、SOT-IF-013 に従い、現在実装済みの capability だけを持つ MCP サーバーを返す。
+// Dependencies は、公開 MCP サーバーへ注入する能力ポートを保持する。
+type Dependencies struct {
+	SearchLaws searchlaws.Port
+}
+
+// NewServer は、依存を必要としない capability だけを持つ MCP サーバーを返す。
 func NewServer(version string) *sdk.Server {
-	return sdk.NewServer(
+	return NewServerWithDependencies(version, Dependencies{})
+}
+
+// NewServerWithDependencies は、注入された capability を持つ MCP サーバーを返す。
+func NewServerWithDependencies(
+	version string,
+	dependencies Dependencies,
+) *sdk.Server {
+	server := sdk.NewServer(
 		&sdk.Implementation{
 			Name:    "japanese-law-mcp",
 			Title:   "Japanese Law MCP",
@@ -17,4 +33,8 @@ func NewServer(version string) *sdk.Server {
 			},
 		},
 	)
+	if dependencies.SearchLaws != nil {
+		addSearchLawsTool(server, dependencies.SearchLaws)
+	}
+	return server
 }
