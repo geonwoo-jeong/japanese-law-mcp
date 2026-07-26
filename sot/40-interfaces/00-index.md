@@ -34,3 +34,5 @@
 - [32-mcp-get-article.md](32-mcp-get-article.md)
 - [33-mcp-search-law-content.md](33-mcp-search-law-content.md)
 - [34-law-update-list-capability.md](34-law-update-list-capability.md)
+- [35-source-egov-law-api-v1.md](35-source-egov-law-api-v1.md)
+- [36-egov-law-update-list-mapping.md](36-egov-law-update-list-mapping.md)

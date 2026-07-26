@@ -9,13 +9,14 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
 )
 
 func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {
 	t.Parallel()
 
-	bindings := newCompleteProviderBindings(t, "e-gov-law-api-v2")
+	bindings := newCompleteProviderBindings(t, "complete-provider")
 	registry, err := application.NewProviderBindingRegistry(
 		[]application.ProviderBindings{bindings},
 	)
@@ -23,57 +24,63 @@ func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {
 		t.Fatalf("SOT-ARCH-012: NewProviderBindingRegistry() のエラー = %v", err)
 	}
 
-	if descriptor, exists := registry.Descriptor("e-gov-law-api-v2"); !exists ||
-		descriptor.ProviderID() != "e-gov-law-api-v2" {
+	if descriptor, exists := registry.Descriptor("complete-provider"); !exists ||
+		descriptor.ProviderID() != "complete-provider" {
 		t.Fatalf("SOT-ARCH-012: Descriptor() = %#v, %t", descriptor, exists)
 	}
-	if port, exists := registry.LawSearch("e-gov-law-api-v2"); !exists ||
+	if port, exists := registry.LawSearch("complete-provider"); !exists ||
 		port != bindings.LawSearch {
 		t.Fatalf("SOT-ARCH-012: LawSearch() = %#v, %t", port, exists)
 	}
-	if port, exists := registry.LawContentSearch("e-gov-law-api-v2"); !exists ||
+	if port, exists := registry.LawContentSearch("complete-provider"); !exists ||
 		port != bindings.LawContentSearch {
 		t.Fatalf("SOT-ARCH-012: LawContentSearch() = %#v, %t", port, exists)
 	}
-	if port, exists := registry.LawDocumentRead("e-gov-law-api-v2"); !exists ||
+	if port, exists := registry.LawDocumentRead("complete-provider"); !exists ||
 		port != bindings.LawDocumentRead {
 		t.Fatalf("SOT-ARCH-012: LawDocumentRead() = %#v, %t", port, exists)
 	}
-	if port, exists := registry.LawArticleRead("e-gov-law-api-v2"); !exists ||
+	if port, exists := registry.LawArticleRead("complete-provider"); !exists ||
 		port != bindings.LawArticleRead {
 		t.Fatalf("SOT-ARCH-012: LawArticleRead() = %#v, %t", port, exists)
+	}
+	if port, exists := registry.LawUpdateList("complete-provider"); !exists ||
+		port != bindings.LawUpdateList {
+		t.Fatalf("SOT-ARCH-012: LawUpdateList() = %#v, %t", port, exists)
 	}
 }
 
 func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) {
 	t.Parallel()
 
-	complete := newCompleteProviderBindings(t, "e-gov-law-api-v2")
+	complete := newCompleteProviderBindings(t, "complete-provider")
 	missingPort := complete
-	missingPort.LawSearch = nil
+	missingPort.LawUpdateList = nil
 
 	undeclaredPort := complete
-	undeclaredPort.Descriptor = newBindingDescriptor(t, "e-gov-law-api-v2",
+	undeclaredPort.Descriptor = newBindingDescriptor(t, "complete-provider",
 		lawarticleread.CapabilityID,
 		lawcontentsearch.CapabilityID,
 		lawdocumentread.CapabilityID,
+		lawsearch.CapabilityID,
 	)
 
 	wrongMajor := complete
 	wrongMajor.Descriptor = newBindingDescriptorWithCapabilities(
 		t,
-		"e-gov-law-api-v2",
+		"complete-provider",
 		[]capabilityValues{
 			{id: lawarticleread.CapabilityID, majorVersion: lawarticleread.MajorVersion},
 			{id: lawcontentsearch.CapabilityID, majorVersion: lawcontentsearch.MajorVersion},
 			{id: lawdocumentread.CapabilityID, majorVersion: lawdocumentread.MajorVersion},
-			{id: lawsearch.CapabilityID, majorVersion: 2},
+			{id: lawsearch.CapabilityID, majorVersion: lawsearch.MajorVersion},
+			{id: lawupdatelist.CapabilityID, majorVersion: 2},
 		},
 	)
 
-	var typedNil *fakeLawSearchBinding
+	var typedNil *fakeLawUpdateListBinding
 	typedNilPort := complete
-	typedNilPort.LawSearch = typedNil
+	typedNilPort.LawUpdateList = typedNil
 
 	for name, bindings := range map[string]application.ProviderBindings{
 		"宣言に対応する port の欠落": missingPort,
@@ -97,7 +104,7 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 func TestProviderBindingRegistryRejectsDuplicateAndInvalidDescriptor(t *testing.T) {
 	t.Parallel()
 
-	bindings := newCompleteProviderBindings(t, "e-gov-law-api-v2")
+	bindings := newCompleteProviderBindings(t, "complete-provider")
 	if _, err := application.NewProviderBindingRegistry(
 		[]application.ProviderBindings{bindings, bindings},
 	); err == nil {
@@ -154,6 +161,17 @@ func (*fakeLawArticleReadBinding) Read(
 	return model.SourcedResource[model.LawArticleFragment]{}, nil
 }
 
+type fakeLawUpdateListBinding struct {
+	name string
+}
+
+func (*fakeLawUpdateListBinding) List(
+	context.Context,
+	lawupdatelist.Request,
+) (lawupdatelist.Page, error) {
+	return lawupdatelist.Page{}, nil
+}
+
 func newCompleteProviderBindings(
 	t *testing.T,
 	providerID string,
@@ -167,11 +185,13 @@ func newCompleteProviderBindings(
 			lawcontentsearch.CapabilityID,
 			lawdocumentread.CapabilityID,
 			lawsearch.CapabilityID,
+			lawupdatelist.CapabilityID,
 		),
 		LawSearch:        &fakeLawSearchBinding{name: providerID},
 		LawContentSearch: &fakeLawContentSearchBinding{name: providerID},
 		LawDocumentRead:  &fakeLawDocumentReadBinding{name: providerID},
 		LawArticleRead:   &fakeLawArticleReadBinding{name: providerID},
+		LawUpdateList:    &fakeLawUpdateListBinding{name: providerID},
 	}
 }
 

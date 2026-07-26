@@ -8,6 +8,7 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
 )
 
@@ -18,6 +19,7 @@ type ProviderBindings struct {
 	LawContentSearch lawcontentsearch.Port
 	LawDocumentRead  lawdocumentread.Port
 	LawArticleRead   lawarticleread.Port
+	LawUpdateList    lawupdatelist.Port
 }
 
 // ProviderBindingRegistry は、検証済みの型付き binding を providerId ごとに保持する。
@@ -116,6 +118,17 @@ func (r ProviderBindingRegistry) LawArticleRead(
 	return binding.LawArticleRead, true
 }
 
+// LawUpdateList は、providerId の law.update.list@1 port を返す。
+func (r ProviderBindingRegistry) LawUpdateList(
+	providerID string,
+) (lawupdatelist.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.LawUpdateList) {
+		return nil, false
+	}
+	return binding.LawUpdateList, true
+}
+
 func validateProviderBindings(value ProviderBindings) error {
 	declared := make(map[providerRouteKey]struct{}, len(value.Descriptor.Capabilities()))
 	for _, capability := range value.Descriptor.Capabilities() {
@@ -168,6 +181,8 @@ func hasPortForCapability(
 		return !isNilTypedPort(value.LawDocumentRead)
 	case lawArticleReadProviderRouteKey():
 		return !isNilTypedPort(value.LawArticleRead)
+	case lawUpdateListProviderRouteKey():
+		return !isNilTypedPort(value.LawUpdateList)
 	default:
 		return false
 	}

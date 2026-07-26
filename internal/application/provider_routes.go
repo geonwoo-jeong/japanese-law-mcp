@@ -7,6 +7,7 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
 )
 
 const (
@@ -47,6 +48,13 @@ func lawArticleReadProviderRouteKey() providerRouteKey {
 	}
 }
 
+func lawUpdateListProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: lawupdatelist.CapabilityID,
+		majorVersion: lawupdatelist.MajorVersion,
+	}
+}
+
 // ProviderRouteValues は、一つの primary route の起動時設定を保持する。
 type ProviderRouteValues struct {
 	CapabilityID       string
@@ -56,7 +64,7 @@ type ProviderRouteValues struct {
 	RollbackProviderID string
 }
 
-// ProviderRoutes は、現在の四能力に対する検証済みの実効 primary route を保持する。
+// ProviderRoutes は、対応能力に対する検証済みの実効 primary route を保持する。
 type ProviderRoutes struct {
 	registry    ProviderBindingRegistry
 	providerIDs map[providerRouteKey]string
@@ -125,7 +133,7 @@ func NewProviderRoutes(
 		}
 		providerIDs[key] = effectiveProviderID
 	}
-	for _, key := range supportedProviderRouteKeys() {
+	for _, key := range requiredProviderRouteKeys() {
 		if _, exists := providerIDs[key]; !exists {
 			return ProviderRoutes{}, fmt.Errorf(
 				"必須の primary route %s@%d がありません",
@@ -204,6 +212,18 @@ func (r ProviderRoutes) LawArticleRead() (lawarticleread.Port, bool) {
 	return r.registry.LawArticleRead(providerID)
 }
 
+// LawUpdateList は、law.update.list@1 の実効 primary port を返す。
+func (r ProviderRoutes) LawUpdateList() (lawupdatelist.Port, bool) {
+	providerID, exists := r.ProviderID(
+		lawupdatelist.CapabilityID,
+		lawupdatelist.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.LawUpdateList(providerID)
+}
+
 func (r ProviderBindingRegistry) hasBinding(
 	providerID string,
 	key providerRouteKey,
@@ -221,6 +241,9 @@ func (r ProviderBindingRegistry) hasBinding(
 	case lawArticleReadProviderRouteKey():
 		_, exists := r.LawArticleRead(providerID)
 		return exists
+	case lawUpdateListProviderRouteKey():
+		_, exists := r.LawUpdateList(providerID)
+		return exists
 	default:
 		return false
 	}
@@ -236,6 +259,16 @@ func isSupportedProviderRouteKey(key providerRouteKey) bool {
 }
 
 func supportedProviderRouteKeys() []providerRouteKey {
+	return []providerRouteKey{
+		lawArticleReadProviderRouteKey(),
+		lawContentSearchProviderRouteKey(),
+		lawDocumentReadProviderRouteKey(),
+		lawSearchProviderRouteKey(),
+		lawUpdateListProviderRouteKey(),
+	}
+}
+
+func requiredProviderRouteKeys() []providerRouteKey {
 	return []providerRouteKey{
 		lawArticleReadProviderRouteKey(),
 		lawContentSearchProviderRouteKey(),

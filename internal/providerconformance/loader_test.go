@@ -18,17 +18,46 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	}
 
 	providers := catalog.Providers()
-	if len(providers) != 1 {
-		t.Fatalf("provider 数 = %d、期待値は 1 です", len(providers))
+	if len(providers) != 2 {
+		t.Fatalf("provider 数 = %d、期待値は 2 です", len(providers))
 	}
-	if providers[0].ProviderID != "e-gov-law-api-v2" {
-		t.Fatalf("providerId = %q、期待値と異なります", providers[0].ProviderID)
-	}
-	if providers[0].SchemaVersion != 1 {
-		t.Fatalf("schemaVersion = %d、期待値は 1 です", providers[0].SchemaVersion)
+	v1 := providerByID(t, providers, "e-gov-law-api-v1")
+	v2 := providerByID(t, providers, "e-gov-law-api-v2")
+	if v1.SchemaVersion != 1 || v2.SchemaVersion != 1 {
+		t.Fatalf(
+			"schemaVersion = v1:%d, v2:%d、期待値は 1 です",
+			v1.SchemaVersion,
+			v2.SchemaVersion,
+		)
 	}
 
-	rows := providers[0].Rows()
+	v1Rows := v1.Rows()
+	if got := capabilityIDs(v1Rows); !slices.Equal(
+		got,
+		[]string{"law.update.list"},
+	) {
+		t.Fatalf("v1 capabilityId = %v", got)
+	}
+	v1Row := v1Rows[0]
+	if !slices.Equal(
+		v1Row.InterfaceSOTIDs,
+		[]string{"SOT-IF-034", "SOT-IF-035", "SOT-IF-036"},
+	) {
+		t.Fatalf("v1 interfaceSotIds = %v", v1Row.InterfaceSOTIDs)
+	}
+	if v1Row.BudgetSOTID != "SOT-IF-035" ||
+		v1Row.BudgetKey != "update-law-list-xml" ||
+		v1Row.FixtureSet != "law-update-list-v1" ||
+		v1Row.ImplementedBy !=
+			"github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv1" ||
+		v1Row.ConformanceTarget != "./internal/source/egov/lawv1" ||
+		v1Row.Status != "planned" {
+		t.Fatalf("v1 row = %#v", v1Row)
+	}
+	assertCasesAreExplicit(t, v1Row)
+	assertCanonicalPublicErrors(t, v1Row)
+
+	rows := v2.Rows()
 	wantCapabilities := []string{
 		"law.article.read",
 		"law.content.search",
@@ -78,8 +107,8 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		assertCanonicalPublicErrors(t, row)
 	}
 
-	if got := len(catalog.Rows()); got != 4 {
-		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 4 です", got)
+	if got := len(catalog.Rows()); got != 5 {
+		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 5 です", got)
 	}
 }
 
@@ -92,7 +121,7 @@ func TestLoadの返却値は外部変更から分離される(t *testing.T) {
 	}
 
 	providers := catalog.Providers()
-	rows := providers[0].Rows()
+	rows := providerByID(t, providers, "e-gov-law-api-v2").Rows()
 	providers[0].ProviderID = "changed"
 	rows[0].InterfaceSOTIDs[0] = "SOT-IF-999"
 	rows[0].RequiredCases[0] = "changed"
@@ -100,8 +129,9 @@ func TestLoadの返却値は外部変更から分離される(t *testing.T) {
 	rows[0].NotApplicableCases[0].Reason = "変更済み"
 
 	again := catalog.Providers()
-	againRows := again[0].Rows()
-	if again[0].ProviderID != "e-gov-law-api-v2" {
+	againV2 := providerByID(t, again, "e-gov-law-api-v2")
+	againRows := againV2.Rows()
+	if len(again) != 2 {
 		t.Fatal("Providers() の変更が Catalog 内部へ反映されました")
 	}
 	if againRows[0].InterfaceSOTIDs[0] == "SOT-IF-999" ||
@@ -116,6 +146,21 @@ func TestLoadの返却値は外部変更から分離される(t *testing.T) {
 	if catalog.Rows()[0].InterfaceSOTIDs[0] == "SOT-IF-999" {
 		t.Fatal("Catalog.Rows() の nested slice 変更が内部へ反映されました")
 	}
+}
+
+func providerByID(
+	t *testing.T,
+	providers []ProviderMatrix,
+	providerID string,
+) ProviderMatrix {
+	t.Helper()
+	for _, provider := range providers {
+		if provider.ProviderID == providerID {
+			return provider
+		}
+	}
+	t.Fatalf("providerId %q がありません", providerID)
+	return ProviderMatrix{}
 }
 
 func TestLoadは厳格でないYAMLを拒否する(t *testing.T) {

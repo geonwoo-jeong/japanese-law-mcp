@@ -14,6 +14,7 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/config"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/transport/stdio"
@@ -71,7 +72,7 @@ func TestServerRunnerReportsHTTPImplementationGap(t *testing.T) {
 	}
 }
 
-func TestDefaultProviderRoutesActivateFourEGovBindings(t *testing.T) {
+func TestDefaultProviderRoutesKeepFourEGovV2Bindings(t *testing.T) {
 	t.Parallel()
 
 	registry, routes, err := newDefaultProviderRoutes()
@@ -80,25 +81,46 @@ func TestDefaultProviderRoutesActivateFourEGovBindings(t *testing.T) {
 	}
 	if descriptor, exists := registry.Descriptor("e-gov-law-api-v2"); !exists ||
 		len(descriptor.Capabilities()) != 4 {
-		t.Fatalf("e-Gov descriptor = %#v, %t", descriptor, exists)
+		t.Fatalf("e-Gov v2 descriptor = %#v, %t", descriptor, exists)
+	}
+	if descriptor, exists := registry.Descriptor("e-gov-law-api-v1"); exists {
+		t.Fatalf("未採用の e-Gov v1 descriptor = %#v", descriptor)
 	}
 	for _, capability := range []struct {
-		id      string
-		version int
+		id         string
+		version    int
+		providerID string
 	}{
-		{lawarticleread.CapabilityID, lawarticleread.MajorVersion},
-		{lawcontentsearch.CapabilityID, lawcontentsearch.MajorVersion},
-		{lawdocumentread.CapabilityID, lawdocumentread.MajorVersion},
-		{lawsearch.CapabilityID, lawsearch.MajorVersion},
+		{
+			lawarticleread.CapabilityID,
+			lawarticleread.MajorVersion,
+			"e-gov-law-api-v2",
+		},
+		{
+			lawcontentsearch.CapabilityID,
+			lawcontentsearch.MajorVersion,
+			"e-gov-law-api-v2",
+		},
+		{
+			lawdocumentread.CapabilityID,
+			lawdocumentread.MajorVersion,
+			"e-gov-law-api-v2",
+		},
+		{
+			lawsearch.CapabilityID,
+			lawsearch.MajorVersion,
+			"e-gov-law-api-v2",
+		},
 	} {
 		providerID, exists := routes.ProviderID(capability.id, capability.version)
-		if !exists || providerID != "e-gov-law-api-v2" {
+		if !exists || providerID != capability.providerID {
 			t.Fatalf(
-				"%s@%d provider = %q, %t",
+				"%s@%d provider = %q, %t, want %q",
 				capability.id,
 				capability.version,
 				providerID,
 				exists,
+				capability.providerID,
 			)
 		}
 	}
@@ -113,6 +135,15 @@ func TestDefaultProviderRoutesActivateFourEGovBindings(t *testing.T) {
 	}
 	if port, exists := routes.LawArticleRead(); !exists || port == nil {
 		t.Fatal("law.article.read route に到達できません")
+	}
+	if providerID, exists := routes.ProviderID(
+		lawupdatelist.CapabilityID,
+		lawupdatelist.MajorVersion,
+	); exists {
+		t.Fatalf("未採用の law.update.list provider = %q", providerID)
+	}
+	if port, exists := routes.LawUpdateList(); exists || port != nil {
+		t.Fatalf("未採用の law.update.list route = %#v, %t", port, exists)
 	}
 }
 

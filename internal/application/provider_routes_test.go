@@ -8,6 +8,7 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
 )
 
 func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
@@ -56,6 +57,10 @@ func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
 		port != primary.LawArticleRead {
 		t.Fatalf("SOT-ARCH-012: LawArticleRead() = %#v, %t", port, exists)
 	}
+	if port, exists := routes.LawUpdateList(); !exists ||
+		port != primary.LawUpdateList {
+		t.Fatalf("SOT-ARCH-012: LawUpdateList() = %#v, %t", port, exists)
+	}
 }
 
 func TestProviderRoutesRejectInvalidRoutes(t *testing.T) {
@@ -71,7 +76,7 @@ func TestProviderRoutesRejectInvalidRoutes(t *testing.T) {
 
 	tests := map[string]func([]application.ProviderRouteValues) []application.ProviderRouteValues{
 		"必須 route の欠落": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
-			return values[:len(values)-1]
+			return values[1:]
 		},
 		"route の重複": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
 			return append(values, values[0])
@@ -138,6 +143,12 @@ func completeProviderRouteValues(
 		{
 			CapabilityID:      lawsearch.CapabilityID,
 			MajorVersion:      lawsearch.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: providerID,
+		},
+		{
+			CapabilityID:      lawupdatelist.CapabilityID,
+			MajorVersion:      lawupdatelist.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
 			DefaultProviderID: providerID,
 		},

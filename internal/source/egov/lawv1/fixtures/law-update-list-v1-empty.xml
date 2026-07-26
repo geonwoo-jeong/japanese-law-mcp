@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataRoot>
+  <Result>
+    <Code>1</Code>
+    <Message>該当する法令更新一覧がありません。</Message>
+  </Result>
+  <ApplData>
+    <Date>20230202</Date>
+  </ApplData>
+</DataRoot>
