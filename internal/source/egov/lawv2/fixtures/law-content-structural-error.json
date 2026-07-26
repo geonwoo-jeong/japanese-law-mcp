@@ -1,0 +1,22 @@
+{
+  "total_count": 1,
+  "sentence_count": 1,
+  "next_offset": null,
+  "items": [
+    {
+      "law_info": {
+        "law_id": "322CO0000000016"
+      },
+      "revision_info": {
+        "law_revision_id": "322CO0000000016_20240401_506CO0000000161",
+        "law_title": "地方自治法施行令"
+      },
+      "sentences": [
+        {
+          "position": 1,
+          "text": "位置の型が変更された応答"
+        }
+      ]
+    }
+  ]
+}

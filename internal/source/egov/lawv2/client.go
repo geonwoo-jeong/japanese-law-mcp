@@ -22,6 +22,8 @@ import (
 const (
 	maximumResponseBytes         = 8 * 1024 * 1024
 	maximumDecompressedBytes     = 16 * 1024 * 1024
+	lawContentResponseBytes      = 16 * 1024 * 1024
+	lawContentDecompressedBytes  = 32 * 1024 * 1024
 	lawDocumentResponseBytes     = 16 * 1024 * 1024
 	lawDocumentDecompressedBytes = 32 * 1024 * 1024
 	maximumRetries               = 3
@@ -113,6 +115,21 @@ func (c lawClient) fetchLawDocument(
 		mediaType:         "application/xml",
 		sourceError:       newLawDocumentSourceError,
 		notFound:          lawdocumentread.ErrNotFound,
+	})
+}
+
+func (c lawClient) fetchLawContent(
+	ctx context.Context,
+	request lawContentSearchRequest,
+) (fetchedResponse, error) {
+	return c.fetchWith(ctx, fetchSpec{
+		build: func(requestContext context.Context) (*http.Request, error) {
+			return buildLawContentHTTPRequest(requestContext, request)
+		},
+		responseBytes:     lawContentResponseBytes,
+		decompressedBytes: lawContentDecompressedBytes,
+		mediaType:         "application/json",
+		sourceError:       newLawContentSourceError,
 	})
 }
 
@@ -405,6 +422,10 @@ func sleepWithContext(ctx context.Context, delay time.Duration) error {
 
 func normalizeContextError(err error) error {
 	return normalizeContextErrorWithFactory(err, newSourceError)
+}
+
+func normalizeLawContentContextError(err error) error {
+	return normalizeContextErrorWithFactory(err, newLawContentSourceError)
 }
 
 func normalizeContextErrorWithFactory(

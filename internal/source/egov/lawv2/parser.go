@@ -78,6 +78,20 @@ func parseLawSearchResponse(
 }
 
 func validateLawSearchJSON(ctx context.Context, body []byte) error {
+	return validateJSONWithBudget(
+		ctx,
+		body,
+		lawSearchJSONValues,
+		lawSearchJSONDepth,
+	)
+}
+
+func validateJSONWithBudget(
+	ctx context.Context,
+	body []byte,
+	maximumValues int,
+	maximumDepth int,
+) error {
 	decoder := json.NewDecoder(&contextReader{
 		ctx:    ctx,
 		reader: bytes.NewReader(body),
@@ -85,7 +99,14 @@ func validateLawSearchJSON(ctx context.Context, body []byte) error {
 	decoder.UseNumber()
 
 	valueCount := 0
-	if err := scanLawSearchJSONValue(ctx, decoder, 1, &valueCount); err != nil {
+	if err := scanJSONValueWithBudget(
+		ctx,
+		decoder,
+		1,
+		&valueCount,
+		maximumValues,
+		maximumDepth,
+	); err != nil {
 		return err
 	}
 	if _, err := decoder.Token(); !errors.Is(err, io.EOF) {
@@ -97,20 +118,22 @@ func validateLawSearchJSON(ctx context.Context, body []byte) error {
 	return nil
 }
 
-func scanLawSearchJSONValue(
+func scanJSONValueWithBudget(
 	ctx context.Context,
 	decoder *json.Decoder,
 	depth int,
 	valueCount *int,
+	maximumValues int,
+	maximumDepth int,
 ) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if depth > lawSearchJSONDepth {
+	if depth > maximumDepth {
 		return lawSearchJSONErrorDepth
 	}
 	*valueCount++
-	if *valueCount > lawSearchJSONValues {
+	if *valueCount > maximumValues {
 		return lawSearchJSONErrorValues
 	}
 
@@ -142,14 +165,28 @@ func scanLawSearchJSONValue(
 				return lawSearchJSONErrorDuplicate
 			}
 			seen[key] = struct{}{}
-			if err := scanLawSearchJSONValue(ctx, decoder, depth+1, valueCount); err != nil {
+			if err := scanJSONValueWithBudget(
+				ctx,
+				decoder,
+				depth+1,
+				valueCount,
+				maximumValues,
+				maximumDepth,
+			); err != nil {
 				return err
 			}
 		}
 		return consumeLawSearchDelimiter(decoder)
 	case '[':
 		for decoder.More() {
-			if err := scanLawSearchJSONValue(ctx, decoder, depth+1, valueCount); err != nil {
+			if err := scanJSONValueWithBudget(
+				ctx,
+				decoder,
+				depth+1,
+				valueCount,
+				maximumValues,
+				maximumDepth,
+			); err != nil {
 				return err
 			}
 		}

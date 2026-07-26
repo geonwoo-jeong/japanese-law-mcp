@@ -1,0 +1,29 @@
+{
+  "total_count": 3,
+  "sentence_count": 2,
+  "next_offset": 2,
+  "items": [
+    {
+      "law_info": {
+        "law_id": "322CO0000000016",
+        "law_num": "昭和二十二年政令第十六号",
+        "promulgation_date": "1947-05-03"
+      },
+      "revision_info": {
+        "law_revision_id": "322CO0000000016_20240401_506CO0000000161",
+        "law_title": "地方自治法施行令",
+        "amendment_enforcement_date": "2024-04-01"
+      },
+      "sentences": [
+        {
+          "position": "MainProvision/Article[1]/Paragraph[1]",
+          "text": "地方<mark>自治</mark>に関する第一の一致。"
+        },
+        {
+          "position": "MainProvision/Article[2]/Paragraph[1]",
+          "text": "<em>地方</em><mark>自治</mark>に関する第二の一致。"
+        }
+      ]
+    }
+  ]
+}
