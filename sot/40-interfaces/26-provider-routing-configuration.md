@@ -133,3 +133,4 @@ fingerprint の object は、`providerId`、`origin`、`dataset`、`tenant`、`a
 - [SOT-IF-016: 情報源の継続取得](16-source-continuation-contract.md)
 - [SOT-ARCH-012: プロバイダーの登録](../30-architecture/12-provider-registry.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](../30-architecture/13-source-composition.md)
+- [SOT-ARCH-019: 拡張パックの有効化境界](../30-architecture/19-extension-pack-activation-boundary.md)

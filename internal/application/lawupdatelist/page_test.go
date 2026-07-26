@@ -70,7 +70,7 @@ func TestPageCopiesItemsAndExposesTypedPort(t *testing.T) {
 	}
 	portResult, portErr := (testPort{page: page}).List(context.Background(), request)
 	if portErr != nil || len(portResult.Items()) != 1 {
-		t.Fatalf("SOT-ARCH-009: Port.List() = %#v, %v", portResult, portErr)
+		t.Fatalf("SOT-ARCH-017: Port.List() = %#v, %v", portResult, portErr)
 	}
 }
 

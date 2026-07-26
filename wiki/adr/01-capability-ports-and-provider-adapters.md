@@ -82,8 +82,9 @@
 8. provider onboarding と built-in default の変更を分離し、追加しただけの provider が無設定時の挙動を変えないようにする。
 9. provider ごとの package、SOT、fixture および conformance file を分け、他 provider の変更を onboarding gate で禁止する。
 10. 利用者のローカル binary を前提とし、運用障害検知、`liveness`、`readiness` および常時監視を設計対象にしない。
+11. 拡張パックの有効化、capability の意味、および provider route を独立した構成軸とし、パックの追加で法令コアの既定 route を変更しない。
 
-採用した規定の定義元は、[SOT-ARCH-017](../../sot/30-architecture/17-approved-capability-families.md)、[SOT-ARCH-018](../../sot/30-architecture/18-pack-scoped-normalization-boundary.md)、[SOT-ARCH-010](../../sot/30-architecture/10-provider-isolation.md)、[SOT-ARCH-016](../../sot/30-architecture/16-incremental-provider-onboarding.md)、[SOT-IF-014](../../sot/40-interfaces/14-provider-descriptor.md) から [SOT-IF-018](../../sot/40-interfaces/18-provider-configuration.md)、および [SOT-ENG-017](../../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../../sot/50-engineering/18-provider-onboarding-fitness-gate.md) とする。
+採用した規定の定義元は、[SOT-ARCH-017](../../sot/30-architecture/17-approved-capability-families.md)、[SOT-ARCH-018](../../sot/30-architecture/18-pack-scoped-normalization-boundary.md)、[SOT-ARCH-019](../../sot/30-architecture/19-extension-pack-activation-boundary.md)、[SOT-ARCH-010](../../sot/30-architecture/10-provider-isolation.md)、[SOT-ARCH-016](../../sot/30-architecture/16-incremental-provider-onboarding.md)、[SOT-IF-014](../../sot/40-interfaces/14-provider-descriptor.md) から [SOT-IF-018](../../sot/40-interfaces/18-provider-configuration.md)、および [SOT-ENG-017](../../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../../sot/50-engineering/18-provider-onboarding-fitness-gate.md) とする。
 
 ## 帰結
 

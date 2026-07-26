@@ -46,5 +46,6 @@
 - [SOT-ARCH-003: ユースケース境界](03-application-boundary.md)
 - [SOT-ARCH-010: プロバイダーの分離](10-provider-isolation.md)
 - [SOT-ARCH-018: 拡張パック単位の正規化境界](18-pack-scoped-normalization-boundary.md)
+- [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)
 - [SOT-IF-015: 情報源操作の共通契約](../40-interfaces/15-source-operation-contract.md)
