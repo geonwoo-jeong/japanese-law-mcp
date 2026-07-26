@@ -58,3 +58,20 @@ func newLawDocumentSourceError(
 	}
 	return sourceError
 }
+
+func newLawArticleSourceError(
+	code model.SourceErrorCode,
+	retryAfter string,
+) error {
+	sourceError, err := model.NewSourceError(model.SourceErrorValues{
+		Code:       code,
+		Provider:   Descriptor(),
+		Capability: lawArticleCapability(),
+		Operation:  operationLawData,
+		RetryAfter: retryAfter,
+	})
+	if err != nil {
+		return fmt.Errorf("e-Gov 条文取得エラーを正規化できません: %w", err)
+	}
+	return sourceError
+}

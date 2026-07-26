@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<law_data_response>
+  <law_info>
+    <law_id>322CO0000000016</law_id>
+    <law_num>昭和二十二年政令第十六号</law_num>
+    <promulgation_date>1947-05-03</promulgation_date>
+  </law_info>
+  <revision_info>
+    <law_revision_id>322CO0000000016_20240401_506CO0000000161</law_revision_id>
+    <law_title>地方自治法施行令</law_title>
+    <amendment_enforcement_date>2024-04-01</amendment_enforcement_date>
+  </revision_info>
+  <law_full_text>
+    <Law Era="Showa">
+      <LawBody>
+        <MainProvision>
+          <Article Num="1" Keep="article-spacing">
+            <ArticleTitle>第一条</ArticleTitle>
+            <Paragraph Num="1"><ParagraphSentence><Sentence>第一項</Sentence></ParagraphSentence></Paragraph>
+            <Paragraph Num = "2" Keep="paragraph-spacing">
+              <ParagraphSentence><Sentence>第二項&amp;原文保持</Sentence></ParagraphSentence>
+            </Paragraph>
+            <TableStruct><Table><TableRow><Article Num="99"><Paragraph Num="1"/></Article></TableRow></Table></TableStruct>
+            <QuoteStruct><Article Num="99"><Paragraph Num="1"/></Article></QuoteStruct>
+          </Article>
+          <Chapter Num="2">
+            <Section Num="3">
+              <Article Num="38_3_2"><Paragraph Num="1"><ParagraphSentence><Sentence>枝番号</Sentence></ParagraphSentence></Paragraph></Article>
+            </Section>
+          </Chapter>
+          <Paragraph Num="9"><Article Num="99"/></Paragraph>
+        </MainProvision>
+        <SupplProvision>
+          <Article Num="1"><Paragraph Num="1"><ParagraphSentence><Sentence>原始附則</Sentence></ParagraphSentence></Paragraph></Article>
+        </SupplProvision>
+        <SupplProvision AmendLawNum="令和六年政令第百号">
+          <Article Num="9"><Paragraph Num="1"><ParagraphSentence><Sentence>改正附則</Sentence></ParagraphSentence></Paragraph></Article>
+        </SupplProvision>
+      </LawBody>
+    </Law>
+  </law_full_text>
+</law_data_response>

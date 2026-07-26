@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
 )
@@ -112,6 +113,22 @@ func (c lawClient) fetchLawDocument(
 		mediaType:         "application/xml",
 		sourceError:       newLawDocumentSourceError,
 		notFound:          lawdocumentread.ErrNotFound,
+	})
+}
+
+func (c lawClient) fetchLawArticle(
+	ctx context.Context,
+	request lawDocumentRequest,
+) (fetchedResponse, error) {
+	return c.fetchWith(ctx, fetchSpec{
+		build: func(requestContext context.Context) (*http.Request, error) {
+			return buildLawDocumentHTTPRequest(requestContext, request)
+		},
+		responseBytes:     lawDocumentResponseBytes,
+		decompressedBytes: lawDocumentDecompressedBytes,
+		mediaType:         "application/xml",
+		sourceError:       newLawArticleSourceError,
+		notFound:          lawarticleread.ErrNotFound,
 	})
 }
 
