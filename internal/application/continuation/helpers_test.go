@@ -64,6 +64,7 @@ func newContinuationFixtureWithKey(t *testing.T, key []byte) continuationFixture
 		Account:        "n/a",
 		Proxy:          "n/a",
 		SemanticConfig: mustJSONObject(t, []byte(`{}`)),
+		AllowedSlots:   []string{"apiKey"},
 		Credentials:    []Credential{credential},
 	})
 	if err != nil {

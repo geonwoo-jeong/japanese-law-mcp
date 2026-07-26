@@ -297,6 +297,7 @@ func TestVerifyRejectsEveryExpectedBindingAndFingerprintMismatch(t *testing.T) {
 		Account:        "n/a",
 		Proxy:          "n/a",
 		SemanticConfig: mustJSONObject(t, []byte(`{}`)),
+		AllowedSlots:   []string{"apiKey"},
 	})
 	if err != nil {
 		t.Fatalf("SOT-IF-026: 別設定 fingerprint の作成エラー = %v", err)

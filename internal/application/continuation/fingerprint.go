@@ -44,12 +44,11 @@ type ConfigScopeValues struct {
 	Account        string
 	Proxy          string
 	SemanticConfig JSONObject
-	// Credentials は、provider 固有設定境界で許可 slot を検証済みの値だけを受け取る。
-	Credentials []Credential
+	AllowedSlots   []string
+	Credentials    []Credential
 }
 
 // NewCredential は、共通の構造を検証して秘密値を複製した credential を返す。
-// slot が provider SOT で許可されているかは、provider 固有設定境界が先に検証する。
 func NewCredential(slot string, secret []byte) (Credential, error) {
 	if slot == "" ||
 		!utf8.ValidString(slot) ||
@@ -111,7 +110,6 @@ func (m *Manager) FingerprintCondition(
 }
 
 // FingerprintConfigScope は、八項目の provider configuration scope を fingerprint にする。
-// Credentials は provider 固有設定境界で検証済みでなければならない。
 func (m *Manager) FingerprintConfigScope(
 	values ConfigScopeValues,
 ) (ConfigFingerprint, error) {
@@ -121,6 +119,7 @@ func (m *Manager) FingerprintConfigScope(
 
 	credentialSlots, ok := m.fingerprintCredentialSlots(
 		values.Provider.ProviderID(),
+		values.AllowedSlots,
 		values.Credentials,
 	)
 	if !ok {
@@ -179,16 +178,27 @@ func validConfigScopeValues(values ConfigScopeValues) bool {
 			return false
 		}
 	}
+	if !validAllowedSlots(values.AllowedSlots) {
+		return false
+	}
 	return true
 }
 
 func (m *Manager) fingerprintCredentialSlots(
 	providerID string,
+	allowedSlots []string,
 	credentials []Credential,
 ) (map[string]string, bool) {
+	allowed := make(map[string]struct{}, len(allowedSlots))
+	for _, slot := range allowedSlots {
+		allowed[slot] = struct{}{}
+	}
 	slots := make(map[string]string, len(credentials))
 	for _, credential := range credentials {
 		if !credential.valid() {
+			return nil, false
+		}
+		if _, exists := allowed[credential.slot]; !exists {
 			return nil, false
 		}
 		if _, exists := slots[credential.slot]; exists {
@@ -207,6 +217,20 @@ func (credential Credential) valid() bool {
 		!strings.ContainsRune(credential.slot, '\x00') &&
 		len(credential.secret) != 0 &&
 		utf8.Valid(credential.secret)
+}
+
+func validAllowedSlots(slots []string) bool {
+	seen := make(map[string]struct{}, len(slots))
+	for _, slot := range slots {
+		if slot == "" || !utf8.ValidString(slot) || strings.ContainsRune(slot, '\x00') {
+			return false
+		}
+		if _, exists := seen[slot]; exists {
+			return false
+		}
+		seen[slot] = struct{}{}
+	}
+	return true
 }
 
 func (fingerprint ConditionFingerprint) validFor(manager *Manager) bool {

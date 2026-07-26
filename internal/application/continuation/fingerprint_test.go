@@ -126,6 +126,7 @@ func TestCredentialAndConfigScopeAreImmutableAndOrderIndependent(t *testing.T) {
 		Account:        "n/a",
 		Proxy:          "n/a",
 		SemanticConfig: mustJSONObject(t, []byte(`{}`)),
+		AllowedSlots:   []string{"apiKey", "secondary"},
 	}
 	firstScope := base
 	firstScope.Credentials = []Credential{secondary, apiKey}
@@ -206,15 +207,18 @@ func TestFingerprintRejectsIncompleteConditionAndConfigScope(t *testing.T) {
 		Account:        "n/a",
 		Proxy:          "n/a",
 		SemanticConfig: mustJSONObject(t, []byte(`{}`)),
+		AllowedSlots:   []string{"apiKey"},
 	}
 	tests := map[string]func(*ConfigScopeValues){
-		"provider":       func(values *ConfigScopeValues) { values.Provider = model.ProviderDescriptor{} },
-		"origin":         func(values *ConfigScopeValues) { values.Origin = "" },
-		"dataset":        func(values *ConfigScopeValues) { values.Dataset = "" },
-		"tenant":         func(values *ConfigScopeValues) { values.Tenant = "" },
-		"account":        func(values *ConfigScopeValues) { values.Account = "" },
-		"proxy":          func(values *ConfigScopeValues) { values.Proxy = "" },
-		"semanticConfig": func(values *ConfigScopeValues) { values.SemanticConfig = JSONObject{} },
+		"provider":          func(values *ConfigScopeValues) { values.Provider = model.ProviderDescriptor{} },
+		"origin":            func(values *ConfigScopeValues) { values.Origin = "" },
+		"dataset":           func(values *ConfigScopeValues) { values.Dataset = "" },
+		"tenant":            func(values *ConfigScopeValues) { values.Tenant = "" },
+		"account":           func(values *ConfigScopeValues) { values.Account = "" },
+		"proxy":             func(values *ConfigScopeValues) { values.Proxy = "" },
+		"semanticConfig":    func(values *ConfigScopeValues) { values.SemanticConfig = JSONObject{} },
+		"allowedSlots の空文字": func(values *ConfigScopeValues) { values.AllowedSlots = []string{""} },
+		"allowedSlots の重複":  func(values *ConfigScopeValues) { values.AllowedSlots = []string{"apiKey", "apiKey"} },
 	}
 	for name, change := range tests {
 		change := change
@@ -236,6 +240,12 @@ func TestFingerprintRejectsIncompleteConditionAndConfigScope(t *testing.T) {
 	valid.Credentials = []Credential{credential, credential}
 	if _, err := fixture.manager.FingerprintConfigScope(valid); err == nil {
 		t.Fatalf("SOT-IF-026: 重複した credential slot を受理した")
+	}
+
+	valid.Credentials = []Credential{credential}
+	valid.AllowedSlots = []string{"secondary"}
+	if _, err := fixture.manager.FingerprintConfigScope(valid); err == nil {
+		t.Fatalf("SOT-IF-026: provider が定義していない credential slot を受理した")
 	}
 }
 
