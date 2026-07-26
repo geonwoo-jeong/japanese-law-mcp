@@ -14,13 +14,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/model"
 )
 
 const (
-	maximumResponseBytes     = 8 * 1024 * 1024
-	maximumDecompressedBytes = 16 * 1024 * 1024
-	maximumRetries           = 3
+	maximumResponseBytes         = 8 * 1024 * 1024
+	maximumDecompressedBytes     = 16 * 1024 * 1024
+	lawDocumentResponseBytes     = 16 * 1024 * 1024
+	lawDocumentDecompressedBytes = 32 * 1024 * 1024
+	maximumRetries               = 3
 )
 
 var retryBackoffs = [...]time.Duration{
@@ -50,6 +53,17 @@ type fetchedResponse struct {
 	retrievedAt time.Time
 }
 
+type sourceErrorFactory func(model.SourceErrorCode, string) error
+
+type fetchSpec struct {
+	build             func(context.Context) (*http.Request, error)
+	responseBytes     int64
+	decompressedBytes int64
+	mediaType         string
+	sourceError       sourceErrorFactory
+	notFound          error
+}
+
 func newProductionClient() lawClient {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.Proxy = nil
@@ -74,22 +88,61 @@ func (c lawClient) fetch(
 	ctx context.Context,
 	request lawSearchRequest,
 ) (fetchedResponse, error) {
+	return c.fetchWith(ctx, fetchSpec{
+		build: func(requestContext context.Context) (*http.Request, error) {
+			return buildHTTPRequest(requestContext, request)
+		},
+		responseBytes:     maximumResponseBytes,
+		decompressedBytes: maximumDecompressedBytes,
+		mediaType:         "application/json",
+		sourceError:       newSourceError,
+	})
+}
+
+func (c lawClient) fetchLawDocument(
+	ctx context.Context,
+	request lawDocumentRequest,
+) (fetchedResponse, error) {
+	return c.fetchWith(ctx, fetchSpec{
+		build: func(requestContext context.Context) (*http.Request, error) {
+			return buildLawDocumentHTTPRequest(requestContext, request)
+		},
+		responseBytes:     lawDocumentResponseBytes,
+		decompressedBytes: lawDocumentDecompressedBytes,
+		mediaType:         "application/xml",
+		sourceError:       newLawDocumentSourceError,
+		notFound:          lawdocumentread.ErrNotFound,
+	})
+}
+
+func (c lawClient) fetchWith(
+	ctx context.Context,
+	spec fetchSpec,
+) (fetchedResponse, error) {
 	if ctx == nil {
 		return fetchedResponse{}, fmt.Errorf("context は必須です")
 	}
 	for retry := 0; ; retry++ {
-		response, err := c.do(ctx, request)
+		response, err := c.do(ctx, spec)
 		if err != nil {
 			return fetchedResponse{}, err
 		}
-		body, readErr := readResponseBody(response)
+		body, readErr := readResponseBodyWithLimits(
+			response,
+			spec.responseBytes,
+			spec.decompressedBytes,
+			spec.sourceError,
+		)
 		if readErr != nil {
 			return fetchedResponse{}, readErr
 		}
 		if response.StatusCode >= http.StatusOK &&
 			response.StatusCode < http.StatusMultipleChoices {
-			if !isJSONMediaType(response.Header.Get("Content-Type")) {
-				return fetchedResponse{}, newSourceError(
+			if !isMediaType(
+				response.Header.Get("Content-Type"),
+				spec.mediaType,
+			) {
+				return fetchedResponse{}, spec.sourceError(
 					model.SourceErrorCodeSourceContractChanged,
 					"",
 				)
@@ -99,6 +152,10 @@ func (c lawClient) fetch(
 				retrievedAt: c.dependencies.now().Round(0),
 			}, nil
 		}
+		if response.StatusCode == http.StatusNotFound &&
+			spec.notFound != nil {
+			return fetchedResponse{}, spec.notFound
+		}
 
 		code := codeForStatus(response.StatusCode)
 		retryAfter, delay, hasRetryAfter := parseRetryAfter(
@@ -106,32 +163,35 @@ func (c lawClient) fetch(
 			c.dependencies.now(),
 		)
 		if !isRetryStatus(response.StatusCode) || retry >= maximumRetries {
-			return fetchedResponse{}, newSourceError(code, retryAfter)
+			return fetchedResponse{}, spec.sourceError(code, retryAfter)
 		}
 		if !hasRetryAfter {
 			delay = retryBackoffs[retry]
 		}
 		if !canWait(ctx, c.dependencies.now(), delay) {
-			return fetchedResponse{}, newSourceError(code, retryAfter)
+			return fetchedResponse{}, spec.sourceError(code, retryAfter)
 		}
 		if err := c.dependencies.sleep(ctx, delay); err != nil {
-			return fetchedResponse{}, normalizeContextError(err)
+			return fetchedResponse{}, normalizeContextErrorWithFactory(
+				err,
+				spec.sourceError,
+			)
 		}
 	}
 }
 
 func (c lawClient) do(
 	ctx context.Context,
-	request lawSearchRequest,
+	spec fetchSpec,
 ) (*http.Response, error) {
-	httpRequest, err := buildHTTPRequest(ctx, request)
+	httpRequest, err := spec.build(ctx)
 	if err != nil {
 		return nil, err
 	}
 	response, err := c.dependencies.doer.Do(httpRequest)
 	if err == nil {
 		if response == nil || response.Body == nil {
-			return nil, newSourceError(
+			return nil, spec.sourceError(
 				model.SourceErrorCodeInvalidSourceResponse,
 				"",
 			)
@@ -139,16 +199,39 @@ func (c lawClient) do(
 		return response, nil
 	}
 	if ctxErr := ctx.Err(); ctxErr != nil {
-		return nil, normalizeContextError(ctxErr)
+		return nil, normalizeContextErrorWithFactory(
+			ctxErr,
+			spec.sourceError,
+		)
 	}
 	var networkError net.Error
 	if errors.As(err, &networkError) && networkError.Timeout() {
-		return nil, newSourceError(model.SourceErrorCodeSourceTimeout, "")
+		return nil, spec.sourceError(
+			model.SourceErrorCodeSourceTimeout,
+			"",
+		)
 	}
-	return nil, newSourceError(model.SourceErrorCodeSourceUnavailable, "")
+	return nil, spec.sourceError(
+		model.SourceErrorCodeSourceUnavailable,
+		"",
+	)
 }
 
 func readResponseBody(response *http.Response) ([]byte, error) {
+	return readResponseBodyWithLimits(
+		response,
+		maximumResponseBytes,
+		maximumDecompressedBytes,
+		newSourceError,
+	)
+}
+
+func readResponseBodyWithLimits(
+	response *http.Response,
+	responseBytes int64,
+	decompressedBytes int64,
+	sourceError sourceErrorFactory,
+) ([]byte, error) {
 	defer func() {
 		_ = response.Body.Close()
 	}()
@@ -156,25 +239,29 @@ func readResponseBody(response *http.Response) ([]byte, error) {
 		response.StatusCode >= http.StatusMultipleChoices {
 		_, _ = io.Copy(
 			io.Discard,
-			io.LimitReader(response.Body, maximumResponseBytes+1),
+			io.LimitReader(response.Body, responseBytes+1),
 		)
 		return nil, nil
 	}
-	if response.ContentLength > maximumResponseBytes {
-		return nil, newSourceError(
+	if response.ContentLength > responseBytes {
+		return nil, sourceError(
 			model.SourceErrorCodeSourceResponseTooLarge,
 			"",
 		)
 	}
-	compressed, err := readAtMost(response.Body, maximumResponseBytes)
+	compressed, err := readAtMostWithFactory(
+		response.Body,
+		responseBytes,
+		sourceError,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	switch strings.ToLower(strings.TrimSpace(response.Header.Get("Content-Encoding"))) {
 	case "", "identity":
-		if len(compressed) > maximumDecompressedBytes {
-			return nil, newSourceError(
+		if int64(len(compressed)) > decompressedBytes {
+			return nil, sourceError(
 				model.SourceErrorCodeSourceResponseTooLarge,
 				"",
 			)
@@ -183,7 +270,7 @@ func readResponseBody(response *http.Response) ([]byte, error) {
 	case "gzip":
 		reader, gzipErr := gzip.NewReader(bytes.NewReader(compressed))
 		if gzipErr != nil {
-			return nil, newSourceError(
+			return nil, sourceError(
 				model.SourceErrorCodeInvalidSourceResponse,
 				"",
 			)
@@ -191,30 +278,38 @@ func readResponseBody(response *http.Response) ([]byte, error) {
 		defer func() {
 			_ = reader.Close()
 		}()
-		return readAtMost(reader, maximumDecompressedBytes)
+		return readAtMostWithFactory(
+			reader,
+			decompressedBytes,
+			sourceError,
+		)
 	default:
-		return nil, newSourceError(
+		return nil, sourceError(
 			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
 }
 
-func readAtMost(reader io.Reader, maximum int64) ([]byte, error) {
+func readAtMostWithFactory(
+	reader io.Reader,
+	maximum int64,
+	sourceError sourceErrorFactory,
+) ([]byte, error) {
 	limited := io.LimitReader(reader, maximum+1)
 	value, err := io.ReadAll(limited)
 	if err != nil {
 		if errors.Is(err, context.Canceled) ||
 			errors.Is(err, context.DeadlineExceeded) {
-			return nil, normalizeContextError(err)
+			return nil, normalizeContextErrorWithFactory(err, sourceError)
 		}
-		return nil, newSourceError(
+		return nil, sourceError(
 			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
 	if int64(len(value)) > maximum {
-		return nil, newSourceError(
+		return nil, sourceError(
 			model.SourceErrorCodeSourceResponseTooLarge,
 			"",
 		)
@@ -222,9 +317,9 @@ func readAtMost(reader io.Reader, maximum int64) ([]byte, error) {
 	return value, nil
 }
 
-func isJSONMediaType(value string) bool {
+func isMediaType(value string, expected string) bool {
 	mediaType, _, err := mime.ParseMediaType(value)
-	return err == nil && mediaType == "application/json"
+	return err == nil && mediaType == expected
 }
 
 func isRetryStatus(status int) bool {
@@ -292,11 +387,18 @@ func sleepWithContext(ctx context.Context, delay time.Duration) error {
 }
 
 func normalizeContextError(err error) error {
+	return normalizeContextErrorWithFactory(err, newSourceError)
+}
+
+func normalizeContextErrorWithFactory(
+	err error,
+	sourceError sourceErrorFactory,
+) error {
 	if errors.Is(err, context.DeadlineExceeded) {
-		return newSourceError(model.SourceErrorCodeSourceTimeout, "")
+		return sourceError(model.SourceErrorCodeSourceTimeout, "")
 	}
 	if errors.Is(err, context.Canceled) {
 		return context.Canceled
 	}
-	return newSourceError(model.SourceErrorCodeSourceUnavailable, "")
+	return sourceError(model.SourceErrorCodeSourceUnavailable, "")
 }

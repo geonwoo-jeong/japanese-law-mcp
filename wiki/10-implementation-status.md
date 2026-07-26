@@ -26,11 +26,12 @@
 - [SOT-IF-022](../sot/40-interfaces/22-law-search-capability.md) に従う、正規化済みの型付き `law.search@1` 入力、継続条件、検索ページおよび能力別ポート
 - [SOT-MODEL-002](../sot/20-model/02-law-document.md)、[SOT-MODEL-004](../sot/20-model/04-citation.md)、[SOT-MODEL-017](../sot/20-model/17-law-document-representation.md) および [SOT-IF-024](../sot/40-interfaces/24-law-document-read-capability.md) に従う、不変な `Citation`、`LawDocumentRepresentation`、XML 専用の `LawDocument`、ならびに型付き `law.document.read@1` 入力と能力別ポート
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-009](../sot/40-interfaces/09-egov-law-search-mapping.md) に従う、runtime から未到達の e-Gov 法令 API Version 2 `law.search@1` planned binding、固定 HTTP 要求、応答 parser、共通モデル mapping、fixture および continuation
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime から未到達の e-Gov 法令 API Version 2 `law.document.read@1` planned binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
 
 ## 未実装
 
 - MCP ツールとユースケース
-- e-Gov 法令 API Version 2 の `law.document.read@1`、`law.article.read@1` および `law.content.search@1` アダプター
+- e-Gov 法令 API Version 2 の `law.article.read@1` および `law.content.search@1` アダプター
 - e-Gov 法令 API Version 2 の組込み `ProviderDescriptor`、型付き capability binding、route、継続位置・snapshot・sort の provider 固有 mapping と呼出経路への組込み、`SourceResourceRef` と能力・構成状態の照合、および [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) から [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) に定義した残りの provider 設定と registry 処理
 - loopback 限定の Streamable HTTP トランスポートとリソース制限
 - ローカル公式配布物を生成するリリース処理

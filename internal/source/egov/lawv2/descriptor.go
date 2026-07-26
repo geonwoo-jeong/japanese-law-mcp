@@ -58,6 +58,10 @@ func lawSearchCapability() model.ProviderCapability {
 	return mustCapability("law.search")
 }
 
+func lawDocumentCapability() model.ProviderCapability {
+	return mustCapability("law.document.read")
+}
+
 func mustCapability(id string) model.ProviderCapability {
 	capability, err := model.NewProviderCapability(model.ProviderCapabilityValues{
 		ID:           id,

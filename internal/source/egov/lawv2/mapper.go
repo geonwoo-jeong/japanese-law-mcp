@@ -133,15 +133,29 @@ func optionalLawSearchDate(value string) (*model.Date, error) {
 }
 
 func officialLawURL(lawID string, revisionID string) (string, error) {
+	return officialLawURLWithError(lawID, revisionID, newSourceError)
+}
+
+func officialLawURLWithError(
+	lawID string,
+	revisionID string,
+	sourceError sourceErrorFactory,
+) (string, error) {
 	revisionPrefix := lawID + "_"
 	if lawID == "" ||
 		!strings.HasPrefix(revisionID, revisionPrefix) ||
 		len(revisionID) == len(revisionPrefix) {
-		return "", newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
+		return "", sourceError(
+			model.SourceErrorCodeInvalidSourceResponse,
+			"",
+		)
 	}
 	revisionPart := strings.TrimPrefix(revisionID, revisionPrefix)
 	if url.PathEscape(lawID) != lawID || url.PathEscape(revisionPart) != revisionPart {
-		return "", newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
+		return "", sourceError(
+			model.SourceErrorCodeInvalidSourceResponse,
+			"",
+		)
 	}
 	return eGovOfficialLawURLPrefix + lawID + "/" + revisionPart, nil
 }

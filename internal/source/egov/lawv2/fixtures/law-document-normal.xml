@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<law_data_response>
+  <law_info>
+    <law_type>CabinetOrder</law_type>
+    <law_id>322CO0000000016</law_id>
+    <law_num>昭和二十二年政令第十六号</law_num>
+    <promulgation_date>1947-05-03</promulgation_date>
+  </law_info>
+  <revision_info>
+    <law_revision_id>322CO0000000016_20240401_506CO0000000161</law_revision_id>
+    <law_title>地方自治法施行令</law_title>
+    <amendment_enforcement_date>2024-04-01</amendment_enforcement_date>
+  </revision_info>
+  <law_full_text>
+    <Law Era="Showa" Lang="ja" LawType="CabinetOrder" Num="16" PromulgateDay="03" PromulgateMonth="05" Year="22">
+      <LawNum>昭和二十二年政令第十六号</LawNum>
+      <LawBody>
+        <LawTitle>地方自治法施行令</LawTitle>
+        <MainProvision>
+          <Article Num="1">
+            <ArticleTitle>第一条</ArticleTitle>
+            <Paragraph Num="1">
+              <ParagraphSentence>
+                <Sentence>地方自治法の施行について必要な事項を定める&amp;確認する。</Sentence>
+              </ParagraphSentence>
+            </Paragraph>
+          </Article>
+        </MainProvision>
+      </LawBody>
+    </Law>
+  </law_full_text>
+</law_data_response>
