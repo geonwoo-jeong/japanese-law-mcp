@@ -178,10 +178,7 @@ func validConfigScopeValues(values ConfigScopeValues) bool {
 			return false
 		}
 	}
-	if !validAllowedSlots(values.AllowedSlots) {
-		return false
-	}
-	return true
+	return validAllowedSlots(values.AllowedSlots)
 }
 
 func (m *Manager) fingerprintCredentialSlots(
