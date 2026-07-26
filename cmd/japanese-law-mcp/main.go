@@ -3,14 +3,17 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/config"
 	projectmcp "github.com/japanese-law-mcp/japanese-law-mcp/internal/mcp"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/transport/stdio"
 )
 
@@ -42,7 +45,21 @@ func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
 	return func(ctx context.Context, cfg config.Config) error {
 		switch cfg.Transport() {
 		case config.TransportStdio:
-			return runStdio(ctx, projectmcp.NewServer(version))
+			provider, err := lawv2.NewSearchLawsFacade()
+			if err != nil {
+				return fmt.Errorf("公開 search_laws facade を初期化できません: %w", err)
+			}
+			searchLaws, err := searchlaws.NewService(
+				provider,
+				cfg.RequestTimeout(),
+			)
+			if err != nil {
+				return fmt.Errorf("公開 search_laws service を初期化できません: %w", err)
+			}
+			return runStdio(ctx, projectmcp.NewServerWithDependencies(
+				version,
+				projectmcp.Dependencies{SearchLaws: searchLaws},
+			))
 		case config.TransportStreamableHTTP:
 			return errStreamableHTTPNotImplemented
 		default:
