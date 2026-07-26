@@ -18,3 +18,4 @@
 - [16-source-resource-ref.md](16-source-resource-ref.md)
 - [17-law-document-representation.md](17-law-document-representation.md)
 - [18-law-article-location.md](18-law-article-location.md)
+- [19-law-update.md](19-law-update.md)

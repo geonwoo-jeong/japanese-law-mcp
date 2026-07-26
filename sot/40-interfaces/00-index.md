@@ -33,3 +33,4 @@
 - [31-mcp-get-law.md](31-mcp-get-law.md)
 - [32-mcp-get-article.md](32-mcp-get-article.md)
 - [33-mcp-search-law-content.md](33-mcp-search-law-content.md)
+- [34-law-update-list-capability.md](34-law-update-list-capability.md)
