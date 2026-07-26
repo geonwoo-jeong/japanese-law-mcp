@@ -23,9 +23,10 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 		serverResult <- NewServerWithDependencies(
 			"test-version",
 			Dependencies{
-				SearchLaws: stubSearchLawsPort{},
-				GetLaw:     stubGetLawPort{},
-				GetArticle: &recordingGetArticlePort{},
+				SearchLaws:       stubSearchLawsPort{},
+				SearchLawContent: stubSearchLawContentPort{},
+				GetLaw:           stubGetLawPort{},
+				GetArticle:       &recordingGetArticlePort{},
 			},
 		).Run(ctx, serverTransport)
 	}()
@@ -71,17 +72,19 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 3 {
-		t.Fatalf("ツール数 = %d, want 3", len(tools.Tools))
+	if len(tools.Tools) != 4 {
+		t.Fatalf("ツール数 = %d, want 4", len(tools.Tools))
 	}
 	if tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "search_laws" {
+		tools.Tools[2].Name != "search_law_content" ||
+		tools.Tools[3].Name != "search_laws" {
 		t.Fatalf(
-			"tool names = %q, %q, %q",
+			"tool names = %q, %q, %q, %q",
 			tools.Tools[0].Name,
 			tools.Tools[1].Name,
 			tools.Tools[2].Name,
+			tools.Tools[3].Name,
 		)
 	}
 	for _, tool := range tools.Tools {

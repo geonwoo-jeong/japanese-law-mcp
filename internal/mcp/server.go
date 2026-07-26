@@ -4,15 +4,17 @@ package mcp
 import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getarticle"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/getlaw"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // Dependencies は、公開 MCP サーバーへ注入する能力ポートを保持する。
 type Dependencies struct {
-	SearchLaws searchlaws.Port
-	GetLaw     getlaw.Port
-	GetArticle getarticle.Port
+	SearchLaws       searchlaws.Port
+	SearchLawContent searchlawcontent.Port
+	GetLaw           getlaw.Port
+	GetArticle       getarticle.Port
 }
 
 // NewServer は、依存を必要としない capability だけを持つ MCP サーバーを返す。
@@ -39,6 +41,9 @@ func NewServerWithDependencies(
 	)
 	if dependencies.SearchLaws != nil {
 		addSearchLawsTool(server, dependencies.SearchLaws)
+	}
+	if dependencies.SearchLawContent != nil {
+		addSearchLawContentTool(server, dependencies.SearchLawContent)
 	}
 	if dependencies.GetLaw != nil {
 		addGetLawTool(server, dependencies.GetLaw)
