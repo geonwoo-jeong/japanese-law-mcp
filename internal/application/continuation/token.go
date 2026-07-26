@@ -127,6 +127,9 @@ func (m *Manager) Verify(input VerifyInput) (Cursor, error) {
 	if !m.valid() || !validVerifyInput(m, input) {
 		return Cursor{}, errInvalidVerifyInput
 	}
+	if !input.Config.boundToProvider(input.Provider.ProviderID()) {
+		return Cursor{}, ErrInvalidToken
+	}
 
 	mac, err := base64.RawURLEncoding.Strict().DecodeString(encodedMAC)
 	if err != nil || len(mac) != fingerprintBytes {
@@ -165,10 +168,27 @@ func splitToken(token string) (string, string, string, bool) {
 	if len(parts) != 3 ||
 		parts[0] != continuationTokenVersion ||
 		parts[1] == "" ||
-		parts[2] == "" {
+		parts[2] == "" ||
+		!isRawBase64URL(parts[1]) ||
+		!isRawBase64URL(parts[2]) {
 		return "", "", "", false
 	}
 	return parts[0] + "." + parts[1], parts[1], parts[2], true
+}
+
+func isRawBase64URL(value string) bool {
+	for index := 0; index < len(value); index++ {
+		character := value[index]
+		if (character >= 'A' && character <= 'Z') ||
+			(character >= 'a' && character <= 'z') ||
+			(character >= '0' && character <= '9') ||
+			character == '-' ||
+			character == '_' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func validIssueInput(manager *Manager, input IssueInput) bool {
@@ -176,6 +196,7 @@ func validIssueInput(manager *Manager, input IssueInput) bool {
 		input.Limit < 1 ||
 		!input.Condition.validFor(manager) ||
 		!input.Config.validFor(manager) ||
+		!input.Config.boundToProvider(input.Provider.ProviderID()) ||
 		!input.Position.valid() ||
 		!validOptionalValue(input.Snapshot) ||
 		!validOptionalValue(input.Sort) {
@@ -214,9 +235,7 @@ func validBinding(
 
 func sameCapability(left, right model.ProviderCapability) bool {
 	return left.ID() == right.ID() &&
-		left.MajorVersion() == right.MajorVersion() &&
-		left.Level() == right.Level() &&
-		left.Stability() == right.Stability()
+		left.MajorVersion() == right.MajorVersion()
 }
 
 func validOptionalValue(value *JSONValue) bool {

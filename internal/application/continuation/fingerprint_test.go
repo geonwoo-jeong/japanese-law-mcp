@@ -277,3 +277,26 @@ func TestFingerprintTypesCannotBeSubstitutedByInvalidZeroValues(t *testing.T) {
 		t.Fatalf("SOT-IF-016: zero value config fingerprint の発行結果 = %v", err)
 	}
 }
+
+func TestIssueRejectsConfigFingerprintBoundToAnotherProvider(t *testing.T) {
+	t.Parallel()
+
+	fixture := newContinuationFixture(t)
+	otherProvider := newTestProvider(
+		t,
+		"other-provider",
+		"1.0.0",
+		[]model.ProviderCapability{fixture.capability},
+	)
+	input := goldenIssueInput(t, fixture)
+	input.Provider = otherProvider
+
+	token, err := fixture.manager.Issue(input)
+	if err == nil || token != "" {
+		t.Fatalf(
+			"SOT-IF-016/SOT-IF-026: 別 provider の config fingerprint による発行結果 = %q, %v",
+			token,
+			err,
+		)
+	}
+}

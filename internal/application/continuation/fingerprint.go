@@ -24,6 +24,7 @@ type ConditionFingerprint struct {
 type ConfigFingerprint struct {
 	digest      [fingerprintBytes]byte
 	owner       *Manager
+	providerID  string
 	initialized bool
 }
 
@@ -43,10 +44,12 @@ type ConfigScopeValues struct {
 	Account        string
 	Proxy          string
 	SemanticConfig JSONObject
-	Credentials    []Credential
+	// Credentials は、provider 固有設定境界で許可 slot を検証済みの値だけを受け取る。
+	Credentials []Credential
 }
 
-// NewCredential は、秘密値を複製した不変な credential を返す。
+// NewCredential は、共通の構造を検証して秘密値を複製した credential を返す。
+// slot が provider SOT で許可されているかは、provider 固有設定境界が先に検証する。
 func NewCredential(slot string, secret []byte) (Credential, error) {
 	if slot == "" ||
 		!utf8.ValidString(slot) ||
@@ -108,6 +111,7 @@ func (m *Manager) FingerprintCondition(
 }
 
 // FingerprintConfigScope は、八項目の provider configuration scope を fingerprint にする。
+// Credentials は provider 固有設定境界で検証済みでなければならない。
 func (m *Manager) FingerprintConfigScope(
 	values ConfigScopeValues,
 ) (ConfigFingerprint, error) {
@@ -154,6 +158,7 @@ func (m *Manager) FingerprintConfigScope(
 	return ConfigFingerprint{
 		digest:      digest,
 		owner:       m,
+		providerID:  values.Provider.ProviderID(),
 		initialized: true,
 	}, nil
 }
@@ -209,7 +214,13 @@ func (fingerprint ConditionFingerprint) validFor(manager *Manager) bool {
 }
 
 func (fingerprint ConfigFingerprint) validFor(manager *Manager) bool {
-	return fingerprint.initialized && fingerprint.owner == manager
+	return fingerprint.initialized &&
+		fingerprint.owner == manager &&
+		fingerprint.providerID != ""
+}
+
+func (fingerprint ConfigFingerprint) boundToProvider(providerID string) bool {
+	return fingerprint.providerID == providerID
 }
 
 func (m *Manager) domainHMAC(domain string, value []byte) [fingerprintBytes]byte {

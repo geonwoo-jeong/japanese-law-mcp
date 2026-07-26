@@ -225,3 +225,30 @@ func TestIssueRejectsTokenLargerThan4096BytesWithoutLeakingPosition(t *testing.T
 		t.Fatalf("SOT-IF-016: token 発行エラーが position を公開した")
 	}
 }
+
+func TestBindingUsesCapabilityIDAndMajorVersionOnly(t *testing.T) {
+	t.Parallel()
+
+	fixture := newContinuationFixture(t)
+	metadataVariant, err := model.NewProviderCapability(model.ProviderCapabilityValues{
+		ID:           fixture.capability.ID(),
+		MajorVersion: fixture.capability.MajorVersion(),
+		Level:        fixture.capability.Level(),
+		Stability:    model.CapabilityStabilityExperimental,
+	})
+	if err != nil {
+		t.Fatalf("SOT-MODEL-013: metadata variant の作成エラー = %v", err)
+	}
+	input := goldenIssueInput(t, fixture)
+	input.Capability = metadataVariant
+
+	token, err := fixture.manager.Issue(input)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-012/SOT-IF-016: 同じ capability binding の発行エラー = %v", err)
+	}
+	verifyInput := goldenVerifyInput(fixture, token)
+	verifyInput.Capability = metadataVariant
+	if _, err := fixture.manager.Verify(verifyInput); err != nil {
+		t.Fatalf("SOT-ARCH-012/SOT-IF-016: 同じ capability binding の検証エラー = %v", err)
+	}
+}

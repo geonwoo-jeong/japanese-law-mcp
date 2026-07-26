@@ -1,6 +1,7 @@
 package continuation
 
 import (
+	"encoding/base64"
 	"errors"
 	"strings"
 	"testing"
@@ -37,6 +38,44 @@ func TestVerifyRejectsMalformedEnvelopeAndBase64URL(t *testing.T) {
 			input := goldenVerifyInput(fixture, token)
 			_, err := fixture.manager.Verify(input)
 			assertInvalidTokenError(t, err, token, "民法", "秘密")
+		})
+	}
+}
+
+func TestVerifyRejectsLineBreaksInsideRawBase64URLSegments(t *testing.T) {
+	t.Parallel()
+
+	fixture := newContinuationFixture(t)
+	token, err := fixture.manager.Issue(goldenIssueInput(t, fixture))
+	if err != nil {
+		t.Fatalf("SOT-IF-016: token の発行エラー = %v", err)
+	}
+	parts := strings.Split(token, ".")
+
+	payloadWithLineBreak := parts[1][:16] + "\n" + parts[1][16:]
+	signed := "v1." + payloadWithLineBreak
+	mac := hmacForDomain(
+		fixedContinuationKey(),
+		"continuation-token-v1",
+		[]byte(signed),
+	)
+	correctlySignedPayload := signed + "." +
+		base64.RawURLEncoding.EncodeToString(mac)
+
+	tests := map[string]string{
+		"payload 内の LF": correctlySignedPayload,
+		"MAC 内の LF": parts[0] + "." + parts[1] + "." +
+			parts[2][:16] + "\n" + parts[2][16:],
+		"MAC 内の CR": parts[0] + "." + parts[1] + "." +
+			parts[2][:16] + "\r" + parts[2][16:],
+	}
+	for name, candidate := range tests {
+		candidate := candidate
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := fixture.manager.Verify(goldenVerifyInput(fixture, candidate))
+			assertInvalidTokenError(t, err, candidate)
 		})
 	}
 }
