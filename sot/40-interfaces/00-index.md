@@ -36,3 +36,4 @@
 - [34-law-update-list-capability.md](34-law-update-list-capability.md)
 - [35-source-egov-law-api-v1.md](35-source-egov-law-api-v1.md)
 - [36-egov-law-update-list-mapping.md](36-egov-law-update-list-mapping.md)
+- [37-egov-v1-built-in-adoption.md](37-egov-v1-built-in-adoption.md)

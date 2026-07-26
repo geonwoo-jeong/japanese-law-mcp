@@ -72,7 +72,7 @@ func TestServerRunnerReportsHTTPImplementationGap(t *testing.T) {
 	}
 }
 
-func TestDefaultProviderRoutesKeepFourEGovV2Bindings(t *testing.T) {
+func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 	t.Parallel()
 
 	registry, routes, err := newDefaultProviderRoutes()
@@ -83,8 +83,9 @@ func TestDefaultProviderRoutesKeepFourEGovV2Bindings(t *testing.T) {
 		len(descriptor.Capabilities()) != 4 {
 		t.Fatalf("e-Gov v2 descriptor = %#v, %t", descriptor, exists)
 	}
-	if descriptor, exists := registry.Descriptor("e-gov-law-api-v1"); exists {
-		t.Fatalf("未採用の e-Gov v1 descriptor = %#v", descriptor)
+	if descriptor, exists := registry.Descriptor("e-gov-law-api-v1"); !exists ||
+		len(descriptor.Capabilities()) != 1 {
+		t.Fatalf("e-Gov v1 descriptor = %#v, %t", descriptor, exists)
 	}
 	for _, capability := range []struct {
 		id         string
@@ -111,6 +112,11 @@ func TestDefaultProviderRoutesKeepFourEGovV2Bindings(t *testing.T) {
 			lawsearch.MajorVersion,
 			"e-gov-law-api-v2",
 		},
+		{
+			lawupdatelist.CapabilityID,
+			lawupdatelist.MajorVersion,
+			"e-gov-law-api-v1",
+		},
 	} {
 		providerID, exists := routes.ProviderID(capability.id, capability.version)
 		if !exists || providerID != capability.providerID {
@@ -136,14 +142,8 @@ func TestDefaultProviderRoutesKeepFourEGovV2Bindings(t *testing.T) {
 	if port, exists := routes.LawArticleRead(); !exists || port == nil {
 		t.Fatal("law.article.read route に到達できません")
 	}
-	if providerID, exists := routes.ProviderID(
-		lawupdatelist.CapabilityID,
-		lawupdatelist.MajorVersion,
-	); exists {
-		t.Fatalf("未採用の law.update.list provider = %q", providerID)
-	}
-	if port, exists := routes.LawUpdateList(); exists || port != nil {
-		t.Fatalf("未採用の law.update.list route = %#v, %t", port, exists)
+	if port, exists := routes.LawUpdateList(); !exists || port == nil {
+		t.Fatal("law.update.list route に到達できません")
 	}
 }
 

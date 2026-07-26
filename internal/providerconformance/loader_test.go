@@ -41,7 +41,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	v1Row := v1Rows[0]
 	if !slices.Equal(
 		v1Row.InterfaceSOTIDs,
-		[]string{"SOT-IF-034", "SOT-IF-035", "SOT-IF-036"},
+		[]string{"SOT-IF-034", "SOT-IF-035", "SOT-IF-036", "SOT-IF-037"},
 	) {
 		t.Fatalf("v1 interfaceSotIds = %v", v1Row.InterfaceSOTIDs)
 	}
@@ -51,7 +51,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		v1Row.ImplementedBy !=
 			"github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv1" ||
 		v1Row.ConformanceTarget != "./internal/source/egov/lawv1" ||
-		v1Row.Status != "planned" {
+		v1Row.Status != "implemented" {
 		t.Fatalf("v1 row = %#v", v1Row)
 	}
 	assertCasesAreExplicit(t, v1Row)

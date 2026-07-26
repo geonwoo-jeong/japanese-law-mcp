@@ -8,6 +8,7 @@ rows:
       - SOT-IF-034
       - SOT-IF-035
       - SOT-IF-036
+      - SOT-IF-037
     budgetSotId: SOT-IF-035
     budgetKey: update-law-list-xml
     concurrencyGroup: egov-v1-http
@@ -61,4 +62,4 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv1
     conformanceTarget: ./internal/source/egov/lawv1
-    status: planned
+    status: implemented

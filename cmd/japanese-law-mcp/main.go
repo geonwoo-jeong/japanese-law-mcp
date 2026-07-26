@@ -16,12 +16,14 @@ import (
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/buildinfo"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/cli"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/config"
 	projectmcp "github.com/japanese-law-mcp/japanese-law-mcp/internal/mcp"
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2"
 	"github.com/japanese-law-mcp/japanese-law-mcp/internal/transport/stdio"
 )
@@ -160,14 +162,20 @@ func newDefaultProviderRoutes() (
 			application.ProviderRoutes{},
 			fmt.Errorf("continuation manager を初期化できません: %w", err)
 	}
-	bindings, err := lawv2.NewProviderBindings(manager)
+	v2Bindings, err := lawv2.NewProviderBindings(manager)
 	if err != nil {
 		return application.ProviderBindingRegistry{},
 			application.ProviderRoutes{},
-			fmt.Errorf("e-Gov provider binding を初期化できません: %w", err)
+			fmt.Errorf("e-Gov Version 2 provider binding を初期化できません: %w", err)
+	}
+	v1Bindings, err := lawv1.NewProviderBindings()
+	if err != nil {
+		return application.ProviderBindingRegistry{},
+			application.ProviderRoutes{},
+			fmt.Errorf("e-Gov Version 1 provider binding を初期化できません: %w", err)
 	}
 	registry, err := application.NewProviderBindingRegistry(
-		[]application.ProviderBindings{bindings},
+		[]application.ProviderBindings{v2Bindings, v1Bindings},
 	)
 	if err != nil {
 		return application.ProviderBindingRegistry{},
@@ -187,31 +195,40 @@ func newDefaultProviderRoutes() (
 }
 
 func defaultProviderRouteValues() []application.ProviderRouteValues {
-	const providerID = "e-gov-law-api-v2"
+	const (
+		v1ProviderID = "e-gov-law-api-v1"
+		v2ProviderID = "e-gov-law-api-v2"
+	)
 	return []application.ProviderRouteValues{
 		{
 			CapabilityID:      lawarticleread.CapabilityID,
 			MajorVersion:      lawarticleread.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
-			DefaultProviderID: providerID,
+			DefaultProviderID: v2ProviderID,
 		},
 		{
 			CapabilityID:      lawcontentsearch.CapabilityID,
 			MajorVersion:      lawcontentsearch.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
-			DefaultProviderID: providerID,
+			DefaultProviderID: v2ProviderID,
 		},
 		{
 			CapabilityID:      lawdocumentread.CapabilityID,
 			MajorVersion:      lawdocumentread.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
-			DefaultProviderID: providerID,
+			DefaultProviderID: v2ProviderID,
 		},
 		{
 			CapabilityID:      lawsearch.CapabilityID,
 			MajorVersion:      lawsearch.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
-			DefaultProviderID: providerID,
+			DefaultProviderID: v2ProviderID,
+		},
+		{
+			CapabilityID:      lawupdatelist.CapabilityID,
+			MajorVersion:      lawupdatelist.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: v1ProviderID,
 		},
 	}
 }
