@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -56,12 +57,19 @@ const (
 	invalidSourceErrorMessage     = "情報源エラーが有効ではありません。"
 )
 
+// SourceOperation は、各プロバイダーが不変な閉じた列挙として定義する取得または解析 operation である。
+type SourceOperation interface {
+	SourceOperationProviderID() string
+	SourceOperationName() string
+	ValidateSourceOperation() error
+}
+
 // SourceErrorValues は、SourceError の作成に必要な安全な文脈を保持する。
 type SourceErrorValues struct {
 	Code       SourceErrorCode
 	Provider   ProviderDescriptor
 	Capability ProviderCapability
-	Operation  string
+	Operation  SourceOperation
 	RetryAfter string
 }
 
@@ -76,11 +84,18 @@ type SourceError struct {
 
 // NewSourceError は、安全な固定メッセージと再試行規則を持つ SourceError を返す。
 func NewSourceError(values SourceErrorValues) (SourceError, error) {
+	operation, err := sourceOperationName(
+		values.Operation,
+		values.Provider.ProviderID(),
+	)
+	if err != nil {
+		return SourceError{}, err
+	}
 	sourceError := SourceError{
 		code:       values.Code,
 		provider:   values.Provider,
 		capability: values.Capability,
-		operation:  values.Operation,
+		operation:  operation,
 		retryAfter: values.RetryAfter,
 	}
 	if err := sourceError.Validate(); err != nil {
@@ -245,6 +260,49 @@ func validateSourceErrorCapabilityDeclaration(
 	return nil
 }
 
+func sourceOperationName(
+	operation SourceOperation,
+	providerID string,
+) (string, error) {
+	if operation == nil {
+		return "", fmt.Errorf("operation は必須です")
+	}
+	value := reflect.ValueOf(operation)
+	if !isSourceOperationEnumKind(value.Kind()) {
+		return "", fmt.Errorf("operation はプロバイダーが定義する列挙値型でなければなりません")
+	}
+	if err := operation.ValidateSourceOperation(); err != nil {
+		return "", fmt.Errorf("operation がプロバイダーの定義にありません")
+	}
+	if operation.SourceOperationProviderID() != providerID {
+		return "", fmt.Errorf("operation が provider と一致しません")
+	}
+	name := operation.SourceOperationName()
+	if err := validateSourceErrorOperation(name); err != nil {
+		return "", err
+	}
+	return name, nil
+}
+
+func isSourceOperationEnumKind(kind reflect.Kind) bool {
+	switch kind {
+	case reflect.String,
+		reflect.Int,
+		reflect.Int8,
+		reflect.Int16,
+		reflect.Int32,
+		reflect.Int64,
+		reflect.Uint,
+		reflect.Uint8,
+		reflect.Uint16,
+		reflect.Uint32,
+		reflect.Uint64:
+		return true
+	default:
+		return false
+	}
+}
+
 func validateSourceErrorOperation(value string) error {
 	if strings.TrimSpace(value) == "" {
 		return fmt.Errorf("operation は必須です")
@@ -252,9 +310,6 @@ func validateSourceErrorOperation(value string) error {
 	if !utf8.ValidString(value) ||
 		strings.IndexFunc(value, unicode.IsControl) >= 0 {
 		return fmt.Errorf("operation は制御文字を含まない有効な UTF-8 でなければなりません")
-	}
-	if strings.ContainsAny(value, "?#") {
-		return fmt.Errorf("operation に query または fragment を含めることはできません")
 	}
 	return nil
 }

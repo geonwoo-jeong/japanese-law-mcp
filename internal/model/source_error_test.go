@@ -18,6 +18,105 @@ type sourceErrorExpectation struct {
 	retryable bool
 }
 
+type testSourceOperation string
+
+const (
+	testSourceProviderID                             = "e-gov-law-api-v2"
+	testSourceOperationLaws      testSourceOperation = "GET /laws"
+	testSourceOperationKeyword   testSourceOperation = "GET /keyword"
+	testSourceOperationLawData   testSourceOperation = "GET /law_data/{law_id_or_num_or_revision_id}"
+	testSourceOperationParseLaws testSourceOperation = "parse-law-response"
+)
+
+func (testSourceOperation) SourceOperationProviderID() string {
+	return testSourceProviderID
+}
+
+func (o testSourceOperation) SourceOperationName() string {
+	return string(o)
+}
+
+func (o testSourceOperation) ValidateSourceOperation() error {
+	switch o {
+	case testSourceOperationLaws,
+		testSourceOperationKeyword,
+		testSourceOperationLawData,
+		testSourceOperationParseLaws:
+		return nil
+	default:
+		return fmt.Errorf("試験用 provider に operation が定義されていません")
+	}
+}
+
+type mappedSourceOperation uint8
+
+const mappedSourceOperationLaws mappedSourceOperation = 1
+
+func (mappedSourceOperation) SourceOperationProviderID() string {
+	return testSourceProviderID
+}
+
+func (o mappedSourceOperation) SourceOperationName() string {
+	switch o {
+	case mappedSourceOperationLaws:
+		return "GET /laws"
+	default:
+		return ""
+	}
+}
+
+func (o mappedSourceOperation) ValidateSourceOperation() error {
+	if o != mappedSourceOperationLaws {
+		return fmt.Errorf("試験用 provider に operation が定義されていません")
+	}
+	return nil
+}
+
+type otherProviderSourceOperation string
+
+func (otherProviderSourceOperation) SourceOperationProviderID() string {
+	return "other-law-api"
+}
+
+func (o otherProviderSourceOperation) SourceOperationName() string {
+	return string(o)
+}
+
+func (o otherProviderSourceOperation) ValidateSourceOperation() error {
+	if o != otherProviderSourceOperation("GET /laws") {
+		return fmt.Errorf("別の試験用 provider に operation が定義されていません")
+	}
+	return nil
+}
+
+type permissiveSourceOperation string
+
+func (permissiveSourceOperation) SourceOperationProviderID() string {
+	return testSourceProviderID
+}
+
+func (o permissiveSourceOperation) SourceOperationName() string {
+	return string(o)
+}
+
+func (permissiveSourceOperation) ValidateSourceOperation() error {
+	return nil
+}
+
+type structSourceOperation struct{}
+
+func (structSourceOperation) SourceOperationProviderID() string {
+	return testSourceProviderID
+}
+
+func (structSourceOperation) SourceOperationName() string {
+	return "GET /laws"
+}
+
+func (structSourceOperation) ValidateSourceOperation() error {
+	return nil
+}
+
 func TestSourceErrorCodes(t *testing.T) {
 	t.Parallel()
 
@@ -116,23 +215,53 @@ func TestSourceErrorPreservesExplicitRetryAfter(t *testing.T) {
 func TestSourceErrorAcceptsDefinedOperations(t *testing.T) {
 	t.Parallel()
 
-	operations := []string{
-		"GET /laws",
-		"GET /keyword",
-		"GET /law_data/{law_id_or_num_or_revision_id}",
+	tests := []struct {
+		name      string
+		operation model.SourceOperation
+		want      string
+	}{
+		{
+			name:      "法令一覧",
+			operation: testSourceOperationLaws,
+			want:      "GET /laws",
+		},
+		{
+			name:      "キーワード検索",
+			operation: testSourceOperationKeyword,
+			want:      "GET /keyword",
+		},
+		{
+			name:      "法令本文",
+			operation: testSourceOperationLawData,
+			want:      "GET /law_data/{law_id_or_num_or_revision_id}",
+		},
+		{
+			name:      "解析",
+			operation: testSourceOperationParseLaws,
+			want:      "parse-law-response",
+		},
+		{
+			name:      "内部列挙値と公開名が異なる operation",
+			operation: mappedSourceOperationLaws,
+			want:      "GET /laws",
+		},
 	}
-	for _, operation := range operations {
-		operation := operation
-		t.Run(operation, func(t *testing.T) {
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
 			values := validSourceErrorValues(
 				t,
 				model.SourceErrorCodeInvalidSourceResponse,
 			)
-			values.Operation = operation
-			if _, err := model.NewSourceError(values); err != nil {
+			values.Operation = test.operation
+			got, err := model.NewSourceError(values)
+			if err != nil {
 				t.Fatalf("SOT-IF-004/SOT-IF-017: 定義済み operation を拒否した: %v", err)
+			}
+			if got.Operation() != test.want {
+				t.Fatalf("SOT-IF-017: Operation() = %q", got.Operation())
 			}
 		})
 	}
@@ -173,16 +302,31 @@ func TestSourceErrorRejectsInvalidValues(t *testing.T) {
 			values.Capability = model.ProviderCapability{}
 		},
 		"operation の欠落": func(values *model.SourceErrorValues) {
-			values.Operation = ""
+			values.Operation = nil
+		},
+		"operation が空白だけ": func(values *model.SourceErrorValues) {
+			values.Operation = permissiveSourceOperation(" ")
+		},
+		"operation の無効な UTF-8": func(values *model.SourceErrorValues) {
+			values.Operation = permissiveSourceOperation(string([]byte{0xff}))
 		},
 		"operation の改行": func(values *model.SourceErrorValues) {
-			values.Operation = "GET /laws\nX-Input: secret"
+			values.Operation = permissiveSourceOperation("GET /laws\nX-Input: secret")
 		},
-		"operation の query": func(values *model.SourceErrorValues) {
-			values.Operation = "GET /laws?title=秘密"
+		"operation の具体化された path": func(values *model.SourceErrorValues) {
+			values.Operation = testSourceOperation("GET /law_data/12345")
 		},
-		"operation の fragment": func(values *model.SourceErrorValues) {
-			values.Operation = "GET /laws#秘密"
+		"operation の書込み method": func(values *model.SourceErrorValues) {
+			values.Operation = testSourceOperation("POST /submit")
+		},
+		"operation の未定義名": func(values *model.SourceErrorValues) {
+			values.Operation = testSourceOperation("download-secret")
+		},
+		"operation の provider が不一致": func(values *model.SourceErrorValues) {
+			values.Operation = otherProviderSourceOperation("GET /laws")
+		},
+		"operation が列挙値型ではない": func(values *model.SourceErrorValues) {
+			values.Operation = structSourceOperation{}
 		},
 		"retryAfter の無効な UTF-8": func(values *model.SourceErrorValues) {
 			values.RetryAfter = string([]byte{0xff})
@@ -334,7 +478,7 @@ func validSourceErrorValues(
 		Code:       code,
 		Provider:   newSourceErrorProviderDescriptor(t, capabilities),
 		Capability: capability,
-		Operation:  "GET /laws",
+		Operation:  testSourceOperationLaws,
 	}
 }
 
