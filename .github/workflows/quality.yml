@@ -105,5 +105,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.5-
 
+      - name: pull request のプロバイダー追加適合性を検証する
+        if: github.event_name == 'pull_request'
+        env:
+          PROVIDER_BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: go run ./cmd/provider-onboarding-fit --base-ref "$PROVIDER_BASE_REF"
+
+      - name: push のプロバイダー追加適合性を検証する
+        if: github.event_name == 'push'
+        env:
+          PROVIDER_BASE_REF: ${{ github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$PROVIDER_BASE_REF" =~ ^0+$ ]]; then
+            if ! PROVIDER_BASE_REF="$(git rev-parse --verify 'HEAD^1^{commit}')"; then
+              echo "新規 push の HEAD は root commit で、プロバイダー変更の比較元となる第一親がありません。" >&2
+              exit 1
+            fi
+          fi
+          go run ./cmd/provider-onboarding-fit --base-ref "$PROVIDER_BASE_REF"
+
       - name: 権威ある品質ゲートを実行する
         run: go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.

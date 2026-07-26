@@ -1,0 +1,254 @@
+schemaVersion: 1
+rows:
+  - providerId: e-gov-law-api-v2
+    capabilityId: law.article.read
+    majorVersion: 1
+    operation: "GET /law_data/{law_id_or_num_or_revision_id}"
+    interfaceSotIds:
+      - SOT-IF-004
+      - SOT-IF-011
+      - SOT-IF-012
+      - SOT-IF-025
+    budgetSotId: SOT-IF-004
+    budgetKey: law-data-xml
+    concurrencyGroup: egov-http
+    artifactType: XML
+    fixtureSet: law-article-read-v1
+    requiredCases:
+      - descriptor
+      - capability-binding
+      - outbound-request
+      - provenance
+      - resource-ref-roundtrip
+      - empty-vs-not-found
+      - unsupported-query
+      - error-normalization
+      - secret-non-exposure
+      - response-bytes-limit
+      - decompressed-bytes-limit
+      - entries-or-objects-limit
+      - depth-limit
+      - parse-timeout
+      - concurrency-limit
+      - cancellation
+      - contract-changed
+    notApplicableCases:
+      - case: authentication
+        reason: このプロバイダーは認証情報を使用しないため。
+      - case: page-invariants
+        reason: 単一資源を返し、ページ情報を使用しないため。
+      - case: continuation-roundtrip
+        reason: 継続取得を使用しないため。
+      - case: continuation-tamper
+        reason: 継続取得を使用しないため。
+      - case: continuation-expired
+        reason: 継続取得を使用しないため。
+    supportsContinuation: false
+    supportsAuth: false
+    publicErrorSet:
+      - invalid_argument
+      - not_found
+      - ambiguous_location
+      - unsupported_capability
+      - unsupported_query
+      - configuration_required
+      - source_auth_failed
+      - rate_limited
+      - source_timeout
+      - source_unavailable
+      - source_busy
+      - source_contract_changed
+      - invalid_source_response
+      - source_response_too_large
+      - source_processing_limit
+      - unsafe_source_content
+    parserContractVersion: "1.0.0"
+    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    conformanceTarget: ./internal/source/egov/lawv2
+    status: planned
+
+  - providerId: e-gov-law-api-v2
+    capabilityId: law.content.search
+    majorVersion: 1
+    operation: "GET /keyword"
+    interfaceSotIds:
+      - SOT-IF-004
+      - SOT-IF-010
+      - SOT-IF-023
+      - SOT-IF-028
+    budgetSotId: SOT-IF-004
+    budgetKey: keyword-json
+    concurrencyGroup: egov-http
+    artifactType: JSON
+    fixtureSet: law-content-search-v1
+    requiredCases:
+      - descriptor
+      - capability-binding
+      - outbound-request
+      - provenance
+      - resource-ref-roundtrip
+      - empty-vs-not-found
+      - unsupported-query
+      - page-invariants
+      - continuation-roundtrip
+      - continuation-tamper
+      - continuation-expired
+      - error-normalization
+      - secret-non-exposure
+      - response-bytes-limit
+      - decompressed-bytes-limit
+      - entries-or-objects-limit
+      - depth-limit
+      - parse-timeout
+      - concurrency-limit
+      - cancellation
+      - contract-changed
+    notApplicableCases:
+      - case: authentication
+        reason: このプロバイダーは認証情報を使用しないため。
+    supportsContinuation: true
+    supportsAuth: false
+    publicErrorSet:
+      - invalid_argument
+      - unsupported_capability
+      - unsupported_query
+      - configuration_required
+      - source_auth_failed
+      - rate_limited
+      - source_timeout
+      - source_unavailable
+      - source_busy
+      - source_contract_changed
+      - invalid_source_response
+      - source_response_too_large
+      - source_processing_limit
+      - unsafe_source_content
+    parserContractVersion: "1.0.0"
+    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    conformanceTarget: ./internal/source/egov/lawv2
+    status: planned
+
+  - providerId: e-gov-law-api-v2
+    capabilityId: law.document.read
+    majorVersion: 1
+    operation: "GET /law_data/{law_id_or_num_or_revision_id}"
+    interfaceSotIds:
+      - SOT-IF-004
+      - SOT-IF-011
+      - SOT-IF-024
+    budgetSotId: SOT-IF-004
+    budgetKey: law-data-xml
+    concurrencyGroup: egov-http
+    artifactType: XML
+    fixtureSet: law-document-read-v1
+    requiredCases:
+      - descriptor
+      - capability-binding
+      - outbound-request
+      - provenance
+      - resource-ref-roundtrip
+      - empty-vs-not-found
+      - unsupported-query
+      - error-normalization
+      - secret-non-exposure
+      - response-bytes-limit
+      - decompressed-bytes-limit
+      - entries-or-objects-limit
+      - depth-limit
+      - parse-timeout
+      - concurrency-limit
+      - cancellation
+      - contract-changed
+    notApplicableCases:
+      - case: authentication
+        reason: このプロバイダーは認証情報を使用しないため。
+      - case: page-invariants
+        reason: 単一資源を返し、ページ情報を使用しないため。
+      - case: continuation-roundtrip
+        reason: 継続取得を使用しないため。
+      - case: continuation-tamper
+        reason: 継続取得を使用しないため。
+      - case: continuation-expired
+        reason: 継続取得を使用しないため。
+    supportsContinuation: false
+    supportsAuth: false
+    publicErrorSet:
+      - invalid_argument
+      - not_found
+      - unsupported_capability
+      - unsupported_query
+      - configuration_required
+      - source_auth_failed
+      - rate_limited
+      - source_timeout
+      - source_unavailable
+      - source_busy
+      - source_contract_changed
+      - invalid_source_response
+      - source_response_too_large
+      - source_processing_limit
+      - unsafe_source_content
+    parserContractVersion: "1.0.0"
+    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    conformanceTarget: ./internal/source/egov/lawv2
+    status: planned
+
+  - providerId: e-gov-law-api-v2
+    capabilityId: law.search
+    majorVersion: 1
+    operation: "GET /laws"
+    interfaceSotIds:
+      - SOT-IF-004
+      - SOT-IF-009
+      - SOT-IF-022
+    budgetSotId: SOT-IF-004
+    budgetKey: laws-json
+    concurrencyGroup: egov-http
+    artifactType: JSON
+    fixtureSet: law-search-v1
+    requiredCases:
+      - descriptor
+      - capability-binding
+      - outbound-request
+      - provenance
+      - resource-ref-roundtrip
+      - empty-vs-not-found
+      - unsupported-query
+      - page-invariants
+      - continuation-roundtrip
+      - continuation-tamper
+      - continuation-expired
+      - error-normalization
+      - secret-non-exposure
+      - response-bytes-limit
+      - decompressed-bytes-limit
+      - entries-or-objects-limit
+      - depth-limit
+      - parse-timeout
+      - concurrency-limit
+      - cancellation
+      - contract-changed
+    notApplicableCases:
+      - case: authentication
+        reason: このプロバイダーは認証情報を使用しないため。
+    supportsContinuation: true
+    supportsAuth: false
+    publicErrorSet:
+      - invalid_argument
+      - unsupported_capability
+      - unsupported_query
+      - configuration_required
+      - source_auth_failed
+      - rate_limited
+      - source_timeout
+      - source_unavailable
+      - source_busy
+      - source_contract_changed
+      - invalid_source_response
+      - source_response_too_large
+      - source_processing_limit
+      - unsafe_source_content
+    parserContractVersion: "1.0.0"
+    implementedBy: github.com/japanese-law-mcp/japanese-law-mcp/internal/source/egov/lawv2
+    conformanceTarget: ./internal/source/egov/lawv2
+    status: planned

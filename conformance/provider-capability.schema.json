@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/japanese-law-mcp/japanese-law-mcp/conformance/provider-capability.schema.json",
+  "title": "Japanese Law MCP provider capability conformance matrix",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "rows"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sotId": {
+      "type": "string",
+      "pattern": "^SOT-(PROD|SCN|MODEL|ARCH|IF|ENG|DEL)-[0-9]{3}$"
+    },
+    "kebabCase": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "standardCase": {
+      "type": "string",
+      "enum": [
+        "descriptor",
+        "capability-binding",
+        "outbound-request",
+        "authentication",
+        "provenance",
+        "resource-ref-roundtrip",
+        "empty-vs-not-found",
+        "unsupported-query",
+        "page-invariants",
+        "continuation-roundtrip",
+        "continuation-tamper",
+        "continuation-expired",
+        "error-normalization",
+        "secret-non-exposure",
+        "response-bytes-limit",
+        "decompressed-bytes-limit",
+        "entries-or-objects-limit",
+        "depth-limit",
+        "parse-timeout",
+        "concurrency-limit",
+        "cancellation",
+        "contract-changed"
+      ]
+    },
+    "publicError": {
+      "type": "string",
+      "enum": [
+        "invalid_argument",
+        "not_found",
+        "ambiguous_location",
+        "unsupported_capability",
+        "unsupported_query",
+        "configuration_required",
+        "source_auth_failed",
+        "rate_limited",
+        "source_timeout",
+        "source_unavailable",
+        "source_busy",
+        "source_contract_changed",
+        "invalid_source_response",
+        "source_response_too_large",
+        "source_processing_limit",
+        "unsafe_source_content"
+      ]
+    },
+    "notApplicableCase": {
+      "type": "object",
+      "required": [
+        "case",
+        "reason"
+      ],
+      "properties": {
+        "case": {
+          "$ref": "#/$defs/standardCase"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "row": {
+      "type": "object",
+      "required": [
+        "providerId",
+        "capabilityId",
+        "majorVersion",
+        "operation",
+        "interfaceSotIds",
+        "budgetSotId",
+        "budgetKey",
+        "concurrencyGroup",
+        "artifactType",
+        "fixtureSet",
+        "requiredCases",
+        "notApplicableCases",
+        "supportsContinuation",
+        "supportsAuth",
+        "publicErrorSet",
+        "parserContractVersion",
+        "implementedBy",
+        "conformanceTarget",
+        "status"
+      ],
+      "properties": {
+        "providerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "capabilityId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 192,
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)+$"
+        },
+        "majorVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "interfaceSotIds": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/sotId"
+          }
+        },
+        "budgetSotId": {
+          "$ref": "#/$defs/sotId"
+        },
+        "budgetKey": {
+          "$ref": "#/$defs/kebabCase"
+        },
+        "concurrencyGroup": {
+          "$ref": "#/$defs/kebabCase"
+        },
+        "artifactType": {
+          "type": "string",
+          "enum": [
+            "JSON",
+            "XML",
+            "HTML",
+            "GeoJSON",
+            "XBRL",
+            "gzip",
+            "ZIP",
+            "PDF",
+            "PBF",
+            "binary"
+          ]
+        },
+        "fixtureSet": {
+          "$ref": "#/$defs/kebabCase"
+        },
+        "requiredCases": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/standardCase"
+          }
+        },
+        "notApplicableCases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/notApplicableCase"
+          }
+        },
+        "supportsContinuation": {
+          "type": "boolean"
+        },
+        "supportsAuth": {
+          "type": "boolean"
+        },
+        "publicErrorSet": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/publicError"
+          }
+        },
+        "parserContractVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "oneOf": [
+            {
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+            },
+            {
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+            }
+          ]
+        },
+        "implementedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[a-z0-9][a-z0-9.-]*(/[a-z0-9][a-z0-9._~-]*)+$"
+        },
+        "conformanceTarget": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^\\./internal/source/[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "implemented",
+            "retired"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

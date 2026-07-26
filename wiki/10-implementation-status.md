@@ -13,6 +13,7 @@
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
 - [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
 - [SOT-ENG-021](../sot/50-engineering/21-git-hook-staged-verification.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
+- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) に従う、プロバイダー適合性 matrix の schema・共通 loader、`provider-onboarding-fit`、ならびに `pre-push` と GitHub Actions への先行 gate 接続
 - [SOT-MODEL-009](../sot/20-model/09-json-serialization.md)、[SOT-MODEL-010](../sot/20-model/10-information-source.md)、[SOT-MODEL-013](../sot/20-model/13-provider-capability.md) および [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) に従う、不変なプロバイダーメタデータ型、検証および JSON 表現
 - [SOT-MODEL-011](../sot/20-model/11-source-resource-key.md) および [SOT-MODEL-016](../sot/20-model/16-source-resource-ref.md) に従う、不変な情報源資源キーとプロバイダー参照の構造検証および JSON 表現
 - [SOT-MODEL-012](../sot/20-model/12-provenance.md) に従う、不変な出典、変換種別ごとの従属制約、日時・MIME type・ダイジェストの検証および JSON 表現
@@ -27,7 +28,6 @@
 - MCP ツールとユースケース
 - e-Gov 法令 API Version 2 アダプター
 - e-Gov 法令 API Version 2 の組込み `ProviderDescriptor`、型付き capability binding、route、継続位置・snapshot・sort の provider 固有 mapping と呼出経路への組込み、`SourceResourceRef` と能力・構成状態の照合、および [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) から [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) に定義した残りの provider 設定と registry 処理
-- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) の機械検証
 - loopback 限定の Streamable HTTP トランスポートとリソース制限
 - ローカル公式配布物を生成するリリース処理
 

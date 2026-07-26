@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/provideronboarding"
 )
 
 type gateCall struct {
@@ -37,6 +39,12 @@ func newTestApplication(repository string) *application {
 			[]string,
 			io.Writer,
 			io.Writer,
+		) error {
+			return nil
+		},
+		providerOnboarding: func(
+			context.Context,
+			provideronboarding.Options,
 		) error {
 			return nil
 		},

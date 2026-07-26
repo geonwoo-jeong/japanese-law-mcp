@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/japanese-law-mcp/japanese-law-mcp/internal/provideronboarding"
 )
 
 const maximumPushInputLine = 1024 * 1024
@@ -20,8 +22,9 @@ type pushUpdate struct {
 }
 
 type tipPlan struct {
-	oid    string
-	ranges []string
+	oid                 string
+	ranges              []string
+	providerBaseCommits []string
 }
 
 func (app *application) prePush(ctx context.Context) error {
@@ -109,6 +112,7 @@ func (app *application) planPush(
 	plans := make([]tipPlan, 0, len(updates))
 	planIndexes := make(map[string]int)
 	resolvedObjects := make(map[string]string)
+	firstParents := make(map[string]string)
 	for _, update := range updates {
 		if allZeroOID(update.localOID) {
 			continue
@@ -121,11 +125,23 @@ func (app *application) planPush(
 		if !allZeroOID(update.remoteOID) {
 			remoteCommit, _ = app.resolveCommit(ctx, update.remoteOID, resolvedObjects)
 		}
+		baseCommit := remoteCommit
+		if baseCommit == "" {
+			baseCommit, err = app.resolveFirstParent(ctx, localCommit, firstParents)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"%s の provider gate 比較元を決定できません: %w",
+					update.localRef,
+					err,
+				)
+			}
+		}
 		plans, planIndexes = addUpdatePlan(
 			plans,
 			planIndexes,
 			localCommit,
 			remoteCommit,
+			baseCommit,
 		)
 	}
 	return plans, nil
@@ -157,10 +173,49 @@ func (app *application) resolveCommit(
 	return commit, nil
 }
 
+func (app *application) resolveFirstParent(
+	ctx context.Context,
+	commit string,
+	resolved map[string]string,
+) (string, error) {
+	if parent, ok := resolved[commit]; ok {
+		return parent, nil
+	}
+	command := gitCommand(
+		ctx,
+		app.repository,
+		nil,
+		"rev-list",
+		"--parents",
+		"--max-count=1",
+		commit,
+	)
+	output, err := command.Output()
+	if err != nil {
+		return "", fmt.Errorf("commit %s の第一親を取得できません: %w", commit, err)
+	}
+	fields := strings.Fields(string(output))
+	if len(fields) == 1 && strings.EqualFold(fields[0], commit) {
+		return "", fmt.Errorf(
+			"commit %s は root commit で、provider 変更の比較元となる第一親がありません",
+			commit,
+		)
+	}
+	if len(fields) < 2 || !strings.EqualFold(fields[0], commit) {
+		return "", fmt.Errorf("commit %s の第一親を判定できません", commit)
+	}
+	parent := strings.ToLower(fields[1])
+	if !validOID(parent) || len(parent) != len(commit) {
+		return "", fmt.Errorf("commit %s の第一親 object ID が不正です", commit)
+	}
+	resolved[commit] = parent
+	return parent, nil
+}
+
 func addUpdatePlan(
 	plans []tipPlan,
 	indexes map[string]int,
-	localCommit, remoteCommit string,
+	localCommit, remoteCommit, providerBaseCommit string,
 ) ([]tipPlan, map[string]int) {
 	index, found := indexes[localCommit]
 	if !found {
@@ -174,6 +229,12 @@ func addUpdatePlan(
 	}
 	if !containsString(plans[index].ranges, gitRange) {
 		plans[index].ranges = append(plans[index].ranges, gitRange)
+	}
+	if !containsString(plans[index].providerBaseCommits, providerBaseCommit) {
+		plans[index].providerBaseCommits = append(
+			plans[index].providerBaseCommits,
+			providerBaseCommit,
+		)
 	}
 	return plans, indexes
 }
@@ -204,6 +265,35 @@ func (app *application) checkTip(ctx context.Context, plan tipPlan) (result erro
 	}
 	if err := app.materializeTreeSnapshot(ctx, plan.oid, snapshot); err != nil {
 		return err
+	}
+	if len(plan.providerBaseCommits) == 0 {
+		return fmt.Errorf("commit %s の provider gate 比較元がありません", plan.oid)
+	}
+	if app.providerOnboarding == nil {
+		return errors.New("provider-onboarding gate が設定されていません")
+	}
+	for _, baseCommit := range plan.providerBaseCommits {
+		if err := app.providerOnboarding(
+			ctx,
+			provideronboarding.Options{
+				Repository:         snapshot,
+				GitRepository:      app.repository,
+				BaseRef:            baseCommit,
+				HeadRef:            plan.oid,
+				IncludeIndex:       false,
+				IncludeWorkingTree: false,
+				IncludeUntracked:   false,
+				Stdout:             app.stdout,
+				Stderr:             app.stderr,
+			},
+		); err != nil {
+			return fmt.Errorf(
+				"provider-onboarding gate が失敗しました (head=%s, base=%s): %w",
+				plan.oid,
+				baseCommit,
+				err,
+			)
+		}
 	}
 	return app.qualityGate(
 		ctx,
