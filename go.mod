@@ -3,6 +3,7 @@ module github.com/japanese-law-mcp/japanese-law-mcp
 go 1.25.0
 
 require (
+	github.com/gowebpki/jcs v1.0.1
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/rogpeppe/go-internal v1.15.0
 	github.com/spf13/cobra v1.10.2
