@@ -20,12 +20,13 @@
 - [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) に従う、`SourceResourceRef`、一件以上の `Provenance` および検証可能な型付き data を結び付ける不変な `SourcedResource<T>` と出典経路の整合検証
 - [SOT-IF-017](../sot/40-interfaces/17-source-error-normalization.md) に従う、十三分類、固定された安全な日本語メッセージおよび再試行可否を持ち、[SOT-IF-027](../sot/40-interfaces/27-public-source-error-contract.md) が許可する二分類に限って明示された `retryAfter` を保持する不変な `SourceError`
 - [SOT-ARCH-012](../sot/30-architecture/12-provider-registry.md) のうち、`providerId` と能力 ID・メジャーバージョンの宣言を起動時に検証して保持し、`SourceResourceRef` の provider と情報源の一致を照合する不変な descriptor registry
+- [SOT-IF-016](../sot/40-interfaces/16-source-continuation-contract.md) および [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) の構成状態 fingerprint 規定に従う、プロセスローカル鍵、RFC 8785 正規化、条件・構成状態の結合、期限・長さ検証および再起動時無効化を備えた共通 continuation token kernel
 
 ## 未実装
 
 - MCP ツールとユースケース
 - e-Gov 法令 API Version 2 アダプター
-- e-Gov 法令 API Version 2 の組込み `ProviderDescriptor`、型付き capability binding、route、継続取得、`SourceResourceRef` と能力・構成状態の照合、および [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) から [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) に定義した残りの provider 設定と registry 処理
+- e-Gov 法令 API Version 2 の組込み `ProviderDescriptor`、型付き capability binding、route、継続位置・snapshot・sort の provider 固有 mapping と呼出経路への組込み、`SourceResourceRef` と能力・構成状態の照合、および [SOT-IF-015](../sot/40-interfaces/15-source-operation-contract.md) から [SOT-IF-029](../sot/40-interfaces/29-local-runtime-configuration.md) に定義した残りの provider 設定と registry 処理
 - [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) の機械検証
 - loopback 限定の Streamable HTTP トランスポートとリソース制限
 - ローカル公式配布物を生成するリリース処理
