@@ -29,14 +29,14 @@
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 ```
 
-`SOT-ENG-018` の適用変更または初回導入では、clean checkout したリポジトリのルートから provider 固有の比較を行う command と中央の標準コマンドを次の順に実行し、両方の成功を変更完了の条件とする。
+`SOT-ENG-018` の適用変更または初回導入では、検査対象のソース状態に対して provider 固有の比較を行う command と中央の標準コマンドを次の順に実行し、両方の成功を変更完了の条件とする。ローカルでは現在の working tree と index を含むソース状態を対象に `provider-onboarding-fit` を実行し、その後に clean checkout した同じ変更内容に対して中央の品質ゲートを実行する。CI では checkout した対象 commit に対して両方の command を順に実行する。
 
 ```text
 go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 ```
 
-通常の pull request の CI は信頼できる event metadata が示す target commit を、push の CI は同じ metadata が示す変更前 commit を `<git-revision>` に渡し、変更側が指定した値で上書きしない。ローカル検証は統合先として意図する commit を明示する。初回導入のローカル検証と CI は、`SOT-ENG-018` が定める SOT-only commit の同じ不変 object ID を渡す。任意の古い commit、固定 branch、暗黙の既定 ref または一方の command だけの成功を完了判定に使用しない。
+通常の pull request の CI は信頼できる event metadata が示す target commit を、push の CI は同じ metadata が示す変更前 commit を `<git-revision>` に渡し、変更側が指定した値で上書きしない。ローカル検証は統合先として意図する commit を明示する。初回導入では、schema、loader および command を追加する変更の直前に review 済みの commit を渡す。任意の古い commit、固定 branch、暗黙の既定 ref または一方の command だけの成功を完了判定に使用しない。
 
 品質ゲートは最初の失敗で非ゼロ終了し、脆弱性データベース、Git 全履歴または検査ツールへ到達できない状態を成功として扱わない。一つでも失敗した検査を警告へ緩和せず、原因を解消してすべての適用可能なゲートを再実行する。
 

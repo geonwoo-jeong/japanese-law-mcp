@@ -4,24 +4,26 @@
 
 ## 規定
 
-リリース対象の各 provider capability について、要求される契約テスト、fixture、資源予算および SOT の対応を、機械可読の conformance matrix で管理し、欠落または不一致がある変更を検証ゲートで失敗させる。
+リリース対象の各 provider capability について、対応する SOT、実装、fixture、資源予算および契約テストを、機械可読の conformance matrix で結び付ける。
+
+matrix は実装の内部構造を完全に証明するためのものではない。共通 interface から観測できる振る舞いと、provider ごとの実装範囲および検証対象を追跡するために使用する。
 
 ## matrix
 
-matrix の canonical artifact は、repository root から見た次の二箇所に固定する。
+canonical artifact は、repository root から見た次の二箇所に固定する。
 
 ```text
 conformance/provider-capability.schema.json
 conformance/providers/{providerId}.yaml
 ```
 
-schema は JSON Schema Draft 2020-12 の一ファイルだけとする。provider ごとの matrix は UTF-8 の YAML 1.2 を一ファイルだけ持ち、ファイル名の `{providerId}` と全 row の `providerId` を一致させる。JSON、TOML、CSV、Go の静的データ、別の schema または別 path を canonical matrix として併用しない。
+schema は JSON Schema Draft 2020-12 とする。provider ごとの matrix は UTF-8 の YAML 1.2 を一ファイルだけ持ち、ファイル名の `{providerId}` と各 row の `providerId` を一致させる。
 
-YAML の最上位は `schemaVersion: 1` と `rows` の二項目だけを持つ object とする。alias、anchor、merge key、custom tag、重複 key、未知の最上位 key および JSON 互換型以外の scalar を拒否する。各ファイルの `rows` は `capabilityId`、`majorVersion`、`operation`、`budgetKey` の順で byte 単位の昇順に並べ、同じ組を重複させない。
+YAML の最上位は `schemaVersion: 1` と `rows` を持つ object とする。alias、anchor、merge key、custom tag、重複 key および未知の最上位 key を拒否する。各ファイルの `rows` は `capabilityId`、`majorVersion`、`operation`、`budgetKey` の順で昇順に並べ、同じ `(providerId, capabilityId, majorVersion, operation)` を重複させない。
 
-`go test ./internal/providerconformance` は schema と `conformance/providers/*.yaml` を同じ loader で読み、0 件の provider file、schema 違反、file 名不一致、並び順不一致および未知ファイルを失敗させる。`go test ./...` と `provider-onboarding-fit` はこの test と loader を再利用し、独自の matrix parser を持たない。
+`internal/providerconformance` の共通 loader が schema と `conformance/providers/*.yaml` を読み、通常の test と `provider-onboarding-fit` はこの loader を再利用する。
 
-各 row は、一つの `(providerId, capabilityId, majorVersion, operation)` を表し、少なくとも次の列を持つ。
+各 row は少なくとも次の列を持つ。
 
 | 列 | 内容 |
 |---|---|
@@ -29,93 +31,104 @@ YAML の最上位は `schemaVersion: 1` と `rows` の二項目だけを持つ o
 | `capabilityId` | `SOT-MODEL-013` に従う能力 ID |
 | `majorVersion` | 能力の互換性境界 |
 | `operation` | provider 内部の取得または解析 operation 名 |
-| `interfaceSotIds` | 対応する interface / mapping SOT ID の配列 |
+| `interfaceSotIds` | 対応する provider、capability および mapping SOT ID |
 | `budgetSotId` | 資源予算を定義した SOT ID |
-| `budgetKey` | `budgetSotId` 内の一つの budget row を一意に示す識別子 |
+| `budgetKey` | `budgetSotId` 内の budget row |
 | `concurrencyGroup` | 同じ provider 内で共有する同時実行枠 |
 | `artifactType` | `SOT-ENG-016` の artifact 種別 |
-| `fixtureSet` | 正常系と異常系に使う fixture 群の識別子 |
-| `requiredCases` | 必須 test case 名の配列 |
+| `fixtureSet` | 正常系と異常系に使う provider 固有 fixture 群 |
+| `requiredCases` | 必須の共通契約 test case |
+| `notApplicableCases` | 適用しない標準 case と理由 |
 | `supportsContinuation` | continuation 契約の適用有無 |
 | `supportsAuth` | provider 設定または認証の適用有無 |
-| `publicErrorSet` | 到達し得る公開エラー code の集合 |
+| `publicErrorSet` | 到達し得る公開エラー code |
 | `parserContractVersion` | parser contract の版または確認日 |
-| `implementedBy` | 実装を所有する Go package または test target |
+| `implementedBy` | 実装を所有する Go package |
+| `conformanceTarget` | この row の契約テスト target |
 | `status` | `planned`、`implemented` または `retired` |
 
-`requiredCases` には、少なくとも次のカテゴリから適用可能な case を列挙する。
+`interfaceSotIds` と `budgetSotId` は、`planned` と `implemented` では有効な SOT を参照する。`retired` では、実装当時の契約を追跡するため廃止済み SOT を参照してよい。
 
-- descriptor
-- capability-binding
-- provenance
-- resource-ref-roundtrip
-- empty-vs-not-found
-- unsupported-query
-- page-invariants
-- continuation-roundtrip
-- continuation-tamper
-- continuation-expired
-- error-normalization
-- secret-non-exposure
-- response-bytes-limit
-- decompressed-bytes-limit
-- entries-or-objects-limit
-- depth-limit
-- parse-timeout
-- concurrency-limit
-- cancellation
-- import-isolation
-- contract-changed
-- incremental-onboarding-fit
+`implementedBy` は provider ごとに分離した package とする。一つの provider package から他の provider package を import しない。共通 model、能力別 port、共通 HTTP・継続取得・予算 helper は provider-neutral package に置き、外部 API の DTO、request builder、parser および mapping は各 provider package が所有する。
 
-適用しない case は省略せず、row ごとに `n/a` と理由を持つ補助列または同等の表現で明示する。
+## fixture と共通 case
 
-`page-invariants` は、一覧または検索 operation について、能力別 SOT と mapping SOT が定義する返却件数、配列長、総件数、次位置、末尾、空結果および前進性の不変条件を、正常 fixture と不正 fixture の両方で確認する case とする。`supportsContinuation: true` の row、および `law.search@1` または `law.content.search@1` の row は `page-invariants` を `n/a` にできない。
+fixture は `implementedBy` の package 配下に provider ごと、`fixtureSet` ごとに分離して置く。fixture は外部 API の request と未加工 response、または同等の外部 artifact を表し、共通 model の完成値を返す fake port として使わない。
 
-e-Gov 法令 API Version 2 の `law.search@1` row では、少なくとも `count` と `laws.length` の一致、`total_count` との整合、非 `null` の `next_offset == offset + count`、明示された `null` と欠落の区別、欠落時の安全な導出、および公開 `nextOffset` と内部 continuation position の同値を検証する。
+同じ `(capabilityId, majorVersion)` の provider は、同じ能力別 port と共通 conformance suite を使用する。provider 固有の応答形式や境界値は、共通 case の fixture variation として追加する。provider 固有の test logic が必要な場合は provider package の通常の test として追加できるが、共通 interface の意味を provider ごとに変更しない。
 
-e-Gov 法令 API Version 2 の `law.content.search@1` row では、少なくとも全 `sentences` の展開件数と `sentence_count` の一致、`total_count` との整合、非 `null` の `next_offset == offset + sentence_count`、残件がある場合の `null` または欠落の失敗、および公開 `nextOffset` と内部 continuation position の同値を検証する。
+標準 case は、適用可能な範囲で次を含む。
 
-上記の各不正 fixture は、item の切捨て、再計数、独自 offset の合成または末尾への読み替えで成功させず、mapping SOT が定義するエラーとなることを確認する。test 名だけが `page-invariants` で内容を満たさない場合は gate failure とする。
+- `descriptor`
+- `capability-binding`
+- `outbound-request`
+- `authentication`
+- `provenance`
+- `resource-ref-roundtrip`
+- `empty-vs-not-found`
+- `unsupported-query`
+- `page-invariants`
+- `continuation-roundtrip`
+- `continuation-tamper`
+- `continuation-expired`
+- `error-normalization`
+- `secret-non-exposure`
+- `response-bytes-limit`
+- `decompressed-bytes-limit`
+- `entries-or-objects-limit`
+- `depth-limit`
+- `parse-timeout`
+- `concurrency-limit`
+- `cancellation`
+- `contract-changed`
 
-`status` は、runtime の登録状態と次のように一致させる。
+適用しない case は `notApplicableCases` に理由を記録する。case の適用可否は、能力別 SOT、共通 conformance suite、`supportsContinuation` および `supportsAuth` から決定し、provider 固有の理由だけで共通 capability の必須 case を適用外にしない。`outbound-request`、`secret-non-exposure`、`concurrency-limit` および `cancellation` は、実装済みの外部 provider operation では省略しない。
 
-- `planned`: 能力別 SOT は採用済みだが、コンパイルされた binding がなく、route から到達できない。
-- `implemented`: コンパイルされた registry に binding が存在する。
-- `retired`: 過去の検証記録としてだけ残り、コンパイルされた binding と route の参照がない。
+`supportsContinuation: true` の row は continuation の roundtrip、改変、期限切れおよび `page-invariants` を検証する。`supportsAuth: true` の row は credential の欠落、正常な付与、外部の認証拒否および秘密非露出を検証する。認証が任意の場合の欠落時動作は provider SOT に従う。
 
-公開ツール、組込み既定 route または利用者設定で有効化できる route から到達し得る binding は、対応する row をちょうど一つ持ち、その `status` を `implemented` とする。`ProviderDescriptor` の capability 宣言、registry binding、route の到達性および matrix status の四者を同じ検証で照合する。
+一覧または検索 operation の `page-invariants` は、能力別 SOT と mapping SOT が定義する返却件数、配列長、総件数、次位置、末尾、空結果および前進性を、正常 fixture と不正 fixture の両方で確認する。
+
+e-Gov 法令 API Version 2 の `law.search@1` は、少なくとも `count` と `laws.length`、`total_count`、`next_offset`、公開 `nextOffset` および内部 continuation position の整合を検証する。`law.content.search@1` は、全 `sentences` の展開件数と `sentence_count`、`total_count`、`next_offset` および continuation position の整合を検証する。不正応答を切捨て、再計数または独自 offset の合成で成功へ変換しない。
+
+## status
+
+- `planned`: SOT と実装予定を採用済みだが、runtime の binding または route から到達できない。後続作業を小さく分けるため、到達不能な provider package、fixture および test を先に追加してよい。
+- `implemented`: 製品へ組み込まれた binding が存在し、対応する conformance target が成功する。実際の runtime registry へ含めるかは起動時の `enabled` 設定と route に従う。
+- `retired`: 過去の記録として row を残すが、runtime の binding と route から到達できない。
+
+一つの `ProviderDescriptor` が複数 capability を宣言する場合は、各 capability の実装と test を順番に準備してよい。planned の準備段階では descriptor の定義を test 用に置けるが、production へ公開しない。製品へ組み込むときは、descriptor が宣言する capability、`implemented` row および compiled binding inventory が互いに一致する単位で有効化する。
+
+runtime composition は、`enabled: true` の provider だけについて設定と credential を解決し、その provider の implemented binding を registry へ登録する。disabled provider の factory を呼ばず、credential の欠落を起動失敗にしない。runtime route は、enabled かつ implemented である binding だけを参照する。
+
+新しい provider は明示設定がない限り disabled とし、既存の組込み route を変更しない。e-Gov 法令 API Version 2 は `SOT-IF-026` の既存の組込み既定値で enabled になる provider であり、descriptor が宣言する四 capability をすべて準備した後、四つの compiled binding と既定 route を同時に有効化する。
+
+planned row の採用を取り消す場合は、その row と未到達の成果物を同じ変更で削除し、関係する SOT または Wiki に理由を記録する。implemented row を廃止する場合は `retired` へ変更し、binding、route および不要になった provider 固有成果物を除去する。
+
+外部 provider の仕様、mapping または parser contract が変わる場合は、`SOT-ENG-007` と `SOT-ENG-008` の lifecycle に従い、provider SOT、matrix、fixture、parser および影響を受ける test を同じ契約変更として更新する。共通 capability の意味または major version を変更する場合は、provider 固有変更と分離する。
 
 ## 検証ゲート
 
-ローカルと CI の検証ゲートは、matrix を読み取り、各 row について次を確認する。
+ローカルと CI は次を確認する。
 
-- `status=implemented` の row に必須列の欠落がない
-- コンパイルされた各 binding に `status=implemented` の row がちょうど一つあり、`planned` または `retired` の row が binding や route から到達できない
-- 参照する SOT ID が存在し、`status=implemented` の実装範囲と矛盾しない
-- `requiredCases` の各 case に対応するテストが存在し、成功する
-- `supportsContinuation: true` または検索 capability の row が `page-invariants` を持ち、対応する mapping SOT の全ページ不変条件を正常・不正 fixture で検証する
-- `budgetSotId + budgetKey` が一つの budget row を参照し、`artifactType`、`concurrencyGroup` と各数値が `SOT-ENG-016` の必須予算を満たす
-- 同じ `providerId + concurrencyGroup` の row が同じ `concurrency` を参照し、異なる operation 間の共有上限 test を持つ
-- `publicErrorSet` が公開エラー契約と矛盾しない
-- `implementedBy` が存在し、他 provider package への依存禁止に違反しない
+- schema、file 名、row の順序、重複および必須列
+- `planned` と `retired` の operation が runtime の binding または route から到達できないこと
+- `implemented` row の package、fixture および conformance target が存在し、test が成功すること
+- `ProviderDescriptor`、compiled binding inventory および `implemented` row の capability 集合が一致すること
+- runtime registry と route が、enabled かつ implemented である binding の有効な部分集合だけを参照すること
+- `budgetSotId + budgetKey` が一つの budget row を参照し、`SOT-ENG-016` の上限を満たすこと
+- 同じ `providerId + concurrencyGroup` が同じ同時実行上限を共有すること
+- `publicErrorSet` と公開エラー契約が矛盾しないこと
+- provider package が他の provider package を import しないこと
 
-次のいずれかに該当する変更は release gate failure とする。
-
-- 実装済み capability に row がない
-- 実装済みまたは route から到達可能な capability の row が `planned` または `retired` である
-- 一つの binding に複数の active row がある、または `ProviderDescriptor`、registry、route および matrix の宣言が一致しない
-- row はあるが必須列、必須 case または対応 SOT ID が欠ける
-- test 名だけが存在し、matrix が要求する case を実際には検証していない
-- `status=implemented` の row が `planned` 相当の fixture または budget を参照する
-- 実装を追加または変更したのに matrix を更新していない
-
-missing case は warning にせず failure とし、80% coverage または個別 package coverage が十分でも通過させない。
+これらは schema 検証、Go の型検査、通常の unit・integration test および必要な fixture test で確認する。関数 object、SSA、全 call graph または Go test event を完全一致させることは、この規定の必須条件としない。
 
 ## 関連
 
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
+- [SOT-ENG-007: SOT 識別子](07-sot-identifiers.md)
+- [SOT-ENG-008: SOT lifecycle](08-sot-lifecycle.md)
 - [SOT-ENG-013: プロバイダー契約の検証](13-provider-contract-verification.md)
 - [SOT-ENG-016: プロバイダー資源予算](16-provider-resource-budgets.md)
+- [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
 - [SOT-IF-014: ProviderDescriptor](../40-interfaces/14-provider-descriptor.md)
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)

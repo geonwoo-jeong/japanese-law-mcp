@@ -4,62 +4,82 @@
 
 ## 規定
 
-新しいプロバイダーまたは既存プロバイダーへの capability binding を追加する変更は、`provider-onboarding-fit` の機械検証により、既存の共通契約と他のプロバイダーを変更せずに追加できたことを確認する。
+新しい provider または既存 provider の capability binding は、他の provider と共通 interface への不要な変更を伴わず、独立した package、fixture および test として追加できることを `provider-onboarding-fit` で確認する。
+
+この gate は provider 実装の内部構造を完全に証明するものではない。変更範囲の分離、matrix との対応、共通契約テストおよび既存 test の非回帰を確認する。
 
 ## 適用変更
 
-merge base との差分に、次のいずれかが含まれる場合にこの gate を適用する。
+merge base との差分に次のいずれかが含まれる場合に適用する。
 
-- 新しい provider-specific SOT、provider package または `ProviderDescriptor`
-- 既存 provider の新しい capability binding
-- provider route の受付、provider 設定 schema または conformance matrix row の追加
+- provider-specific SOT、provider package、fixture または `ProviderDescriptor`
+- capability binding、provider route、provider 設定 schema または conformance matrix
+- provider の追加または変更に伴う composition root の登録
 
-共通 capability または共通モデル自体を変更する変更は、プロバイダー追加と分離する。両方を同じ差分に含む場合は `provider-onboarding-fit` を失敗とする。
+共通 capability、共通 model または能力別 port の意味を変更する変更は、provider の追加と分離する。ただし、最初の provider を実装する前に必要な provider-neutral の registry、route、HTTP、continuation、予算または conformance 基盤は、独立した基盤変更として先に追加できる。
 
-## 機械検証
+## 実行
 
-`provider-onboarding-fit` は、次の共通コマンド契約で実行する。
+共通コマンドは次とする。
 
 ```text
 go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 ```
 
-`--base-ref` は一回だけ必須とし、空値、`-` で始まる値および commit として解決できない値を拒否する。実行時に `git rev-parse --verify <git-revision>^{commit}` で commit へ解決し、その commit と `HEAD` の `git merge-base` を比較開始点とする。比較開始点から `HEAD`、index および working tree までの差分を対象に含め、未追跡の provider、fixture、SOT および matrix artifact も検査する。
+`--base-ref` は一回だけ必須とし、commit として解決できる値を受け付ける。command は解決した commit と `HEAD` の merge base を比較開始点とし、commit 差分、index、working tree および未追跡の provider 関連 file を検査する。VCS 情報または比較開始点を取得できない場合は成功として扱わない。
 
-ローカルと CI は同じ `go run ./cmd/provider-onboarding-fit` と `--base-ref` を使用する。この command は `SOT-ENG-017` の canonical matrix loader と通常の Go test を呼び出し、別形式の matrix または別の検証入口を受け付けない。VCS 情報、`HEAD`、比較 commit または merge base を取得できない場合は、比較を省略して成功にせず gate failure とする。固定ブランチ名、環境変数、設定ファイルまたは暗黙の既定 ref を別の入力経路として使用しない。
+ローカルと CI は同じ command を使用し、`SOT-ENG-017` の canonical matrix loader と通常の Go test を再利用する。
 
-この比較対象と通常の Go test を使って次を検証する。
+## 検証
 
-1. 追加対象以外の既存 provider package と provider-specific fixture に差分がない。
-2. 共通モデル、既存 capability SOT、既存の能力別 port および既存 provider mapping に差分がない。
-3. 共通箇所の差分は、composition root の登録、provider 固有の設定 schema 登録、利用者が明示した場合だけ使う route の受付、および conformance matrix row に限られる。
-4. 組込み既定 provider、組込み route および無設定時の enabled set に差分がない。
-5. 新 provider package が他の provider package を import しない。
-6. 新 binding が同じ capability conformance suite に合格する。
-7. capability ごとの最小 test provider が、外部 DTO と provider 固有 package を使わず、同じ typed port、成功、空結果、失敗、`SourceResourceRef`、`Provenance` および continuation の適用可能な case に合格する。
-8. 変更前から存在するすべての provider conformance suite が変更なしで合格する。
+gate は次を確認する。
 
-差分判定はファイル名だけで成功とせず、禁止された package import と conformance case をテストで確認する。
+1. 変更対象外の provider package と provider 固有 fixture に意図しない差分がない。
+2. provider 追加だけを目的とする変更では、既存の共通 model、能力別 port および共通 capability SOT の意味を変更していない。
+3. provider package が他の provider package を import していない。
+4. provider の外部 DTO、request builder、parser および mapping がその provider package 内に分離されている。
+5. `implemented` row、production 公開する `ProviderDescriptor`、compiled binding inventory、fixture および test の対象が一致し、runtime registry と route は enabled かつ implemented である binding だけを参照する。`planned` row の test 用 descriptor、fixture および test は先に置けるが、production descriptor、compiled binding inventory、runtime registry または route へ含めない。
+6. 新しい binding が同じ `(capabilityId, majorVersion)` の共通 conformance suite に合格する。
+7. 変更前から存在する provider の unit・integration・conformance test が合格する。
+8. 新しい provider または既存 provider の新しい binding は、別の有効な SOT で公開採用を決めない限り、組込み provider、無設定時の enabled set、既存 route の key と値、および primary route を変更しない。disabled provider では factory の呼出しと credential の解決を行わない。
+
+検証には schema、import、package path および matrix reference の静的確認と、通常の Go test を使用する。provider factory の関数 object、全 SSA dataflow、全 call graph、fixture の内部 counter または `go test -json` event の完全一致は必須としない。
+
+## 段階的な実装
+
+実装は次の順序に分けてよい。
+
+1. canonical schema、matrix loader、fitness command および CI 接続
+2. provider-neutral の registry、route、共通 helper および能力別 conformance suite
+3. 一つの capability binding の provider package、fixture および test
+4. 同じ provider の次の capability binding
+5. provider 全体の descriptor の production 公開、matrix status、runtime registration および route の有効化
+
+各 provider binding は一つずつ実装、review、commit する。準備中の row は `status=planned` のままにし、provider package と test が存在しても runtime から到達させない。
+
+planned の準備段階では test 用の descriptor 定義を置けるが、production へ公開しない。一つの `ProviderDescriptor` が複数 capability を宣言する場合は、各 binding を順に準備した後、descriptor の capability 集合と compiled binding inventory が一致する単位でまとめて有効化できる。e-Gov 法令 API Version 2 は、四つの binding を個別に準備し、最終の activation で四つを同時に `implemented` とする。
+
+既存 provider に capability を追加する場合は、対象の planned row と新しい成果物だけを段階的に変更する。別の有効な SOT が同時変更を採用しない限り、既存の implemented または retired row、既存 descriptor capability、runtime binding および route を維持する。
+
+既存 provider の maintenance は、対象 provider package と fixture の範囲に限定し、既存の共通 conformance suite を再実行する。外部仕様の更新で provider SOT、descriptor または複数 binding が同時に影響を受ける場合は、provider 単位の契約更新として扱ってよい。
 
 ## 初回導入
 
-初回導入の比較開始点は、この節、`SOT-ENG-020` の実行規定および `SOT-ENG-021` の CI 規定を新設した SOT-only commit そのものとする。この commit は親を一つだけ持ち、その親との差分がこのファイル、`20-verification-gate.md` および `21-git-hook-staged-verification.md` だけであり、その tree にこの節が存在することを機械的に確認する。さらに、その tree で `SOT-ENG-017` の canonical schema、`internal/providerconformance` の matrix loader および `cmd/provider-onboarding-fit` の command がいずれも存在しない場合に限り、これらを同時に有効化する変更を初回導入として扱う。
+repository に canonical schema、matrix loader または `provider-onboarding-fit` がまだない場合は、次を一つの初回導入変更として追加できる。
 
-canonical schema が存在するとは、`SOT-ENG-017` が定める正規 path に Git 管理下の通常ファイルが一つ存在することをいう。matrix loader と command が存在するとは、それぞれの正規 directory に Git 管理下の通常ファイルである `_test.go` 以外の Go source が一つ以上あり、通常の build context で package または command として build 対象になることをいう。symbolic link、空 directory、test-only package、三要素の一部だけがある状態は不在とはみなさず、初回導入を開始できない gate failure とする。その状態の回復条件は、実装を変更する前の別の SOT-only commit で定義する。
+- canonical schema
+- 全 row が `status: planned` である最初の provider matrix
+- matrix loader と test
+- `provider-onboarding-fit` command と test
+- local hook と CI から command を呼ぶ接続
+- loader と command に必要な最小の module dependency
+- 実装状況 Wiki の更新
 
-初回導入の差分に含めてよいのは、canonical schema、全 row が `status: planned` である最初の provider matrix 一ファイル、共通 matrix loader とその test、`provider-onboarding-fit` command とその test、同じ command を実行する `.githooks/`、`.github/workflows/quality.yml`、`internal/qualitygate` または `cmd/quality-gate` の接続、loader または command から到達する固定依存だけを追加する root の `go.mod` と `go.sum`、および導入状況を示す `wiki/10-implementation-status.md` だけとする。loader または command から到達しない依存、provider package、fixture、`ProviderDescriptor`、capability binding、provider 設定 schema、provider route、組込み既定値、共通 model または共通 capability の変更を同じ差分へ含めない。
-
-module の変更では、loader または command の `_test.go` 以外の通常 source から空 import ではない import graph で到達し、実行時の読込または検証に必要な直接依存と、`go mod tidy` が導く推移依存の checksum だけを追加する。test-only import、空 import または到達しない package を依存追加の根拠にしない。既存依存の版更新または削除、`go` directive または `toolchain` directive の変更、`replace` directive、および `tools/` 配下の module 変更を初回導入へ含めない。
-
-初回導入で追加する `provider-onboarding-fit` 自身を、同じ差分に対して実行する。command は通常時と同じく base ref の解決、merge base、`HEAD`、index、working tree、未追跡ファイル、canonical matrix loader および通常の Go test を検査し、初回導入で許可していない差分が一つでもあれば失敗する。解決した base ref と merge base は初回導入の比較開始点に一致しなければならない。commit 前のローカル検証では `HEAD` が比較開始点そのものであることを、commit 後の CI 検証では比較開始点から `HEAD` までが初回導入の実装 commit 一つだけであることを確認する。
-
-比較開始点に canonical schema、matrix loader または command のいずれかが存在する場合、比較開始点が前記の SOT-only commit ではない場合、または比較開始点から `HEAD` までに二つ以上の commit がある場合は初回導入として扱わない。任意の過去 commit、固定 branch、暗黙の既定値、環境変数、設定ファイル、追加 flag または失敗時の fallback で初回導入判定を強制せず、導入後は常に通常の八条件を適用する。初回導入も `SOT-ENG-020` の適用変更とし、ローカルと CI の両方でこの command の成功を必須とする。
-
-初回導入の条件または許可範囲を採用、変更または廃止する SOT 変更は、初回導入の実装差分へ含めず、SOT だけの先行変更として検証とレビューを完了する。同じ比較範囲内の先行 commit へ置くだけでは分離したと扱わない。
+初回導入には実際の provider adapter、provider fixture、runtime binding または public route を含めない。初回導入後は、前節の段階に従って一つずつ追加する。
 
 ## 成功条件
 
-八条件の一つでも確認できない場合は warning ではなく gate failure とする。プロバイダーをまだ実装しない SOT だけの変更では、SOT 静的検査と設計レビューを行い、実装開始後の最初の provider 変更からこの gate を必須にする。
+前記の八条件または適用可能な `SOT-ENG-020` の gate が失敗した場合は、provider 変更を完了としない。SOT と matrix だけを準備する変更では、SOT 静的検査と schema test を行い、provider 実装を開始した時点から conformance test を必須にする。
 
 ## 関連
 
