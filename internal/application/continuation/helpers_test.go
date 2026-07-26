@@ -15,10 +15,11 @@ import (
 
 const (
 	goldenNowUnix              int64 = 1767225600
+	goldenProviderID                 = "fixture-law-search-provider"
 	goldenConditionFingerprint       = "BQeUoIa_eF7a213kAio-HtoShm2n7nAOTY16Q1Ki2Wc"
-	goldenSlotFingerprint            = "8zsu1HUiYJrFfESjSzya2mMFeoq84Ilwpj6RT1bWmTw"
-	goldenConfigFingerprint          = "QS570r-ZmZLMM2-qlU9RL5yMWG2mI8mzFJzxAM-8F6E"
-	goldenEnvelopeMAC                = "TWSjjgQxotGk0PYINyAv4NnjfPimuYWcut1jTBY_itM"
+	goldenSlotFingerprint            = "zadxlbLu76a5B2obMqmB-WZliCIXtA6n4AR0oKY7gVg"
+	goldenConfigFingerprint          = "oXKjfzseFA5fIaI8lihX-KaVZAgdE--PBdgOb1XGvtI"
+	goldenEnvelopeMAC                = "FeaKZiCP6eYkb6_O-Gmfmqp4GcMWffxCzuLCXRbPZ0E"
 )
 
 var goldenNow = time.Unix(goldenNowUnix, 0).UTC()
@@ -41,7 +42,7 @@ func newContinuationFixtureWithKey(t *testing.T, key []byte) continuationFixture
 	t.Helper()
 
 	capability := newTestCapability(t, "law.search", 1)
-	provider := newTestProvider(t, "e-gov-law-api-v2", "1.0.0", []model.ProviderCapability{capability})
+	provider := newTestProvider(t, goldenProviderID, "1.0.0", []model.ProviderCapability{capability})
 	manager := newFixedManager(t, key, goldenNow)
 	conditionObject := mustJSONObject(
 		t,
@@ -57,7 +58,7 @@ func newContinuationFixtureWithKey(t *testing.T, key []byte) continuationFixture
 	}
 	config, err := manager.FingerprintConfigScope(ConfigScopeValues{
 		Provider:       provider,
-		Origin:         "https://laws.e-gov.go.jp",
+		Origin:         "https://fixture.example.jp",
 		Dataset:        "laws",
 		Tenant:         "n/a",
 		Account:        "n/a",
@@ -130,11 +131,11 @@ func newTestProvider(
 	t.Helper()
 
 	source, err := model.NewInformationSource(model.InformationSourceValues{
-		ID:         "e-gov-law",
-		Name:       "e-Gov 法令検索",
-		Publisher:  "デジタル庁",
+		ID:         "fixture-law-source",
+		Name:       "継続トークン検証用情報源",
+		Publisher:  "Japanese Law MCP Test",
 		Authority:  model.AuthorityOfficial,
-		ServiceURL: "https://laws.e-gov.go.jp/",
+		ServiceURL: "https://fixture.example.jp/docs",
 	})
 	if err != nil {
 		t.Fatalf("SOT-MODEL-010: テスト用 source の作成エラー = %v", err)
@@ -266,7 +267,7 @@ func canonicalPayloadBytes(t *testing.T, values map[string]any) []byte {
 
 func goldenPayloadValues() map[string]any {
 	return map[string]any{
-		"providerId":             "e-gov-law-api-v2",
+		"providerId":             goldenProviderID,
 		"capabilityId":           "law.search",
 		"majorVersion":           1,
 		"limit":                  20,

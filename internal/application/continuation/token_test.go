@@ -30,7 +30,7 @@ func TestIssueAndVerifyGoldenV1Token(t *testing.T) {
 			`"conditionFingerprint":"` + goldenConditionFingerprint + `",` +
 			`"configFingerprint":"` + goldenConfigFingerprint + `",` +
 			`"expiresAt":1767226500,"issuedAt":1767225600,"limit":20,"majorVersion":1,` +
-			`"position":{"cursor":"next-20"},"providerId":"e-gov-law-api-v2",` +
+			`"position":{"cursor":"next-20"},"providerId":"` + goldenProviderID + `",` +
 			`"snapshot":"2026-07-26T00:00:00Z","sort":["lawId","asc"]}`,
 	)
 	if !bytes.Equal(payload, wantPayload) {

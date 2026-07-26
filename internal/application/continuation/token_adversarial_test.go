@@ -166,7 +166,7 @@ func TestVerifyRejectsCorrectMACPayloadWithUnknownDuplicateOrNoncanonicalJSON(t 
 	unknown["unexpected"] = true
 	caseVariant := goldenPayloadValues()
 	delete(caseVariant, "providerId")
-	caseVariant["ProviderId"] = "e-gov-law-api-v2"
+	caseVariant["ProviderId"] = goldenProviderID
 	duplicate := append(
 		[]byte(`{"adapterContractVersion":"1.0.0",`),
 		canonical[1:]...,
@@ -291,7 +291,7 @@ func TestVerifyRejectsEveryExpectedBindingAndFingerprintMismatch(t *testing.T) {
 	}
 	otherConfig, err := fixture.manager.FingerprintConfigScope(ConfigScopeValues{
 		Provider:       fixture.provider,
-		Origin:         "https://laws.e-gov.go.jp",
+		Origin:         "https://fixture.example.jp",
 		Dataset:        "different-laws",
 		Tenant:         "n/a",
 		Account:        "n/a",
@@ -314,7 +314,7 @@ func TestVerifyRejectsEveryExpectedBindingAndFingerprintMismatch(t *testing.T) {
 		"capabilityId": func(input *VerifyInput) {
 			input.Provider = newTestProvider(
 				t,
-				"e-gov-law-api-v2",
+				goldenProviderID,
 				"1.0.0",
 				[]model.ProviderCapability{documentCapability},
 			)
@@ -323,7 +323,7 @@ func TestVerifyRejectsEveryExpectedBindingAndFingerprintMismatch(t *testing.T) {
 		"majorVersion": func(input *VerifyInput) {
 			input.Provider = newTestProvider(
 				t,
-				"e-gov-law-api-v2",
+				goldenProviderID,
 				"1.0.0",
 				[]model.ProviderCapability{versionTwoCapability},
 			)
@@ -335,7 +335,7 @@ func TestVerifyRejectsEveryExpectedBindingAndFingerprintMismatch(t *testing.T) {
 		"adapterContractVersion": func(input *VerifyInput) {
 			input.Provider = newTestProvider(
 				t,
-				"e-gov-law-api-v2",
+				goldenProviderID,
 				"1.0.1",
 				[]model.ProviderCapability{fixture.capability},
 			)

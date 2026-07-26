@@ -41,7 +41,7 @@ func TestFingerprintGoldenVectorsUseExactDomainsAndConfigScope(t *testing.T) {
 	}
 
 	credentialInput := []byte(
-		"e-gov-law-api-v2\x00apiKey\x00秘密",
+		goldenProviderID + "\x00apiKey\x00秘密",
 	)
 	credentialMAC := hmacForDomain(
 		fixedContinuationKey(),
@@ -54,8 +54,8 @@ func TestFingerprintGoldenVectorsUseExactDomainsAndConfigScope(t *testing.T) {
 	configCanonical := []byte(
 		`{"account":"n/a","credentialSlots":{"apiKey":"` +
 			goldenSlotFingerprint +
-			`"},"dataset":"laws","origin":"https://laws.e-gov.go.jp",` +
-			`"providerId":"e-gov-law-api-v2","proxy":"n/a","semanticConfig":{},"tenant":"n/a"}`,
+			`"},"dataset":"laws","origin":"https://fixture.example.jp",` +
+			`"providerId":"` + goldenProviderID + `","proxy":"n/a","semanticConfig":{},"tenant":"n/a"}`,
 	)
 	configMAC := hmacForDomain(
 		fixedContinuationKey(),
@@ -120,7 +120,7 @@ func TestCredentialAndConfigScopeAreImmutableAndOrderIndependent(t *testing.T) {
 	}
 	base := ConfigScopeValues{
 		Provider:       fixture.provider,
-		Origin:         "https://laws.e-gov.go.jp",
+		Origin:         "https://fixture.example.jp",
 		Dataset:        "laws",
 		Tenant:         "n/a",
 		Account:        "n/a",
@@ -200,7 +200,7 @@ func TestFingerprintRejectsIncompleteConditionAndConfigScope(t *testing.T) {
 
 	valid := ConfigScopeValues{
 		Provider:       fixture.provider,
-		Origin:         "https://laws.e-gov.go.jp",
+		Origin:         "https://fixture.example.jp",
 		Dataset:        "laws",
 		Tenant:         "n/a",
 		Account:        "n/a",
