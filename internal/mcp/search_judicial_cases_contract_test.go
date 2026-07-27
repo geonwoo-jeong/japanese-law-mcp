@@ -64,13 +64,32 @@ func TestSearchJudicialCasesNormalizesRequestAtPublicBoundary(t *testing.T) {
 	if err != nil || result.IsError {
 		t.Fatalf("SOT-IF-047: 有効な入力を拒否した: result=%#v, err=%v", result, err)
 	}
-	token, exists := port.request.ContinuationToken()
+	continuationValue, exists := port.request.ContinuationToken()
 	if port.calls != 1 ||
 		port.request.Query() != "民  法" ||
 		port.request.Limit() != judicialdecisionsearch.DefaultLimit ||
 		!exists ||
-		token != "resume-cursor" {
+		continuationValue != "resume-cursor" {
 		t.Fatalf("SOT-IF-041/047: request = %#v", port.request)
+	}
+}
+
+func TestSearchJudicialCasesAcceptsValidSurrogatePair(t *testing.T) {
+	t.Parallel()
+
+	port := &recordingJudicialSearchPort{page: mustJudicialSearchPage()}
+	result, err := callSearchJudicialCases(
+		context.Background(),
+		port,
+		json.RawMessage(`{"query":"\ud83d\ude00"}`),
+	)
+	if err != nil || result.IsError || port.calls != 1 || port.request.Query() != "😀" {
+		t.Fatalf(
+			"SOT-IF-041/047: 有効な surrogate pair を拒否した: request=%#v, result=%#v, err=%v",
+			port.request,
+			result,
+			err,
+		)
 	}
 }
 
@@ -110,6 +129,10 @@ func TestSearchJudicialCasesRejectsInvalidInputBeforePort(t *testing.T) {
 		{name: "limit null", arguments: json.RawMessage(`{"query":"民法","limit":null}`)},
 		{name: "limit 文字列", arguments: json.RawMessage(`{"query":"民法","limit":"20"}`)},
 		{name: "limit 非整数", arguments: json.RawMessage(`{"query":"民法","limit":20.5}`)},
+		{
+			name:      "limit 指数過大",
+			arguments: json.RawMessage(`{"query":"民法","limit":1e9223372036854775807}`),
+		},
 		{name: "limit 下限未満", arguments: json.RawMessage(`{"query":"民法","limit":0}`)},
 		{name: "limit 上限超", arguments: json.RawMessage(`{"query":"民法","limit":31}`)},
 		{
