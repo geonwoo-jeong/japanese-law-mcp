@@ -42,34 +42,47 @@ type jsonDocumentScanner struct {
 
 // inspectJSONDocument は、JSON 文書の安全境界を検査して root header だけを返す。
 func inspectJSONDocument(data []byte) (jsonDocumentHeader, error) {
+	scanner, err := inspectJSONObject(data, true)
+	if err != nil {
+		return jsonDocumentHeader{}, err
+	}
+	return scanner.validatedHeader()
+}
+
+// inspectJSONObject は、JSON 文書の共通安全境界を検査する。
+// schema 文書では成果物 header を要求しないため、呼出し側が取得有無を指定する。
+func inspectJSONObject(
+	data []byte,
+	captureRootHeader bool,
+) (jsonDocumentScanner, error) {
 	if !utf8.Valid(data) {
-		return jsonDocumentHeader{}, fmt.Errorf(
+		return jsonDocumentScanner{}, fmt.Errorf(
 			"JSON 成果物は有効な UTF-8 でなければなりません",
 		)
 	}
 	scanner := jsonDocumentScanner{data: data}
 	scanner.skipWhitespace()
 	if !scanner.hasByte() || scanner.currentByte() != '{' {
-		return jsonDocumentHeader{}, fmt.Errorf(
+		return jsonDocumentScanner{}, fmt.Errorf(
 			"JSON 成果物の最上位は一つの object でなければなりません",
 		)
 	}
-	value, err := scanner.parseValue(1, true)
+	value, err := scanner.parseValue(1, captureRootHeader)
 	if err != nil {
-		return jsonDocumentHeader{}, err
+		return jsonDocumentScanner{}, err
 	}
 	if value.kind != jsonValueObject {
-		return jsonDocumentHeader{}, fmt.Errorf(
+		return jsonDocumentScanner{}, fmt.Errorf(
 			"JSON 成果物の最上位は一つの object でなければなりません",
 		)
 	}
 	scanner.skipWhitespace()
 	if scanner.hasByte() {
-		return jsonDocumentHeader{}, fmt.Errorf(
+		return jsonDocumentScanner{}, fmt.Errorf(
 			"JSON 成果物の root 後には空白以外を置けません",
 		)
 	}
-	return scanner.validatedHeader()
+	return scanner, nil
 }
 
 func (s *jsonDocumentScanner) parseValue(
