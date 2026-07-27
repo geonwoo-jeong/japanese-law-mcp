@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"sort"
@@ -50,14 +51,31 @@ func run(ctx context.Context) int {
 		Stderr:        os.Stderr,
 		Version:       buildinfo.Version(),
 		UserConfigDir: os.UserConfigDir,
-		Run:           newServerRunner(buildinfo.Version(), stdio.Run),
+		Run: newServerRunnerWithDiagnostics(
+			buildinfo.Version(),
+			stdio.Run,
+			os.Stderr,
+		),
 	})
 }
 
 type stdioRunner func(context.Context, stdio.Server) error
 
 func newServerRunner(version string, runStdio stdioRunner) cli.Runner {
-	return newServerRunnerWithTransports(version, runStdio, streamablehttp.Run)
+	return newServerRunnerWithDiagnostics(version, runStdio, os.Stderr)
+}
+
+func newServerRunnerWithDiagnostics(
+	version string,
+	runStdio stdioRunner,
+	diagnosticsOutput io.Writer,
+) cli.Runner {
+	return newServerRunnerWithTransportsAndDiagnostics(
+		version,
+		runStdio,
+		streamablehttp.Run,
+		diagnosticsOutput,
+	)
 }
 
 type streamableHTTPRunner func(
@@ -70,6 +88,20 @@ func newServerRunnerWithTransports(
 	version string,
 	runStdio stdioRunner,
 	runHTTP streamableHTTPRunner,
+) cli.Runner {
+	return newServerRunnerWithTransportsAndDiagnostics(
+		version,
+		runStdio,
+		runHTTP,
+		os.Stderr,
+	)
+}
+
+func newServerRunnerWithTransportsAndDiagnostics(
+	version string,
+	runStdio stdioRunner,
+	runHTTP streamableHTTPRunner,
+	diagnosticsOutput io.Writer,
 ) cli.Runner {
 	return func(ctx context.Context, cfg config.Config) error {
 		registry, routes, err := newProviderRoutes(cfg)
@@ -89,6 +121,11 @@ func newServerRunnerWithTransports(
 		)
 		if err != nil {
 			return err
+		}
+		if cfg.Diagnostics() {
+			if err := projectmcp.AddDiagnostics(server, diagnosticsOutput); err != nil {
+				return err
+			}
 		}
 
 		switch cfg.Transport() {
