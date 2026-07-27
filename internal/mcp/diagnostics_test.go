@@ -204,50 +204,114 @@ func TestAddDiagnosticsHidesUnknownToolName(t *testing.T) {
 func TestAddDiagnosticsIgnoresWriterFailure(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	tests := []struct {
+		name   string
+		deps   Dependencies
+		invoke func(context.Context, *sdk.ClientSession) error
+	}{
+		{
+			name: "success",
+			deps: Dependencies{SearchLaws: stubSearchLawsPort{}},
+			invoke: func(ctx context.Context, session *sdk.ClientSession) error {
+				result, err := session.CallTool(ctx, &sdk.CallToolParams{
+					Name:      "search_laws",
+					Arguments: map[string]any{"query": "民法"},
+				})
+				if err != nil {
+					return err
+				}
+				if result == nil || result.IsError {
+					return fmt.Errorf("success result = %#v", result)
+				}
+				return nil
+			},
+		},
+		{
+			name: "public error",
+			deps: Dependencies{SearchLaws: stubSearchLawsPort{}},
+			invoke: func(ctx context.Context, session *sdk.ClientSession) error {
+				result, err := session.CallTool(ctx, &sdk.CallToolParams{
+					Name: "search_laws",
+					Arguments: map[string]any{
+						"query":   "秘密の検索語",
+						"unknown": true,
+					},
+				})
+				if err != nil {
+					return err
+				}
+				if result == nil || !result.IsError {
+					return fmt.Errorf("public error result = %#v", result)
+				}
+				return nil
+			},
+		},
+		{
+			name: "protocol error and server continuity",
+			deps: Dependencies{SearchLaws: stubSearchLawsPort{}},
+			invoke: func(ctx context.Context, session *sdk.ClientSession) error {
+				_, err := session.CallTool(ctx, &sdk.CallToolParams{
+					Name:      "unknown-secret-tool",
+					Arguments: map[string]any{"query": "秘密値"},
+				})
+				if err == nil {
+					return errors.New("protocol error = nil")
+				}
+				result, callErr := session.CallTool(ctx, &sdk.CallToolParams{
+					Name:      "search_laws",
+					Arguments: map[string]any{"query": "民法"},
+				})
+				if callErr != nil {
+					return callErr
+				}
+				if result == nil || result.IsError {
+					return fmt.Errorf("continuity result = %#v", result)
+				}
+				return nil
+			},
+		},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 
-	serverTransport, clientTransport := sdk.NewInMemoryTransports()
-	server := NewServerWithDependencies(
-		"test-version",
-		Dependencies{SearchLaws: stubSearchLawsPort{}},
-	)
-	if err := AddDiagnostics(server, failingDiagnosticsWriter{}); err != nil {
-		t.Fatalf("AddDiagnostics() error = %v", err)
-	}
-	serverResult := make(chan error, 1)
-	go func() {
-		serverResult <- server.Run(ctx, serverTransport)
-	}()
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 
-	client := sdk.NewClient(
-		&sdk.Implementation{Name: "test-client", Version: "test-version"},
-		nil,
-	)
-	session, err := client.Connect(ctx, clientTransport, nil)
-	if err != nil {
-		t.Fatalf("Connect() error = %v", err)
-	}
-	result, err := session.CallTool(ctx, &sdk.CallToolParams{
-		Name:      "search_laws",
-		Arguments: map[string]any{"query": "民法"},
-	})
-	if err != nil {
-		t.Fatalf("CallTool() error = %v", err)
-	}
-	if result.IsError {
-		t.Fatalf("CallTool() = error, want success: %#v", result)
-	}
-	if err := session.Close(); err != nil {
-		t.Fatalf("Close() error = %v", err)
-	}
-	select {
-	case runErr := <-serverResult:
-		if runErr != nil {
-			t.Fatalf("server run error = %v", runErr)
-		}
-	case <-ctx.Done():
-		t.Fatalf("server shutdown wait error = %v", ctx.Err())
+			serverTransport, clientTransport := sdk.NewInMemoryTransports()
+			server := NewServerWithDependencies("test-version", testCase.deps)
+			if err := AddDiagnostics(server, failingDiagnosticsWriter{}); err != nil {
+				t.Fatalf("AddDiagnostics() error = %v", err)
+			}
+			serverResult := make(chan error, 1)
+			go func() {
+				serverResult <- server.Run(ctx, serverTransport)
+			}()
+
+			client := sdk.NewClient(
+				&sdk.Implementation{Name: "test-client", Version: "test-version"},
+				nil,
+			)
+			session, err := client.Connect(ctx, clientTransport, nil)
+			if err != nil {
+				t.Fatalf("Connect() error = %v", err)
+			}
+			if err := testCase.invoke(ctx, session); err != nil {
+				t.Fatalf("invoke error = %v", err)
+			}
+			if err := session.Close(); err != nil {
+				t.Fatalf("Close() error = %v", err)
+			}
+			select {
+			case runErr := <-serverResult:
+				if runErr != nil {
+					t.Fatalf("server run error = %v", runErr)
+				}
+			case <-ctx.Done():
+				t.Fatalf("server shutdown wait error = %v", ctx.Err())
+			}
+		})
 	}
 }
 
@@ -385,13 +449,13 @@ func TestDiagnosticNormalizationFailsClosed(t *testing.T) {
 			name:    "protocol error",
 			request: knownRequest,
 			err:     errors.New("protocol error"),
-			want:    diagnosticToolCallMethod,
+			want:    "search_laws",
 		},
 		{
 			name:    "typed nil result",
 			request: knownRequest,
 			result:  typedNilResult,
-			want:    diagnosticToolCallMethod,
+			want:    "search_laws",
 		},
 	}
 	for _, testCase := range operationTests {
@@ -475,6 +539,53 @@ func TestDiagnosticNormalizationFailsClosed(t *testing.T) {
 				t.Fatalf("diagnosticErrorCode() = %q, want %q", got, testCase.want)
 			}
 		})
+	}
+}
+
+func TestAddDiagnosticsSkipsNonToolCallMethods(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	var diagnostics bytes.Buffer
+	server := NewServerWithDependencies(
+		"test-version",
+		Dependencies{SearchLaws: stubSearchLawsPort{}},
+	)
+	if err := AddDiagnostics(server, &diagnostics); err != nil {
+		t.Fatalf("AddDiagnostics() error = %v", err)
+	}
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- server.Run(ctx, serverTransport)
+	}()
+
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("Connect() error = %v", err)
+	}
+	if _, err := session.ListTools(ctx, nil); err != nil {
+		t.Fatalf("ListTools() error = %v", err)
+	}
+	if diagnostics.Len() != 0 {
+		t.Fatalf("non tools/call diagnostics = %q, want empty", diagnostics.String())
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("server run error = %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("server shutdown wait error = %v", ctx.Err())
 	}
 }
 

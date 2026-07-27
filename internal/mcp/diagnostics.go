@@ -61,15 +61,8 @@ func diagnosticOperation(
 	result sdk.Result,
 	err error,
 ) string {
-	if err != nil {
-		return diagnosticToolCallMethod
-	}
 	call, ok := req.(*sdk.CallToolRequest)
 	if !ok || call.Params == nil || call.Params.Name == "" {
-		return diagnosticToolCallMethod
-	}
-	callResult, ok := result.(*sdk.CallToolResult)
-	if !ok || callResult == nil {
 		return diagnosticToolCallMethod
 	}
 	return knownDiagnosticOperation(call.Params.Name)

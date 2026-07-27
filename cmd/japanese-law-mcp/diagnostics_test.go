@@ -27,6 +27,10 @@ func TestServerRunnerWiresDiagnosticsForEveryTransportOnlyWhenEnabled(t *testing
 			transport: config.TransportStdio,
 		},
 		{
+			name:      "streamable HTTP disabled",
+			transport: config.TransportStreamableHTTP,
+		},
+		{
 			name:        "stdio enabled",
 			transport:   config.TransportStdio,
 			diagnostics: true,
