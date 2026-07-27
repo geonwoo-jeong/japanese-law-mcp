@@ -118,7 +118,7 @@ func decodePopulatedSearchResponse(
 		if err := searchHTMLContextError(ctx); err != nil {
 			return searchResponse{}, err
 		}
-		item, err := decodeSearchRow(ctx, row, index+1)
+		item, err := decodeSearchRow(ctx, row)
 		if err != nil {
 			return searchResponse{}, err
 		}
@@ -137,7 +137,6 @@ func decodePopulatedSearchResponse(
 func decodeSearchRow(
 	ctx context.Context,
 	row *html.Node,
-	position int,
 ) (searchResultRow, error) {
 	headers, informationCells, fileCells := classifySearchCells(row)
 	if len(headers) != 1 || len(informationCells) != 1 || len(fileCells) != 1 {
@@ -158,7 +157,7 @@ func decodeSearchRow(
 	values.detailHref = detailHref
 	values.sourceCategoryLabel = categoryLabel
 	values.documents = documents
-	values.location = searchRowLocation(position)
+	values.location = searchRowLocation(row)
 	return values, nil
 }
 
@@ -487,7 +486,7 @@ func directSearchRows(
 			rows = append(rows, child)
 			continue
 		}
-		if child.Data != "thead" && child.Data != "tbody" && child.Data != "tfoot" {
+		if child.Data != "tbody" {
 			continue
 		}
 		for row := child.FirstChild; row != nil; row = row.NextSibling {
@@ -688,8 +687,26 @@ func hasIgnoredAncestor(node *html.Node) bool {
 	return false
 }
 
-func searchRowLocation(position int) string {
-	return "table.search-result-table tbody tr[" + strconv.Itoa(position) + "]"
+func searchRowLocation(row *html.Node) string {
+	if row == nil || row.Parent == nil {
+		return ""
+	}
+	index := 0
+	for sibling := row.Parent.FirstChild; sibling != nil; sibling = sibling.NextSibling {
+		if sibling.Type == html.ElementNode && sibling.Data == "tr" {
+			index++
+		}
+		if sibling == row {
+			break
+		}
+	}
+	if index <= 0 {
+		return ""
+	}
+	if row.Parent.Type == html.ElementNode && row.Parent.Data == "tbody" {
+		return "table.search-result-table tbody tr[" + strconv.Itoa(index) + "]"
+	}
+	return "table.search-result-table tr[" + strconv.Itoa(index) + "]"
 }
 
 func searchHTMLContextError(ctx context.Context) error {

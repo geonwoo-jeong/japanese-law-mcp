@@ -16,6 +16,8 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 //go:embed testdata/*.html
@@ -107,6 +109,34 @@ func TestJudicialDecisionSearchAdapterMapsEmptyOfficialFixture(t *testing.T) {
 	}
 }
 
+func TestJudicialDecisionSearchAdapterAcceptsDeclaredShiftJIS(t *testing.T) {
+	t.Parallel()
+	source := bytes.Replace(
+		readFixture(t, "search_empty.html"),
+		[]byte(`charset="utf-8"`),
+		[]byte(`charset="Shift_JIS"`),
+		1,
+	)
+	body, _, err := transform.Bytes(japanese.ShiftJIS.NewEncoder(), source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	adapter := newTestAdapter(t, roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		response := htmlResponse(request, body)
+		response.Header.Set("Content-Type", "text/html; charset=Shift_JIS")
+		return response, nil
+	}))
+
+	page, err := adapter.Search(
+		context.Background(),
+		mustSearchRequest(t, "文字コード", 20, ""),
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-043/SOT-IF-044: Shift_JIS HTML のエラー = %v", err)
+	}
+	assertMappedPage(t, page, 0, 0)
+}
+
 func TestJudicialDecisionSearchAdapterPreservesDOMOrderAndDuplicates(t *testing.T) {
 	t.Parallel()
 	body := readFixture(t, "search_duplicates.html")
@@ -137,6 +167,41 @@ func TestJudicialDecisionSearchAdapterPreservesDOMOrderAndDuplicates(t *testing.
 		t.Fatalf("SOT-IF-044: limit 適用時の Search() のエラー = %v", err)
 	}
 	assertMappedPage(t, limited, 2, 3)
+}
+
+func TestJudicialDecisionSearchAdapterIgnoresTheadRowsInLocation(t *testing.T) {
+	t.Parallel()
+
+	body := []byte(`<!doctype html><html><head><title>裁判例検索</title></head><body>
+<p>1件中</p>
+<table class="search-result-table">
+<thead><tr><th>区分</th><th>内容</th><th>ファイル</th></tr></thead>
+<tbody><tr>
+<th><a href="./../12345/detail2/index.html">最高裁判例</a></th>
+<td><p>令和6年（受）第1号
+損害賠償請求事件</p><p>令和6年5月1日
+最高裁判所</p></td>
+<td class="file-col"><a href="/app/files/hanrei_jp/345/12345_hanrei.pdf">全文</a></td>
+</tr></tbody>
+</table>
+</body></html>`)
+	adapter := newTestAdapter(t, staticHTMLDoer(body))
+
+	page, err := adapter.Search(
+		context.Background(),
+		mustSearchRequest(t, "直接行", 20, ""),
+	)
+	if err != nil {
+		t.Fatalf("direct tr の Search() エラー = %v", err)
+	}
+	items := page.Items()
+	if len(items) != 1 {
+		t.Fatalf("items の件数 = %d", len(items))
+	}
+	location, exists := items[0].Provenance()[0].Location()
+	if !exists || location != "table.search-result-table tbody tr[1]" {
+		t.Fatalf("thead 混在時の provenance.location = %q, %t", location, exists)
+	}
 }
 
 func TestJudicialDecisionSearchAdapterRejectsContinuationBeforeFetch(t *testing.T) {

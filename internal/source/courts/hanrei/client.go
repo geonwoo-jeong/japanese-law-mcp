@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"golang.org/x/net/html/charset"
 )
 
 const (
@@ -26,6 +27,7 @@ type httpDoer interface {
 
 type fetchedSearchResponse struct {
 	encodedBody     []byte
+	contentType     string
 	contentEncoding string
 	fetchedURL      string
 	retrievedAt     time.Time
@@ -113,6 +115,7 @@ func readSuccessfulSearchResponse(
 	}
 	return fetchedSearchResponse{
 		encodedBody:     body,
+		contentType:     response.Header.Get("Content-Type"),
 		contentEncoding: response.Header.Get("Content-Encoding"),
 		fetchedURL:      finalURL.String(),
 		retrievedAt:     now().Round(0),
@@ -159,24 +162,86 @@ func decodeSearchResponseBody(
 	if err := searchProcessingError(parent, processing); err != nil {
 		return nil, err
 	}
+	var decoded []byte
+	var err error
 	switch strings.ToLower(strings.TrimSpace(fetched.contentEncoding)) {
 	case "", "identity":
-		return copySearchBody(parent, processing, bytes.NewReader(fetched.encodedBody))
+		decoded, err = copySearchBody(
+			parent,
+			processing,
+			bytes.NewReader(fetched.encodedBody),
+		)
 	case "gzip":
-		reader, err := gzip.NewReader(&searchContextReader{
+		var reader *gzip.Reader
+		reader, err = gzip.NewReader(&searchContextReader{
 			ctx: processing, reader: bytes.NewReader(fetched.encodedBody),
 		})
 		if err != nil {
 			return nil, classifySearchDecodeError(parent, processing)
 		}
 		defer func() { _ = reader.Close() }()
-		return copySearchBody(parent, processing, reader)
+		decoded, err = copySearchBody(
+			parent,
+			processing,
+			reader,
+		)
 	default:
 		return nil, newSearchSourceError(
 			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
+	if err != nil {
+		return nil, err
+	}
+	return decodeSearchCharset(
+		parent,
+		processing,
+		fetched.contentType,
+		bytes.NewReader(decoded),
+	)
+}
+
+func decodeSearchCharset(
+	parent context.Context,
+	processing context.Context,
+	contentType string,
+	reader io.Reader,
+) ([]byte, error) {
+	decodedReader, err := newSearchCharsetReader(processing, contentType, reader)
+	if err != nil {
+		return nil, err
+	}
+	return copySearchBody(parent, processing, decodedReader)
+}
+
+func newSearchCharsetReader(
+	processing context.Context,
+	contentType string,
+	reader io.Reader,
+) (io.Reader, error) {
+	_, parameters, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		return nil, newSearchSourceError(
+			model.SourceErrorCodeSourceContractChanged,
+			"",
+		)
+	}
+	charsetLabel := strings.TrimSpace(parameters["charset"])
+	if charsetLabel == "" || strings.EqualFold(charsetLabel, "utf-8") {
+		return &searchContextReader{ctx: processing, reader: reader}, nil
+	}
+	decodedReader, err := charset.NewReaderLabel(
+		charsetLabel,
+		&searchContextReader{ctx: processing, reader: reader},
+	)
+	if err != nil {
+		return nil, newSearchSourceError(
+			model.SourceErrorCodeSourceContractChanged,
+			"",
+		)
+	}
+	return decodedReader, nil
 }
 
 func copySearchBody(

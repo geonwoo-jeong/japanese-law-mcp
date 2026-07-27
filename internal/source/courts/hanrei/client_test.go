@@ -13,6 +13,9 @@ import (
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 func TestFetchSearchResponseRejectsUnexpectedSuccessfulResponse(t *testing.T) {
@@ -58,6 +61,48 @@ func TestFetchSearchResponseRejectsUnexpectedSuccessfulResponse(t *testing.T) {
 			assertSourceError(t, err, testCase.code)
 		})
 	}
+}
+
+func TestDecodeSearchResponseBodyAcceptsShiftJISHTML(t *testing.T) {
+	t.Parallel()
+
+	encoded := encodeShiftJIS(t, []byte("<html><body><p>裁判例検索</p></body></html>"))
+	body, err := decodeSearchResponseBody(
+		context.Background(),
+		context.Background(),
+		fetchedSearchResponse{
+			encodedBody: encoded,
+			contentType: "text/html; charset=Shift_JIS",
+		},
+	)
+	if err != nil {
+		t.Fatalf("Shift_JIS HTML の復号エラー = %v", err)
+	}
+	if !bytes.Contains(body, []byte("裁判例検索")) {
+		t.Fatalf("Shift_JIS HTML を UTF-8 へ変換できていない: %q", body)
+	}
+}
+
+func TestDecodeSearchResponseBodyLimitsBytesBeforeCharsetConversion(t *testing.T) {
+	t.Parallel()
+	source := bytes.Repeat([]byte("x"), maximumSearchDecompressedBytes/2+1)
+	encoded, _, err := transform.Bytes(
+		unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewEncoder(),
+		source,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = decodeSearchResponseBody(
+		context.Background(),
+		context.Background(),
+		fetchedSearchResponse{
+			encodedBody:     gzipBytes(t, encoded),
+			contentType:     "text/html; charset=utf-16le",
+			contentEncoding: "gzip",
+		},
+	)
+	assertSourceError(t, err, model.SourceErrorCodeSourceResponseTooLarge)
 }
 
 func TestFetchSearchResponseDoesNotRetry(t *testing.T) {
@@ -226,6 +271,17 @@ func clientTestHTMLResponse(
 		ContentLength: int64(len(body)),
 		Request:       request,
 	}
+}
+
+func encodeShiftJIS(t *testing.T, value []byte) []byte {
+	t.Helper()
+
+	reader := transform.NewReader(bytes.NewReader(value), japanese.ShiftJIS.NewEncoder())
+	encoded, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatalf("Shift_JIS への変換に失敗: %v", err)
+	}
+	return encoded
 }
 
 type clientTestTrackedBody struct {
