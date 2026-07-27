@@ -40,6 +40,7 @@ internal/
 ├── nlp/
 │   └── kagome/
 ├── lawnamelexicon/
+├── legalquerycorpus/
 └── mcp/
     ├── query_legal_information_tool.go
     └── query_legal_information_schema.go
@@ -50,6 +51,7 @@ cmd/
 
 testdata/
 └── legalquery/
+    ├── schemas/
     ├── corpus-v1/
     └── baselines/
 ```
@@ -91,6 +93,8 @@ pack 無効を認識する最小 cue と、入力された `SourceResourceRef` �
 ## 既存共通モジュール
 
 Kagome tokenizer、Unicode 比較用正規化、法令名辞書および誤記候補判定は既存の provider 非依存モジュールを再利用する。法概念辞書は `SOT-ENG-023` に従い法令名辞書と別 loader を持つ。
+
+`legalquerycorpus` は `SOT-ENG-026` の版付き成果物型と厳格な loader だけを所有する。`model`、`application/legalquery` および provider 非依存の比較用正規化を参照できるが、evaluator、query profile、executor、provider、`source` または MCP を参照しない。
 
 MCP package は tool schema、入力変換および `CallToolResult` 変換だけを扱う。`query_legal_information_schema.go` は `SOT-MODEL-024` の concrete result/attempt 型を `oneOf`、const discriminator および `additionalProperties: false` で表し、起動時に schema 自身を検証する。単一の generic `result: any` から自動推論しない。
 

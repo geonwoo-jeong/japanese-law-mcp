@@ -8,7 +8,7 @@
 
 ## コーパス
 
-コーパスは repository 内の人手確認済み fixture と期待 plan で構成し、開発用集合と holdout 集合を分ける。少なくとも次のカテゴリを含める。
+コーパスは repository 内の人手確認済み fixture と、入力境界、意味候補または実行結果の期待値で構成し、開発用集合と holdout 集合を分ける。少なくとも次のカテゴリを含める。
 
 - 公式の法令 ID、リビジョン ID、法令番号、事件参照および `SourceResourceRef`
 - 正式法令名、公式略称、出典付き別名および法概念
@@ -24,20 +24,9 @@
 
 ## 配置と最小規模
 
-評価物は次の配置を定義元とする。
+評価コーパスの配置、schema、manifest、fixture、checksum および loader の成果物契約は `SOT-ENG-026` に従う。baseline は `testdata/legalquery/baselines/default.json` に置く。
 
-```text
-testdata/legalquery/
-├── corpus-v1/
-│   ├── manifest.json
-│   ├── development/
-│   ├── holdout/
-│   └── execution/
-└── baselines/
-    └── default.json
-```
-
-`manifest.json` は corpus version、schema version、固定 seed、必須カテゴリ、各集合の case ID と件数、および fixture の SHA-256 を持つ。case ID は集合間で一意とし、同じ入力または正規化後に同じ入力を development と holdout の両方へ置かない。
+case ID は集合間で一意とし、同じ入力、正規化後に同じ入力または同じ発話・法的対象の変形群を development と holdout の両方へ置かない。
 
 holdout は合計二百四十件以上とし、上記の必須カテゴリごとに二十件以上を持つ。複数カテゴリに属する case は各カテゴリ件数へ数えられるが、holdout 全体の最小件数を減らさない。安全境界カテゴリである pack 無効、対象外との混在、非日本語、検索第一件 read 禁止および予算超過は、それぞれ正常に拒否する例と境界を狙う例を含める。
 
@@ -50,6 +39,8 @@ holdout 集合で少なくとも次を測定する。
 | 指標 | 受入基準 |
 |---|---:|
 | 同じ入力と profile に対する plan の再現率 | `100%` |
+| 期待する decision、reason および selection の一致率 | `100%` |
+| 意味と一致した候補の根拠・概念 assertion 適合率 | `100%` |
 | 対象外、pack 無効および明確化例で誤った外部呼出しをしない率 | `100%` |
 | `confidence=high` とした候補の precision | `95%` 以上 |
 | 意味候補の top-1 accuracy | `90%` 以上 |
@@ -61,11 +52,27 @@ holdout 集合で少なくとも次を測定する。
 
 カテゴリ別の件数と結果も記録し、全体平均だけで弱いカテゴリを隠さない。コーパスが小さく百分率の一件が大きく変動する場合でも、上限違反、安全境界違反および誤った外部呼出しは一件も許容しない。
 
+## 測定母集団と正解判定
+
+ranking 指標の母集団は、holdout のうち `kind=plan` で一件以上の正解 meaning を持ち、期待 decision が `single`、`hedged`、`needs_clarification` または `capability_unavailable` である case とする。`request_error` と、正解 meaning を持たない `unsupported` は ranking 指標から除外し、入力境界、安全な非実行および誤呼出しの指標で評価する。
+
+semantic meaning の一致は `SOT-ENG-026` の意味署名だけで判定し、根拠または概念 assertion の成否を top-1、top-2 または high-confidence の正解判定へ混在させない。期待 `meanings` の先頭を主正解とし、次の式を使う。
+
+- top-1 accuracy: 実際の順位一位が主正解と一致した case 数 / ranking 母集団の case 数
+- top-2 recall: 実際の上位二候補以内に主正解を含む case 数 / ranking 母集団の case 数
+- high-confidence precision: 実際の順位一位が `confidence=high` である case のうち主正解と一致した件数 / 実際の順位一位が `confidence=high` である case 数
+
+high-confidence の分母が零件の場合は基準を満たしたと扱わず、profile 採用を失敗させる。複数の正しい解釈、hedged および明確化 case でも、fixture が主正解を一件定め、decision、理由、選択した meaning の完全一致は ranking 指標と別に検査する。期待 meaning に対する根拠コードと概念 ID の assertion も別に集計する。
+
+全体指標は case を一件ずつ数える micro 集計とする。一 case が複数カテゴリに属する場合は各カテゴリ内で一回ずつ数えるが、全体集計では一回だけ数える。カテゴリ別に同じ分子、分母および割合を出力し、カテゴリ平均を全体の受入判定へ置き換えない。
+
 ## profile の校正
 
 score の重み、閾値、margin、tie-break、根拠コード、辞書または誤記規則を変更する場合は、新しい profile version を割り当てる。
 
-重みと閾値は開発用集合で調整し、holdout 集合は採用判定にだけ使用する。holdout の期待値を調整して実装へ合わせず、誤りであることを独立 review で確認した fixture だけを理由とともに変更する。
+重みと閾値は開発用集合で調整し、holdout 集合は採用判定にだけ使用する。公開 repository の holdout は秘密試験ではなく、固定 digest と変更履歴で過適合を監査する集合とする。profile、重み、閾値、辞書または誤記規則を変更する変更では holdout fixture を同時に変更しない。
+
+holdout の期待値を実装へ合わせて調整しない。fixture の誤りであることを独立 review で確認した場合だけ、理由、新しい corpus version および holdout digest を同じ変更へ残す。その変更では profile を変更せず、変更前後の corpus に対する評価結果を残す。
 
 候補 score の数値自体を品質指標または確率として扱わない。意味判定の評価と、provider fixture を使う実行予算、partial error および結果順序の評価を分ける。
 
@@ -87,9 +94,9 @@ go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v1 --profile
 
 command はネットワークを使用せず、固定 seed と repository 内の不変 profile・辞書・fake provider だけを使う。`default` profile set は法令コア、`judicial-cases` 有効時および無効時を manifest の指定どおり評価する。
 
-標準出力は一つの JSON object とし、少なくとも corpus version、profile version 一覧、baseline version、集合別・カテゴリ別件数、各指標の分子・分母・割合、予算違反件数および失敗 case ID を持つ。照会本文、辞書 entry 全体、外部 response または個人情報を出力しない。
+標準出力は一つの JSON object とし、少なくとも corpus version、holdout digest、profile version 一覧、baseline version、集合別・カテゴリ別件数、各指標の分子・分母・割合、予算違反件数および失敗 case ID を持つ。照会本文、辞書 entry 全体、外部 response または個人情報を出力しない。
 
-引数、schema、checksum、最小件数、baseline、受入基準または再現性のいずれかを満たさない場合は非ゼロ終了する。baseline file は、同じ command の JSON schema に従う review 済みの期待値だけを持ち、command 実行中に書き換えない。
+引数、schema、checksum、最小件数、baseline、受入基準または再現性のいずれかを満たさない場合は非ゼロ終了する。baseline file は、同じ command の JSON schema に従う review 済みの期待値と holdout digest を持ち、manifest と一致しなければならない。command 実行中に baseline を書き換えない。
 
 統合照会の application、profile、辞書、planner model、公開 interface、評価 corpus、baseline または evaluator を変更した場合は、この command を `SOT-ENG-020` の中央品質ゲートから実行する。
 
@@ -106,3 +113,4 @@ command はネットワークを使用せず、固定 seed と repository 内の
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-023: 統合法情報照会の法概念辞書](23-unified-query-concept-lexicon.md)
+- [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
