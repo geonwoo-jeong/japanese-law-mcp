@@ -2,6 +2,28 @@ package legalquerycorpus
 
 import "fmt"
 
+const (
+	semanticCategoryAmbiguity                 = "ambiguity"
+	semanticCategoryBudgetBoundary            = "budget-boundary"
+	semanticCategoryCapabilityIntent          = "capability-intent"
+	semanticCategoryInputBoundary             = "input-boundary"
+	semanticCategoryLawNameAndConcept         = "law-name-and-concept"
+	semanticCategoryOfficialReference         = "official-reference"
+	semanticCategoryPackState                 = "pack-state"
+	semanticCategorySafetyExecutionBoundary   = "safety-execution-boundary"
+	semanticCategoryStructuredLocationAndDate = "structured-location-and-date"
+	semanticCategorySurfaceVariation          = "surface-variation"
+	semanticCategoryTypoVariation             = "typo-variation"
+	semanticCategoryUnsupportedScope          = "unsupported-scope"
+)
+
+type semanticCoverageDefinition struct {
+	id                        string
+	categoryID                string
+	minimumHoldoutCount       int
+	requiresSafetyVariantPair bool
+}
+
 func validateSemanticCoverage(
 	coverageIDs []string,
 	safetyVariant *SafetyVariant,
@@ -51,82 +73,158 @@ func validateSemanticEnabledPacks(values []string) error {
 }
 
 func isSemanticCoverageID(value string) bool {
-	for _, coverageID := range semanticCoverageIDs() {
-		if value == coverageID {
-			return true
-		}
-	}
-	return false
+	_, exists := semanticCoverageDefinitionFor(value)
+	return exists
 }
 
 func isSemanticSafetyCoverageID(value string) bool {
-	switch value {
-	case "boundary-budget-limit",
-		"boundary-mixed-unsupported",
-		"boundary-no-implicit-first-read",
-		"boundary-non-japanese",
-		"boundary-pack-disabled":
-		return true
-	default:
-		return false
-	}
+	definition, exists := semanticCoverageDefinitionFor(value)
+	return exists && definition.requiresSafetyVariantPair
 }
 
 func semanticCoverageIDs() []string {
+	definitions := semanticCoverageDefinitions()
+	values := make([]string, 0, len(definitions))
+	for _, definition := range definitions {
+		values = append(values, definition.id)
+	}
+	return values
+}
+
+func semanticCategoryIDs() []string {
 	return []string{
-		"ambiguity-alias-collision",
-		"ambiguity-multiple-concepts",
-		"ambiguity-three-or-more-candidates",
-		"ambiguity-weak-general-term",
-		"boundary-budget-limit",
-		"boundary-mixed-unsupported",
-		"boundary-no-implicit-first-read",
-		"boundary-non-japanese",
-		"boundary-pack-disabled",
-		"budget-capability-call-limit",
-		"budget-item-limit",
-		"budget-page-limit",
-		"budget-ranked-candidate-limit",
-		"budget-step-limit",
-		"concept-single",
-		"input-invalid-ref",
-		"input-limit-above-maximum",
-		"input-limit-below-minimum",
-		"input-limit-maximum-accepted",
-		"input-limit-minimum-accepted",
-		"input-query-ascii-control",
-		"input-query-empty",
-		"input-query-maximum-accepted",
-		"input-query-too-long",
-		"intent-judicial-decision-read",
-		"intent-judicial-decision-search",
-		"intent-law-article-read",
-		"intent-law-content-search",
-		"intent-law-read",
-		"intent-law-search",
-		"intent-law-updates",
-		"name-official",
-		"name-official-abbreviation",
-		"name-sourced-alias",
-		"pack-judicial-enabled",
-		"reference-case-reference",
-		"reference-law-id",
-		"reference-law-number",
-		"reference-revision-id",
-		"reference-source-resource-ref",
-		"structure-article",
-		"structure-complete-date",
-		"structure-multiple-explicit-intents",
-		"structure-paragraph",
-		"surface-orthographic-variation",
-		"surface-whitespace-variation",
-		"typo-adjacent-transposition",
-		"typo-deletion",
-		"typo-insertion",
-		"typo-substitution",
-		"unsupported-legal-advice",
-		"unsupported-resource",
-		"unsupported-translation",
-		"unsupported-unadopted-pack",
+		semanticCategoryAmbiguity,
+		semanticCategoryBudgetBoundary,
+		semanticCategoryCapabilityIntent,
+		semanticCategoryInputBoundary,
+		semanticCategoryLawNameAndConcept,
+		semanticCategoryOfficialReference,
+		semanticCategoryPackState,
+		semanticCategorySafetyExecutionBoundary,
+		semanticCategoryStructuredLocationAndDate,
+		semanticCategorySurfaceVariation,
+		semanticCategoryTypoVariation,
+		semanticCategoryUnsupportedScope,
+	}
+}
+
+func semanticCategoryIDsForCoverageIDs(coverageIDs []string) []string {
+	present := make(map[string]struct{}, len(coverageIDs))
+	for _, coverageID := range coverageIDs {
+		definition, exists := semanticCoverageDefinitionFor(coverageID)
+		if exists {
+			present[definition.categoryID] = struct{}{}
+		}
+	}
+	values := make([]string, 0, len(present))
+	for _, categoryID := range semanticCategoryIDs() {
+		if _, exists := present[categoryID]; exists {
+			values = append(values, categoryID)
+		}
+	}
+	return values
+}
+
+func semanticCoverageDefinitionFor(
+	coverageID string,
+) (semanticCoverageDefinition, bool) {
+	low, high := 0, len(semanticCoverageCatalog)
+	for low < high {
+		middle := low + (high-low)/2
+		if semanticCoverageCatalog[middle].id < coverageID {
+			low = middle + 1
+		} else {
+			high = middle
+		}
+	}
+	if low < len(semanticCoverageCatalog) &&
+		semanticCoverageCatalog[low].id == coverageID {
+		return semanticCoverageCatalog[low], true
+	}
+	return semanticCoverageDefinition{}, false
+}
+
+func semanticCoverageDefinitions() []semanticCoverageDefinition {
+	return append([]semanticCoverageDefinition{}, semanticCoverageCatalog[:]...)
+}
+
+// semanticCoverageCatalog は、ID 昇順の固定 catalog であり初期化後に変更しない。
+var semanticCoverageCatalog = [...]semanticCoverageDefinition{
+	standardSemanticCoverage("ambiguity-alias-collision", semanticCategoryAmbiguity),
+	standardSemanticCoverage("ambiguity-multiple-concepts", semanticCategoryAmbiguity),
+	standardSemanticCoverage("ambiguity-three-or-more-candidates", semanticCategoryAmbiguity),
+	standardSemanticCoverage("ambiguity-weak-general-term", semanticCategoryAmbiguity),
+	safetySemanticCoverage("boundary-budget-limit", semanticCategoryBudgetBoundary),
+	safetySemanticCoverage("boundary-mixed-unsupported", semanticCategorySafetyExecutionBoundary),
+	safetySemanticCoverage("boundary-no-implicit-first-read", semanticCategorySafetyExecutionBoundary),
+	safetySemanticCoverage("boundary-non-japanese", semanticCategorySafetyExecutionBoundary),
+	safetySemanticCoverage("boundary-pack-disabled", semanticCategoryPackState),
+	standardSemanticCoverage("budget-capability-call-limit", semanticCategoryBudgetBoundary),
+	standardSemanticCoverage("budget-item-limit", semanticCategoryBudgetBoundary),
+	standardSemanticCoverage("budget-page-limit", semanticCategoryBudgetBoundary),
+	standardSemanticCoverage("budget-ranked-candidate-limit", semanticCategoryBudgetBoundary),
+	standardSemanticCoverage("budget-step-limit", semanticCategoryBudgetBoundary),
+	standardSemanticCoverage("concept-single", semanticCategoryLawNameAndConcept),
+	standardSemanticCoverage("input-invalid-ref", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-limit-above-maximum", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-limit-below-minimum", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-limit-maximum-accepted", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-limit-minimum-accepted", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-query-ascii-control", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-query-empty", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-query-maximum-accepted", semanticCategoryInputBoundary),
+	standardSemanticCoverage("input-query-too-long", semanticCategoryInputBoundary),
+	standardSemanticCoverage("intent-judicial-decision-read", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("intent-judicial-decision-search", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("intent-law-article-read", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("intent-law-content-search", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("intent-law-read", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("intent-law-search", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("intent-law-updates", semanticCategoryCapabilityIntent),
+	standardSemanticCoverage("name-official", semanticCategoryLawNameAndConcept),
+	standardSemanticCoverage("name-official-abbreviation", semanticCategoryLawNameAndConcept),
+	standardSemanticCoverage("name-sourced-alias", semanticCategoryLawNameAndConcept),
+	standardSemanticCoverage("pack-judicial-enabled", semanticCategoryPackState),
+	standardSemanticCoverage("reference-case-reference", semanticCategoryOfficialReference),
+	standardSemanticCoverage("reference-law-id", semanticCategoryOfficialReference),
+	standardSemanticCoverage("reference-law-number", semanticCategoryOfficialReference),
+	standardSemanticCoverage("reference-revision-id", semanticCategoryOfficialReference),
+	standardSemanticCoverage("reference-source-resource-ref", semanticCategoryOfficialReference),
+	standardSemanticCoverage("structure-article", semanticCategoryStructuredLocationAndDate),
+	standardSemanticCoverage("structure-complete-date", semanticCategoryStructuredLocationAndDate),
+	standardSemanticCoverage("structure-multiple-explicit-intents", semanticCategoryStructuredLocationAndDate),
+	standardSemanticCoverage("structure-paragraph", semanticCategoryStructuredLocationAndDate),
+	standardSemanticCoverage("surface-orthographic-variation", semanticCategorySurfaceVariation),
+	standardSemanticCoverage("surface-whitespace-variation", semanticCategorySurfaceVariation),
+	standardSemanticCoverage("typo-adjacent-transposition", semanticCategoryTypoVariation),
+	standardSemanticCoverage("typo-deletion", semanticCategoryTypoVariation),
+	standardSemanticCoverage("typo-insertion", semanticCategoryTypoVariation),
+	standardSemanticCoverage("typo-substitution", semanticCategoryTypoVariation),
+	standardSemanticCoverage("unsupported-legal-advice", semanticCategoryUnsupportedScope),
+	standardSemanticCoverage("unsupported-resource", semanticCategoryUnsupportedScope),
+	standardSemanticCoverage("unsupported-translation", semanticCategoryUnsupportedScope),
+	standardSemanticCoverage("unsupported-unadopted-pack", semanticCategoryUnsupportedScope),
+}
+
+func standardSemanticCoverage(
+	id string,
+	categoryID string,
+) semanticCoverageDefinition {
+	return semanticCoverageDefinition{
+		id:                  id,
+		categoryID:          categoryID,
+		minimumHoldoutCount: 1,
+	}
+}
+
+func safetySemanticCoverage(
+	id string,
+	categoryID string,
+) semanticCoverageDefinition {
+	return semanticCoverageDefinition{
+		id:                        id,
+		categoryID:                categoryID,
+		minimumHoldoutCount:       2,
+		requiresSafetyVariantPair: true,
 	}
 }

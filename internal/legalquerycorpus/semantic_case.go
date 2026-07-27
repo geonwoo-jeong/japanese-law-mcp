@@ -92,6 +92,11 @@ func (c SemanticCase) CoverageIDs() []string {
 	return cloneStrings(c.coverageIDs)
 }
 
+// CategoryIDs は、coverage から導出した manifest 順の category ID を返す。
+func (c SemanticCase) CategoryIDs() []string {
+	return semanticCategoryIDsForCoverageIDs(c.coverageIDs)
+}
+
 // SafetyVariant は、安全境界 variant と項目の存在を返す。
 func (c SemanticCase) SafetyVariant() (SafetyVariant, bool) {
 	if c.safetyVariant == nil {

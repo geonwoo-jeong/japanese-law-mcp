@@ -29,7 +29,7 @@ func TestManifestIntegrityは三集合をmanifest順で返し共有状態を持�
 	)
 	fs := filesystemReadTestOpen(t, layout)
 
-	got, err := validateManifestIntegrity(
+	got, err := validateManifestArtifacts(
 		context.Background(),
 		fs,
 		schema,
@@ -63,7 +63,7 @@ func TestManifestIntegrityは三集合をmanifest順で返し共有状態を持�
 	if manifest.RequiredCategoryIDs()[0] != "ambiguity" {
 		t.Fatal("SOT-ENG-026: result manifest が入力 manifest と共有された")
 	}
-	again, err := validateManifestIntegrity(
+	again, err := validateManifestArtifacts(
 		context.Background(),
 		fs,
 		schema,
@@ -463,7 +463,7 @@ func manifestIntegrityTestRequireFailure(
 ) error {
 	t.Helper()
 
-	got, err := validateManifestIntegrity(ctx, fs, schema, manifest)
+	got, err := validateManifestArtifacts(ctx, fs, schema, manifest)
 	if err == nil {
 		t.Fatal("SOT-ENG-026: integrity 違反を受理した")
 	}

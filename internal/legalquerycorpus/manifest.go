@@ -397,20 +397,7 @@ func isManifestSetKind(value ManifestSetKind) bool {
 }
 
 func manifestRequiredCategoryIDs() []string {
-	return []string{
-		"ambiguity",
-		"budget-boundary",
-		"capability-intent",
-		"input-boundary",
-		"law-name-and-concept",
-		"official-reference",
-		"pack-state",
-		"safety-execution-boundary",
-		"structured-location-and-date",
-		"surface-variation",
-		"typo-variation",
-		"unsupported-scope",
-	}
+	return semanticCategoryIDs()
 }
 
 func manifestRequiredExecutionScenarioIDs() []string {
