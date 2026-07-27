@@ -253,6 +253,32 @@ func summarizeExecutionExpectedAttempts(
 	return counts, nil
 }
 
+func cloneExecutionExpected(value ExecutionExpected) (ExecutionExpected, error) {
+	switch typed := value.(type) {
+	case ExecutionExpectedResult:
+		if err := typed.Validate(); err != nil {
+			return nil, err
+		}
+		return NewExecutionExpectedResult(ExecutionExpectedResultValues{
+			Status:            typed.Status(),
+			ReturnedItemCount: typed.ReturnedItemCount(),
+			Attempts:          typed.Attempts(),
+		})
+	case ExecutionExpectedError:
+		if err := typed.Validate(); err != nil {
+			return nil, err
+		}
+		return NewExecutionExpectedError(ExecutionExpectedErrorValues{
+			ErrorCode: typed.ErrorCode(),
+			Attempts:  typed.Attempts(),
+		})
+	default:
+		return nil, fmt.Errorf(
+			"execution expected は検証済みの値 variant でなければなりません",
+		)
+	}
+}
+
 func mustCloneExecutionExpectedAttempts(
 	values []ExpectedAttempt,
 ) []ExpectedAttempt {

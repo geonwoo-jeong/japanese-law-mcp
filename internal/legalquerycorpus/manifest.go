@@ -25,6 +25,8 @@ const (
 	ArtifactKindCorpusManifest ArtifactKind = "corpus_manifest"
 	// ArtifactKindSemanticCase は、意味判定 fixture を表す。
 	ArtifactKindSemanticCase ArtifactKind = "semantic_case"
+	// ArtifactKindExecutionCase は、実行 fixture を表す。
+	ArtifactKindExecutionCase ArtifactKind = "execution_case"
 )
 
 // ManifestSetKind は、manifest が宣言する fixture 集合を表す。
@@ -412,13 +414,10 @@ func manifestRequiredCategoryIDs() []string {
 }
 
 func manifestRequiredExecutionScenarioIDs() []string {
-	return []string{
-		"execution-all-failed",
-		"execution-empty",
-		"execution-item-budget",
-		"execution-nonempty",
-		"execution-partial-failure",
-		"execution-reversed-completion",
-		"execution-timeout",
+	scenarioIDs := executionScenarioIDs()
+	values := make([]string, 0, len(scenarioIDs))
+	for _, scenarioID := range scenarioIDs {
+		values = append(values, string(scenarioID))
 	}
+	return values
 }
