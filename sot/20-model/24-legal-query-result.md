@@ -43,10 +43,10 @@
 | `evidenceCodes` | `string[]` | はい | `SOT-MODEL-022` の公開可能な根拠分類 |
 | `conceptSources` | `LegalConceptSource[]` | はい | 法概念一致を検証する公的資料 |
 | `availability` | string | はい | `available` または `pack_disabled` |
-| `requiredPack` | string | いいえ | 必要な拡張パック ID |
+| `requiredPacks` | `string[]` | はい | 必要な拡張パック ID。空配列を許す |
 | `steps` | `LegalQueryStepSummary[]` | はい | step ID、task、resource、capability ID と major version |
 
-`LegalConceptSource` の項目と従属条件は `SOT-MODEL-022` をそのまま使用し、公開用に別定義を作らない。`outputSchema` では同じ型を `$defs` から参照する。
+`LegalConceptSource` の項目と従属条件は `SOT-MODEL-022` をそのまま使用し、公開用に別定義を作らない。`requiredPacks` と availability の従属条件は `SOT-MODEL-023` の selection をそのまま使用する。`outputSchema` では同じ型を `$defs` から参照する。
 
 公開用 `interpretationId` は内部 `candidateId` から決定的に作れるが、score、辞書 entry または入力断片を埋め込まない。
 
@@ -100,7 +100,7 @@ pack 無効の非実行を `partial` にしない。実行した全 attempt が�
 
 ## 明確化
 
-`LegalQueryClarification` は、二件以下の `reasonCodes` と二件以下の決定的な `questions` を持ち、`additionalProperties: false` とする。入力本文、内部 token または score を反復せず、task、resource、法令若しくは裁判例のどれを指定すべきかだけを案内する。
+`LegalQueryClarification` は、一件以上二件以下の `reasonCodes` と二件以下の決定的な `questions` を持ち、`additionalProperties: false` とする。`reasonCodes` は `SOT-MODEL-023` の `needs_clarification` が許す `below_execution_threshold` と `ambiguous_candidates` だけを、同 SOT の順序で重複なく持つ。入力本文、内部 token または score を反復せず、task、resource、法令若しくは裁判例のどれを指定すべきかだけを案内する。
 
 ## 確認
 
