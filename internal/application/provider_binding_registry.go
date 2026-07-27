@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
@@ -14,12 +16,14 @@ import (
 
 // ProviderBindings は、一つの記述子と実装済みの型付き能力ポートを結び付ける。
 type ProviderBindings struct {
-	Descriptor       model.ProviderDescriptor
-	LawSearch        lawsearch.Port
-	LawContentSearch lawcontentsearch.Port
-	LawDocumentRead  lawdocumentread.Port
-	LawArticleRead   lawarticleread.Port
-	LawUpdateList    lawupdatelist.Port
+	Descriptor             model.ProviderDescriptor
+	JudicialDecisionRead   judicialdecisionread.Port
+	JudicialDecisionSearch judicialdecisionsearch.Port
+	LawSearch              lawsearch.Port
+	LawContentSearch       lawcontentsearch.Port
+	LawDocumentRead        lawdocumentread.Port
+	LawArticleRead         lawarticleread.Port
+	LawUpdateList          lawupdatelist.Port
 }
 
 // ProviderBindingRegistry は、検証済みの型付き binding を providerId ごとに保持する。
@@ -129,6 +133,28 @@ func (r ProviderBindingRegistry) LawUpdateList(
 	return binding.LawUpdateList, true
 }
 
+// JudicialDecisionSearch は、providerId の judicial-decision.search@1 port を返す。
+func (r ProviderBindingRegistry) JudicialDecisionSearch(
+	providerID string,
+) (judicialdecisionsearch.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.JudicialDecisionSearch) {
+		return nil, false
+	}
+	return binding.JudicialDecisionSearch, true
+}
+
+// JudicialDecisionRead は、providerId の judicial-decision.read@1 port を返す。
+func (r ProviderBindingRegistry) JudicialDecisionRead(
+	providerID string,
+) (judicialdecisionread.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.JudicialDecisionRead) {
+		return nil, false
+	}
+	return binding.JudicialDecisionRead, true
+}
+
 func validateProviderBindings(value ProviderBindings) error {
 	declared := make(map[providerRouteKey]struct{}, len(value.Descriptor.Capabilities()))
 	for _, capability := range value.Descriptor.Capabilities() {
@@ -173,6 +199,10 @@ func hasPortForCapability(
 	key providerRouteKey,
 ) bool {
 	switch key {
+	case judicialDecisionReadProviderRouteKey():
+		return !isNilTypedPort(value.JudicialDecisionRead)
+	case judicialDecisionSearchProviderRouteKey():
+		return !isNilTypedPort(value.JudicialDecisionSearch)
 	case lawSearchProviderRouteKey():
 		return !isNilTypedPort(value.LawSearch)
 	case lawContentSearchProviderRouteKey():

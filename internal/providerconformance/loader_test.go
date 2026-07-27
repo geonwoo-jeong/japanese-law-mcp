@@ -18,17 +18,42 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	}
 
 	providers := catalog.Providers()
-	if len(providers) != 2 {
-		t.Fatalf("provider 数 = %d、期待値は 2 です", len(providers))
+	if len(providers) != 3 {
+		t.Fatalf("provider 数 = %d、期待値は 3 です", len(providers))
 	}
+	courts := providerByID(t, providers, "courts-hanrei-html")
 	v1 := providerByID(t, providers, "e-gov-law-api-v1")
 	v2 := providerByID(t, providers, "e-gov-law-api-v2")
-	if v1.SchemaVersion != 1 || v2.SchemaVersion != 1 {
+	if courts.SchemaVersion != 1 || v1.SchemaVersion != 1 || v2.SchemaVersion != 1 {
 		t.Fatalf(
-			"schemaVersion = v1:%d, v2:%d、期待値は 1 です",
+			"schemaVersion = courts:%d, v1:%d, v2:%d、期待値は 1 です",
+			courts.SchemaVersion,
 			v1.SchemaVersion,
 			v2.SchemaVersion,
 		)
+	}
+
+	courtsRows := courts.Rows()
+	if got := capabilityIDs(courtsRows); !slices.Equal(
+		got,
+		[]string{"judicial-decision.read", "judicial-decision.search"},
+	) {
+		t.Fatalf("courts capabilityId = %v", got)
+	}
+	for _, row := range courtsRows {
+		if row.MajorVersion != 1 ||
+			row.BudgetSOTID != "SOT-IF-043" ||
+			row.ConcurrencyGroup != "courts-hanrei-html" ||
+			row.ArtifactType != "HTML" ||
+			row.ParserContractVersion != "1.0.0" ||
+			row.ImplementedBy !=
+				"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei" ||
+			row.ConformanceTarget != "./internal/source/courts/hanrei" ||
+			row.Status != "planned" {
+			t.Fatalf("courts row = %#v", row)
+		}
+		assertCasesAreExplicit(t, row)
+		assertCanonicalPublicErrors(t, row)
 	}
 
 	v1Rows := v1.Rows()
@@ -107,8 +132,8 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		assertCanonicalPublicErrors(t, row)
 	}
 
-	if got := len(catalog.Rows()); got != 5 {
-		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 5 です", got)
+	if got := len(catalog.Rows()); got != 7 {
+		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 7 です", got)
 	}
 }
 
@@ -131,7 +156,7 @@ func TestLoadの返却値は外部変更から分離される(t *testing.T) {
 	again := catalog.Providers()
 	againV2 := providerByID(t, again, "e-gov-law-api-v2")
 	againRows := againV2.Rows()
-	if len(again) != 2 {
+	if len(again) != 3 {
 		t.Fatal("Providers() の変更が Catalog 内部へ反映されました")
 	}
 	if againRows[0].InterfaceSOTIDs[0] == "SOT-IF-999" ||
@@ -407,7 +432,7 @@ func assertCanonicalPublicErrors(t *testing.T, row Row) {
 
 	want := []string{"invalid_argument"}
 	switch row.CapabilityID {
-	case "law.document.read":
+	case "judicial-decision.read", "law.document.read":
 		want = append(want, "not_found")
 	case "law.article.read":
 		want = append(want, "not_found", "ambiguous_location")

@@ -3,6 +3,8 @@ package application
 import (
 	"fmt"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
@@ -52,6 +54,20 @@ func lawUpdateListProviderRouteKey() providerRouteKey {
 	return providerRouteKey{
 		capabilityID: lawupdatelist.CapabilityID,
 		majorVersion: lawupdatelist.MajorVersion,
+	}
+}
+
+func judicialDecisionSearchProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: judicialdecisionsearch.CapabilityID,
+		majorVersion: judicialdecisionsearch.MajorVersion,
+	}
+}
+
+func judicialDecisionReadProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: judicialdecisionread.CapabilityID,
+		majorVersion: judicialdecisionread.MajorVersion,
 	}
 }
 
@@ -224,11 +240,41 @@ func (r ProviderRoutes) LawUpdateList() (lawupdatelist.Port, bool) {
 	return r.registry.LawUpdateList(providerID)
 }
 
+// JudicialDecisionSearch は、judicial-decision.search@1 の実効 primary port を返す。
+func (r ProviderRoutes) JudicialDecisionSearch() (judicialdecisionsearch.Port, bool) {
+	providerID, exists := r.ProviderID(
+		judicialdecisionsearch.CapabilityID,
+		judicialdecisionsearch.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.JudicialDecisionSearch(providerID)
+}
+
+// JudicialDecisionRead は、judicial-decision.read@1 の実効 primary port を返す。
+func (r ProviderRoutes) JudicialDecisionRead() (judicialdecisionread.Port, bool) {
+	providerID, exists := r.ProviderID(
+		judicialdecisionread.CapabilityID,
+		judicialdecisionread.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.JudicialDecisionRead(providerID)
+}
+
 func (r ProviderBindingRegistry) hasBinding(
 	providerID string,
 	key providerRouteKey,
 ) bool {
 	switch key {
+	case judicialDecisionReadProviderRouteKey():
+		_, exists := r.JudicialDecisionRead(providerID)
+		return exists
+	case judicialDecisionSearchProviderRouteKey():
+		_, exists := r.JudicialDecisionSearch(providerID)
+		return exists
 	case lawSearchProviderRouteKey():
 		_, exists := r.LawSearch(providerID)
 		return exists
@@ -260,6 +306,8 @@ func isSupportedProviderRouteKey(key providerRouteKey) bool {
 
 func supportedProviderRouteKeys() []providerRouteKey {
 	return []providerRouteKey{
+		judicialDecisionReadProviderRouteKey(),
+		judicialDecisionSearchProviderRouteKey(),
 		lawArticleReadProviderRouteKey(),
 		lawContentSearchProviderRouteKey(),
 		lawDocumentReadProviderRouteKey(),

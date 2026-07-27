@@ -16,13 +16,20 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("canonical matrix を読み込めませんでした: %v", err)
 	}
-	if len(rows) != 5 {
-		t.Fatalf("row 数 = %d, want 5", len(rows))
+	if len(rows) != 7 {
+		t.Fatalf("row 数 = %d, want 7", len(rows))
 	}
 	counts := map[string]int{}
 	for _, row := range rows {
 		counts[row.providerID]++
 		switch row.providerID {
+		case "courts-hanrei-html":
+			if row.implementedBy != "internal/source/courts/hanrei" {
+				t.Fatalf("courts implementedBy = %q", row.implementedBy)
+			}
+			if row.status != "planned" {
+				t.Fatalf("courts status = %q", row.status)
+			}
 		case "e-gov-law-api-v1":
 			if row.implementedBy != "internal/source/egov/lawv1" {
 				t.Fatalf("v1 implementedBy = %q", row.implementedBy)
@@ -41,7 +48,8 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 			t.Fatalf("providerId = %q", row.providerID)
 		}
 	}
-	if counts["e-gov-law-api-v1"] != 1 ||
+	if counts["courts-hanrei-html"] != 2 ||
+		counts["e-gov-law-api-v1"] != 1 ||
 		counts["e-gov-law-api-v2"] != 4 {
 		t.Fatalf("provider row counts = %v", counts)
 	}

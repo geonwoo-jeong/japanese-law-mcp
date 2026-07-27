@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
@@ -60,6 +62,71 @@ func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
 	if port, exists := routes.LawUpdateList(); !exists ||
 		port != primary.LawUpdateList {
 		t.Fatalf("SOT-ARCH-012: LawUpdateList() = %#v, %t", port, exists)
+	}
+}
+
+func TestProviderRoutesResolveOptionalJudicialDecisionRoutes(t *testing.T) {
+	t.Parallel()
+
+	bindings := newCompleteProviderBindings(t, "judicial-provider")
+	registry, err := application.NewProviderBindingRegistry(
+		[]application.ProviderBindings{bindings},
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-012: registry のエラー = %v", err)
+	}
+	values := append(
+		completeProviderRouteValues("judicial-provider"),
+		application.ProviderRouteValues{
+			CapabilityID:      judicialdecisionread.CapabilityID,
+			MajorVersion:      judicialdecisionread.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: "judicial-provider",
+		},
+		application.ProviderRouteValues{
+			CapabilityID:      judicialdecisionsearch.CapabilityID,
+			MajorVersion:      judicialdecisionsearch.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: "judicial-provider",
+		},
+	)
+
+	routes, routeErr := application.NewProviderRoutes(registry, values)
+	if routeErr != nil {
+		t.Fatalf("SOT-IF-041/SOT-IF-042: NewProviderRoutes() のエラー = %v", routeErr)
+	}
+	if port, exists := routes.JudicialDecisionSearch(); !exists ||
+		port != bindings.JudicialDecisionSearch {
+		t.Fatalf("SOT-IF-041: JudicialDecisionSearch() = %#v, %t", port, exists)
+	}
+	if port, exists := routes.JudicialDecisionRead(); !exists ||
+		port != bindings.JudicialDecisionRead {
+		t.Fatalf("SOT-IF-042: JudicialDecisionRead() = %#v, %t", port, exists)
+	}
+}
+
+func TestProviderRoutesKeepJudicialDecisionRoutesOptional(t *testing.T) {
+	t.Parallel()
+
+	bindings := newCompleteProviderBindings(t, "core-provider")
+	registry, err := application.NewProviderBindingRegistry(
+		[]application.ProviderBindings{bindings},
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-012: registry のエラー = %v", err)
+	}
+	routes, routeErr := application.NewProviderRoutes(
+		registry,
+		completeProviderRouteValues("core-provider"),
+	)
+	if routeErr != nil {
+		t.Fatalf("SOT-ARCH-019: 裁判例 route を必須として扱った: %v", routeErr)
+	}
+	if _, exists := routes.JudicialDecisionSearch(); exists {
+		t.Fatal("SOT-ARCH-019: 未設定の judicial-decision.search route を返した")
+	}
+	if _, exists := routes.JudicialDecisionRead(); exists {
+		t.Fatal("SOT-ARCH-019: 未設定の judicial-decision.read route を返した")
 	}
 }
 

@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
@@ -48,6 +50,14 @@ func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {
 		port != bindings.LawUpdateList {
 		t.Fatalf("SOT-ARCH-012: LawUpdateList() = %#v, %t", port, exists)
 	}
+	if port, exists := registry.JudicialDecisionSearch("complete-provider"); !exists ||
+		port != bindings.JudicialDecisionSearch {
+		t.Fatalf("SOT-IF-041: JudicialDecisionSearch() = %#v, %t", port, exists)
+	}
+	if port, exists := registry.JudicialDecisionRead("complete-provider"); !exists ||
+		port != bindings.JudicialDecisionRead {
+		t.Fatalf("SOT-IF-042: JudicialDecisionRead() = %#v, %t", port, exists)
+	}
 }
 
 func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) {
@@ -59,6 +69,8 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 
 	undeclaredPort := complete
 	undeclaredPort.Descriptor = newBindingDescriptor(t, "complete-provider",
+		judicialdecisionread.CapabilityID,
+		judicialdecisionsearch.CapabilityID,
 		lawarticleread.CapabilityID,
 		lawcontentsearch.CapabilityID,
 		lawdocumentread.CapabilityID,
@@ -70,6 +82,14 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 		t,
 		"complete-provider",
 		[]capabilityValues{
+			{
+				id:           judicialdecisionread.CapabilityID,
+				majorVersion: judicialdecisionread.MajorVersion,
+			},
+			{
+				id:           judicialdecisionsearch.CapabilityID,
+				majorVersion: judicialdecisionsearch.MajorVersion,
+			},
 			{id: lawarticleread.CapabilityID, majorVersion: lawarticleread.MajorVersion},
 			{id: lawcontentsearch.CapabilityID, majorVersion: lawcontentsearch.MajorVersion},
 			{id: lawdocumentread.CapabilityID, majorVersion: lawdocumentread.MajorVersion},
@@ -119,6 +139,28 @@ func TestProviderBindingRegistryRejectsDuplicateAndInvalidDescriptor(t *testing.
 
 type fakeLawSearchBinding struct {
 	name string
+}
+
+type fakeJudicialDecisionSearchBinding struct {
+	name string
+}
+
+func (*fakeJudicialDecisionSearchBinding) Search(
+	context.Context,
+	judicialdecisionsearch.Request,
+) (judicialdecisionsearch.Page, error) {
+	return judicialdecisionsearch.Page{}, nil
+}
+
+type fakeJudicialDecisionReadBinding struct {
+	name string
+}
+
+func (*fakeJudicialDecisionReadBinding) Read(
+	context.Context,
+	judicialdecisionread.Request,
+) (model.SourcedResource[model.JudicialDecisionDetails], error) {
+	return model.SourcedResource[model.JudicialDecisionDetails]{}, nil
 }
 
 func (*fakeLawSearchBinding) Search(
@@ -181,17 +223,21 @@ func newCompleteProviderBindings(
 		Descriptor: newBindingDescriptor(
 			t,
 			providerID,
+			judicialdecisionread.CapabilityID,
+			judicialdecisionsearch.CapabilityID,
 			lawarticleread.CapabilityID,
 			lawcontentsearch.CapabilityID,
 			lawdocumentread.CapabilityID,
 			lawsearch.CapabilityID,
 			lawupdatelist.CapabilityID,
 		),
-		LawSearch:        &fakeLawSearchBinding{name: providerID},
-		LawContentSearch: &fakeLawContentSearchBinding{name: providerID},
-		LawDocumentRead:  &fakeLawDocumentReadBinding{name: providerID},
-		LawArticleRead:   &fakeLawArticleReadBinding{name: providerID},
-		LawUpdateList:    &fakeLawUpdateListBinding{name: providerID},
+		JudicialDecisionRead:   &fakeJudicialDecisionReadBinding{name: providerID},
+		JudicialDecisionSearch: &fakeJudicialDecisionSearchBinding{name: providerID},
+		LawSearch:              &fakeLawSearchBinding{name: providerID},
+		LawContentSearch:       &fakeLawContentSearchBinding{name: providerID},
+		LawDocumentRead:        &fakeLawDocumentReadBinding{name: providerID},
+		LawArticleRead:         &fakeLawArticleReadBinding{name: providerID},
+		LawUpdateList:          &fakeLawUpdateListBinding{name: providerID},
 	}
 }
 
