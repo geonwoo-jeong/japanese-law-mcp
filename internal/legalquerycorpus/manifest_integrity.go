@@ -47,7 +47,11 @@ func validateIntegrityRequirements(
 	if err != nil {
 		return integrityCheckedCorpus{}, err
 	}
-	return validateIntegrityExecutionReferences(checked)
+	checked, err = validateIntegrityExecutionReferences(checked)
+	if err != nil {
+		return integrityCheckedCorpus{}, err
+	}
+	return validateIntegrityExecutionScenarioRequirements(checked)
 }
 
 // validateManifestArtifacts は、manifest 宣言と実在 fixture を byte 単位で照合する。

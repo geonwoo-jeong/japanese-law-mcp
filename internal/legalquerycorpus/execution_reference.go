@@ -13,6 +13,7 @@ type executionReferenceStep struct {
 }
 
 type executionReferencePlan struct {
+	decision          legalquery.PlanDecision
 	steps             []executionReferenceStep
 	effectiveLimit    int
 	hasEffectiveLimit bool
@@ -102,6 +103,7 @@ func executionReferencePlanForSemanticCase(
 		return executionReferencePlan{}, err
 	}
 	return executionReferencePlan{
+		decision:          expected.Decision(),
 		steps:             steps,
 		effectiveLimit:    limit,
 		hasEffectiveLimit: hasLimit,
