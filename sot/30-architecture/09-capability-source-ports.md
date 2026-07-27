@@ -44,7 +44,7 @@
 
 ## 関連
 
-- [SOT-ARCH-003: ユースケース境界](03-application-boundary.md)
+- [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)
 - [SOT-PROD-006: 関連公的情報の統合境界](../00-product/06-related-public-information-boundary.md)
 - [SOT-IF-033: MCP `search_law_content`](../40-interfaces/33-mcp-search-law-content.md)

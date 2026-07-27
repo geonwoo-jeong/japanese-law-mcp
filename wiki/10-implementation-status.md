@@ -24,7 +24,7 @@
 - [SOT-IF-017](../sot/40-interfaces/17-source-error-normalization.md) に従う、十三分類、固定された安全な日本語メッセージおよび再試行可否を持ち、[SOT-IF-027](../sot/40-interfaces/27-public-source-error-contract.md) が許可する二分類に限って明示された `retryAfter` を保持する不変な `SourceError`
 - [SOT-ARCH-012](../sot/30-architecture/12-provider-registry.md) のうち、`providerId` と能力 ID・メジャーバージョンの宣言を起動時に検証して保持し、`SourceResourceRef` の provider と情報源の一致を照合する不変な descriptor registry
 - [SOT-IF-016](../sot/40-interfaces/16-source-continuation-contract.md) および [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) の構成状態 fingerprint 規定に従う、プロセスローカル鍵、RFC 8785 正規化、条件・構成状態の結合、期限・長さ検証および再起動時無効化を備えた共通 continuation token kernel
-- [SOT-IF-018](../sot/40-interfaces/18-provider-configuration.md)、[SOT-IF-020](../sot/40-interfaces/20-configuration-sources-and-precedence.md) および [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) に従う、設定ファイルの `providers` と `providerRoutes`、key 単位の atomic な上書き、明示的な空 namespace、credential 環境変数参照の構造検証、ならびに有効な組込み provider と能力別 route の起動前照合
+- [SOT-IF-018](../sot/40-interfaces/18-provider-configuration.md)、[SOT-IF-039](../sot/40-interfaces/39-configuration-sources-and-precedence-v2.md) および [SOT-IF-026](../sot/40-interfaces/26-provider-routing-configuration.md) のうち、既存設定項目、`providers` と `providerRoutes`、key 単位の atomic な上書き、明示的な空 namespace、credential 環境変数参照の構造検証、ならびに有効な組込み provider と能力別 route の起動前照合
 - [SOT-IF-022](../sot/40-interfaces/22-law-search-capability.md) に従う、正規化済みの型付き `law.search@1` 入力、継続条件、検索ページおよび能力別ポート
 - [SOT-MODEL-007](../sot/20-model/07-law-content-match.md) と [SOT-IF-023](../sot/40-interfaces/23-law-content-search-capability.md) に従う、不変な本文一致モデル、構造化された型付き `law.content.search@1` 入力、継続条件、検索ページおよび能力別ポート
 - [SOT-MODEL-002](../sot/20-model/02-law-document.md)、[SOT-MODEL-004](../sot/20-model/04-citation.md)、[SOT-MODEL-017](../sot/20-model/17-law-document-representation.md) および [SOT-IF-024](../sot/40-interfaces/24-law-document-read-capability.md) に従う、不変な `Citation`、`LawDocumentRepresentation`、XML 専用の `LawDocument`、ならびに型付き `law.document.read@1` 入力と能力別ポート
@@ -39,7 +39,7 @@
 
 ## 未実装
 
-- 現在確認されている未実装差分はない。
+- [SOT-PROD-010](../sot/00-product/10-judicial-cases-extension-pack.md)、[SOT-SCN-006](../sot/10-scenarios/06-search-judicial-cases.md)、[SOT-SCN-007](../sot/10-scenarios/07-get-judicial-case.md)、[SOT-MODEL-020](../sot/20-model/20-judicial-decision-summary.md)、[SOT-MODEL-021](../sot/20-model/21-judicial-decision-details.md)、[SOT-IF-040](../sot/40-interfaces/40-judicial-cases-pack-activation.md) から [SOT-IF-048](../sot/40-interfaces/48-mcp-get-judicial-case.md) まで、および [SOT-ARCH-020](../sot/30-architecture/20-adopted-use-case-boundary.md) に従う `judicial-cases` 拡張パックは採用済みだが未実装である。
 
 引数を指定しないルートコマンドは stdio MCP サーバーを起動する。公開ツールは `search_laws`、`get_law`、`get_article`、`search_law_content` および `list_law_updates` の五つである。`streamable-http` を指定した場合は、検証済みの loopback 待受先で `/mcp` を提供し、stdio と同じ五つのツールを公開する。
 

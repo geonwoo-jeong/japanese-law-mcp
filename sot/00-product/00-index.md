@@ -9,3 +9,4 @@
 - [07-source-acquisition-policy.md](07-source-acquisition-policy.md)
 - [08-egov-law-core-scope.md](08-egov-law-core-scope.md)
 - [09-selectable-legal-information-extension-packs.md](09-selectable-legal-information-extension-packs.md)
+- [10-judicial-cases-extension-pack.md](10-judicial-cases-extension-pack.md)

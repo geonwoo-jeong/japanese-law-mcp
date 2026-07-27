@@ -22,7 +22,7 @@ CLI の有効なインターフェース SOT に基本動作、優先順位、�
 ## 関連
 
 - [SOT-IF-019: コマンドラインインターフェース](../40-interfaces/19-command-line-interface.md)
-- [SOT-IF-020: 設定ソースと優先順位](../40-interfaces/20-configuration-sources-and-precedence.md)
+- [SOT-IF-039: 設定ソースと優先順位 v2](../40-interfaces/39-configuration-sources-and-precedence-v2.md)
 - [SOT-IF-021: プロセス終了コード](../40-interfaces/21-process-exit-codes.md)
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)

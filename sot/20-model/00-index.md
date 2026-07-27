@@ -19,3 +19,5 @@
 - [17-law-document-representation.md](17-law-document-representation.md)
 - [18-law-article-location.md](18-law-article-location.md)
 - [19-law-update.md](19-law-update.md)
+- [20-judicial-decision-summary.md](20-judicial-decision-summary.md)
+- [21-judicial-decision-details.md](21-judicial-decision-details.md)

@@ -43,7 +43,7 @@
 ## 関連
 
 - [SOT-PROD-009: 選択型法情報拡張パックの境界](../00-product/09-selectable-legal-information-extension-packs.md)
-- [SOT-ARCH-003: ユースケース境界](03-application-boundary.md)
+- [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-ARCH-010: プロバイダーの分離](10-provider-isolation.md)
 - [SOT-ARCH-018: 拡張パック単位の正規化境界](18-pack-scoped-normalization-boundary.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)

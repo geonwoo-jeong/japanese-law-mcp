@@ -35,6 +35,6 @@ flowchart LR
 ## 関連
 
 - [SOT-ARCH-002: MCP トランスポート境界](02-transport-boundary.md)
-- [SOT-ARCH-003: ユースケース境界](03-application-boundary.md)
+- [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-ARCH-004: 情報源アダプター境界](04-source-adapter-boundary.md)
 - [SOT-ARCH-006: MCP ツール境界](06-mcp-tool-boundary.md)

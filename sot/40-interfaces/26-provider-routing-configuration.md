@@ -103,7 +103,7 @@ providerRoutes:
 
 既存の公開機能に必要な `primary` route が欠落している、または実効既定プロバイダーが構成できない場合は起動を失敗させる。公開機能へ未採用の capability は、route を定義しても MCP ツールの追加を意味しない。
 
-未知の最上位項目、未知の `providers.{providerId}` 項目、未知の `providerRoutes` 項目、型の不一致および成立しない組合せは、`SOT-IF-020` と同じくサーバー起動前の設定エラーとする。
+未知の最上位項目、未知の `providers.{providerId}` 項目、未知の `providerRoutes` 項目、型の不一致および成立しない組合せは、`SOT-IF-039` と同じくサーバー起動前の設定エラーとする。
 
 ## 優先順位
 
@@ -129,7 +129,7 @@ fingerprint の object は、`providerId`、`origin`、`dataset`、`tenant`、`a
 
 - [SOT-IF-029: ローカル実行設定](29-local-runtime-configuration.md)
 - [SOT-IF-018: プロバイダー設定境界](18-provider-configuration.md)
-- [SOT-IF-020: 設定ソースと優先順位](20-configuration-sources-and-precedence.md)
+- [SOT-IF-039: 設定ソースと優先順位 v2](39-configuration-sources-and-precedence-v2.md)
 - [SOT-IF-016: 情報源の継続取得](16-source-continuation-contract.md)
 - [SOT-ARCH-012: プロバイダーの登録](../30-architecture/12-provider-registry.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](../30-architecture/13-source-composition.md)

@@ -5,3 +5,5 @@
 - [03-get-article.md](03-get-article.md)
 - [04-search-law-content.md](04-search-law-content.md)
 - [05-list-law-updates.md](05-list-law-updates.md)
+- [06-search-judicial-cases.md](06-search-judicial-cases.md)
+- [07-get-judicial-case.md](07-get-judicial-case.md)

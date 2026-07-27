@@ -38,7 +38,7 @@ internal/
 ## 関連
 
 - [SOT-ARCH-001: リクエスト処理パイプライン](../30-architecture/01-request-pipeline.md)
-- [SOT-ARCH-003: ユースケース境界](../30-architecture/03-application-boundary.md)
+- [SOT-ARCH-020: 採用済みユースケース境界](../30-architecture/20-adopted-use-case-boundary.md)
 - [SOT-ARCH-007: 依存方向](../30-architecture/07-dependency-direction.md)
 - [SOT-ARCH-015: 起動時設定境界](../30-architecture/15-startup-configuration-boundary.md)
 - [SOT-ENG-014: CLI 実装境界](14-cli-implementation-boundary.md)

@@ -19,5 +19,5 @@ MCP ハンドラーを、情報源アダプターの具象型や e-Gov 固有型
 ## 関連
 
 - [SOT-ARCH-002: MCP トランスポート境界](02-transport-boundary.md)
-- [SOT-ARCH-003: ユースケース境界](03-application-boundary.md)
+- [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-IF-007: MCP ツール結果](../40-interfaces/07-mcp-tool-result.md)
