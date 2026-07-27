@@ -6,10 +6,9 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/text/unicode/norm"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querynormalization"
 )
 
 const maxLexiconStringBytes = 2048
@@ -282,24 +281,5 @@ func registerNormalizedOwner(
 }
 
 func comparisonKey(value string) string {
-	normalized := norm.NFKC.String(value)
-	var builder strings.Builder
-	builder.Grow(len(normalized))
-	for _, current := range normalized {
-		if unicode.IsSpace(current) || unicode.IsPunct(current) {
-			continue
-		}
-		switch {
-		case current >= 'A' && current <= 'Z':
-			current += 'a' - 'A'
-		case current >= '\u30a1' && current <= '\u30f6':
-			current -= '\u0060'
-		case current == '\u30fd':
-			current = '\u309d'
-		case current == '\u30fe':
-			current = '\u309e'
-		}
-		builder.WriteRune(current)
-	}
-	return builder.String()
+	return querynormalization.ComparisonKey(value)
 }
