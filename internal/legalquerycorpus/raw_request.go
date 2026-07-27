@@ -196,6 +196,20 @@ func (r Request) Validate() error {
 	return nil
 }
 
+func (r Request) clone() Request {
+	var ref *RequestRef
+	if r.ref != nil {
+		cloned := r.ref.clone()
+		ref = &cloned
+	}
+	return Request{
+		query:           r.query,
+		ref:             ref,
+		limitPerAttempt: cloneOptionalInt(r.limitPerAttempt),
+		initialized:     r.initialized,
+	}
+}
+
 func cloneOptionalString(value *string) *string {
 	if value == nil {
 		return nil

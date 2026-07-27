@@ -235,7 +235,7 @@ func validateExpectedRequiredPacks(values []string) error {
 func validateExpectedIdentifier(field string, value string) error {
 	if len(value) < 1 ||
 		len(value) > 64 ||
-		!manifestIdentifierPattern.MatchString(value) {
+		!corpusIdentifierPattern.MatchString(value) {
 		return fmt.Errorf("%s は 1 byte 以上 64 byte 以下の正規形でなければなりません", field)
 	}
 	return nil

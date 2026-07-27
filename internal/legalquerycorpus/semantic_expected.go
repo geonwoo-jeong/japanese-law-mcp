@@ -214,6 +214,27 @@ func (*ExpectedRequestError) UnmarshalJSON(_ []byte) error {
 
 func (ExpectedRequestError) semanticExpected() {}
 
+func cloneSemanticExpected(value SemanticExpected) (SemanticExpected, error) {
+	switch typed := value.(type) {
+	case ExpectedPlan:
+		return NewExpectedPlan(ExpectedPlanValues{
+			Decision:           typed.Decision(),
+			ReasonCodes:        typed.ReasonCodes(),
+			Meanings:           typed.Meanings(),
+			SelectedMeaningIDs: typed.SelectedMeaningIDs(),
+		})
+	case ExpectedRequestError:
+		return NewExpectedRequestError(ExpectedRequestErrorValues{
+			ErrorCode: typed.ErrorCode(),
+			Field:     typed.Field(),
+		})
+	default:
+		return nil, fmt.Errorf(
+			"semantic expected は検証済みの値 variant でなければなりません",
+		)
+	}
+}
+
 func cloneExpectedMeanings(values []ExpectedMeaning) ([]ExpectedMeaning, error) {
 	cloned := make([]ExpectedMeaning, 0, len(values))
 	for _, meaning := range values {

@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	manifestSchemaVersion = 1
-	manifestMaximumSeed   = 2147483647
-	manifestMaximumCases  = 4096
+	corpusSchemaVersion  = 1
+	manifestMaximumSeed  = 2147483647
+	manifestMaximumCases = 4096
 )
 
 var (
 	manifestCorpusVersionPattern = regexp.MustCompile(`^corpus-v[1-9][0-9]*$`)
-	manifestIdentifierPattern    = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+	corpusIdentifierPattern      = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 	manifestSHA256Pattern        = regexp.MustCompile(`^[0-9a-f]{64}$`)
 )
 
@@ -23,6 +23,8 @@ type ArtifactKind string
 const (
 	// ArtifactKindCorpusManifest は、コーパス manifest を表す。
 	ArtifactKindCorpusManifest ArtifactKind = "corpus_manifest"
+	// ArtifactKindSemanticCase は、意味判定 fixture を表す。
+	ArtifactKindSemanticCase ArtifactKind = "semantic_case"
 )
 
 // ManifestSetKind は、manifest が宣言する fixture 集合を表す。
@@ -297,7 +299,7 @@ func (m Manifest) validateHeader() error {
 	switch {
 	case m.artifactKind != ArtifactKindCorpusManifest:
 		return fmt.Errorf("artifactKind は corpus_manifest でなければなりません")
-	case m.schemaVersion != manifestSchemaVersion:
+	case m.schemaVersion != corpusSchemaVersion:
 		return fmt.Errorf("schemaVersion は 1 でなければなりません")
 	case !manifestCorpusVersionPattern.MatchString(m.corpusVersion):
 		return fmt.Errorf("corpusVersion は corpus-v と正の十進整数の正規形でなければなりません")
@@ -345,7 +347,7 @@ func validateManifestEntries(kind ManifestSetKind, entries []ManifestEntry) erro
 }
 
 func validateManifestCaseID(kind ManifestSetKind, value string) error {
-	if len(value) < 1 || len(value) > 64 || !manifestIdentifierPattern.MatchString(value) {
+	if len(value) < 1 || len(value) > 64 || !corpusIdentifierPattern.MatchString(value) {
 		return fmt.Errorf("caseId は 1 byte 以上 64 byte 以下の正規形でなければなりません")
 	}
 	prefix := string(kind) + "-"
