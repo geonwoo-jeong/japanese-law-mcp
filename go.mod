@@ -9,12 +9,12 @@ require (
 	github.com/ikawaha/kagome-dict/ipa v1.2.6
 	github.com/ikawaha/kagome/v2 v2.11.0
 	github.com/modelcontextprotocol/go-sdk v1.6.1
-	github.com/pelletier/go-toml/v2 v2.2.4
+	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/rogpeppe/go-internal v1.15.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
-	go.yaml.in/yaml/v3 v3.0.4
+	go.yaml.in/yaml/v3 v3.0.5
 	golang.org/x/net v0.57.0
 	golang.org/x/text v0.40.0
 	golang.org/x/tools v0.48.0
