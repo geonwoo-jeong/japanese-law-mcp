@@ -1,0 +1,303 @@
+package searchquery
+
+import (
+	"context"
+	"fmt"
+	"reflect"
+	"slices"
+	"strings"
+	"unicode/utf8"
+)
+
+// Resolver は、能力別の不変辞書と analyzer から安全な正式検索語を解決する。
+type Resolver struct {
+	analyzer   Analyzer
+	exact      map[string][]target
+	normalized map[string][]target
+	fuzzy      map[int][]fuzzyTerm
+}
+
+// NewResolver は、入力を複製して検索用の不変索引を構築する。
+func NewResolver(entries []EntryValues, analyzer Analyzer) (*Resolver, error) {
+	if len(entries) == 0 || len(entries) > maxEntryCount {
+		return nil, fmt.Errorf(
+			"検索語 entry は 1 件以上 %d 件以下でなければなりません",
+			maxEntryCount,
+		)
+	}
+	if isNilInterface(analyzer) {
+		return nil, fmt.Errorf("検索語 analyzer は必須です")
+	}
+
+	exact := make(map[string][]target)
+	normalized := make(map[string][]target)
+	fuzzyValues := make(map[string][]target)
+	resourceIDs := make(map[string]struct{}, len(entries))
+	for entryIndex, entry := range entries {
+		if err := validateEntry(entry); err != nil {
+			return nil, fmt.Errorf("entries[%d]: %w", entryIndex, err)
+		}
+		if _, duplicated := resourceIDs[entry.ResourceID]; duplicated {
+			return nil, fmt.Errorf(
+				"resourceId %q が重複しています",
+				entry.ResourceID,
+			)
+		}
+		resourceIDs[entry.ResourceID] = struct{}{}
+		currentTarget := target{
+			resourceID: entry.ResourceID,
+			canonical:  entry.Canonical,
+		}
+		terms := append([]string{entry.Canonical}, entry.Terms...)
+		seenTerms := make(map[string]struct{}, len(terms))
+		for _, term := range terms {
+			if _, duplicated := seenTerms[term]; duplicated {
+				continue
+			}
+			seenTerms[term] = struct{}{}
+			exact[term] = appendUniqueTarget(exact[term], currentTarget)
+			key := comparisonKey(term)
+			normalized[key] = appendUniqueTarget(
+				normalized[key],
+				currentTarget,
+			)
+			fuzzyValues[key] = appendUniqueTarget(
+				fuzzyValues[key],
+				currentTarget,
+			)
+		}
+	}
+
+	return &Resolver{
+		analyzer:   analyzer,
+		exact:      sortTargetIndex(exact),
+		normalized: sortTargetIndex(normalized),
+		fuzzy:      buildFuzzyIndex(fuzzyValues),
+	}, nil
+}
+
+// Resolve は、exact、比較用正規化、解析語、誤記距離の順で一意な正式語を返す。
+func (r *Resolver) Resolve(
+	ctx context.Context,
+	query string,
+) (string, bool, error) {
+	if ctx == nil {
+		return "", false, fmt.Errorf("context は必須です")
+	}
+	if err := ctx.Err(); err != nil {
+		return "", false, err
+	}
+	if !utf8.ValidString(query) ||
+		len(query) == 0 ||
+		len(query) > maxQueryBytes {
+		return "", false, fmt.Errorf(
+			"検索語は有効な UTF-8 で 1 byte 以上 %d byte 以下でなければなりません",
+			maxQueryBytes,
+		)
+	}
+
+	if canonical, found, unique := selectTarget(r.exact[query]); found {
+		return canonical, unique, nil
+	}
+	key := comparisonKey(query)
+	if canonical, found, unique := selectTarget(r.normalized[key]); found {
+		return canonical, unique, nil
+	}
+
+	terms, err := r.analyzer.RegisteredTerms(ctx, query)
+	if err != nil {
+		return "", false, err
+	}
+	if len(terms) > maxAnalyzedTermCount {
+		return "", false, fmt.Errorf(
+			"解析した登録語は %d 件以下でなければなりません",
+			maxAnalyzedTermCount,
+		)
+	}
+	analyzedTargets := make([]target, 0, len(terms))
+	for _, term := range terms {
+		termKey := comparisonKey(term)
+		analyzedTargets = appendUniqueTargets(
+			analyzedTargets,
+			r.normalized[termKey],
+		)
+	}
+	if canonical, found, unique := selectTarget(analyzedTargets); found {
+		return canonical, unique, nil
+	}
+
+	return r.resolveFuzzy(ctx, key)
+}
+
+func (r *Resolver) resolveFuzzy(
+	ctx context.Context,
+	query string,
+) (string, bool, error) {
+	queryRunes := []rune(query)
+	if len(queryRunes) < 3 {
+		return "", false, nil
+	}
+
+	bestDistance := 4
+	bestTargets := make([]target, 0)
+	checked := 0
+	for length := max(3, len(queryRunes)-3); length <= len(queryRunes)+3; length++ {
+		for _, term := range r.fuzzy[length] {
+			checked++
+			if checked%64 == 0 {
+				if err := ctx.Err(); err != nil {
+					return "", false, err
+				}
+			}
+			maximum := fuzzyMaximum(length)
+			if maximum == 0 {
+				continue
+			}
+			distance := boundedDamerauLevenshtein(
+				queryRunes,
+				[]rune(term.value),
+				maximum,
+			)
+			switch {
+			case distance > maximum || distance > bestDistance:
+				continue
+			case distance < bestDistance:
+				bestDistance = distance
+				bestTargets = appendUniqueTargets(nil, term.targets)
+			default:
+				bestTargets = appendUniqueTargets(bestTargets, term.targets)
+			}
+		}
+	}
+	if bestDistance == 4 {
+		return "", false, nil
+	}
+	canonical, found, unique := selectTarget(bestTargets)
+	if !found || !unique {
+		return "", false, nil
+	}
+	return canonical, true, nil
+}
+
+func validateEntry(entry EntryValues) error {
+	if err := validateTerm("resourceId", entry.ResourceID); err != nil {
+		return err
+	}
+	if err := validateTerm("canonical", entry.Canonical); err != nil {
+		return err
+	}
+	if len(entry.Terms) > maxTermsPerEntry {
+		return fmt.Errorf(
+			"terms は %d 件以下でなければなりません",
+			maxTermsPerEntry,
+		)
+	}
+	for index, term := range entry.Terms {
+		if err := validateTerm(fmt.Sprintf("terms[%d]", index), term); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateTerm(name string, value string) error {
+	if !utf8.ValidString(value) ||
+		strings.TrimSpace(value) == "" ||
+		len(value) > maxTermBytes ||
+		comparisonKey(value) == "" {
+		return fmt.Errorf(
+			"%s は比較できる UTF-8 で 1 byte 以上 %d byte 以下でなければなりません",
+			name,
+			maxTermBytes,
+		)
+	}
+	return nil
+}
+
+func buildFuzzyIndex(values map[string][]target) map[int][]fuzzyTerm {
+	index := make(map[int][]fuzzyTerm)
+	for value, targets := range values {
+		length := len([]rune(value))
+		index[length] = append(index[length], fuzzyTerm{
+			value:   value,
+			targets: append([]target(nil), targets...),
+		})
+	}
+	for length := range index {
+		slices.SortFunc(index[length], func(left, right fuzzyTerm) int {
+			return strings.Compare(left.value, right.value)
+		})
+	}
+	return index
+}
+
+func sortTargetIndex(index map[string][]target) map[string][]target {
+	for key := range index {
+		slices.SortFunc(index[key], compareTargets)
+	}
+	return index
+}
+
+func appendUniqueTargets(values []target, additions []target) []target {
+	for _, addition := range additions {
+		values = appendUniqueTarget(values, addition)
+	}
+	return values
+}
+
+func appendUniqueTarget(values []target, addition target) []target {
+	for _, value := range values {
+		if value.resourceID == addition.resourceID {
+			return values
+		}
+	}
+	return append(values, addition)
+}
+
+func selectTarget(values []target) (string, bool, bool) {
+	if len(values) == 0 {
+		return "", false, false
+	}
+	if len(values) != 1 {
+		return "", true, false
+	}
+	return values[0].canonical, true, true
+}
+
+func compareTargets(left target, right target) int {
+	if compared := strings.Compare(left.resourceID, right.resourceID); compared != 0 {
+		return compared
+	}
+	return strings.Compare(left.canonical, right.canonical)
+}
+
+func fuzzyMaximum(length int) int {
+	switch {
+	case length < 3:
+		return 0
+	case length <= 9:
+		return 1
+	case length <= 15:
+		return 2
+	default:
+		return 3
+	}
+}
+
+func isNilInterface(value any) bool {
+	if value == nil {
+		return true
+	}
+	reflected := reflect.ValueOf(value)
+	switch reflected.Kind() {
+	case reflect.Chan,
+		reflect.Func,
+		reflect.Interface,
+		reflect.Map,
+		reflect.Pointer,
+		reflect.Slice:
+		return reflected.IsNil()
+	default:
+		return false
+	}
+}

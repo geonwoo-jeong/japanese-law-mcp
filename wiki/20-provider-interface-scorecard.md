@@ -73,10 +73,10 @@
 
 レビュー中に次を修正した。
 
-- `SOT-IF-009`、`SOT-IF-010` および `SOT-IF-028` で、件数、配列長、総件数、`null`、欠落、前進性および `next_offset == offset + returnedCount` を固定した。
-- `SOT-IF-030` と `SOT-IF-033` で、公開 `nextOffset` を同じ検証済み取得位置へ固定した。
+- `SOT-IF-050`、`SOT-IF-010` および `SOT-IF-028` で、件数、配列長、総件数、`null`、欠落、前進性および `next_offset == offset + returnedCount` を固定した。
+- `SOT-IF-049` と `SOT-IF-033` で、公開 `nextOffset` を同じ検証済み取得位置へ固定した。
 - `SOT-ENG-017` に `page-invariants` を追加し、`supportsContinuation: true`、`law.search@1` および `law.content.search@1` で `n/a` にできない必須 case とした。
-- `SOT-IF-009`、`SOT-IF-022` および `SOT-IF-030` で、既存 facade の任意 `offset` と `asOf` 省略を、内部 capability の署名済み continuation と snapshot へ lossless に変換しない境界を明示した。
+- `SOT-IF-050`、`SOT-IF-022` および `SOT-IF-049` で、既存 facade の任意 `offset` と `asOf` 省略を、内部 capability の署名済み continuation と snapshot へ lossless に変換しない境界を明示した。
 - `SOT-IF-033` で e-Gov 検索式の決定的な受理構文を定義し、`SOT-ENG-016` で artifact ごとの byte、構造単位および深さの計測方法を固定した。
 
 この回の `P1` はすべて解消してから最終レビューを行った。

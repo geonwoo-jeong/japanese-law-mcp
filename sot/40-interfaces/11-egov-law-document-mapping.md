@@ -18,7 +18,7 @@ e-Gov 法令 API Version 2 の法令本文取得は `GET /law_data/{law_id_or_nu
 
 ## レスポンス
 
-`law_info` と `revision_info` は `SOT-IF-009` と同じフィールド対応で `LawSummary` に変換する。
+`law_info` と `revision_info` は `SOT-IF-050` と同じフィールド対応で `LawSummary` に変換する。
 
 法令本文の `Law` 要素を UTF-8 XML として内容を変更せずにシリアライズし、`LawDocumentRepresentation.content` に設定する。`LawDocumentRepresentation.format` は `xml` とする。入力に `asOf` がある場合だけ `LawDocumentRepresentation.asOf` に設定する。
 
@@ -45,12 +45,12 @@ https://laws.e-gov.go.jp/law/{lawId}/{revisionPart}
 ## エラー
 
 - 対象法令または指定日以前のリビジョンが存在しない場合は `not_found` とする。
-- その他の情報源エラーは `SOT-IF-009` と同じ規則で変換する。
+- その他の情報源エラーは `SOT-IF-050` と同じ規則で変換する。
 
 ## 関連
 
 - [SOT-IF-031: MCP `get_law`](31-mcp-get-law.md)
-- [SOT-IF-009: e-Gov 法令名検索マッピング](09-egov-law-search-mapping.md)
+- [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
 - [SOT-IF-024: law.document.read capability v1](24-law-document-read-capability.md)
 - [SOT-MODEL-002: LawDocument](../20-model/02-law-document.md)
 - [SOT-MODEL-017: LawDocumentRepresentation](../20-model/17-law-document-representation.md)

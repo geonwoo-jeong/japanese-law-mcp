@@ -24,4 +24,4 @@
 
 - [SOT-MODEL-001: LawSummary](01-law-summary.md)
 - [SOT-MODEL-009: JSON シリアライズ](09-json-serialization.md)
-- [SOT-IF-030: MCP `search_laws`](../40-interfaces/30-mcp-search-laws.md)
+- [SOT-IF-049: MCP `search_laws` v2](../40-interfaces/49-mcp-search-laws-v2.md)

@@ -70,7 +70,7 @@ Japanese Law MCP は、次の利用目的に必要な操作だけを使用する
 
 | e-Gov operation | 利用目的 | マッピング SOT |
 |---|---|---|
-| `GET /laws` | 法令名検索 | `SOT-IF-009` |
+| `GET /laws` | 法令名検索 | `SOT-IF-050` |
 | `GET /keyword` | 法令本文検索 | `SOT-IF-010`、`SOT-IF-028` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 法令本文取得 | `SOT-IF-011` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 条文取得 | `SOT-IF-012` |

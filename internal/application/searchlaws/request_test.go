@@ -22,7 +22,7 @@ func TestRequestNormalizesPublicSearchInput(t *testing.T) {
 		Offset: &offset,
 	})
 	if err != nil {
-		t.Fatalf("SOT-IF-030: NewRequest() のエラー = %v", err)
+		t.Fatalf("SOT-IF-049: NewRequest() のエラー = %v", err)
 	}
 	asOf = mustSearchLawsDate(t, "2020-01-01")
 	limit = 1
@@ -31,14 +31,14 @@ func TestRequestNormalizesPublicSearchInput(t *testing.T) {
 	if request.Query() != "行政/手続" ||
 		request.Limit() != 30 ||
 		request.Offset() != 40 {
-		t.Fatalf("SOT-IF-030: request = %#v", request)
+		t.Fatalf("SOT-IF-049: request = %#v", request)
 	}
 	gotAsOf, exists := request.AsOf()
 	if !exists || gotAsOf.String() != "2026-07-26" {
-		t.Fatalf("SOT-IF-030: AsOf() = %q, %t", gotAsOf.String(), exists)
+		t.Fatalf("SOT-IF-049: AsOf() = %q, %t", gotAsOf.String(), exists)
 	}
 	if err := request.Validate(); err != nil {
-		t.Fatalf("SOT-IF-030: Validate() のエラー = %v", err)
+		t.Fatalf("SOT-IF-049: Validate() のエラー = %v", err)
 	}
 }
 
@@ -47,13 +47,50 @@ func TestRequestAppliesDefaultsAndPreservesMissingAsOf(t *testing.T) {
 
 	request, err := NewRequest(RequestValues{Query: "民法"})
 	if err != nil {
-		t.Fatalf("SOT-IF-030: NewRequest() のエラー = %v", err)
+		t.Fatalf("SOT-IF-049: NewRequest() のエラー = %v", err)
 	}
 	if request.Limit() != lawsearch.DefaultLimit || request.Offset() != 0 {
-		t.Fatalf("SOT-IF-030: defaults = limit %d, offset %d", request.Limit(), request.Offset())
+		t.Fatalf("SOT-IF-049: defaults = limit %d, offset %d", request.Limit(), request.Offset())
 	}
 	if _, exists := request.AsOf(); exists {
-		t.Fatal("SOT-IF-030: 省略した asOf が設定された")
+		t.Fatal("SOT-IF-049: 省略した asOf が設定された")
+	}
+}
+
+func TestRequestWithQueryCreatesValidatedImmutableCopy(t *testing.T) {
+	t.Parallel()
+
+	asOf := mustSearchLawsDate(t, "2026-07-27")
+	limit := 7
+	offset := 41
+	original, err := NewRequest(RequestValues{
+		Query:  "個情法",
+		AsOf:   &asOf,
+		Limit:  &limit,
+		Offset: &offset,
+	})
+	if err != nil {
+		t.Fatalf("NewRequest() のエラー = %v", err)
+	}
+	resolved, err := original.WithQuery("個人情報の保護に関する法律")
+	if err != nil {
+		t.Fatalf("SOT-IF-049: WithQuery() のエラー = %v", err)
+	}
+	gotAsOf, exists := resolved.AsOf()
+	if !exists ||
+		original.Query() != "個情法" ||
+		resolved.Query() != "個人情報の保護に関する法律" ||
+		gotAsOf.String() != "2026-07-27" ||
+		resolved.Limit() != 7 ||
+		resolved.Offset() != 41 {
+		t.Fatalf(
+			"SOT-IF-049: original=%q, resolved=%q",
+			original.Query(),
+			resolved.Query(),
+		)
+	}
+	if _, err := original.WithQuery(""); err == nil {
+		t.Fatal("SOT-IF-049: 空の query を受理しました")
 	}
 }
 
@@ -76,15 +113,15 @@ func TestRequestRejectsInvalidPublicValues(t *testing.T) {
 	}
 	for _, values := range tests {
 		if _, err := NewRequest(values); err == nil {
-			t.Fatalf("SOT-IF-030: 不正な入力を受理した: %#v", values)
+			t.Fatalf("SOT-IF-049: 不正な入力を受理した: %#v", values)
 		}
 	}
 	if err := (Request{}).Validate(); err == nil {
-		t.Fatal("SOT-IF-030: zero value request を受理した")
+		t.Fatal("SOT-IF-049: zero value request を受理した")
 	}
 	var request Request
 	if err := json.Unmarshal([]byte(`{"query":"民法"}`), &request); err == nil {
-		t.Fatal("SOT-IF-030: Request を JSON から直接復元できた")
+		t.Fatal("SOT-IF-049: Request を JSON から直接復元できた")
 	}
 }
 

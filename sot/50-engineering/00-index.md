@@ -21,3 +21,4 @@
 - [19-static-analysis-and-coding-style.md](19-static-analysis-and-coding-style.md)
 - [20-verification-gate.md](20-verification-gate.md)
 - [21-git-hook-staged-verification.md](21-git-hook-staged-verification.md)
+- [22-law-name-search-lexicon.md](22-law-name-search-lexicon.md)

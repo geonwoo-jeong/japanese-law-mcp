@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"sort"
+	"sync"
 	"syscall"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
@@ -23,10 +24,13 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
+	kagomeanalyzer "github.com/geonwoo-jeong/japanese-law-mcp/internal/nlp/kagome"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2"
@@ -172,7 +176,16 @@ func newPublicDependencies(
 		return projectmcp.Dependencies{},
 			fmt.Errorf("公開 search_laws facade を初期化できません: %w", err)
 	}
-	searchLaws, err := searchlaws.NewService(provider, cfg.RequestTimeout())
+	queryResolver, err := newLawNameQueryResolver()
+	if err != nil {
+		return projectmcp.Dependencies{},
+			fmt.Errorf("法令名検索語の解決器を初期化できません: %w", err)
+	}
+	searchLaws, err := searchlaws.NewService(
+		provider,
+		queryResolver,
+		cfg.RequestTimeout(),
+	)
 	if err != nil {
 		return projectmcp.Dependencies{},
 			fmt.Errorf("公開 search_laws service を初期化できません: %w", err)
@@ -220,6 +233,37 @@ func newPublicDependencies(
 		ListLawUpdates:   listLawUpdates,
 		JudicialCases:    judicialCases,
 	}, nil
+}
+
+var loadLawNameQueryResolver = sync.OnceValues(
+	func() (searchlaws.QueryResolver, error) {
+		lexicon, err := lawnamelexicon.LoadEmbedded()
+		if err != nil {
+			return nil, err
+		}
+		analyzer, err := kagomeanalyzer.NewAnalyzer(lexicon.Terms())
+		if err != nil {
+			return nil, err
+		}
+		lexiconEntries := lexicon.Entries()
+		entries := make([]searchquery.EntryValues, len(lexiconEntries))
+		for index, entry := range lexiconEntries {
+			entries[index] = searchquery.EntryValues{
+				ResourceID: entry.ResourceID,
+				Canonical:  entry.Canonical,
+				Terms:      append([]string(nil), entry.Terms...),
+			}
+		}
+		resolver, err := searchquery.NewResolver(entries, analyzer)
+		if err != nil {
+			return nil, err
+		}
+		return resolver, nil
+	},
+)
+
+func newLawNameQueryResolver() (searchlaws.QueryResolver, error) {
+	return loadLawNameQueryResolver()
 }
 
 func newJudicialCasesDependencies(

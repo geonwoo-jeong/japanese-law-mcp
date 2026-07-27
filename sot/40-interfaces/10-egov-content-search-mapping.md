@@ -57,14 +57,14 @@ e-Gov の公式 OpenAPI では、`limit` は応答内の `sentences[].position` 
 
 ## エラー
 
-エラーの変換は `SOT-IF-009` と同じ規則を使用する。
+エラーの変換は `SOT-IF-050` と同じ規則を使用する。
 
 `SOT-IF-033` の構文に一致しない値は外部呼出し前に `invalid_argument` とする。事前検証を通過した値に e-Gov が `4xx` を返した場合は、利用者入力を別の意味へ再解釈せず `invalid_source_response` とする。
 
 ## 関連
 
 - [SOT-IF-033: MCP `search_law_content`](33-mcp-search-law-content.md)
-- [SOT-IF-009: e-Gov 法令名検索マッピング](09-egov-law-search-mapping.md)
+- [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
 - [SOT-IF-011: e-Gov 法令本文取得マッピング](11-egov-law-document-mapping.md)
 - [SOT-MODEL-008: LawContentSearchResult](../20-model/08-law-content-search-result.md)
 - [e-Gov 法令 API Version 2 OpenAPI](https://laws.e-gov.go.jp/api/2/swagger-ui/lawapi-v2.yaml)

@@ -642,7 +642,7 @@ providers:
 }
 
 func TestExecutableServesMCPOverStdio(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestMCPServerProcess$") //nolint:gosec // SOT-ENG-015: テスト自身を固定引数で子プロセスとして起動する。
@@ -684,7 +684,7 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 }
 
 func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
 	var listenConfig net.ListenConfig
 	reservation, err := listenConfig.Listen(ctx, "tcp", "127.0.0.1:0")

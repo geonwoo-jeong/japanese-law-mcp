@@ -50,7 +50,7 @@ func addSearchLawsTool(
 	outputSchema := mustSchemaFor[searchLawsOutput]()
 	server.AddTool(&sdk.Tool{
 		Name:         "search_laws",
-		Description:  "法令名または略称の一部から、e-Gov で確認できる法令を検索します。",
+		Description:  "法令名、略称、表記揺れ、自然文または軽微な誤記から、公式情報源で確認できる法令を検索します。",
 		InputSchema:  inputSchema,
 		OutputSchema: outputSchema,
 	}, func(ctx context.Context, request *sdk.CallToolRequest) (*sdk.CallToolResult, error) {

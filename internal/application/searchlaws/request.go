@@ -64,6 +64,24 @@ func (r Request) Offset() int {
 	return r.offset
 }
 
+// WithQuery は、検索条件を保持して query だけを再検証した新しい値を返す。
+func (r Request) WithQuery(query string) (Request, error) {
+	if err := r.Validate(); err != nil {
+		return Request{}, err
+	}
+	values := RequestValues{
+		Query: query,
+	}
+	if asOf, exists := r.AsOf(); exists {
+		values.AsOf = &asOf
+	}
+	limit := r.Limit()
+	offset := r.Offset()
+	values.Limit = &limit
+	values.Offset = &offset
+	return NewRequest(values)
+}
+
 // Validate は、正規表現指定、収録開始日および数値 offset を確認する。
 func (r Request) Validate() error {
 	if err := r.common.Validate(); err != nil {

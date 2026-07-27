@@ -5,6 +5,9 @@ go 1.25.0
 require (
 	github.com/google/jsonschema-go v0.4.3
 	github.com/gowebpki/jcs v1.0.1
+	github.com/ikawaha/kagome-dict v1.1.7
+	github.com/ikawaha/kagome-dict/ipa v1.2.6
+	github.com/ikawaha/kagome/v2 v2.11.0
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/rogpeppe/go-internal v1.15.0

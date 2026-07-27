@@ -20,3 +20,4 @@
 - [18-pack-scoped-normalization-boundary.md](18-pack-scoped-normalization-boundary.md)
 - [19-extension-pack-activation-boundary.md](19-extension-pack-activation-boundary.md)
 - [20-adopted-use-case-boundary.md](20-adopted-use-case-boundary.md)
+- [21-provider-independent-query-preprocessing.md](21-provider-independent-query-preprocessing.md)

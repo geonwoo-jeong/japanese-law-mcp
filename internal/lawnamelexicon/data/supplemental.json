@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "datasetId": "ndl-common-abbreviations-2026-07-27",
+  "entries": [
+    {
+      "lawId": "415AC0000000057",
+      "lawNumber": "平成十五年法律第五十七号",
+      "title": "個人情報の保護に関する法律",
+      "alias": "個情法",
+      "kind": "common-abbreviation",
+      "sourceName": "国立国会図書館 日本法令索引",
+      "sourceUrl": "https://hourei.ndl.go.jp/simple/detail?lawId=0000095240",
+      "confirmedAt": "2026-07-27"
+    },
+    {
+      "lawId": "425AC0000000027",
+      "lawNumber": "平成二十五年法律第二十七号",
+      "title": "行政手続における特定の個人を識別するための番号の利用等に関する法律",
+      "alias": "共通番号法",
+      "kind": "common-abbreviation",
+      "sourceName": "国立国会図書館 日本法令索引",
+      "sourceUrl": "https://hourei.ndl.go.jp/simple/detail?current=1&lawId=0000129572",
+      "confirmedAt": "2026-07-27"
+    },
+    {
+      "lawId": "425AC0000000027",
+      "lawNumber": "平成二十五年法律第二十七号",
+      "title": "行政手続における特定の個人を識別するための番号の利用等に関する法律",
+      "alias": "番号利用法",
+      "kind": "common-abbreviation",
+      "sourceName": "国立国会図書館 日本法令索引",
+      "sourceUrl": "https://hourei.ndl.go.jp/simple/detail?current=1&lawId=0000129572",
+      "confirmedAt": "2026-07-27"
+    },
+    {
+      "lawId": "425AC0000000027",
+      "lawNumber": "平成二十五年法律第二十七号",
+      "title": "行政手続における特定の個人を識別するための番号の利用等に関する法律",
+      "alias": "マイナ法",
+      "kind": "common-abbreviation",
+      "sourceName": "国立国会図書館 日本法令索引",
+      "sourceUrl": "https://hourei.ndl.go.jp/simple/detail?current=1&lawId=0000129572",
+      "confirmedAt": "2026-07-27"
+    }
+  ]
+}

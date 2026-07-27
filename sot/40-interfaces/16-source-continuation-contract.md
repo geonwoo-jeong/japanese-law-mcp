@@ -56,4 +56,4 @@ offset、`startRecord`、`NEXT_KEY`、`divideNumber`、日付内の取得位置�
 
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
 - [SOT-ARCH-005: リクエスト情報の一時性](../30-architecture/05-ephemeral-request-lifecycle.md)
-- [SOT-IF-030: MCP `search_laws`](30-mcp-search-laws.md)
+- [SOT-IF-049: MCP `search_laws` v2](49-mcp-search-laws-v2.md)

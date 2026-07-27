@@ -48,3 +48,5 @@
 - [46-courts-hanrei-built-in-adoption.md](46-courts-hanrei-built-in-adoption.md)
 - [47-mcp-search-judicial-cases.md](47-mcp-search-judicial-cases.md)
 - [48-mcp-get-judicial-case.md](48-mcp-get-judicial-case.md)
+- [49-mcp-search-laws-v2.md](49-mcp-search-laws-v2.md)
+- [50-egov-law-search-mapping-v2.md](50-egov-law-search-mapping-v2.md)

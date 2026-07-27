@@ -102,7 +102,7 @@
 | `offset` | e-Gov 固有 facade だけの取得位置。共通入力へ変換しない |
 
 - facade は e-Gov adapter の同じ応答 parser と `LawSummary` mapping を使い、内部 capability の `ref`、`provenance` および `page.nextToken` を公開しない。
-- facade の `nextOffset` は、現在の単一 e-Gov route に限り `SOT-IF-009` の同じページ不変条件で検証する。
+- facade の `nextOffset` は、現在の単一 e-Gov route に限り `SOT-IF-050` の同じページ不変条件で検証する。
 - `offset` はこの capability の公開入力ではなく、既存互換 facade の責務として維持する。任意の公開 `offset` から内部 `continuationToken` を合成して capability を呼び出さない。
 - `asOf` を省略した facade は e-Gov に `asof` を送信しない。内部 capability は継続 snapshot のため実効 `asOf` を固定する。この差を lossless な共通入力として扱わない。
 
@@ -134,7 +134,8 @@
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](../30-architecture/13-source-composition.md)
-- [SOT-IF-030: MCP `search_laws`](30-mcp-search-laws.md)
+- [SOT-IF-049: MCP `search_laws` v2](49-mcp-search-laws-v2.md)
+- [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
 - [SOT-IF-004: e-Gov 法令 API Version 2](04-source-egov-law-api-v2.md)
 - [SOT-IF-015: 情報源操作の共通契約](15-source-operation-contract.md)
 - [SOT-IF-016: 情報源の継続取得](16-source-continuation-contract.md)

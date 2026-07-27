@@ -7,3 +7,4 @@
 - [05-list-law-updates.md](05-list-law-updates.md)
 - [06-search-judicial-cases.md](06-search-judicial-cases.md)
 - [07-get-judicial-case.md](07-get-judicial-case.md)
+- [08-resolve-law-name-query.md](08-resolve-law-name-query.md)
