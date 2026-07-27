@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -147,6 +150,145 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 		}
 	case <-ctx.Done():
 		t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
+	}
+}
+
+func TestJudicialCasesToolsAreRegisteredAtomically(t *testing.T) {
+	t.Parallel()
+
+	complete, err := NewJudicialCasesDependencies(
+		stubSearchJudicialCasesPort{},
+		&recordingGetJudicialCasePort{
+			item: mustJudicialDecisionDetailsResource(),
+		},
+	)
+	if err != nil {
+		t.Fatalf("judicial-cases dependencies を作成できません: %v", err)
+	}
+	tests := []struct {
+		name         string
+		dependencies JudicialCasesDependencies
+		wantNames    []string
+	}{
+		{
+			name:      "disabled",
+			wantNames: []string{},
+		},
+		{
+			name:         "complete",
+			dependencies: complete,
+			wantNames: []string{
+				"get_judicial_case",
+				"search_judicial_cases",
+			},
+		},
+		{
+			name: "partial internal value",
+			dependencies: JudicialCasesDependencies{
+				search:      stubSearchJudicialCasesPort{},
+				initialized: true,
+			},
+			wantNames: []string{},
+		},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			serverTransport, clientTransport := sdk.NewInMemoryTransports()
+			serverResult := make(chan error, 1)
+			go func() {
+				serverResult <- NewServerWithDependencies(
+					"test-version",
+					Dependencies{JudicialCases: testCase.dependencies},
+				).Run(ctx, serverTransport)
+			}()
+
+			client := sdk.NewClient(
+				&sdk.Implementation{Name: "test-client", Version: "test-version"},
+				nil,
+			)
+			session, connectErr := client.Connect(ctx, clientTransport, nil)
+			if connectErr != nil {
+				t.Fatalf("MCP セッションを初期化できません: %v", connectErr)
+			}
+			tools, listErr := session.ListTools(ctx, nil)
+			if listErr != nil {
+				t.Fatalf("tools/list error = %v", listErr)
+			}
+			names := make([]string, len(tools.Tools))
+			for index, tool := range tools.Tools {
+				names[index] = tool.Name
+			}
+			if !reflect.DeepEqual(names, testCase.wantNames) {
+				t.Fatalf(
+					"SOT-IF-040: tool names = %#v, want %#v",
+					names,
+					testCase.wantNames,
+				)
+			}
+			if closeErr := session.Close(); closeErr != nil {
+				t.Fatalf("MCP セッションを終了できません: %v", closeErr)
+			}
+			select {
+			case runErr := <-serverResult:
+				if runErr != nil {
+					t.Fatalf("MCP サーバーが正常終了しませんでした: %v", runErr)
+				}
+			case <-ctx.Done():
+				t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
+			}
+		})
+	}
+}
+
+func TestNewJudicialCasesDependenciesRejectsMissingPort(t *testing.T) {
+	t.Parallel()
+
+	var typedNilSearch *recordingJudicialSearchPort
+	var typedNilRead *recordingGetJudicialCasePort
+	tests := []struct {
+		name   string
+		search judicialdecisionsearch.Port
+		read   judicialdecisionread.Port
+	}{
+		{
+			name: "nil search",
+			read: &recordingGetJudicialCasePort{
+				item: mustJudicialDecisionDetailsResource(),
+			},
+		},
+		{
+			name:   "typed nil search",
+			search: typedNilSearch,
+			read: &recordingGetJudicialCasePort{
+				item: mustJudicialDecisionDetailsResource(),
+			},
+		},
+		{
+			name:   "nil read",
+			search: stubSearchJudicialCasesPort{},
+		},
+		{
+			name:   "typed nil read",
+			search: stubSearchJudicialCasesPort{},
+			read:   typedNilRead,
+		},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			if _, err := NewJudicialCasesDependencies(
+				testCase.search,
+				testCase.read,
+			); err == nil {
+				t.Fatal("不完全な judicial-cases dependencies を受理しました")
+			}
+		})
 	}
 }
 

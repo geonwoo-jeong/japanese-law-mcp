@@ -79,9 +79,6 @@ func newServerRunnerWithTransports(
 		if err := validateCompatibilityFacadeRoutes(routes); err != nil {
 			return err
 		}
-		if err := validateExtensionPackPublication(cfg); err != nil {
-			return err
-		}
 
 		server, err := newPublicServer(
 			version,
@@ -106,17 +103,6 @@ func newServerRunnerWithTransports(
 			return errors.New("対応していないトランスポートです")
 		}
 	}
-}
-
-func validateExtensionPackPublication(cfg config.Config) error {
-	if !cfg.JudicialCasesEnabled() {
-		return nil
-	}
-	return config.NewValidationError(
-		errors.New(
-			"judicial-cases に必要な MCP tool を一括構成できません",
-		),
-	)
 }
 
 func newPublicServer(
@@ -181,13 +167,114 @@ func newPublicDependencies(
 	if err != nil {
 		return projectmcp.Dependencies{}, err
 	}
+	judicialCases, err := newJudicialCasesDependencies(
+		cfg,
+		registry,
+		routes,
+	)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
 	return projectmcp.Dependencies{
 		SearchLaws:       searchLaws,
 		SearchLawContent: searchLawContent,
 		GetLaw:           getLaw,
 		GetArticle:       getArticle,
 		ListLawUpdates:   listLawUpdates,
+		JudicialCases:    judicialCases,
 	}, nil
+}
+
+func newJudicialCasesDependencies(
+	cfg config.Config,
+	registry application.ProviderBindingRegistry,
+	routes application.ProviderRoutes,
+) (projectmcp.JudicialCasesDependencies, error) {
+	if !cfg.JudicialCasesEnabled() {
+		return projectmcp.JudicialCasesDependencies{}, nil
+	}
+	searchProvider, exists := routes.JudicialDecisionSearch()
+	if !exists {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(
+				errors.New("primary judicial-decision.search binding がありません"),
+			)
+	}
+	searchService, err := judicialdecisionsearch.NewService(
+		searchProvider,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(fmt.Errorf(
+				"公開 judicial-decision.search service を初期化できません: %w",
+				err,
+			))
+	}
+
+	readProvider, exists := routes.JudicialDecisionRead()
+	if !exists {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(
+				errors.New("primary judicial-decision.read binding がありません"),
+			)
+	}
+	readProviderID, exists := routes.ProviderID(
+		judicialdecisionread.CapabilityID,
+		judicialdecisionread.MajorVersion,
+	)
+	if !exists {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(
+				errors.New("primary judicial-decision.read provider がありません"),
+			)
+	}
+	readDescriptor, exists := registry.Descriptor(readProviderID)
+	if !exists {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(
+				errors.New("primary judicial-decision.read descriptor がありません"),
+			)
+	}
+	resolver, err := judicialdecisionread.NewResolver(
+		[]judicialdecisionread.ProviderBinding{
+			{
+				Descriptor: readDescriptor,
+				Enabled:    true,
+				Port:       readProvider,
+			},
+		},
+	)
+	if err != nil {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(fmt.Errorf(
+				"公開 judicial-decision.read resolver を初期化できません: %w",
+				err,
+			))
+	}
+	readService, err := judicialdecisionread.NewService(
+		resolver,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(fmt.Errorf(
+				"公開 judicial-decision.read service を初期化できません: %w",
+				err,
+			))
+	}
+	dependencies, err := projectmcp.NewJudicialCasesDependencies(
+		searchService,
+		readService,
+	)
+	if err != nil {
+		return projectmcp.JudicialCasesDependencies{},
+			config.NewValidationError(fmt.Errorf(
+				"judicial-cases の公開依存関係を初期化できません: %w",
+				err,
+			))
+	}
+	return dependencies, nil
 }
 
 func newGetLawService(

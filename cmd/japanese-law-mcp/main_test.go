@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -24,6 +25,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
+	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/stdio"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/streamablehttp"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -274,6 +276,78 @@ func TestPublicDependenciesRejectMissingCoreRoutes(t *testing.T) {
 	}
 }
 
+func TestJudicialCasesDependenciesFailClosedWhenCompositionIsIncomplete(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	disabled, err := newJudicialCasesDependencies(
+		config.Default(),
+		application.ProviderBindingRegistry{},
+		application.ProviderRoutes{},
+	)
+	if err != nil {
+		t.Fatalf("pack 無効時の judicial-cases dependencies error = %v", err)
+	}
+	if disabled != (projectmcp.JudicialCasesDependencies{}) {
+		t.Fatalf("pack 無効時の judicial-cases dependencies = %#v", disabled)
+	}
+
+	cfg, err := config.New(withJudicialCasesEnabled())
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+	registry, completeRoutes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("provider runtime を初期化できません: %v", err)
+	}
+	tests := []struct {
+		name     string
+		registry application.ProviderBindingRegistry
+		routes   application.ProviderRoutes
+	}{
+		{
+			name:     "search route",
+			registry: registry,
+			routes: providerRoutesWithoutCapability(
+				t,
+				cfg,
+				judicialdecisionsearch.CapabilityID,
+			),
+		},
+		{
+			name:     "read route",
+			registry: registry,
+			routes: providerRoutesWithoutCapability(
+				t,
+				cfg,
+				judicialdecisionread.CapabilityID,
+			),
+		},
+		{
+			name:   "read descriptor",
+			routes: completeRoutes,
+		},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			_, compositionErr := newJudicialCasesDependencies(
+				cfg,
+				testCase.registry,
+				testCase.routes,
+			)
+			if !config.IsValidationError(compositionErr) {
+				t.Fatalf(
+					"SOT-IF-040: 不完全な composition の設定エラー = %v",
+					compositionErr,
+				)
+			}
+		})
+	}
+}
+
 func TestProviderRoutesRejectJudicialConfigurationWhenPackDisabled(t *testing.T) {
 	t.Parallel()
 
@@ -391,14 +465,10 @@ func TestServerRunnerRejectsProviderConfigurationBeforeTransport(t *testing.T) {
 	}
 }
 
-func TestServerRunnerRejectsUnwiredJudicialCasesBeforeTransport(t *testing.T) {
+func TestServerRunnerStartsCompleteJudicialCasesPack(t *testing.T) {
 	t.Parallel()
 
-	values := defaultTestConfigValues()
-	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
-		config.ExtensionPackJudicialCases: {Enabled: true},
-	}
-	cfg, err := config.New(values)
+	cfg, err := config.New(withJudicialCasesEnabled())
 	if err != nil {
 		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
 	}
@@ -420,11 +490,85 @@ func TestServerRunnerRejectsUnwiredJudicialCasesBeforeTransport(t *testing.T) {
 			return nil
 		},
 	)(context.Background(), cfg)
-	if !config.IsValidationError(err) {
-		t.Fatalf("SOT-IF-040: 起動前の設定エラー = %v", err)
+	if err != nil {
+		t.Fatalf("SOT-IF-040: judicial-cases 起動エラー = %v", err)
 	}
-	if stdioCalled || httpCalled {
-		t.Fatal("SOT-IF-040: 不完全な judicial-cases 構成で transport を開始しました")
+	if !stdioCalled || httpCalled {
+		t.Fatalf(
+			"SOT-IF-040: transport 呼出し = stdio %t, http %t",
+			stdioCalled,
+			httpCalled,
+		)
+	}
+}
+
+func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withJudicialCasesEnabled())
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+	registry, routes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("provider runtime を初期化できません: %v", err)
+	}
+	server, err := newPublicServer(
+		"test-version",
+		cfg,
+		registry,
+		routes,
+		false,
+	)
+	if err != nil {
+		t.Fatalf("公開サーバーを初期化できません: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- server.Run(ctx, serverTransport)
+	}()
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("MCP セッションを初期化できません: %v", err)
+	}
+	tools, err := session.ListTools(ctx, nil)
+	if err != nil {
+		t.Fatalf("tools/list error = %v", err)
+	}
+	names := make([]string, len(tools.Tools))
+	for index, tool := range tools.Tools {
+		names[index] = tool.Name
+	}
+	want := []string{
+		"get_article",
+		"get_judicial_case",
+		"get_law",
+		"list_law_updates",
+		"search_judicial_cases",
+		"search_law_content",
+		"search_laws",
+	}
+	if !reflect.DeepEqual(names, want) {
+		t.Fatalf("SOT-IF-040: tool names = %#v, want %#v", names, want)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("MCP セッションを終了できません: %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("MCP サーバーが正常終了しませんでした: %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
 	}
 }
 
@@ -757,4 +901,32 @@ func withJudicialCasesEnabled() config.Values {
 		config.ExtensionPackJudicialCases: {Enabled: true},
 	}
 	return values
+}
+
+func providerRoutesWithoutCapability(
+	t *testing.T,
+	cfg config.Config,
+	capabilityID string,
+) application.ProviderRoutes {
+	t.Helper()
+	bindings, err := newEnabledProviderBindings(cfg)
+	if err != nil {
+		t.Fatalf("provider bindings を作成できません: %v", err)
+	}
+	registry, err := application.NewProviderBindingRegistry(bindings)
+	if err != nil {
+		t.Fatalf("provider registry を作成できません: %v", err)
+	}
+	values := configuredProviderRouteValues(cfg.ProviderRoutes())
+	filtered := make([]application.ProviderRouteValues, 0, len(values)-1)
+	for _, value := range values {
+		if value.CapabilityID != capabilityID {
+			filtered = append(filtered, value)
+		}
+	}
+	routes, err := application.NewProviderRoutes(registry, filtered)
+	if err != nil {
+		t.Fatalf("一部を除いた provider routes を作成できません: %v", err)
+	}
+	return routes
 }

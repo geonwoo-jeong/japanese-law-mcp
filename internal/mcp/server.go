@@ -17,6 +17,7 @@ type Dependencies struct {
 	GetLaw           getlaw.Port
 	GetArticle       getarticle.Port
 	ListLawUpdates   listlawupdates.Port
+	JudicialCases    JudicialCasesDependencies
 }
 
 // NewServer は、依存を必要としない capability だけを持つ MCP サーバーを返す。
@@ -73,5 +74,6 @@ func newServer(
 	if dependencies.ListLawUpdates != nil {
 		addListLawUpdatesTool(server, dependencies.ListLawUpdates)
 	}
+	dependencies.JudicialCases.addTools(server)
 	return server
 }

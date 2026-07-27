@@ -38,8 +38,9 @@ func TestSearchJudicialCasesToolReturnsStructuredSuccess(t *testing.T) {
 	}
 	if payload.Items[0].Ref.ProviderID != "courts-hanrei-html" ||
 		payload.Items[0].Ref.Key.ResourceType != "judicial-decision" ||
+		payload.Items[0].Ref.Key.ResourceID != "95570/detail2" ||
 		payload.Items[0].Data.DecisionID != "95570" ||
-		payload.Items[0].Data.DetailURL != "https://www.courts.go.jp/app/hanrei_jp/detail2?id=95570" {
+		payload.Items[0].Data.DetailURL != "https://www.courts.go.jp/hanrei/95570/detail2/index.html" {
 		t.Fatalf("payload = %#v", payload)
 	}
 	if len(payload.Items[0].Provenance) != 1 ||
@@ -291,7 +292,7 @@ func mustJudicialSearchItem() model.SourcedResource[model.JudicialDecisionSummar
 		DivisionName:        &divisionName,
 		DecisionType:        &decisionType,
 		Outcome:             &outcome,
-		DetailURL:           "https://www.courts.go.jp/app/hanrei_jp/detail2?id=95570",
+		DetailURL:           "https://www.courts.go.jp/hanrei/95570/detail2/index.html",
 		Documents:           []model.JudicialDocumentLink{document},
 		Source:              source,
 	})
@@ -301,7 +302,7 @@ func mustJudicialSearchItem() model.SourcedResource[model.JudicialDecisionSummar
 	provenance, err := model.NewProvenance(model.ProvenanceValues{
 		Source:          source,
 		ResourceKey:     key,
-		URL:             "https://www.courts.go.jp/app/hanrei_jp/detail2?id=95570",
+		URL:             "https://www.courts.go.jp/hanrei/95570/detail2/index.html",
 		RetrievedAt:     time.Date(2026, time.July, 27, 10, 30, 0, 123456789, time.UTC),
 		SourceUpdatedAt: "2026-07-26",
 		MediaType:       "text/html",
@@ -331,7 +332,7 @@ func mustJudicialResourceKey() model.SourceResourceKey {
 	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
 		SourceID:     "courts-hanrei",
 		ResourceType: "judicial-decision",
-		ResourceID:   "detail2?id=95570",
+		ResourceID:   "95570/detail2",
 	})
 	if err != nil {
 		panic(err)
