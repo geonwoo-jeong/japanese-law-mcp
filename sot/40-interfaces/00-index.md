@@ -50,3 +50,4 @@
 - [48-mcp-get-judicial-case.md](48-mcp-get-judicial-case.md)
 - [49-mcp-search-laws-v2.md](49-mcp-search-laws-v2.md)
 - [50-egov-law-search-mapping-v2.md](50-egov-law-search-mapping-v2.md)
+- [51-mcp-query-legal-information.md](51-mcp-query-legal-information.md)

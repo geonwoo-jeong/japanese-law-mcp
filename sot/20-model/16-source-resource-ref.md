@@ -21,7 +21,9 @@
 
 `SourceResourceRef` は、常に結果配列の一要素を一意に識別する item ID ではない。検索一致、統計観測その他の一つの主資源から複数の item が返る能力は、能力別 SOT が item identity を別に定義し、`ref` だけで重複排除しない。
 
-この参照の往復保証は、`SourcedResource<T>` を入出力に用いる内部 capability 境界に適用する。既存 MCP facade は互換性のために `ref` を公開しない投影であり、検索結果から provider と版を保ったまま既存公開ツールへ渡せることを保証しない。公開境界にも同じ往復を提供する場合は、`SourceResourceRef` を入出力に持つ新しい公開ツール SOT を先に採用する。
+この参照の往復保証は、`SourcedResource<T>` を入出力に用いる内部 capability 境界に適用する。公開 MCP 境界での `ref` の公開有無、供給元および往復範囲は各 MCP interface SOT を定義元とし、このモデルだけからすべての facade が `ref` を公開すると解釈しない。
+
+`SourceResourceRef` は発行元の署名、nonce またはプロセス識別子を持たず、過去に同じ MCP プロセスが返したことを証明しない。公開入力で受け取る場合は、構造、採用済み provider と source の metadata、resource type および対象 capability との一致を検証し、同一プロセスによる発行証明として扱わない。
 
 未知の `providerId`、`providerId` と `sourceId` の不一致、対象 capability が許可しない `resourceType` および空の識別子は `invalid_argument` とし、外部呼出しを行わない。登録済みだが無効化されている provider は `configuration_required` とする。
 
@@ -34,4 +36,7 @@
 - [SOT-MODEL-011: SourceResourceKey](11-source-resource-key.md)
 - [SOT-IF-014: ProviderDescriptor](../40-interfaces/14-provider-descriptor.md)
 - [SOT-IF-015: 情報源操作の共通契約](../40-interfaces/15-source-operation-contract.md)
+- [SOT-IF-047: MCP `search_judicial_cases`](../40-interfaces/47-mcp-search-judicial-cases.md)
+- [SOT-IF-048: MCP `get_judicial_case`](../40-interfaces/48-mcp-get-judicial-case.md)
+- [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](../30-architecture/13-source-composition.md)

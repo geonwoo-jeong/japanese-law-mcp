@@ -21,3 +21,6 @@
 - [19-law-update.md](19-law-update.md)
 - [20-judicial-decision-summary.md](20-judicial-decision-summary.md)
 - [21-judicial-decision-details.md](21-judicial-decision-details.md)
+- [22-legal-query-candidate.md](22-legal-query-candidate.md)
+- [23-legal-query-plan.md](23-legal-query-plan.md)
+- [24-legal-query-result.md](24-legal-query-result.md)

@@ -1,0 +1,127 @@
+# SOT-ENG-025: 統合照会のパッケージ構成
+
+- 状態: 有効
+
+## 規定
+
+統合法情報照会の実装は、計画と実行を所有するアプリケーションパッケージ、能力群ごとの query profile、既存の共通前処理および薄い MCP adapter に分ける。
+
+## 基準構成
+
+```text
+internal/
+├── application/
+│   └── legalquery/
+│       ├── request.go
+│       ├── candidate.go
+│       ├── planner.go
+│       ├── selector.go
+│       ├── materializer.go
+│       ├── executor.go
+│       ├── result.go
+│       ├── service.go
+│       └── ports.go
+├── queryprofile/
+│   ├── core/
+│   │   ├── profile.go
+│   │   ├── cues.go
+│   │   └── data/
+│   │       ├── profile.json
+│   │       ├── cues.json
+│   │       └── legal-concepts.json
+│   └── judicialcases/
+│       ├── profile.go
+│       ├── cues.go
+│       └── data/
+│           ├── profile.json
+│           └── cues.json
+├── nlp/
+│   └── kagome/
+├── lawnamelexicon/
+└── mcp/
+    ├── query_legal_information_tool.go
+    └── query_legal_information_schema.go
+
+cmd/
+└── legal-query-eval/
+    └── main.go
+
+testdata/
+└── legalquery/
+    ├── corpus-v1/
+    └── baselines/
+```
+
+これは採用する責務境界を示す基準構成であり、同じ責務を無理に一ファイルへ集約することを要求しない。ファイルは `SOT-ENG-019` の規模と lint 規則に従って小さく分ける。
+
+## `application/legalquery`
+
+- `request.go`: transport 非依存の検証済み request と固定予算
+- `candidate.go`: `LegalQueryCandidate` と型付き step の組立て
+- `planner.go`: profile と前処理結果からの候補生成
+- `selector.go`: score、margin、pack および対象外の分離判定
+- `materializer.go`: logical input と選択済み route から既存 capability request を作る能力別 facade
+- `executor.go`: item 予算の事前配分、計画順、限定並列、context、部分失敗および呼出し予算
+- `result.go`: 能力別結果から `LegalQueryResult` への lossless な組立て
+- `service.go`: 一回の照会を調整する公開アプリケーション入口
+- `ports.go`: 前処理、profile、pack 状態および能力別ユースケースの必要最小 interface
+
+`legalquery` は、既存能力の request/result 型、共通の `SourceResourceRef` と自身が所有する interface にだけ依存し、MCP SDK、`internal/source/...` または provider descriptor の具象型を import しない。
+
+能力別 facade は registry interface から選択済み binding を受け取り、provider DTO を扱わず既存 capability request を新しく作る。法令 ID からの `SourceResourceRef` 組立てと、入力 `ref` の provider/resource 照合を materializer に閉じる。planner と profile は provider ID を生成しない。
+
+## query profile
+
+`queryprofile/core` は法令コアの task/resource、根拠、重み、閾値、tie-break および法概念辞書を実装する。`queryprofile/judicialcases` は裁判例固有の語彙、事件参照および plan 規則を実装し、pack が有効な場合だけ実行 contribution として注入する。
+
+profile が実装する interface と共通の enum は `application/legalquery` が所有する。core profile と pack profile は互いを import せず、composition root が決定的な順序で一つの不変 profile set として組み立てる。
+
+pack 無効を認識する最小 cue と、入力された `SourceResourceRef` を採用済み provider/source/resource として構造検証する metadata は、core 側の予約済み pack metadata として保持できる。無効な pack の request builder、binding、provider route または result mapper は構成しない。
+
+各 profile directory は `data/profile.json` に profile ID、schema version、profile version、対象 task/resource、weight set、閾値、margin、tie-break および参照する辞書 version を持つ。`data/cues.json` は出典不要の構文 cue と予約語だけを持ち、法概念と法令名の出典付きデータを混在させない。
+
+将来 pack は `internal/queryprofile/<packId からハイフンを除いた名前>/` を独立単位とし、同じ `profile.json` schema、固有の data、loader test および評価カテゴリを持つ。他 pack の Go package または data file を import しない。
+
+## 既存共通モジュール
+
+Kagome tokenizer、Unicode 比較用正規化、法令名辞書および誤記候補判定は既存の provider 非依存モジュールを再利用する。法概念辞書は `SOT-ENG-023` に従い法令名辞書と別 loader を持つ。
+
+MCP package は tool schema、入力変換および `CallToolResult` 変換だけを扱う。`query_legal_information_schema.go` は `SOT-MODEL-024` の concrete result/attempt 型を `oneOf`、const discriminator および `additionalProperties: false` で表し、起動時に schema 自身を検証する。単一の generic `result: any` から自動推論しない。
+
+planner の debug tool、private endpoint または MCP-to-MCP 呼出しを追加しない。
+
+## 不変性と並行性
+
+composition root は tokenizer、辞書、profile、pack 状態、route および limiter を起動時に検証して構築し、その後変更しない。各 request は新しい candidate、plan、attempt および result を作り、共有 slice、map または builder を変更しない。
+
+executor は root context と固定 budget を各 step へ渡す。結果は通信完了順ではなく plan 順に新しい配列へ組み立てる。
+
+## 実装順序
+
+実装は次の依存順に分け、各段階で test-first の検証を通す。
+
+1. logical input、candidate、plan、item 配分式、concrete result 型および JSON Schema
+2. 固定 corpus、evaluator、core profile、法概念辞書および共通前処理 port
+3. selector、能力別 request materializer、fake 能力 port および executor
+4. core の `query_legal_information` MCP handler と、五つの既存専門ツールを含む六ツール登録
+5. `judicial-cases` profile contribution、`ref` read、result variant と八ツール登録
+6. 全評価、race、契約、既存専門ツール回帰および中央品質ゲート
+
+前段の型または評価基準を後段の都合で黙って変更せず、意味変更が必要な場合は関係 SOT と corpus expectation を同じ変更で review する。
+
+## 確認
+
+package import test で `legalquery` と profile から `source` および MCP SDK への依存がないこと、provider から profile、辞書および `legalquery` への依存がないことを確認する。
+
+core profile だけ、core と judicial profile、fake profile、fake ability ports および race detector を使い、pack 分離、不変性、request materialization、item 配分、決定的順序、context cancellation および既存専門ツールとの独立性を確認する。
+
+MCP schema の全 `oneOf` variant、状態と decision の許可された組合せ、状態ごとの interpretation 件数と availability、未知項目拒否、公開 `ref` 供給元の往復、法令専門ツールで `ref` を公開しない互換性、五専門ツールから六ツールへの core 登録、`judicial-cases` 有効時の八ツール登録、無効へ戻した場合の六ツール rollback、および stdio/HTTP の schema 一致を golden test で確認する。
+
+## 関連
+
+- [SOT-ARCH-007: 依存方向](../30-architecture/07-dependency-direction.md)
+- [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
+- [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
+- [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)
+- [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)

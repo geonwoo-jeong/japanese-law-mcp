@@ -22,3 +22,6 @@
 - [20-verification-gate.md](20-verification-gate.md)
 - [21-git-hook-staged-verification.md](21-git-hook-staged-verification.md)
 - [22-law-name-search-lexicon.md](22-law-name-search-lexicon.md)
+- [23-unified-query-concept-lexicon.md](23-unified-query-concept-lexicon.md)
+- [24-unified-query-evaluation-gate.md](24-unified-query-evaluation-gate.md)
+- [25-unified-query-package-layout.md](25-unified-query-package-layout.md)

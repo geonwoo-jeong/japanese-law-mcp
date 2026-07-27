@@ -8,3 +8,4 @@
 - [06-search-judicial-cases.md](06-search-judicial-cases.md)
 - [07-get-judicial-case.md](07-get-judicial-case.md)
 - [08-resolve-law-name-query.md](08-resolve-law-name-query.md)
+- [09-query-legal-information.md](09-query-legal-information.md)

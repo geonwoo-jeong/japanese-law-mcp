@@ -18,6 +18,7 @@
 - Go の依存関係を変更した場合、または Go コードがある場合は、テスト用パッケージを含む製品コード、および固定済み検証ツールから到達可能な既知の脆弱性検査が、現在の脆弱性データベースに対して成功する。
 - 検査対象のソース状態と取得した Git 全履歴に対する秘密情報検査が成功する。
 - `SOT-ENG-018` が定義する適用変更または初回導入を含む場合は、ローカルと CI の両方で `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` と中央の品質ゲートが順に成功する。
+- 統合照会の application、profile、辞書、planner model、公開 interface、評価 corpus、baseline または evaluator を変更した場合は、`SOT-ENG-024` の固定 corpus、最小件数、baseline および全受入基準を標準 command で検証する。
 
 ## 実行
 
@@ -27,6 +28,12 @@
 
 ```text
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
+```
+
+統合照会を実装した clean checkout では、中央の品質ゲートが次を同じ検査スナップショット内で呼び出す。利用者の実照会または外部ネットワークを評価入力にしない。
+
+```text
+go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v1 --profile-set=default --baseline=./testdata/legalquery/baselines/default.json --format=json
 ```
 
 `SOT-ENG-018` の適用変更または初回導入では、検査対象のソース状態に対して provider 固有の比較を行う command と中央の標準コマンドを次の順に実行し、両方の成功を変更完了の条件とする。ローカルでは現在の working tree と index を含むソース状態を対象に `provider-onboarding-fit` を実行し、その後に clean checkout した同じ変更内容に対して中央の品質ゲートを実行する。CI では checkout した対象 commit に対して両方の command を順に実行する。
@@ -50,4 +57,5 @@ go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 - [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-021: Git フックによる段階的検証](21-git-hook-staged-verification.md)
+- [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-DEL-004: リリース整合性](../60-delivery/04-release-consistency.md)

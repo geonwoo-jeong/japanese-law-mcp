@@ -14,6 +14,8 @@
 
 共通前処理を別の検索能力へ適用する場合は、その能力の有効な利用シナリオとインターフェース SOT が、辞書の対象、候補の優先順位、曖昧性および再検索条件を定義した後に、別のプロファイルとして接続する。法令名プロファイルを裁判例本文、法令本文その他の検索へ暗黙に適用しない。
 
+統合法情報照会は、同じ共通前処理 primitive を再利用し、法令コアと拡張パックごとの query profile を別に注入する。統合照会の法概念辞書、意図 score および限定並列の判断を、`search_laws` の法令名解決 profile へ逆流させない。逆に、`search_laws` の空結果後だけ行う再検索規則を統合照会の候補選択へ流用しない。
+
 ## 不変性
 
 辞書、索引、Kagome tokenizer および設定は起動時に検証して構築し、その後は変更しない。リクエスト間で利用者の検索語、選択した候補または検索結果を保持しない。
@@ -36,3 +38,5 @@
 - [SOT-ARCH-018: 拡張パック単位の正規化境界](18-pack-scoped-normalization-boundary.md)
 - [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
+- [SOT-ENG-023: 統合法情報照会の法概念辞書](../50-engineering/23-unified-query-concept-lexicon.md)
+- [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)

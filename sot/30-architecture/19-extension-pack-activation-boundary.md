@@ -31,9 +31,17 @@
 
 一つのプロバイダーを登録または有効化したことだけで、そのプロバイダーに関係する拡張パックを有効にしない。同様に、一つの拡張パックを有効にしたことだけで、採用 SOT に含まれない provider、capability または公開ツールを有効にしない。
 
-## 最初の公開前に定義する事項
+## 統合照会への contribution
 
-現在は拡張パックを公開していないため、実行設定に拡張パックの有効化項目を追加しない。最初の拡張パックを実装する前に、そのパックの採用 SOT と同じ変更単位で、次をインターフェース SOT に定義する。
+統合法情報照会の公開ツール自体は法令コアに属し、拡張パックの有効化で登録または解除しない。拡張パックは、固有の専門ツールと capability に加え、その pack が採用した query profile の実行 contribution、request materializer および型付き result variant を同じ製品機能の集合として有効化する。
+
+採用済みだが無効な pack への明示的な照会を `capability_unavailable` と判定する最小限の cue、およびその pack が既に公開結果へ付与した `SourceResourceRef` を構造検証する provider/source metadata は、外部呼出しを行わない core 構成に置ける。これらは capability、binding、provider route または結果取得を有効にするものではなく、意味の弱い別 resource への誤った切替えと既知 `ref` の誤った入力エラーを防ぐためだけに使う。
+
+query profile contribution は capability ID または provider route の代替識別子にしない。profile は capability を要求し、provider binding の選択は既存の route が行う。
+
+## 新しい拡張パックの公開前に定義する事項
+
+新しい拡張パックを実装する前に、その pack の採用 SOT と同じ変更単位で、次をインターフェース SOT に定義する。
 
 - 有効化設定の入力名、型、既定値および未知の `packId` の拒否
 - 有効化によって公開する MCP ツール、利用シナリオおよび capability の集合
@@ -47,10 +55,11 @@
 - provider route の変更だけを拡張パックの有効化として扱うこと
 - 一つのプロバイダーを有効にしただけで複数の公開ツールを暗黙に追加すること
 - 拡張パックのために既存の法令コアの既定 provider を置き換えること
+- 無効な拡張パックの profile から capability または provider を呼び出すこと
 
 ## 確認
 
-各拡張パックの採用時に、無設定起動では法令コアの公開面と既定 route が変わらず、明示的に有効化したパックだけの公開ツールと binding が追加されることを設定テストと composition root のテストで確認する。
+各拡張パックの採用時に、無設定起動では法令コアの公開面と既定 route が変わらず、明示的に有効化した pack だけの専門ツール、profile contribution、request materializer、result variant および binding が追加されることを設定テストと composition root のテストで確認する。無効な pack の照会が別 resource を呼び出さないことも確認する。
 
 ## 関連
 
@@ -59,3 +68,4 @@
 - [SOT-ARCH-013: 情報源の選択と組合せ](13-source-composition.md)
 - [SOT-ARCH-017: 採用可能な能力群](17-approved-capability-families.md)
 - [SOT-IF-026: プロバイダールーティング設定](../40-interfaces/26-provider-routing-configuration.md)
+- [SOT-ARCH-024: 統合照会の内部境界と公開境界](24-unified-query-internal-public-boundary.md)

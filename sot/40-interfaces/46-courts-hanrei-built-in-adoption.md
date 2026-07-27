@@ -44,8 +44,9 @@ providerRoutes:
 
 - descriptor が二つの capability だけを宣言し、binding inventory と一致すること
 - conformance matrix の二行が `implemented` で、production descriptor、fixture、test、runtime registry および route と一致すること
-- pack 無効時に factory を呼び出さず五つの法令 route とツールを維持すること
-- pack 有効時に二つの条件付き route と七つのツールを構成すること
+- pack 無効時に factory を呼び出さず五つの法令 route を維持すること
+- pack 有効時に二つの条件付き route と二つの裁判例専門ツールを原子的に構成すること
+- 公開 tool 全体の集合と件数が `SOT-IF-040` と一致すること
 - provider または route の欠落、無効化および不一致を transport 開始前に拒否すること
 
 ## 関連

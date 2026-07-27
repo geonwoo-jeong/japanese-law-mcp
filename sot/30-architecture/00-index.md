@@ -21,3 +21,6 @@
 - [19-extension-pack-activation-boundary.md](19-extension-pack-activation-boundary.md)
 - [20-adopted-use-case-boundary.md](20-adopted-use-case-boundary.md)
 - [21-provider-independent-query-preprocessing.md](21-provider-independent-query-preprocessing.md)
+- [22-unified-query-planning-pipeline.md](22-unified-query-planning-pipeline.md)
+- [23-unified-query-selection-and-hedging.md](23-unified-query-selection-and-hedging.md)
+- [24-unified-query-internal-public-boundary.md](24-unified-query-internal-public-boundary.md)
