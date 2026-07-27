@@ -1,6 +1,7 @@
 package legalquery
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
@@ -76,6 +77,24 @@ func (s LegalConceptSource) Validate() error {
 		return fmt.Errorf("confirmedOn が有効ではありません: %w", err)
 	}
 	return nil
+}
+
+// MarshalJSON は、統合照会で公開できる公的資料の項目だけを表す。
+func (s LegalConceptSource) MarshalJSON() ([]byte, error) {
+	if err := s.Validate(); err != nil {
+		return nil, err
+	}
+	return json.Marshal(struct {
+		ConceptID   string     `json:"conceptId"`
+		Title       string     `json:"title"`
+		URL         string     `json:"url"`
+		ConfirmedOn model.Date `json:"confirmedOn"`
+	}{
+		ConceptID:   s.conceptID,
+		Title:       s.title,
+		URL:         s.url,
+		ConfirmedOn: s.confirmedOn,
+	})
 }
 
 // UnmarshalJSON は、辞書 loader を介さない直接復元を拒否する。
