@@ -63,6 +63,8 @@ MCP handler は `SOT-ARCH-006` に従い薄く保つ。統合照会の planner �
 
 planner は `SourceResourceRef` を生成しない。入力で受け取った `ref` は共通モデルの不透明な exact target として保持できるが、provider と resource の照合は能力別 facade と registry が行う。法令 ID から provider を含む read request を作る処理も、route 選択後の request materializer が行う。
 
+transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公開入力で許可する `law` または `judicial-decision` resource type までを検証する。採用済み provider/source metadata、pack の状態および選択した read capability との一致は request 単体では決めず、外部呼出し前に能力別 facade、registry および request materializer が検証する。前段の構造検証だけで `ref` の実行を許可しない。
+
 request materializer は provider DTO を返さず、既存 capability SOT が定める request 型だけを返す。裁判例の事件番号、題名または URL を canonical `ref` へ推測変換する resolver は初期版に設けない。
 
 各段階は入力を変更せず新しい値を返す。辞書、profile、tokenizer、registry および route は起動後に変更せず、照会間で候補、入力、結果または学習状態を保持しない。

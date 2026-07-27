@@ -18,6 +18,8 @@
 
 `ref` を指定する場合は、`SOT-MODEL-016` の構造、採用済み provider/source metadata、resource type および入力から選んだ read resource との一致を外部呼出し前に検証する。pack が無効でも、その pack が採用した provider/source metadata との一致は検証でき、binding がないことを `invalid_argument` にせず `capability_unavailable` の判定へ渡す。
 
+transport 非依存 request の作成時には、共通構造と `law` または `judicial-decision` resource type までを検証する。採用済み metadata、pack 状態および選択した read resource との一致は、計画と route の確定後、request materialization より前に追加検証する。いずれか一方だけで上記の検証を完了したとは扱わない。
+
 `ref` は検索または一覧 step に使わず、provider route の任意選択、fallback 指定または version override として解釈しない。未採用または未知の provider/source を持つ `ref` は `invalid_argument` とする。
 
 欠落、`null`、型不一致、上限超過、未知の入力項目、整数へ正確に変換できない number および不正な `ref` は、外部情報源を呼び出す前に `invalid_argument` とする。

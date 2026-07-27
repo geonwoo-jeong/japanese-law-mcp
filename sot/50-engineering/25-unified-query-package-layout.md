@@ -56,7 +56,7 @@ testdata/
 
 ## `application/legalquery`
 
-- `request.go`: transport 非依存の検証済み request と固定予算
+- `request.go`: transport 非依存の構文、上限および共通 `ref` 構造を検証した request。採用済み provider/source と read capability の照合は持たない
 - `candidate.go`: `LegalQueryCandidate` と型付き step の組立て
 - `planner.go`: profile と前処理結果からの候補生成
 - `selector.go`: score、margin、pack および対象外の分離判定
@@ -69,6 +69,8 @@ testdata/
 `legalquery` は、既存能力の request/result 型、共通の `SourceResourceRef` と自身が所有する interface にだけ依存し、MCP SDK、`internal/source/...` または provider descriptor の具象型を import しない。
 
 能力別 facade は registry interface から選択済み binding を受け取り、provider DTO を扱わず既存 capability request を新しく作る。法令 ID からの `SourceResourceRef` 組立てと、入力 `ref` の provider/resource 照合を materializer に閉じる。planner と profile は provider ID を生成しない。
+
+入力 `ref` は `request.go` で `law` または `judicial-decision` の共通構造まで検証し、能力別 facade、registry および materializer で採用済み provider/source metadata、pack 状態および選択した read capability との一致を外部呼出し前に検証する。前段と後段の検証を一方へ省略または重複実装しない。
 
 ## query profile
 
