@@ -244,7 +244,7 @@ func decodeSearchJudicialCasesInput(
 
 func decodeStrictJSONString(raw json.RawMessage, destination *string) error {
 	if !hasValidJSONSurrogatePairs(raw) {
-		return fmt.Errorf("Unicode surrogate pair が有効ではありません")
+		return fmt.Errorf("surrogate pair の Unicode 表現が有効ではありません")
 	}
 	return json.Unmarshal(raw, destination)
 }
