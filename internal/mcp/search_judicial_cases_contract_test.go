@@ -58,7 +58,7 @@ func TestSearchJudicialCasesNormalizesRequestAtPublicBoundary(t *testing.T) {
 		context.Background(),
 		port,
 		json.RawMessage(
-			`{"query":"　民  法　","continuationToken":"opaque-token"}`,
+			`{"query":"　民  法　","continuationToken":"resume-cursor"}`,
 		),
 	)
 	if err != nil || result.IsError {
@@ -69,7 +69,7 @@ func TestSearchJudicialCasesNormalizesRequestAtPublicBoundary(t *testing.T) {
 		port.request.Query() != "民  法" ||
 		port.request.Limit() != judicialdecisionsearch.DefaultLimit ||
 		!exists ||
-		token != "opaque-token" {
+		token != "resume-cursor" {
 		t.Fatalf("SOT-IF-041/047: request = %#v", port.request)
 	}
 }
@@ -101,6 +101,7 @@ func TestSearchJudicialCasesRejectsInvalidInputBeforePort(t *testing.T) {
 		{name: "query 型", arguments: json.RawMessage(`{"query":1}`)},
 		{name: "query 空", arguments: json.RawMessage(`{"query":""}`)},
 		{name: "query 制御文字", arguments: json.RawMessage(`{"query":"民\u0000法"}`)},
+		{name: "query 単独 surrogate", arguments: json.RawMessage(`{"query":"\ud800"}`)},
 		{
 			name:      "query 512 byte 超",
 			arguments: json.RawMessage(fmt.Sprintf(`{"query":%q}`, tooLongQuery)),
@@ -118,6 +119,10 @@ func TestSearchJudicialCasesRejectsInvalidInputBeforePort(t *testing.T) {
 		{
 			name:      "continuationToken 型",
 			arguments: json.RawMessage(`{"query":"民法","continuationToken":1}`),
+		},
+		{
+			name:      "continuationToken 単独 surrogate",
+			arguments: json.RawMessage(`{"query":"民法","continuationToken":"\udfff"}`),
 		},
 		{
 			name: "continuationToken 上限超",
