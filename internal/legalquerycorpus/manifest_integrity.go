@@ -26,7 +26,7 @@ type fixtureDigestEntry struct {
 	sha256 string
 }
 
-// validateManifestIntegrity は、成果物と holdout の全要件を順に検証する。
+// validateManifestIntegrity は、成果物と集合横断要件を順に検証する。
 func validateManifestIntegrity(
 	ctx context.Context,
 	filesystem *corpusFilesystem,
@@ -37,7 +37,17 @@ func validateManifestIntegrity(
 	if err != nil {
 		return integrityCheckedCorpus{}, err
 	}
-	return validateIntegrityHoldoutRequirements(checked)
+	return validateIntegrityRequirements(checked)
+}
+
+func validateIntegrityRequirements(
+	checked integrityCheckedCorpus,
+) (integrityCheckedCorpus, error) {
+	checked, err := validateIntegrityHoldoutRequirements(checked)
+	if err != nil {
+		return integrityCheckedCorpus{}, err
+	}
+	return validateIntegrityExecutionReferences(checked)
 }
 
 // validateManifestArtifacts は、manifest 宣言と実在 fixture を byte 単位で照合する。

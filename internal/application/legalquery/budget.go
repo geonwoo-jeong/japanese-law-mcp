@@ -337,6 +337,19 @@ func allocateEffectiveLimit(
 	return effectiveLimit, true, nil
 }
 
+// EffectiveLimitForSteps は、固定予算式から collection step の上限を導出する。
+func EffectiveLimitForSteps(
+	limitPerAttempt int,
+	readSteps int,
+	collectionSteps int,
+) (int, bool, error) {
+	return allocateEffectiveLimit(
+		limitPerAttempt,
+		readSteps,
+		collectionSteps,
+	)
+}
+
 func (b LegalQueryBudget) validateSteps() error {
 	expectedLimit, hasLimit, err := allocateEffectiveLimit(
 		b.limitPerAttempt,
