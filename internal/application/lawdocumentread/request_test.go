@@ -35,6 +35,22 @@ func TestRequest(t *testing.T) {
 	}
 }
 
+func TestRequestDefersProviderSourceAdoptionToRegistry(t *testing.T) {
+	resource := newResourceRef(
+		t,
+		"law-provider",
+		"independent-law-source",
+		"law",
+		"law-1",
+		"",
+	)
+	if _, err := lawdocumentread.NewRequest(lawdocumentread.RequestValues{
+		Resource: resource,
+	}); err != nil {
+		t.Fatalf("SOT-IF-024/SOT-ARCH-022: 構造的に有効な resource を拒否した: %v", err)
+	}
+}
+
 func TestRequestRejectsInvalidValues(t *testing.T) {
 	date := newDatePointer(t, "2026-01-01")
 	testCases := map[string]lawdocumentread.RequestValues{

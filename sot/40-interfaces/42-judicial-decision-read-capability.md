@@ -22,7 +22,8 @@
 - `ref.key.resourceType` は `judicial-decision` とする。
 - `ref.key.versionId` は使用しない。
 - provider、source および resource ID は検索結果から変更しない。
-- 未知の provider、provider と source の不一致、空の識別子、異なる resource type または version は、外部呼出し前に `invalid_argument` とする。
+- 空の識別子、異なる resource type または version は、provider metadata を必要としない構造違反として request の作成時に `invalid_argument` とする。
+- 未知の provider、または採用済み `ProviderDescriptor` 上の provider と source の不一致は、request の値だけから同一文字列比較で決めず、能力別 facade、registry および materializer が選択済み binding と照合して外部呼出し前に `invalid_argument` とする。
 - 登録済みだが無効な provider は `configuration_required`、対象 capability を持たない provider は `unsupported_capability` とし、別 provider へ fallback しない。
 
 ## 型付き出力
@@ -44,7 +45,7 @@
 
 ## 確認
 
-検索から詳細への参照往復、参照の各不一致、無効 provider、別 provider への fallback 禁止、欠落可能項目、404 および情報源エラーを契約テストで確認する。
+検索から詳細への参照往復、request の構造違反、registry metadata 上の provider・source 不一致、無効 provider、別 provider への fallback 禁止、欠落可能項目、404 および情報源エラーを契約テストで確認する。
 
 ## 関連
 

@@ -31,7 +31,8 @@
 - `resource.key.versionId` を指定する場合は 1 文字以上、UTF-8 で 512 byte 以下とし、`resourceId` と同じ文字制約を適用する。
 - `resource.key.versionId` と `asOf` は同時に指定してはならない。両方ある場合は `invalid_argument` とする。
 - `asOf` を指定する場合は実在する暦日の `YYYY-MM-DD` でなければならない。プロバイダー固有の収録開始日は共通入力制約にしない。
-- `resource` の欠落、`null`、空の識別子、provider と source の不一致、resource type の不一致または上限超過は `invalid_argument` とする。
+- `resource` の欠落、`null`、空の識別子、resource type の不一致または上限超過は、provider metadata を必要としない構造違反として request の作成時に `invalid_argument` とする。
+- 未知の provider、または採用済み `ProviderDescriptor` 上の provider と source の不一致は、request の値だけから同一文字列比較で決めず、能力別 facade、registry および materializer が選択済み binding と照合して外部呼出し前に `invalid_argument` とする。
 
 ## 取得意味
 
@@ -115,7 +116,8 @@
 少なくとも次を契約テストで確認する。
 
 - `ProviderDescriptor` が `law.document.read@1` を宣言し、対応する型付きポートを実装すること
-- `resource` の `null`、provider・source・resource type の不一致、空値、byte 数超過、`versionId` と `asOf` の同時指定、および日付不正を拒否すること
+- request の作成時に `resource` の `null`、resource type の不一致、空値、byte 数超過、`versionId` と `asOf` の同時指定、および日付不正を拒否すること
+- facade、registry および materializer が、未知の provider と採用済み provider・source metadata の不一致を外部呼出し前に拒否すること
 - 共通の date として有効だが provider の収録範囲外である `asOf` を、`not_found` または `invalid_argument` ではなく `unsupported_query` とすること
 - `not_found` と情報源エラーを区別すること
 - `versionId` 指定時に、返却された `LawSummary.revisionId` との一致を検証すること

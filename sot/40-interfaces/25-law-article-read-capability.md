@@ -33,7 +33,8 @@
 - `resource.key.versionId` と `asOf` は同時に指定してはならない。
 - `asOf` を指定する場合は実在する暦日の `YYYY-MM-DD` でなければならない。プロバイダー固有の収録開始日は共通入力制約にしない。
 - `location` は `SOT-MODEL-018` に従う。`location.articleNumber` は UTF-8 の 64 byte を超えてはならない。
-- 必須項目の欠落、`null`、空値、形式不正または上限超過は `invalid_argument` とする。
+- 必須項目の欠落、`null`、空値、resource type の不一致、形式不正または上限超過は、provider metadata を必要としない構造違反として request の作成時に `invalid_argument` とする。
+- 未知の provider、または採用済み `ProviderDescriptor` 上の provider と source の不一致は、request の値だけから同一文字列比較で決めず、能力別 facade、registry および materializer が選択済み binding と照合して外部呼出し前に `invalid_argument` とする。
 
 ## 取得意味
 
@@ -114,7 +115,8 @@
 少なくとも次を契約テストで確認する。
 
 - `ProviderDescriptor` が `law.article.read@1` を宣言し、対応する型付きポートを実装すること
-- `resource`、`location`、`asOf` および `versionId` の境界条件を検証すること
+- request の作成時に `resource`、`location`、`asOf`、`versionId` および resource type の構造的な境界条件を検証すること
+- facade、registry および materializer が、未知の provider と採用済み provider・source metadata の不一致を外部呼出し前に拒否すること
 - 共通の date として有効だが provider の収録範囲外である `asOf` を、`not_found` または `invalid_argument` ではなく `unsupported_query` とすること
 - `not_found` と `ambiguous_location` を区別すること
 - XML、HTML および text の test provider で、別の条、項、表、引用および改正法令附則を誤って選択しないこと

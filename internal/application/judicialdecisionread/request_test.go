@@ -27,6 +27,23 @@ func TestRequestPreservesSearchResourceReference(t *testing.T) {
 	}
 }
 
+func TestRequestDefersProviderSourceAdoptionToRegistry(t *testing.T) {
+	t.Parallel()
+
+	ref := newJudicialDecisionRef(
+		t,
+		"judicial-provider",
+		"independent-judicial-source",
+		"decision-1",
+		"",
+	)
+	if _, err := judicialdecisionread.NewRequest(
+		judicialdecisionread.RequestValues{Ref: ref},
+	); err != nil {
+		t.Fatalf("SOT-IF-042/SOT-ARCH-022: 構造的に有効な ref を拒否しました: %v", err)
+	}
+}
+
 func TestRequestRejectsInvalidJudicialDecisionReference(t *testing.T) {
 	t.Parallel()
 

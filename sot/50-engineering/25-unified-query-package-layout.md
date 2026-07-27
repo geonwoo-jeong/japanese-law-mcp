@@ -11,6 +11,8 @@
 ```text
 internal/
 ├── application/
+│   ├── resourceinput/
+│   │   └── law_ref.go
 │   └── legalquery/
 │       ├── request.go
 │       ├── candidate.go
@@ -66,7 +68,9 @@ testdata/
 - `service.go`: 一回の照会を調整する公開アプリケーション入口
 - `ports.go`: 前処理、profile、pack 状態および能力別ユースケースの必要最小 interface
 
-`legalquery` は、既存能力の request/result 型、共通の `SourceResourceRef` と自身が所有する interface にだけ依存し、MCP SDK、`internal/source/...` または provider descriptor の具象型を import しない。
+`resourceinput` は、複数の能力 request と logical input が共有する provider 非依存の法令参照および不透明 ID の構造検証だけを持つ。provider/source の採用状態、route、pack、外部 DTO または provider 固有制約を持たない。
+
+`legalquery` は、既存能力の request/result 型、共通の `SourceResourceRef`、provider 非依存の `resourceinput` と自身が所有する interface にだけ依存し、MCP SDK、`internal/source/...` または provider descriptor の具象型を import しない。
 
 能力別 facade は registry interface から選択済み binding を受け取り、provider DTO を扱わず既存 capability request を新しく作る。法令 ID からの `SourceResourceRef` 組立てと、入力 `ref` の provider/resource 照合を materializer に閉じる。planner と profile は provider ID を生成しない。
 

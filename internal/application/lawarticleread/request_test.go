@@ -45,6 +45,32 @@ func TestRequest(t *testing.T) {
 	}
 }
 
+func TestRequestDefersProviderSourceAdoptionToRegistry(t *testing.T) {
+	t.Parallel()
+
+	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
+		SourceID:     "independent-law-source",
+		ResourceType: "law",
+		ResourceID:   "law-1",
+	})
+	if err != nil {
+		t.Fatalf("試験用 SourceResourceKey を作成できない: %v", err)
+	}
+	resource, err := model.NewSourceResourceRef(model.SourceResourceRefValues{
+		ProviderID: "law-provider",
+		Key:        key,
+	})
+	if err != nil {
+		t.Fatalf("試験用 SourceResourceRef を作成できない: %v", err)
+	}
+	if _, err := lawarticleread.NewRequest(lawarticleread.RequestValues{
+		Resource: resource,
+		Location: newArticleLocation(t),
+	}); err != nil {
+		t.Fatalf("SOT-IF-025/SOT-ARCH-022: 構造的に有効な resource を拒否した: %v", err)
+	}
+}
+
 func TestRequestOpaqueIdentifierBoundary(t *testing.T) {
 	t.Parallel()
 

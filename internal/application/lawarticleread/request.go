@@ -2,8 +2,8 @@ package lawarticleread
 
 import (
 	"fmt"
-	"unicode/utf8"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/resourceinput"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -12,9 +12,6 @@ const (
 	CapabilityID = "law.article.read"
 	// MajorVersion は、law.article.read capability のメジャーバージョンである。
 	MajorVersion = 1
-
-	maxResourceIDBytes = 256
-	maxVersionIDBytes  = 512
 )
 
 // RequestValues は、Request の作成に必要な境界値を保持する。
@@ -67,20 +64,11 @@ func (r Request) Location() model.LawArticleLocation {
 
 // Validate は、law.article.read@1 の入力制約を確認する。
 func (r Request) Validate() error {
-	if err := r.resource.Validate(); err != nil {
-		return fmt.Errorf("resource が有効ではありません: %w", err)
-	}
-	key := r.resource.Key()
-	if key.ResourceType() != "law" {
-		return fmt.Errorf("resource.key.resourceType は law でなければなりません")
-	}
-	if err := validateOpaqueIdentifier("resource.key.resourceId", key.ResourceID(), maxResourceIDBytes); err != nil {
+	if err := resourceinput.ValidateLawRef("resource", r.resource); err != nil {
 		return err
 	}
-	if versionID, exists := key.VersionID(); exists {
-		if err := validateOpaqueIdentifier("resource.key.versionId", versionID, maxVersionIDBytes); err != nil {
-			return err
-		}
+	key := r.resource.Key()
+	if _, exists := key.VersionID(); exists {
 		if r.asOf != nil {
 			return fmt.Errorf("resource.key.versionId と asOf は同時に指定できません")
 		}
@@ -92,25 +80,6 @@ func (r Request) Validate() error {
 	}
 	if err := r.location.Validate(); err != nil {
 		return fmt.Errorf("location が有効ではありません: %w", err)
-	}
-	return nil
-}
-
-func validateOpaqueIdentifier(field string, value string, limit int) error {
-	switch {
-	case value == "":
-		return fmt.Errorf("%s は一文字以上でなければなりません", field)
-	case !utf8.ValidString(value):
-		return fmt.Errorf("%s は有効な UTF-8 でなければなりません", field)
-	case len(value) > limit:
-		return fmt.Errorf("%s は UTF-8 で %d byte 以下でなければなりません", field, limit)
-	case value[0] == ' ' || value[len(value)-1] == ' ':
-		return fmt.Errorf("%s の先頭または末尾に U+0020 を含めることはできません", field)
-	}
-	for index := 0; index < len(value); index++ {
-		if value[index] <= 0x1f || value[index] == 0x7f {
-			return fmt.Errorf("%s に ASCII 制御文字を含めることはできません", field)
-		}
 	}
 	return nil
 }
