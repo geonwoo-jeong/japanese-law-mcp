@@ -99,6 +99,9 @@ func validateManifestIntegrity(
 			"manifest の holdoutDigest が実在 fixture と一致しません",
 		)
 	}
+	if err := validateSemanticSetSeparation(development, holdout); err != nil {
+		return integrityCheckedCorpus{}, err
+	}
 	clonedManifest, err := cloneCorpusManifest(manifest)
 	if err != nil {
 		return integrityCheckedCorpus{}, fmt.Errorf(
