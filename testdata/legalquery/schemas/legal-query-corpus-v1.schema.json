@@ -1,0 +1,797 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/geonwoo-jeong/japanese-law-mcp/testdata/legalquery/schemas/legal-query-corpus-v1.schema.json",
+  "title": "Japanese Law MCP legal query evaluation corpus v1",
+  "oneOf": [{ "$ref": "#/$defs/corpusManifest" }, { "$ref": "#/$defs/semanticCase" }, { "$ref": "#/$defs/executionCase" }],
+  "$defs": {
+    "identifier": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "developmentCaseId": { "type": "string", "minLength": 13, "maxLength": 64, "pattern": "^development-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "holdoutCaseId": { "type": "string", "minLength": 9, "maxLength": 64, "pattern": "^holdout-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "semanticCaseId": { "type": "string", "minLength": 9, "maxLength": 64, "pattern": "^(development|holdout)-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "executionCaseId": { "type": "string", "minLength": 11, "maxLength": 64, "pattern": "^execution-[a-z0-9]+(-[a-z0-9]+)*$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[0-1])$" },
+    "opaqueNonemptyString": { "type": "string", "minLength": 1 },
+    "providerId": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "stringList": { "type": "array", "maxItems": 64, "uniqueItems": true, "items": { "$ref": "#/$defs/identifier" } },
+    "conceptIdList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/opaqueNonemptyString" } },
+    "manifestEntryDevelopment": {
+      "type": "object",
+      "required": ["caseId", "sha256"],
+      "properties": { "caseId": { "$ref": "#/$defs/developmentCaseId" }, "sha256": { "$ref": "#/$defs/sha256" } },
+      "additionalProperties": false
+    },
+    "manifestEntryHoldout": {
+      "type": "object",
+      "required": ["caseId", "sha256"],
+      "properties": { "caseId": { "$ref": "#/$defs/holdoutCaseId" }, "sha256": { "$ref": "#/$defs/sha256" } },
+      "additionalProperties": false
+    },
+    "manifestEntryExecution": {
+      "type": "object",
+      "required": ["caseId", "sha256"],
+      "properties": { "caseId": { "$ref": "#/$defs/executionCaseId" }, "sha256": { "$ref": "#/$defs/sha256" } },
+      "additionalProperties": false
+    },
+    "manifestSetDevelopment": {
+      "type": "object",
+      "required": ["caseCount", "cases"],
+      "properties": {
+        "caseCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "cases": {
+          "type": "array",
+          "maxItems": 4096,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/manifestEntryDevelopment" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "manifestSetHoldout": {
+      "type": "object",
+      "required": ["caseCount", "cases"],
+      "properties": {
+        "caseCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "cases": { "type": "array", "maxItems": 4096, "uniqueItems": true, "items": { "$ref": "#/$defs/manifestEntryHoldout" } }
+      },
+      "additionalProperties": false
+    },
+    "manifestSetExecution": {
+      "type": "object",
+      "required": ["caseCount", "cases"],
+      "properties": {
+        "caseCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "cases": {
+          "type": "array",
+          "maxItems": 4096,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/manifestEntryExecution" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "manifestSets": {
+      "type": "object",
+      "required": ["development", "holdout", "execution"],
+      "properties": {
+        "development": { "$ref": "#/$defs/manifestSetDevelopment" },
+        "holdout": { "$ref": "#/$defs/manifestSetHoldout" },
+        "execution": { "$ref": "#/$defs/manifestSetExecution" }
+      },
+      "additionalProperties": false
+    },
+    "corpusManifest": {
+      "type": "object",
+      "required": [
+        "artifactKind",
+        "schemaVersion",
+        "corpusVersion",
+        "seed",
+        "holdoutDigest",
+        "requiredCategoryIds",
+        "requiredExecutionScenarioIds",
+        "sets"
+      ],
+      "properties": {
+        "artifactKind": { "const": "corpus_manifest" },
+        "schemaVersion": { "const": 1 },
+        "corpusVersion": { "type": "string", "pattern": "^corpus-v[1-9][0-9]*$" },
+        "seed": { "type": "integer", "minimum": 0, "maximum": 2147483647 },
+        "holdoutDigest": { "$ref": "#/$defs/sha256" },
+        "requiredCategoryIds": {
+          "const": [
+            "ambiguity",
+            "budget-boundary",
+            "capability-intent",
+            "input-boundary",
+            "law-name-and-concept",
+            "official-reference",
+            "pack-state",
+            "safety-execution-boundary",
+            "structured-location-and-date",
+            "surface-variation",
+            "typo-variation",
+            "unsupported-scope"
+          ]
+        },
+        "requiredExecutionScenarioIds": {
+          "const": [
+            "execution-all-failed",
+            "execution-empty",
+            "execution-item-budget",
+            "execution-nonempty",
+            "execution-partial-failure",
+            "execution-reversed-completion",
+            "execution-timeout"
+          ]
+        },
+        "sets": { "$ref": "#/$defs/manifestSets" }
+      },
+      "additionalProperties": false
+    },
+    "rawResourceKey": {
+      "type": "object",
+      "required": ["sourceId", "resourceType", "resourceId"],
+      "properties": {
+        "sourceId": { "type": "string" },
+        "resourceType": { "type": "string" },
+        "resourceId": { "type": "string" },
+        "versionId": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "rawResourceRef": {
+      "type": "object",
+      "required": ["providerId", "key"],
+      "properties": { "providerId": { "type": "string" }, "key": { "$ref": "#/$defs/rawResourceKey" } },
+      "additionalProperties": false
+    },
+    "rawRequest": {
+      "type": "object",
+      "required": ["query"],
+      "properties": {
+        "query": { "type": "string" },
+        "ref": { "$ref": "#/$defs/rawResourceRef" },
+        "limitPerAttempt": { "type": "integer" }
+      },
+      "additionalProperties": false
+    },
+    "lawResourceKey": {
+      "type": "object",
+      "required": ["sourceId", "resourceType", "resourceId"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/opaqueNonemptyString" },
+        "resourceType": { "const": "law" },
+        "resourceId": { "$ref": "#/$defs/opaqueNonemptyString" },
+        "versionId": { "$ref": "#/$defs/opaqueNonemptyString" }
+      },
+      "additionalProperties": false
+    },
+    "lawResourceRef": {
+      "type": "object",
+      "required": ["providerId", "key"],
+      "properties": { "providerId": { "$ref": "#/$defs/providerId" }, "key": { "$ref": "#/$defs/lawResourceKey" } },
+      "additionalProperties": false
+    },
+    "judicialResourceKey": {
+      "type": "object",
+      "required": ["sourceId", "resourceType", "resourceId"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/opaqueNonemptyString" },
+        "resourceType": { "const": "judicial-decision" },
+        "resourceId": { "$ref": "#/$defs/opaqueNonemptyString" }
+      },
+      "additionalProperties": false
+    },
+    "judicialResourceRef": {
+      "type": "object",
+      "required": ["providerId", "key"],
+      "properties": { "providerId": { "$ref": "#/$defs/providerId" }, "key": { "$ref": "#/$defs/judicialResourceKey" } },
+      "additionalProperties": false
+    },
+    "lawArticleLocation": {
+      "type": "object",
+      "required": ["provision", "articleNumber"],
+      "properties": {
+        "provision": { "enum": ["main", "supplementary"] },
+        "articleNumber": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[1-9][0-9]*(_[1-9][0-9]*)*$" },
+        "paragraphNumber": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "lawSearchInput": {
+      "type": "object",
+      "required": ["query"],
+      "properties": { "query": { "type": "string", "minLength": 1, "maxLength": 512 }, "asOf": { "$ref": "#/$defs/date" } },
+      "additionalProperties": false
+    },
+    "searchTerms": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+    },
+    "lawContentSearchInput": {
+      "type": "object",
+      "required": ["allTerms", "anyTerms", "excludeTerms"],
+      "properties": {
+        "allTerms": { "$ref": "#/$defs/searchTerms" },
+        "anyTerms": { "$ref": "#/$defs/searchTerms" },
+        "excludeTerms": { "$ref": "#/$defs/searchTerms" },
+        "asOf": { "$ref": "#/$defs/date" }
+      },
+      "anyOf": [{ "properties": { "allTerms": { "minItems": 1 } } }, { "properties": { "anyTerms": { "minItems": 1 } } }],
+      "additionalProperties": false
+    },
+    "lawReadByIdInput": {
+      "type": "object",
+      "required": ["lawId"],
+      "properties": {
+        "lawId": { "$ref": "#/$defs/opaqueNonemptyString" },
+        "revisionId": { "$ref": "#/$defs/opaqueNonemptyString" },
+        "asOf": { "$ref": "#/$defs/date" }
+      },
+      "not": { "required": ["revisionId", "asOf"] },
+      "additionalProperties": false
+    },
+    "lawReadByRefInput": {
+      "type": "object",
+      "required": ["ref"],
+      "properties": { "ref": { "$ref": "#/$defs/lawResourceRef" } },
+      "additionalProperties": false
+    },
+    "lawReadInput": { "oneOf": [{ "$ref": "#/$defs/lawReadByIdInput" }, { "$ref": "#/$defs/lawReadByRefInput" }] },
+    "lawArticleReadByIdInput": {
+      "type": "object",
+      "required": ["lawId", "location"],
+      "properties": {
+        "lawId": { "$ref": "#/$defs/opaqueNonemptyString" },
+        "location": { "$ref": "#/$defs/lawArticleLocation" },
+        "asOf": { "$ref": "#/$defs/date" }
+      },
+      "additionalProperties": false
+    },
+    "lawArticleReadByRefInput": {
+      "type": "object",
+      "required": ["ref", "location"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/lawResourceRef" },
+        "location": { "$ref": "#/$defs/lawArticleLocation" },
+        "asOf": { "$ref": "#/$defs/date" }
+      },
+      "not": { "required": ["asOf"], "properties": { "ref": { "properties": { "key": { "required": ["versionId"] } } } } },
+      "additionalProperties": false
+    },
+    "lawArticleReadInput": { "oneOf": [{ "$ref": "#/$defs/lawArticleReadByIdInput" }, { "$ref": "#/$defs/lawArticleReadByRefInput" }] },
+    "lawUpdatesInput": {
+      "type": "object",
+      "required": ["date"],
+      "properties": { "date": { "$ref": "#/$defs/date" } },
+      "additionalProperties": false
+    },
+    "judicialSearchInput": {
+      "type": "object",
+      "required": ["query"],
+      "properties": { "query": { "type": "string", "minLength": 1, "maxLength": 512 } },
+      "additionalProperties": false
+    },
+    "judicialReadInput": {
+      "type": "object",
+      "required": ["ref"],
+      "properties": { "ref": { "$ref": "#/$defs/judicialResourceRef" } },
+      "additionalProperties": false
+    },
+    "stepLawSearch": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "search" },
+        "resource": { "const": "law" },
+        "inputKind": { "const": "law_search" },
+        "logicalInput": { "$ref": "#/$defs/lawSearchInput" }
+      },
+      "additionalProperties": false
+    },
+    "stepLawContentSearch": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "search" },
+        "resource": { "const": "law_provision" },
+        "inputKind": { "const": "law_content_search" },
+        "logicalInput": { "$ref": "#/$defs/lawContentSearchInput" }
+      },
+      "additionalProperties": false
+    },
+    "stepLawRead": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "read" },
+        "resource": { "const": "law" },
+        "inputKind": { "const": "law_read" },
+        "logicalInput": { "$ref": "#/$defs/lawReadInput" }
+      },
+      "additionalProperties": false
+    },
+    "stepLawArticleRead": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "read" },
+        "resource": { "const": "law_provision" },
+        "inputKind": { "const": "law_article_read" },
+        "logicalInput": { "$ref": "#/$defs/lawArticleReadInput" }
+      },
+      "additionalProperties": false
+    },
+    "stepLawUpdates": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "list_updates" },
+        "resource": { "const": "law" },
+        "inputKind": { "const": "law_updates" },
+        "logicalInput": { "$ref": "#/$defs/lawUpdatesInput" }
+      },
+      "additionalProperties": false
+    },
+    "stepJudicialSearch": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "search" },
+        "resource": { "const": "judicial_decision" },
+        "inputKind": { "const": "judicial_decision_search" },
+        "logicalInput": { "$ref": "#/$defs/judicialSearchInput" }
+      },
+      "additionalProperties": false
+    },
+    "stepJudicialRead": {
+      "type": "object",
+      "required": ["task", "resource", "inputKind", "logicalInput"],
+      "properties": {
+        "task": { "const": "read" },
+        "resource": { "const": "judicial_decision" },
+        "inputKind": { "const": "judicial_decision_read" },
+        "logicalInput": { "$ref": "#/$defs/judicialReadInput" }
+      },
+      "additionalProperties": false
+    },
+    "expectedStep": {
+      "oneOf": [
+        { "$ref": "#/$defs/stepLawSearch" },
+        { "$ref": "#/$defs/stepLawContentSearch" },
+        { "$ref": "#/$defs/stepLawRead" },
+        { "$ref": "#/$defs/stepLawArticleRead" },
+        { "$ref": "#/$defs/stepLawUpdates" },
+        { "$ref": "#/$defs/stepJudicialSearch" },
+        { "$ref": "#/$defs/stepJudicialRead" }
+      ]
+    },
+    "evidenceCode": {
+      "enum": [
+        "official_identifier",
+        "structured_reference",
+        "explicit_task",
+        "explicit_resource",
+        "official_alias",
+        "legal_concept",
+        "morphological_context",
+        "unique_typo_correction",
+        "general_term"
+      ]
+    },
+    "expectedMeaning": {
+      "type": "object",
+      "required": ["meaningId", "evidenceCodes", "conceptIds", "requiredPacks", "steps"],
+      "properties": {
+        "meaningId": { "$ref": "#/$defs/identifier" },
+        "evidenceCodes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 9,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/evidenceCode" }
+        },
+        "conceptIds": { "$ref": "#/$defs/conceptIdList" },
+        "requiredPacks": { "$ref": "#/$defs/stringList" },
+        "steps": { "type": "array", "minItems": 1, "maxItems": 4, "items": { "$ref": "#/$defs/expectedStep" } }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "evidenceCodes": { "contains": { "const": "legal_concept" } } },
+            "required": ["evidenceCodes"]
+          },
+          "then": { "properties": { "conceptIds": { "minItems": 1 } } },
+          "else": { "properties": { "conceptIds": { "maxItems": 0 } } }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "reasonCode": {
+      "enum": [
+        "single_clear_candidate",
+        "hedged_close_candidates",
+        "below_execution_threshold",
+        "ambiguous_candidates",
+        "required_pack_disabled",
+        "non_japanese_query",
+        "mixed_unsupported_intent",
+        "unsupported_task_or_resource"
+      ]
+    },
+    "expectedPlan": {
+      "type": "object",
+      "required": ["kind", "decision", "reasonCodes", "meanings", "selectedMeaningIds"],
+      "properties": {
+        "kind": { "const": "plan" },
+        "decision": { "enum": ["single", "hedged", "needs_clarification", "capability_unavailable", "unsupported"] },
+        "reasonCodes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/reasonCode" }
+        },
+        "meanings": { "type": "array", "maxItems": 16, "items": { "$ref": "#/$defs/expectedMeaning" } },
+        "selectedMeaningIds": { "type": "array", "maxItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/identifier" } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "decision": { "const": "single" } }, "required": ["decision"] },
+          "then": {
+            "properties": {
+              "reasonCodes": { "const": ["single_clear_candidate"] },
+              "meanings": { "minItems": 1 },
+              "selectedMeaningIds": { "minItems": 1, "maxItems": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "decision": { "const": "hedged" } }, "required": ["decision"] },
+          "then": {
+            "properties": {
+              "reasonCodes": { "const": ["hedged_close_candidates"] },
+              "meanings": { "minItems": 2 },
+              "selectedMeaningIds": { "minItems": 2, "maxItems": 2 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "decision": { "const": "needs_clarification" } }, "required": ["decision"] },
+          "then": {
+            "properties": {
+              "reasonCodes": {
+                "enum": [["below_execution_threshold"], ["ambiguous_candidates"], ["below_execution_threshold", "ambiguous_candidates"]]
+              },
+              "meanings": { "minItems": 1 },
+              "selectedMeaningIds": { "maxItems": 2 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "decision": { "const": "capability_unavailable" } }, "required": ["decision"] },
+          "then": {
+            "properties": {
+              "reasonCodes": { "const": ["required_pack_disabled"] },
+              "meanings": { "minItems": 1 },
+              "selectedMeaningIds": { "minItems": 1, "maxItems": 2 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "decision": { "const": "unsupported" } }, "required": ["decision"] },
+          "then": {
+            "properties": {
+              "reasonCodes": {
+                "enum": [
+                  ["non_japanese_query"], ["mixed_unsupported_intent"], ["unsupported_task_or_resource"],
+                  ["non_japanese_query", "mixed_unsupported_intent"], ["non_japanese_query", "unsupported_task_or_resource"],
+                  ["mixed_unsupported_intent", "unsupported_task_or_resource"],
+                  ["non_japanese_query", "mixed_unsupported_intent", "unsupported_task_or_resource"]
+                ]
+              },
+              "selectedMeaningIds": { "maxItems": 0 }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "expectedRequestError": {
+      "type": "object",
+      "required": ["kind", "errorCode", "field"],
+      "properties": {
+        "kind": { "const": "request_error" },
+        "errorCode": { "const": "invalid_argument" },
+        "field": { "enum": ["query", "ref", "limitPerAttempt"] }
+      },
+      "additionalProperties": false
+    },
+    "semanticExpected": { "oneOf": [{ "$ref": "#/$defs/expectedPlan" }, { "$ref": "#/$defs/expectedRequestError" }] },
+    "coverageId": {
+      "enum": [
+        "ambiguity-alias-collision",
+        "ambiguity-multiple-concepts",
+        "ambiguity-three-or-more-candidates",
+        "ambiguity-weak-general-term",
+        "boundary-budget-limit",
+        "boundary-mixed-unsupported",
+        "boundary-no-implicit-first-read",
+        "boundary-non-japanese",
+        "boundary-pack-disabled",
+        "budget-capability-call-limit",
+        "budget-item-limit",
+        "budget-page-limit",
+        "budget-ranked-candidate-limit",
+        "budget-step-limit",
+        "concept-single",
+        "input-invalid-ref",
+        "input-limit-above-maximum",
+        "input-limit-below-minimum",
+        "input-limit-maximum-accepted",
+        "input-limit-minimum-accepted",
+        "input-query-ascii-control",
+        "input-query-empty",
+        "input-query-maximum-accepted",
+        "input-query-too-long",
+        "intent-judicial-decision-read",
+        "intent-judicial-decision-search",
+        "intent-law-article-read",
+        "intent-law-content-search",
+        "intent-law-read",
+        "intent-law-search",
+        "intent-law-updates",
+        "name-official",
+        "name-official-abbreviation",
+        "name-sourced-alias",
+        "pack-judicial-enabled",
+        "reference-case-reference",
+        "reference-law-id",
+        "reference-law-number",
+        "reference-revision-id",
+        "reference-source-resource-ref",
+        "structure-article",
+        "structure-complete-date",
+        "structure-multiple-explicit-intents",
+        "structure-paragraph",
+        "surface-orthographic-variation",
+        "surface-whitespace-variation",
+        "typo-adjacent-transposition",
+        "typo-deletion",
+        "typo-insertion",
+        "typo-substitution",
+        "unsupported-legal-advice",
+        "unsupported-resource",
+        "unsupported-translation",
+        "unsupported-unadopted-pack"
+      ]
+    },
+    "semanticCase": {
+      "type": "object",
+      "required": [
+        "artifactKind",
+        "schemaVersion",
+        "caseId",
+        "leakageGroupId",
+        "coverageIds",
+        "enabledPacks",
+        "request",
+        "expected"
+      ],
+      "properties": {
+        "artifactKind": { "const": "semantic_case" },
+        "schemaVersion": { "const": 1 },
+        "caseId": { "$ref": "#/$defs/semanticCaseId" },
+        "leakageGroupId": { "$ref": "#/$defs/identifier" },
+        "coverageIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/coverageId" }
+        },
+        "safetyVariant": { "enum": ["ordinary", "adversarial"] },
+        "enabledPacks": { "$ref": "#/$defs/stringList" },
+        "request": { "$ref": "#/$defs/rawRequest" },
+        "expected": { "$ref": "#/$defs/semanticExpected" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "coverageIds": {
+                "contains": {
+                  "enum": [
+                    "boundary-budget-limit",
+                    "boundary-mixed-unsupported",
+                    "boundary-no-implicit-first-read",
+                    "boundary-non-japanese",
+                    "boundary-pack-disabled"
+                  ]
+                }
+              }
+            },
+            "required": ["coverageIds"]
+          },
+          "then": { "required": ["safetyVariant"] },
+          "else": { "not": { "required": ["safetyVariant"] } }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "executionScenarioId": {
+      "enum": [
+        "execution-all-failed",
+        "execution-empty",
+        "execution-item-budget",
+        "execution-nonempty",
+        "execution-partial-failure",
+        "execution-reversed-completion",
+        "execution-timeout"
+      ]
+    },
+    "failedErrorCode": {
+      "enum": [
+        "not_found",
+        "ambiguous_location",
+        "unsupported_query",
+        "source_auth_failed",
+        "rate_limited",
+        "source_timeout",
+        "source_unavailable",
+        "source_busy",
+        "source_contract_changed",
+        "invalid_source_response",
+        "source_response_too_large",
+        "source_processing_limit",
+        "unsafe_source_content",
+        "internal_error"
+      ]
+    },
+    "actionCollectionSuccess": {
+      "type": "object",
+      "required": ["kind", "sourceItemCount"],
+      "properties": {
+        "kind": { "const": "collection_success" },
+        "sourceItemCount": { "type": "integer", "minimum": 0, "maximum": 1000 }
+      },
+      "additionalProperties": false
+    },
+    "actionReadSuccess": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": { "kind": { "const": "read_success" } },
+      "additionalProperties": false
+    },
+    "actionFailure": {
+      "type": "object",
+      "required": ["kind", "errorCode"],
+      "properties": { "kind": { "const": "failure" }, "errorCode": { "$ref": "#/$defs/failedErrorCode" } },
+      "additionalProperties": false
+    },
+    "actionTimeout": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": { "kind": { "const": "timeout" } },
+      "additionalProperties": false
+    },
+    "executionOutcome": {
+      "oneOf": [
+        { "$ref": "#/$defs/actionCollectionSuccess" },
+        { "$ref": "#/$defs/actionReadSuccess" },
+        { "$ref": "#/$defs/actionFailure" },
+        { "$ref": "#/$defs/actionTimeout" }
+      ]
+    },
+    "executionAction": {
+      "type": "object",
+      "required": ["meaningId", "stepOrdinal", "releaseOrder", "outcome"],
+      "properties": {
+        "meaningId": { "$ref": "#/$defs/identifier" },
+        "stepOrdinal": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "releaseOrder": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "outcome": { "$ref": "#/$defs/executionOutcome" }
+      },
+      "additionalProperties": false
+    },
+    "attemptCompletedRead": {
+      "type": "object",
+      "required": ["meaningId", "stepOrdinal", "outcome", "publishedItemCount"],
+      "properties": {
+        "meaningId": { "$ref": "#/$defs/identifier" },
+        "stepOrdinal": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "outcome": { "const": "completed" },
+        "publishedItemCount": { "const": 1 }
+      },
+      "additionalProperties": false
+    },
+    "attemptCompletedCollection": {
+      "type": "object",
+      "required": ["meaningId", "stepOrdinal", "outcome", "publishedItemCount", "hasMore"],
+      "properties": {
+        "meaningId": { "$ref": "#/$defs/identifier" },
+        "stepOrdinal": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "outcome": { "const": "completed" },
+        "publishedItemCount": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "hasMore": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "attemptEmpty": {
+      "type": "object",
+      "required": ["meaningId", "stepOrdinal", "outcome", "publishedItemCount", "hasMore"],
+      "properties": {
+        "meaningId": { "$ref": "#/$defs/identifier" },
+        "stepOrdinal": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "outcome": { "const": "empty" },
+        "publishedItemCount": { "const": 0 },
+        "hasMore": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "attemptFailed": {
+      "type": "object",
+      "required": ["meaningId", "stepOrdinal", "outcome", "errorCode"],
+      "properties": {
+        "meaningId": { "$ref": "#/$defs/identifier" },
+        "stepOrdinal": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "outcome": { "const": "failed" },
+        "errorCode": { "$ref": "#/$defs/failedErrorCode" }
+      },
+      "additionalProperties": false
+    },
+    "expectedAttempt": {
+      "oneOf": [
+        { "$ref": "#/$defs/attemptCompletedRead" },
+        { "$ref": "#/$defs/attemptCompletedCollection" },
+        { "$ref": "#/$defs/attemptEmpty" },
+        { "$ref": "#/$defs/attemptFailed" }
+      ]
+    },
+    "expectedResult": {
+      "type": "object",
+      "required": ["terminal", "status", "returnedItemCount", "attempts"],
+      "properties": {
+        "terminal": { "const": "result" },
+        "status": { "enum": ["completed", "empty", "partial"] },
+        "returnedItemCount": { "type": "integer", "minimum": 0, "maximum": 40 },
+        "attempts": { "type": "array", "minItems": 1, "maxItems": 4, "items": { "$ref": "#/$defs/expectedAttempt" } }
+      },
+      "additionalProperties": false
+    },
+    "expectedError": {
+      "type": "object",
+      "required": ["terminal", "errorCode", "attempts"],
+      "properties": {
+        "terminal": { "const": "error" },
+        "errorCode": { "$ref": "#/$defs/failedErrorCode" },
+        "attempts": { "type": "array", "minItems": 1, "maxItems": 4, "items": { "$ref": "#/$defs/attemptFailed" } }
+      },
+      "additionalProperties": false
+    },
+    "executionExpected": { "oneOf": [{ "$ref": "#/$defs/expectedResult" }, { "$ref": "#/$defs/expectedError" }] },
+    "executionCase": {
+      "type": "object",
+      "required": ["artifactKind", "schemaVersion", "caseId", "scenarioIds", "semanticCaseId", "actions", "expected"],
+      "properties": {
+        "artifactKind": { "const": "execution_case" },
+        "schemaVersion": { "const": 1 },
+        "caseId": { "$ref": "#/$defs/executionCaseId" },
+        "scenarioIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 7,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/executionScenarioId" }
+        },
+        "semanticCaseId": { "$ref": "#/$defs/developmentCaseId" },
+        "actions": { "type": "array", "minItems": 1, "maxItems": 4, "items": { "$ref": "#/$defs/executionAction" } },
+        "expected": { "$ref": "#/$defs/executionExpected" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
