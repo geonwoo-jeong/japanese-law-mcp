@@ -23,8 +23,8 @@ https://www.courts.go.jp/hanrei/search1/index.html?query1={query}
 - page title が `裁判例検索` を含む
 - 結果がある場合は `table.search-result-table` の行を使用する
 - 各結果行は、`th` 内の `/hanrei/{id}/detail{2..8}/index.html` への一つの公式詳細リンクと、情報を持つ `td` を持つ
-- 空結果は、結果件数の表示が 0 件で、契約を満たす結果行がない状態とする
-- 総件数は `{total}件中` の ASCII または全角数字を一つだけ解釈する
+- 空結果は、`p#searched` に `該当する裁判例がありませんでした。` の表示が一つあり、契約を満たす結果行がない状態とする。この場合の総件数は 0 とする
+- 空結果でない総件数は、`{total}件中` の ASCII または全角数字を一つだけ解釈する
 
 同じ行に複数の異なる詳細 path がある、詳細 path を識別できない、必須の事件番号、裁判年月日若しくは裁判所名がない、または件数表示と行が矛盾する場合は `invalid_source_response` とする。識別子そのものがない場合は `source_contract_changed` とする。
 
