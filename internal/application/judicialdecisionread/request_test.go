@@ -2,6 +2,7 @@ package judicialdecisionread_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
@@ -52,11 +53,10 @@ func TestRequestRejectsInvalidJudicialDecisionReference(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			if _, err := judicialdecisionread.NewRequest(
+			_, err := judicialdecisionread.NewRequest(
 				judicialdecisionread.RequestValues{Ref: ref},
-			); err == nil {
-				t.Fatal("SOT-IF-042: 不正な参照を受理しました")
-			}
+			)
+			assertInvalidRefArgument(t, err)
 		})
 	}
 }
@@ -65,11 +65,24 @@ func TestRequestRejectsZeroValueAndDirectJSONRestore(t *testing.T) {
 	t.Parallel()
 
 	var request judicialdecisionread.Request
-	if err := request.Validate(); err == nil {
-		t.Fatal("SOT-IF-042: Request のゼロ値を受理しました")
-	}
+	assertInvalidRefArgument(t, request.Validate())
 	if err := json.Unmarshal([]byte(`{"ref":{}}`), &request); err == nil {
 		t.Fatal("SOT-IF-042: Request を JSON から直接復元できました")
+	}
+}
+
+func assertInvalidRefArgument(t *testing.T, err error) {
+	t.Helper()
+
+	var argumentError judicialdecisionread.ArgumentError
+	if !errors.As(err, &argumentError) {
+		t.Fatalf("SOT-IF-042: ArgumentError ではありません: %T %v", err, err)
+	}
+	if argumentError.Code() != model.ErrorCodeInvalidArgument {
+		t.Fatalf("SOT-IF-042: Code() = %q", argumentError.Code())
+	}
+	if argumentError.Field() != "ref" {
+		t.Fatalf("SOT-IF-042: Field() = %q", argumentError.Field())
 	}
 }
 

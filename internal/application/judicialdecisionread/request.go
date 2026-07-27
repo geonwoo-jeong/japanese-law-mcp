@@ -45,19 +45,19 @@ func (r Request) Ref() model.SourceResourceRef {
 // Validate は、judicial-decision.read@1 の参照制約を確認する。
 func (r Request) Validate() error {
 	if !r.initialized {
-		return fmt.Errorf("Request は NewRequest で作成しなければなりません")
+		return invalidRefArgument("は NewRequest で検証しなければなりません")
 	}
 	if err := r.ref.Validate(); err != nil {
-		return fmt.Errorf("ref が有効ではありません: %w", err)
+		return invalidRefArgument("は有効な SourceResourceRef でなければなりません")
 	}
 	key := r.ref.Key()
 	if key.ResourceType() != "judicial-decision" {
-		return fmt.Errorf(
-			"ref.key.resourceType は judicial-decision でなければなりません",
+		return invalidRefArgument(
+			"の resourceType は judicial-decision でなければなりません",
 		)
 	}
 	if _, exists := key.VersionID(); exists {
-		return fmt.Errorf("ref.key.versionId は指定できません")
+		return invalidRefArgument("に versionId は指定できません")
 	}
 	return nil
 }
@@ -67,4 +67,12 @@ func (*Request) UnmarshalJSON(_ []byte) error {
 	return fmt.Errorf(
 		"Request は JSON から直接復元できません。NewRequest を使用してください",
 	)
+}
+
+func invalidRefArgument(reason string) error {
+	argumentError, err := NewArgumentError("ref", reason)
+	if err != nil {
+		return fmt.Errorf("ref の入力エラーを作成できません: %w", err)
+	}
+	return argumentError
 }

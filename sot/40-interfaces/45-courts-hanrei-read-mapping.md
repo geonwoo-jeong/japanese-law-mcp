@@ -86,7 +86,7 @@ PDF link は `SOT-IF-044` と同じ `JudicialDocumentLink` へ対応させる。
 
 ## 確認
 
-全 detail path のカテゴリー、`裁判所名・部` の非分割、ラベルの差異、欠落可能項目、重複ラベル、原審日付、複数行文字列、共通化しないカテゴリー固有値、PDF link だけの要旨、404、入力 ref の改変、resource budget および検索からの往復を fixture で確認する。
+全 detail path のカテゴリー、`裁判所名・部` の非分割、ラベルの差異、欠落可能項目、重複ラベル、原審日付、複数行文字列、共通化しないカテゴリー固有値、PDF link だけの要旨、文字列と PDF link が混在する要旨、404、入力 ref の改変、resource budget および検索からの往復を fixture で確認する。
 
 ## 関連
 

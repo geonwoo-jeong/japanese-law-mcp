@@ -25,7 +25,7 @@ func (o operation) SourceOperationName() string {
 }
 
 func (o operation) ValidateSourceOperation() error {
-	if o != operationSearch {
+	if o != operationSearch && o != operationRead {
 		return fmt.Errorf("裁判所 operation が定義されていません")
 	}
 	return nil
