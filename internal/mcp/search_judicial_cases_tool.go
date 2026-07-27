@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -107,13 +108,20 @@ func addSearchJudicialCasesTool(
 	searcher judicialdecisionsearch.Port,
 ) {
 	inputSchema := mustSchemaFor[searchJudicialCasesInputSchema]()
-	inputSchema.Properties["query"].MinLength = jsonschema.Ptr(1)
-	inputSchema.Properties["query"].MaxLength = jsonschema.Ptr(512)
+	inputSchema.Properties["query"] = withUTF8ByteLimit(
+		inputSchema.Properties["query"],
+		jsonschema.Ptr(1),
+		judicialdecisionsearch.MaxQueryBytes,
+		"有効な UTF-8 で、正規化後に 1 byte 以上 512 byte 以下の検索語。",
+	)
 	inputSchema.Properties["limit"].Minimum = jsonschema.Ptr(1.0)
 	inputSchema.Properties["limit"].Maximum = jsonschema.Ptr(30.0)
 	inputSchema.Properties["limit"].Default = json.RawMessage("20")
-	inputSchema.Properties["continuationToken"].MaxLength = jsonschema.Ptr(
+	inputSchema.Properties["continuationToken"] = withUTF8ByteLimit(
+		inputSchema.Properties["continuationToken"],
+		nil,
 		judicialdecisionsearch.MaxTokenBytes,
+		"有効な UTF-8 で 4096 byte 以下の継続トークン。",
 	)
 	server.AddTool(&sdk.Tool{
 		Name:         "search_judicial_cases",
@@ -125,12 +133,26 @@ func addSearchJudicialCasesTool(
 	})
 }
 
+func withUTF8ByteLimit(
+	schema *jsonschema.Schema,
+	minLength *int,
+	maxBytes int,
+	description string,
+) *jsonschema.Schema {
+	result := schema.CloneSchemas()
+	result.MinLength = minLength
+	result.MaxLength = nil
+	result.Description = description
+	result.Extra = map[string]any{"x-maxUtf8Bytes": maxBytes}
+	return result
+}
+
 func callSearchJudicialCases(
 	ctx context.Context,
 	searcher judicialdecisionsearch.Port,
 	arguments json.RawMessage,
 ) (*sdk.CallToolResult, error) {
-	if searcher == nil {
+	if isNilJudicialSearchPort(searcher) {
 		return errorToolResult(newInternalErrorResult())
 	}
 	request, err := decodeSearchJudicialCasesInput(arguments)
@@ -151,6 +173,20 @@ func callSearchJudicialCases(
 		return errorToolResult(newInternalErrorResult())
 	}
 	return result, nil
+}
+
+func isNilJudicialSearchPort(searcher judicialdecisionsearch.Port) bool {
+	if searcher == nil {
+		return true
+	}
+	value := reflect.ValueOf(searcher)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	default:
+		return false
+	}
 }
 
 func decodeSearchJudicialCasesInput(
@@ -182,7 +218,7 @@ func decodeSearchJudicialCasesInput(
 	if !exists || isJSONNull(queryRaw) {
 		return judicialdecisionsearch.Request{}, fmt.Errorf("query は必須です")
 	}
-	if err := json.Unmarshal(queryRaw, &values.Query); err != nil {
+	if err := decodeStrictJSONString(queryRaw, &values.Query); err != nil {
 		return judicialdecisionsearch.Request{}, fmt.Errorf("query は文字列でなければなりません")
 	}
 	if raw, ok := fields["limit"]; ok {
@@ -199,11 +235,75 @@ func decodeSearchJudicialCasesInput(
 		if isJSONNull(raw) {
 			return judicialdecisionsearch.Request{}, fmt.Errorf("continuationToken に null は使用できません")
 		}
-		if err := json.Unmarshal(raw, &values.ContinuationToken); err != nil {
+		if err := decodeStrictJSONString(raw, &values.ContinuationToken); err != nil {
 			return judicialdecisionsearch.Request{}, fmt.Errorf("continuationToken は文字列でなければなりません")
 		}
 	}
 	return judicialdecisionsearch.NewRequest(values)
+}
+
+func decodeStrictJSONString(raw json.RawMessage, destination *string) error {
+	if !hasValidJSONSurrogatePairs(raw) {
+		return fmt.Errorf("Unicode surrogate pair が有効ではありません")
+	}
+	return json.Unmarshal(raw, destination)
+}
+
+func hasValidJSONSurrogatePairs(raw json.RawMessage) bool {
+	for index := 0; index < len(raw); index++ {
+		if raw[index] != '\\' {
+			continue
+		}
+		index++
+		if index >= len(raw) {
+			return false
+		}
+		if raw[index] != 'u' {
+			continue
+		}
+		code, exists := decodeJSONHexCodeUnit(raw, index+1)
+		if !exists {
+			return false
+		}
+		index += 4
+		switch {
+		case code >= 0xd800 && code <= 0xdbff:
+			if index+6 >= len(raw) ||
+				raw[index+1] != '\\' ||
+				raw[index+2] != 'u' {
+				return false
+			}
+			low, lowExists := decodeJSONHexCodeUnit(raw, index+3)
+			if !lowExists || low < 0xdc00 || low > 0xdfff {
+				return false
+			}
+			index += 6
+		case code >= 0xdc00 && code <= 0xdfff:
+			return false
+		}
+	}
+	return true
+}
+
+func decodeJSONHexCodeUnit(raw []byte, start int) (uint16, bool) {
+	if start < 0 || start+4 > len(raw) {
+		return 0, false
+	}
+	var value uint16
+	for _, character := range raw[start : start+4] {
+		value <<= 4
+		switch {
+		case character >= '0' && character <= '9':
+			value += uint16(character - '0')
+		case character >= 'a' && character <= 'f':
+			value += uint16(character-'a') + 10
+		case character >= 'A' && character <= 'F':
+			value += uint16(character-'A') + 10
+		default:
+			return 0, false
+		}
+	}
+	return value, true
 }
 
 func decodeExactJudicialSearchLimit(raw json.RawMessage) (int, error) {
@@ -267,7 +367,10 @@ func exactSmallInteger(number string) (int, error) {
 		digits = digits[:len(digits)-remove]
 	} else if scale > 0 {
 		trimmed := strings.TrimLeft(digits, "0")
-		if trimmed == "" || int64(len(trimmed))+scale > 2 {
+		if trimmed == "" ||
+			scale > 2 ||
+			len(trimmed) > 2 ||
+			int64(len(trimmed))+scale > 2 {
 			return 0, fmt.Errorf("対応範囲の整数ではありません")
 		}
 		digits += strings.Repeat("0", int(scale))

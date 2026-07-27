@@ -264,8 +264,10 @@ func TestSearchJudicialCasesMapsArgumentAndSourceErrors(t *testing.T) {
 func TestSearchJudicialCasesRejectsInvalidPortResult(t *testing.T) {
 	t.Parallel()
 
+	var typedNil *recordingJudicialSearchPort
 	for name, port := range map[string]judicialdecisionsearch.Port{
-		"nil": nil,
+		"nil":       nil,
+		"typed nil": typedNil,
 		"unknown error": &recordingJudicialSearchPort{
 			err: errors.New("非公開の内部エラー"),
 		},
@@ -340,12 +342,21 @@ func TestSearchJudicialCasesToolPublishesBoundedSchemas(t *testing.T) {
 		string(limit.Default) != "20" {
 		t.Fatalf("SOT-IF-047: limit schema = %#v", limit)
 	}
-	token := inputSchema.Properties["continuationToken"]
-	if token == nil ||
-		token.MaxLength == nil ||
-		*token.MaxLength != judicialdecisionsearch.MaxTokenBytes {
-		t.Fatalf("SOT-IF-047: continuationToken schema = %#v", token)
+	query := inputSchema.Properties["query"]
+	if query == nil || query.MinLength == nil || *query.MinLength != 1 {
+		t.Fatalf("SOT-IF-041/047: query schema = %#v", query)
 	}
+	assertUTF8ByteLimitSchema(
+		t,
+		query,
+		judicialdecisionsearch.MaxQueryBytes,
+	)
+	token := inputSchema.Properties["continuationToken"]
+	assertUTF8ByteLimitSchema(
+		t,
+		token,
+		judicialdecisionsearch.MaxTokenBytes,
+	)
 	if !containsString(inputSchema.Required, "query") ||
 		!containsString(outputSchema.Required, "coverageNotice") ||
 		!containsString(outputSchema.Required, "items") ||
@@ -483,4 +494,37 @@ func decodeJudicialSearchSchema(
 		t.Fatalf("schema を解析できません: %v", err)
 	}
 	return schema
+}
+
+func assertUTF8ByteLimitSchema(
+	t *testing.T,
+	schema *jsonschema.Schema,
+	want int,
+) {
+	t.Helper()
+	if schema == nil {
+		t.Fatal("UTF-8 byte 制約を持つ schema がありません")
+	}
+	if schema.MaxLength != nil {
+		t.Fatalf(
+			"UTF-8 byte 制約を Unicode 文字数の maxLength として公開しています: %#v",
+			schema,
+		)
+	}
+	rawLimit, exists := schema.Extra["x-maxUtf8Bytes"]
+	limit, number := rawLimit.(float64)
+	if !exists || !number || limit != float64(want) {
+		t.Fatalf(
+			"x-maxUtf8Bytes = %#v, want %d",
+			rawLimit,
+			want,
+		)
+	}
+	if !strings.Contains(schema.Description, fmt.Sprintf("%d byte", want)) {
+		t.Fatalf(
+			"UTF-8 byte 制約の説明 = %q, want %d byte",
+			schema.Description,
+			want,
+		)
+	}
 }

@@ -4,7 +4,6 @@ package mcp
 import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
@@ -13,12 +12,11 @@ import (
 
 // Dependencies は、公開 MCP サーバーへ注入する能力ポートを保持する。
 type Dependencies struct {
-	SearchLaws          searchlaws.Port
-	SearchLawContent    searchlawcontent.Port
-	SearchJudicialCases judicialdecisionsearch.Port
-	GetLaw              getlaw.Port
-	GetArticle          getarticle.Port
-	ListLawUpdates      listlawupdates.Port
+	SearchLaws       searchlaws.Port
+	SearchLawContent searchlawcontent.Port
+	GetLaw           getlaw.Port
+	GetArticle       getarticle.Port
+	ListLawUpdates   listlawupdates.Port
 }
 
 // NewServer は、依存を必要としない capability だけを持つ MCP サーバーを返す。
@@ -65,9 +63,6 @@ func newServer(
 	}
 	if dependencies.SearchLawContent != nil {
 		addSearchLawContentTool(server, dependencies.SearchLawContent)
-	}
-	if dependencies.SearchJudicialCases != nil {
-		addSearchJudicialCasesTool(server, dependencies.SearchJudicialCases)
 	}
 	if dependencies.GetLaw != nil {
 		addGetLawTool(server, dependencies.GetLaw)

@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
@@ -259,47 +260,17 @@ func TestJudicialCasesProviderRoutesActivateCourtsBindings(t *testing.T) {
 	}
 }
 
-func TestNewPublicDependenciesAddsJudicialSearchOnlyWhenPackEnabled(t *testing.T) {
+func TestPublicDependenciesRejectMissingCoreRoutes(t *testing.T) {
 	t.Parallel()
 
-	disabledCfg, err := config.New(defaultTestConfigValues())
-	if err != nil {
-		t.Fatalf("config.New() error = %v", err)
-	}
-	disabledRegistry, disabledRoutes, err := newProviderRoutes(disabledCfg)
-	if err != nil {
-		t.Fatalf("newProviderRoutes() error = %v", err)
-	}
-	disabledDependencies, err := newPublicDependencies(
-		disabledCfg,
-		disabledRegistry,
-		disabledRoutes,
+	_, err := newPublicDependencies(
+		config.Default(),
+		application.ProviderBindingRegistry{},
+		application.ProviderRoutes{},
 	)
-	if err != nil {
-		t.Fatalf("newPublicDependencies() error = %v", err)
-	}
-	if disabledDependencies.SearchJudicialCases != nil {
-		t.Fatal("pack 無効時に search_judicial_cases が公開依存へ追加されました")
-	}
-
-	enabledCfg, err := config.New(withJudicialCasesEnabled())
-	if err != nil {
-		t.Fatalf("config.New() error = %v", err)
-	}
-	enabledRegistry, enabledRoutes, err := newProviderRoutes(enabledCfg)
-	if err != nil {
-		t.Fatalf("newProviderRoutes() error = %v", err)
-	}
-	enabledDependencies, err := newPublicDependencies(
-		enabledCfg,
-		enabledRegistry,
-		enabledRoutes,
-	)
-	if err != nil {
-		t.Fatalf("newPublicDependencies() error = %v", err)
-	}
-	if enabledDependencies.SearchJudicialCases == nil {
-		t.Fatal("pack 有効時に search_judicial_cases が公開依存へ追加されません")
+	if err == nil ||
+		!strings.Contains(err.Error(), "primary law.document.read binding") {
+		t.Fatalf("公開依存関係の初期化エラー = %v", err)
 	}
 }
 

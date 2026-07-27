@@ -20,10 +20,10 @@ const (
 	DefaultLimit = 20
 	// MaxLimit は、一回の検索で指定できる返却上限である。
 	MaxLimit = 30
+	// MaxQueryBytes は、検索語に許可する UTF-8 byte 数である。
+	MaxQueryBytes = 512
 	// MaxTokenBytes は、継続トークンに許可する UTF-8 byte 数である。
 	MaxTokenBytes = 4096
-
-	maxQueryBytes = 512
 )
 
 // RequestValues は、Request の作成に必要な境界値を保持する。
@@ -80,7 +80,7 @@ func (r Request) Validate() error {
 	if r.query == "" {
 		return fmt.Errorf("query は一文字以上でなければなりません")
 	}
-	if len(r.query) > maxQueryBytes {
+	if len(r.query) > MaxQueryBytes {
 		return fmt.Errorf("query は UTF-8 で 512 byte 以下でなければなりません")
 	}
 	if containsASCIIControl(r.query) {
