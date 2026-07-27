@@ -50,6 +50,66 @@ func TestNewRejectsUnknownExtensionPack(t *testing.T) {
 	}
 }
 
+func TestNewAddsJudicialCasesConditionalProviderAndRoutes(t *testing.T) {
+	t.Parallel()
+
+	values := validProviderValues()
+	values.ExtensionPacks = map[string]ExtensionPackConfig{
+		ExtensionPackJudicialCases: {Enabled: true},
+	}
+	got, err := New(values)
+	if err != nil {
+		t.Fatalf("SOT-IF-040/SOT-IF-046: New() のエラー = %v", err)
+	}
+
+	provider, exists := got.Provider("courts-hanrei-html")
+	if !exists ||
+		!provider.Enabled ||
+		len(provider.Settings) != 0 ||
+		len(provider.CredentialEnvRefs) != 0 {
+		t.Fatalf("SOT-IF-046: courts-hanrei-html = %#v, %t", provider, exists)
+	}
+	for _, capabilityID := range []string{
+		"judicial-decision.read",
+		"judicial-decision.search",
+	} {
+		key := ProviderRouteKey{CapabilityID: capabilityID, MajorVersion: 1}
+		route, routeExists := got.ProviderRoute(key)
+		if !routeExists ||
+			route.Selection != ProviderRouteSelectionPrimary ||
+			route.DefaultProviderID != "courts-hanrei-html" {
+			t.Fatalf("SOT-IF-046: route %s = %#v, %t", key, route, routeExists)
+		}
+	}
+	if len(got.Providers()) != 3 || len(got.ProviderRoutes()) != 7 {
+		t.Fatalf(
+			"SOT-IF-046: providers = %d, routes = %d",
+			len(got.Providers()),
+			len(got.ProviderRoutes()),
+		)
+	}
+}
+
+func TestNewAppliesUserOverrideToConditionalProvider(t *testing.T) {
+	t.Parallel()
+
+	values := validProviderValues()
+	values.ExtensionPacks = map[string]ExtensionPackConfig{
+		ExtensionPackJudicialCases: {Enabled: true},
+	}
+	values.Providers = map[string]ProviderConfig{
+		"courts-hanrei-html": {Enabled: false},
+	}
+	got, err := New(values)
+	if err != nil {
+		t.Fatalf("SOT-IF-026/SOT-IF-046: New() のエラー = %v", err)
+	}
+	provider, exists := got.Provider("courts-hanrei-html")
+	if !exists || provider.Enabled {
+		t.Fatalf("SOT-IF-026: provider override = %#v, %t", provider, exists)
+	}
+}
+
 func TestLoadJudicialCasesExtensionPackFormats(t *testing.T) {
 	clearKnownEnvironment(t)
 

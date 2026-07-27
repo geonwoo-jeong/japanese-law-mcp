@@ -21,8 +21,6 @@ type searchAdapterDependencies struct {
 }
 
 // JudicialDecisionSearchAdapter は、裁判所 HTML の judicial-decision.search@1 adapter である。
-//
-// runtime registry と MCP route への登録は、この planned binding では行わない。
 type JudicialDecisionSearchAdapter struct {
 	dependencies searchAdapterDependencies
 }

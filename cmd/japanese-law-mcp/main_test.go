@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
@@ -210,6 +212,87 @@ func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 	}
 	if port, exists := routes.LawUpdateList(); !exists || port == nil {
 		t.Fatal("law.update.list route に到達できません")
+	}
+}
+
+func TestJudicialCasesProviderRoutesActivateCourtsBindings(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withJudicialCasesEnabled())
+	if err != nil {
+		t.Fatalf("設定を生成できません: %v", err)
+	}
+	registry, routes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("SOT-IF-046: provider runtime を初期化できません: %v", err)
+	}
+	descriptor, exists := registry.Descriptor("courts-hanrei-html")
+	if !exists || len(descriptor.Capabilities()) != 2 {
+		t.Fatalf("SOT-IF-046: courts descriptor = %#v, %t", descriptor, exists)
+	}
+	for _, capability := range []struct {
+		id      string
+		version int
+	}{
+		{judicialdecisionread.CapabilityID, judicialdecisionread.MajorVersion},
+		{judicialdecisionsearch.CapabilityID, judicialdecisionsearch.MajorVersion},
+	} {
+		providerID, routeExists := routes.ProviderID(
+			capability.id,
+			capability.version,
+		)
+		if !routeExists || providerID != "courts-hanrei-html" {
+			t.Fatalf(
+				"SOT-IF-046: %s@%d provider = %q, %t",
+				capability.id,
+				capability.version,
+				providerID,
+				routeExists,
+			)
+		}
+	}
+	if port, exists := routes.JudicialDecisionSearch(); !exists || port == nil {
+		t.Fatal("SOT-IF-046: judicial-decision.search route に到達できません")
+	}
+	if port, exists := routes.JudicialDecisionRead(); !exists || port == nil {
+		t.Fatal("SOT-IF-046: judicial-decision.read route に到達できません")
+	}
+}
+
+func TestProviderRoutesRejectJudicialConfigurationWhenPackDisabled(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]config.Values{
+		"provider": withTestProviders(map[string]config.ProviderConfig{
+			"courts-hanrei-html": {Enabled: false},
+		}),
+		"read route": withTestProviderRoutes(map[string]config.ProviderRoute{
+			"judicial-decision.read@1": {
+				Selection:         config.ProviderRouteSelectionPrimary,
+				DefaultProviderID: "courts-hanrei-html",
+			},
+		}),
+		"search route": withTestProviderRoutes(map[string]config.ProviderRoute{
+			"judicial-decision.search@1": {
+				Selection:         config.ProviderRouteSelectionPrimary,
+				DefaultProviderID: "courts-hanrei-html",
+			},
+		}),
+	}
+	for name, values := range tests {
+		name, values := name, values
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			cfg, err := config.New(values)
+			if err != nil {
+				t.Fatalf("構造上有効な設定を生成できません: %v", err)
+			}
+			_, _, err = newProviderRoutes(cfg)
+			if !config.IsValidationError(err) ||
+				!strings.Contains(err.Error(), "judicial-cases") {
+				t.Fatalf("SOT-IF-046: pack 無効時の設定エラー = %v", err)
+			}
+		})
 	}
 }
 
@@ -650,5 +733,13 @@ func withTestProviders(providers map[string]config.ProviderConfig) config.Values
 func withTestProviderRoutes(routes map[string]config.ProviderRoute) config.Values {
 	values := defaultTestConfigValues()
 	values.ProviderRoutes = routes
+	return values
+}
+
+func withJudicialCasesEnabled() config.Values {
+	values := defaultTestConfigValues()
+	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
+		config.ExtensionPackJudicialCases: {Enabled: true},
+	}
 	return values
 }

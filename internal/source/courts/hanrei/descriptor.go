@@ -14,9 +14,7 @@ const (
 	adapterContractVersion = "1.0.0"
 )
 
-// Descriptor は、SOT-IF-043 の planned provider descriptor を返す。
-//
-// production runtime への登録は行わず、binding の組立てと契約検証で使用する。
+// Descriptor は、SOT-IF-043 の provider descriptor を返す。
 func Descriptor() model.ProviderDescriptor {
 	descriptor, err := model.NewProviderDescriptor(model.ProviderDescriptorValues{
 		ProviderID:             providerID,

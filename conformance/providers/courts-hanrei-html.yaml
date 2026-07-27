@@ -65,7 +65,7 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei
     conformanceTarget: ./internal/source/courts/hanrei
-    status: planned
+    status: implemented
 
   - providerId: courts-hanrei-html
     capabilityId: judicial-decision.search
@@ -130,4 +130,4 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei
     conformanceTarget: ./internal/source/courts/hanrei
-    status: planned
+    status: implemented

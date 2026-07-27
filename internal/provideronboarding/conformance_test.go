@@ -27,7 +27,7 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 			if row.implementedBy != "internal/source/courts/hanrei" {
 				t.Fatalf("courts implementedBy = %q", row.implementedBy)
 			}
-			if row.status != "planned" {
+			if row.status != "implemented" {
 				t.Fatalf("courts status = %q", row.status)
 			}
 		case "e-gov-law-api-v1":

@@ -39,11 +39,11 @@ type Config struct {
 
 // Default は、SOT-IF-026、SOT-IF-029 と SOT-IF-040 が定める既定の起動設定を返す。
 func Default() Config {
-	providers, err := resolveProviderConfigs(nil)
+	providers, err := resolveProviderConfigs(nil, false)
 	if err != nil {
 		panic("組込み provider 設定を構成できません")
 	}
-	providerRoutes, err := resolveProviderRoutes(nil)
+	providerRoutes, err := resolveProviderRoutes(nil, false)
 	if err != nil {
 		panic("組込み provider route を構成できません")
 	}
@@ -71,21 +71,28 @@ func New(values Values) (Config, error) {
 			NewValidationError(err),
 		)
 	}
-	providers, err := resolveProviderConfigs(values.Providers)
-	if err != nil {
-		return Config{}, fmt.Errorf(
-			"設定を検証できません: %w",
-			NewValidationError(err),
-		)
-	}
-	providerRoutes, err := resolveProviderRoutes(values.ProviderRoutes)
-	if err != nil {
-		return Config{}, fmt.Errorf(
-			"設定を検証できません: %w",
-			NewValidationError(err),
-		)
-	}
 	extensionPacks, err := resolveExtensionPacks(values.ExtensionPacks)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"設定を検証できません: %w",
+			NewValidationError(err),
+		)
+	}
+	judicialCasesEnabled := extensionPacks[ExtensionPackJudicialCases].Enabled
+	providers, err := resolveProviderConfigs(
+		values.Providers,
+		judicialCasesEnabled,
+	)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"設定を検証できません: %w",
+			NewValidationError(err),
+		)
+	}
+	providerRoutes, err := resolveProviderRoutes(
+		values.ProviderRoutes,
+		judicialCasesEnabled,
+	)
 	if err != nil {
 		return Config{}, fmt.Errorf(
 			"設定を検証できません: %w",

@@ -83,8 +83,10 @@ func (k ProviderRouteKey) String() string {
 	return k.CapabilityID + "@" + strconv.Itoa(k.MajorVersion)
 }
 
-func defaultProviders() map[string]ProviderConfig {
-	return map[string]ProviderConfig{
+func defaultProviders(
+	judicialCasesEnabled bool,
+) map[string]ProviderConfig {
+	providers := map[string]ProviderConfig{
 		"e-gov-law-api-v1": {
 			Enabled:           true,
 			Settings:          make(map[string]any),
@@ -96,14 +98,25 @@ func defaultProviders() map[string]ProviderConfig {
 			CredentialEnvRefs: make(map[string]CredentialEnvRef),
 		},
 	}
+	if judicialCasesEnabled {
+		providers["courts-hanrei-html"] = ProviderConfig{
+			Enabled:           true,
+			Settings:          make(map[string]any),
+			CredentialEnvRefs: make(map[string]CredentialEnvRef),
+		}
+	}
+	return providers
 }
 
-func defaultProviderRoutes() map[ProviderRouteKey]ProviderRoute {
+func defaultProviderRoutes(
+	judicialCasesEnabled bool,
+) map[ProviderRouteKey]ProviderRoute {
 	const (
-		v1ProviderID = "e-gov-law-api-v1"
-		v2ProviderID = "e-gov-law-api-v2"
+		courtsProviderID = "courts-hanrei-html"
+		v1ProviderID     = "e-gov-law-api-v1"
+		v2ProviderID     = "e-gov-law-api-v2"
 	)
-	return map[ProviderRouteKey]ProviderRoute{
+	routes := map[ProviderRouteKey]ProviderRoute{
 		{CapabilityID: "law.article.read", MajorVersion: 1}: {
 			Selection:         ProviderRouteSelectionPrimary,
 			DefaultProviderID: v2ProviderID,
@@ -125,15 +138,35 @@ func defaultProviderRoutes() map[ProviderRouteKey]ProviderRoute {
 			DefaultProviderID: v1ProviderID,
 		},
 	}
+	if judicialCasesEnabled {
+		routes[ProviderRouteKey{
+			CapabilityID: "judicial-decision.read",
+			MajorVersion: 1,
+		}] = ProviderRoute{
+			Selection:         ProviderRouteSelectionPrimary,
+			DefaultProviderID: courtsProviderID,
+		}
+		routes[ProviderRouteKey{
+			CapabilityID: "judicial-decision.search",
+			MajorVersion: 1,
+		}] = ProviderRoute{
+			Selection:         ProviderRouteSelectionPrimary,
+			DefaultProviderID: courtsProviderID,
+		}
+	}
+	return routes
 }
 
-func resolveProviderConfigs(values map[string]ProviderConfig) (map[string]ProviderConfig, error) {
+func resolveProviderConfigs(
+	values map[string]ProviderConfig,
+	judicialCasesEnabled bool,
+) (map[string]ProviderConfig, error) {
 	if values == nil {
-		return cloneProviderConfigs(defaultProviders()), nil
+		return cloneProviderConfigs(defaultProviders(judicialCasesEnabled)), nil
 	}
 	resolved := make(map[string]ProviderConfig)
 	if len(values) != 0 {
-		resolved = cloneProviderConfigs(defaultProviders())
+		resolved = cloneProviderConfigs(defaultProviders(judicialCasesEnabled))
 	}
 	providerIDs := make([]string, 0, len(values))
 	for providerID := range values {
@@ -163,13 +196,14 @@ func resolveProviderConfigs(values map[string]ProviderConfig) (map[string]Provid
 
 func resolveProviderRoutes(
 	values map[string]ProviderRoute,
+	judicialCasesEnabled bool,
 ) (map[ProviderRouteKey]ProviderRoute, error) {
 	if values == nil {
-		return cloneProviderRoutes(defaultProviderRoutes()), nil
+		return cloneProviderRoutes(defaultProviderRoutes(judicialCasesEnabled)), nil
 	}
 	resolved := make(map[ProviderRouteKey]ProviderRoute)
 	if len(values) != 0 {
-		resolved = cloneProviderRoutes(defaultProviderRoutes())
+		resolved = cloneProviderRoutes(defaultProviderRoutes(judicialCasesEnabled))
 	}
 	rawKeys := make([]string, 0, len(values))
 	for key := range values {

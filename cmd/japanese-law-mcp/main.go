@@ -13,6 +13,8 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/continuation"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
@@ -24,6 +26,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/stdio"
@@ -69,14 +72,14 @@ func newServerRunnerWithTransports(
 	runHTTP streamableHTTPRunner,
 ) cli.Runner {
 	return func(ctx context.Context, cfg config.Config) error {
-		if err := validateExtensionPackActivation(cfg); err != nil {
-			return err
-		}
 		registry, routes, err := newProviderRoutes(cfg)
 		if err != nil {
 			return err
 		}
 		if err := validateCompatibilityFacadeRoutes(routes); err != nil {
+			return err
+		}
+		if err := validateExtensionPackPublication(cfg); err != nil {
 			return err
 		}
 
@@ -105,13 +108,13 @@ func newServerRunnerWithTransports(
 	}
 }
 
-func validateExtensionPackActivation(cfg config.Config) error {
+func validateExtensionPackPublication(cfg config.Config) error {
 	if !cfg.JudicialCasesEnabled() {
 		return nil
 	}
 	return config.NewValidationError(
 		errors.New(
-			"judicial-cases に必要な provider、route および MCP tool を一括構成できません",
+			"judicial-cases に必要な MCP tool を一括構成できません",
 		),
 	)
 }
@@ -302,7 +305,12 @@ func newProviderRoutes(cfg config.Config) (
 	application.ProviderRoutes,
 	error,
 ) {
-	bindings, err := newEnabledProviderBindings(cfg.Providers())
+	if err := validateExtensionPackProviderScope(cfg); err != nil {
+		return application.ProviderBindingRegistry{},
+			application.ProviderRoutes{},
+			err
+	}
+	bindings, err := newEnabledProviderBindings(cfg)
 	if err != nil {
 		return application.ProviderBindingRegistry{},
 			application.ProviderRoutes{},
@@ -331,8 +339,9 @@ func newProviderRoutes(cfg config.Config) (
 }
 
 func newEnabledProviderBindings(
-	providers map[string]config.ProviderConfig,
+	cfg config.Config,
 ) ([]application.ProviderBindings, error) {
+	providers := cfg.Providers()
 	providerIDs := make([]string, 0, len(providers))
 	for providerID := range providers {
 		providerIDs = append(providerIDs, providerID)
@@ -340,7 +349,11 @@ func newEnabledProviderBindings(
 	sort.Strings(providerIDs)
 
 	for _, providerID := range providerIDs {
-		if err := validateBuiltInProviderConfig(providerID, providers[providerID]); err != nil {
+		if err := validateBuiltInProviderConfig(
+			providerID,
+			providers[providerID],
+			cfg.JudicialCasesEnabled(),
+		); err != nil {
 			return nil, err
 		}
 	}
@@ -357,6 +370,8 @@ func newEnabledProviderBindings(
 			err     error
 		)
 		switch providerID {
+		case hanrei.Descriptor().ProviderID():
+			binding, err = hanrei.NewProviderBindings()
 		case lawv1.Descriptor().ProviderID():
 			binding, err = lawv1.NewProviderBindings()
 		case lawv2.Descriptor().ProviderID():
@@ -381,8 +396,17 @@ func newEnabledProviderBindings(
 func validateBuiltInProviderConfig(
 	providerID string,
 	provider config.ProviderConfig,
+	judicialCasesEnabled bool,
 ) error {
 	switch providerID {
+	case hanrei.Descriptor().ProviderID():
+		if !judicialCasesEnabled {
+			return config.NewValidationError(
+				errors.New(
+					"judicial-cases が無効なため courts-hanrei-html を構成できません",
+				),
+			)
+		}
 	case lawv1.Descriptor().ProviderID(), lawv2.Descriptor().ProviderID():
 	default:
 		return config.NewValidationError(
@@ -398,6 +422,39 @@ func validateBuiltInProviderConfig(
 		return config.NewValidationError(
 			fmt.Errorf("provider %q は credentialEnvRefs を受け付けません", providerID),
 		)
+	}
+	return nil
+}
+
+func validateExtensionPackProviderScope(cfg config.Config) error {
+	if cfg.JudicialCasesEnabled() {
+		return nil
+	}
+	if _, exists := cfg.Provider(hanrei.Descriptor().ProviderID()); exists {
+		return config.NewValidationError(
+			errors.New(
+				"judicial-cases が無効なため courts-hanrei-html を指定できません",
+			),
+		)
+	}
+	for _, key := range []config.ProviderRouteKey{
+		{
+			CapabilityID: judicialdecisionread.CapabilityID,
+			MajorVersion: judicialdecisionread.MajorVersion,
+		},
+		{
+			CapabilityID: judicialdecisionsearch.CapabilityID,
+			MajorVersion: judicialdecisionsearch.MajorVersion,
+		},
+	} {
+		if _, exists := cfg.ProviderRoute(key); exists {
+			return config.NewValidationError(
+				fmt.Errorf(
+					"judicial-cases が無効なため providerRoutes.%s を指定できません",
+					key,
+				),
+			)
+		}
 	}
 	return nil
 }

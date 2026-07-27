@@ -49,7 +49,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 			row.ImplementedBy !=
 				"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei" ||
 			row.ConformanceTarget != "./internal/source/courts/hanrei" ||
-			row.Status != "planned" {
+			row.Status != "implemented" {
 			t.Fatalf("courts row = %#v", row)
 		}
 		assertCasesAreExplicit(t, row)
