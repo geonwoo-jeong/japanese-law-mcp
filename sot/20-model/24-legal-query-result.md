@@ -111,7 +111,7 @@ attempt の `interpretationId` は同じ result の `interpretations` の一件�
 
 `hasMore` は、内部 page に次の位置がある場合、または完全一覧を公開上限で切り詰めた場合は `true` とする。正確な件数等から続きがないと確定できる場合は `false` とし、判定できない場合は省略する。
 
-`returnedCount` と `totalCount` は零以上とし、attempt の `returnedCount` は同じ result の `items` 件数と一致する。`totalCount` がある場合は `returnedCount` 以上とし、`totalRelation` を必須とする。`totalCount` がない場合は `totalRelation` を持たない。`totalRelation=exact` の場合は `hasMore` を必須とし、`returnedCount < totalCount` なら `true`、等しければ `false` とする。
+`returnedCount` と `totalCount` は零以上とし、attempt の `returnedCount` は同じ result の `items` 件数と一致する。`totalCount` がある場合は `returnedCount` 以上とし、`totalRelation` を必須とする。`totalCount` がない場合は `totalRelation` を持たない。`totalRelation=exact` の場合は `hasMore` を必須とし、`returnedCount < totalCount` なら `true`、等しければ `false` とする。`totalRelation=lower_bound` でも `returnedCount < totalCount` の場合は、少なくとも未公開の item があるため `hasMore=true` を必須とする。`totalRelation=lower_bound` で両件数が等しい場合は、情報源の page 情報または公開上限によって続きを確定できるときだけ `hasMore` を指定し、判定できない場合は省略できる。
 
 ## 状態
 

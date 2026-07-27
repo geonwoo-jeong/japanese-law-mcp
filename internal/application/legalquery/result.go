@@ -46,6 +46,17 @@ const (
 	legalQueryUnsupportedScopeNotice = "指定した task または resource は統合照会の採用範囲外です。対応する専門ツールを確認してください。"
 )
 
+// 公開 JSON Schema と result assembler が同じ固定注意を参照するための別名である。
+const (
+	LegalQueryFirstPageNotice        = legalQueryFirstPageNotice
+	LegalQuerySeparateAttemptsNotice = legalQuerySeparateAttemptsNotice
+	LegalQueryPartialFailureNotice   = legalQueryPartialFailureNotice
+	LegalQueryPackDisabledNotice     = legalQueryPackDisabledNotice
+	LegalQueryNonJapaneseNotice      = legalQueryNonJapaneseNotice
+	LegalQueryMixedUnsupportedNotice = legalQueryMixedUnsupportedNotice
+	LegalQueryUnsupportedScopeNotice = legalQueryUnsupportedScopeNotice
+)
+
 // LegalQueryResult は、六つの公開成功結果だけを許す閉じた interface である。
 type LegalQueryResult interface {
 	Status() LegalQueryResultStatus

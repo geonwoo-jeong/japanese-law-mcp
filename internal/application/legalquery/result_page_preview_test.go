@@ -46,6 +46,21 @@ func TestLegalQueryPagePreviewAcceptsOptionalFieldsAndIsImmutable(t *testing.T) 
 	if _, exists := unknown.TotalCount(); exists {
 		t.Fatal("SOT-MODEL-024: 未指定の totalCount を公開しました")
 	}
+
+	lowerBoundCount := 1
+	equalLowerBound, err := NewLegalQueryPagePreview(
+		LegalQueryPagePreviewValues{
+			ReturnedCount: 1,
+			TotalCount:    &lowerBoundCount,
+			TotalRelation: model.TotalRelationLowerBound,
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-024: 同数の lower_bound を拒否しました: %v", err)
+	}
+	if _, exists := equalLowerBound.HasMore(); exists {
+		t.Fatal("SOT-MODEL-024: 判定不能な lower_bound の hasMore を公開しました")
+	}
 }
 
 func TestLegalQueryPagePreviewEnforcesCrossConstraints(t *testing.T) {
@@ -98,6 +113,17 @@ func TestLegalQueryPagePreviewEnforcesCrossConstraints(t *testing.T) {
 			HasMore:       &trueValue,
 			TotalCount:    &one,
 			TotalRelation: model.TotalRelationExact,
+		},
+		"lower_bound の残件に hasMore なし": {
+			ReturnedCount: 1,
+			TotalCount:    &two,
+			TotalRelation: model.TotalRelationLowerBound,
+		},
+		"lower_bound の残件と false": {
+			ReturnedCount: 1,
+			HasMore:       &falseValue,
+			TotalCount:    &two,
+			TotalRelation: model.TotalRelationLowerBound,
 		},
 	}
 	for name, values := range tests {

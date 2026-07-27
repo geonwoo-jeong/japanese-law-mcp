@@ -96,6 +96,13 @@ func (p LegalQueryPagePreview) Validate() error {
 	if p.totalRelation == model.TotalRelationExact {
 		return p.validateExactTotal()
 	}
+	if p.returnedCount < *p.totalCount {
+		if p.hasMore == nil || !*p.hasMore {
+			return fmt.Errorf(
+				"totalRelation が lower_bound で totalCount が returnedCount を上回る場合は hasMore=true が必要です",
+			)
+		}
+	}
 	return nil
 }
 

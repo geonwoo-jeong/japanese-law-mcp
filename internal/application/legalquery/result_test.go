@@ -162,6 +162,48 @@ func TestLegalQueryResultDerivesStatusAndFixedNotices(t *testing.T) {
 		t.Fatalf("SOT-MODEL-024: completed notices = %#v", completed.Notices())
 	}
 
+	lowerBoundHasMore := true
+	lowerBoundTotal := 2
+	lowerBoundPage, err := NewLegalQueryPagePreview(
+		LegalQueryPagePreviewValues{
+			ReturnedCount: 1,
+			HasMore:       &lowerBoundHasMore,
+			TotalCount:    &lowerBoundTotal,
+			TotalRelation: model.TotalRelationLowerBound,
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-024: lower_bound page を作成できません: %v", err)
+	}
+	lowerBoundAttempt, err := NewLegalQueryLawSearchAttempt(
+		LegalQueryLawSearchAttemptValues{
+			InterpretationID: "interpretation-1",
+			Step:             search,
+			Page:             lowerBoundPage,
+			Items: []model.SourcedResource[model.LawSummary]{
+				fixtures.lawSummary,
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-024: lower_bound attempt を作成できません: %v", err)
+	}
+	lowerBoundCompleted, err := NewLegalQueryCompletedResult(
+		plan,
+		[]LegalQueryAttempt{lowerBoundAttempt},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-024: lower_bound completed を作成できません: %v", err)
+	}
+	if !reflect.DeepEqual(lowerBoundCompleted.Notices(), []string{
+		"最初のページだけを返しています。続きが必要な場合は対応する専門ツールを使用してください。",
+	}) {
+		t.Fatalf(
+			"SOT-MODEL-024: lower_bound notices = %#v",
+			lowerBoundCompleted.Notices(),
+		)
+	}
+
 	partial, err := NewLegalQueryPartialResult(
 		plan,
 		[]LegalQueryAttempt{resultTestFailedAttempt(t, search), empty},
