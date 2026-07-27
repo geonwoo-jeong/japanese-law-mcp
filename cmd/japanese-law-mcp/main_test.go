@@ -259,6 +259,50 @@ func TestJudicialCasesProviderRoutesActivateCourtsBindings(t *testing.T) {
 	}
 }
 
+func TestNewPublicDependenciesAddsJudicialSearchOnlyWhenPackEnabled(t *testing.T) {
+	t.Parallel()
+
+	disabledCfg, err := config.New(defaultTestConfigValues())
+	if err != nil {
+		t.Fatalf("config.New() error = %v", err)
+	}
+	disabledRegistry, disabledRoutes, err := newProviderRoutes(disabledCfg)
+	if err != nil {
+		t.Fatalf("newProviderRoutes() error = %v", err)
+	}
+	disabledDependencies, err := newPublicDependencies(
+		disabledCfg,
+		disabledRegistry,
+		disabledRoutes,
+	)
+	if err != nil {
+		t.Fatalf("newPublicDependencies() error = %v", err)
+	}
+	if disabledDependencies.SearchJudicialCases != nil {
+		t.Fatal("pack 無効時に search_judicial_cases が公開依存へ追加されました")
+	}
+
+	enabledCfg, err := config.New(withJudicialCasesEnabled())
+	if err != nil {
+		t.Fatalf("config.New() error = %v", err)
+	}
+	enabledRegistry, enabledRoutes, err := newProviderRoutes(enabledCfg)
+	if err != nil {
+		t.Fatalf("newProviderRoutes() error = %v", err)
+	}
+	enabledDependencies, err := newPublicDependencies(
+		enabledCfg,
+		enabledRegistry,
+		enabledRoutes,
+	)
+	if err != nil {
+		t.Fatalf("newPublicDependencies() error = %v", err)
+	}
+	if enabledDependencies.SearchJudicialCases == nil {
+		t.Fatal("pack 有効時に search_judicial_cases が公開依存へ追加されません")
+	}
+}
+
 func TestProviderRoutesRejectJudicialConfigurationWhenPackDisabled(t *testing.T) {
 	t.Parallel()
 

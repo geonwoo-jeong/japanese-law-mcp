@@ -150,6 +150,204 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	}
 }
 
+func TestNewServerRegistersSearchJudicialCasesToolWhenDependencyPresent(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- NewServerWithDependencies(
+			"test-version",
+			Dependencies{SearchJudicialCases: stubSearchJudicialCasesPort{}},
+		).Run(ctx, serverTransport)
+	}()
+
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("MCP セッションを初期化できません: %v", err)
+	}
+	defer func() {
+		_ = session.Close()
+	}()
+
+	tools, err := session.ListTools(ctx, nil)
+	if err != nil {
+		t.Fatalf("ツール一覧を取得できません: %v", err)
+	}
+	if tools.Tools == nil || len(tools.Tools) != 1 {
+		t.Fatalf("ツール一覧 = %#v", tools.Tools)
+	}
+	if tools.Tools[0].Name != "search_judicial_cases" {
+		t.Fatalf("tool name = %q", tools.Tools[0].Name)
+	}
+
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("server run error = %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("server shutdown wait error = %v", ctx.Err())
+	}
+}
+
+func TestSearchJudicialCasesToolReturnsStructuredSuccessOverMCPServer(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- NewServerWithDependencies(
+			"test-version",
+			Dependencies{SearchJudicialCases: stubSearchJudicialCasesPort{}},
+		).Run(ctx, serverTransport)
+	}()
+
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("Connect() error = %v", err)
+	}
+	defer func() { _ = session.Close() }()
+
+	result, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name:      "search_judicial_cases",
+		Arguments: map[string]any{"query": "民法"},
+	})
+	if err != nil {
+		t.Fatalf("CallTool() error = %v", err)
+	}
+	if result.IsError {
+		t.Fatalf("result.IsError = true, want false: %#v", result)
+	}
+	var payload searchJudicialCasesOutput
+	if err := json.Unmarshal([]byte(result.Content[0].(*sdk.TextContent).Text), &payload); err != nil {
+		t.Fatalf("content JSON error = %v", err)
+	}
+	if payload.CoverageNotice != judicialCasesCoverageNotice {
+		t.Fatalf("coverageNotice = %q", payload.CoverageNotice)
+	}
+	if len(payload.Items) != 1 || payload.Page.ReturnedCount != 1 {
+		t.Fatalf("payload = %#v", payload)
+	}
+	if payload.Items[0].Ref.ProviderID != "courts-hanrei-html" ||
+		payload.Items[0].Ref.Key.ResourceType != "judicial-decision" ||
+		payload.Items[0].Data.DecisionID != "95570" {
+		t.Fatalf("payload = %#v", payload)
+	}
+	contentObject := map[string]any{}
+	if err := json.Unmarshal(
+		[]byte(result.Content[0].(*sdk.TextContent).Text),
+		&contentObject,
+	); err != nil {
+		t.Fatalf("content を比較用に解析できません: %v", err)
+	}
+	structuredJSON, err := json.Marshal(result.StructuredContent)
+	if err != nil {
+		t.Fatalf("structuredContent を JSON に変換できません: %v", err)
+	}
+	structuredObject := map[string]any{}
+	if err := json.Unmarshal(structuredJSON, &structuredObject); err != nil {
+		t.Fatalf("structuredContent を比較用に解析できません: %v", err)
+	}
+	if !mapsEqual(contentObject, structuredObject) {
+		t.Fatalf(
+			"content と structuredContent が一致しません: %#v != %#v",
+			contentObject,
+			structuredObject,
+		)
+	}
+
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("server run error = %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("server shutdown wait error = %v", ctx.Err())
+	}
+}
+
+func TestSearchJudicialCasesToolRejectsInvalidInputOverMCPServer(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- NewServerWithDependencies(
+			"test-version",
+			Dependencies{SearchJudicialCases: stubSearchJudicialCasesPort{}},
+		).Run(ctx, serverTransport)
+	}()
+
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("Connect() error = %v", err)
+	}
+	defer func() { _ = session.Close() }()
+
+	result, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name:      "search_judicial_cases",
+		Arguments: map[string]any{},
+	})
+	if err != nil {
+		t.Fatalf("CallTool() error = %v", err)
+	}
+	if !result.IsError {
+		t.Fatalf("result.IsError = false, want true: %#v", result)
+	}
+	var payload struct {
+		Code string `json:"code"`
+	}
+	if err := json.Unmarshal([]byte(result.Content[0].(*sdk.TextContent).Text), &payload); err != nil {
+		t.Fatalf("error JSON error = %v", err)
+	}
+	if payload.Code != "invalid_argument" {
+		t.Fatalf("payload = %#v", payload)
+	}
+	if result.StructuredContent != nil {
+		t.Fatalf("エラー結果に structuredContent があります: %#v", result.StructuredContent)
+	}
+
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("server run error = %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("server shutdown wait error = %v", ctx.Err())
+	}
+}
+
 func assertInitialCapabilities(t *testing.T, capabilities *sdk.ServerCapabilities) {
 	t.Helper()
 

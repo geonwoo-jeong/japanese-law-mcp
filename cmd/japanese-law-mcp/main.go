@@ -181,13 +181,42 @@ func newPublicDependencies(
 	if err != nil {
 		return projectmcp.Dependencies{}, err
 	}
+	var searchJudicialCases judicialdecisionsearch.Port
+	if cfg.JudicialCasesEnabled() {
+		searchJudicialCases, err = newSearchJudicialCasesService(cfg, routes)
+		if err != nil {
+			return projectmcp.Dependencies{}, err
+		}
+	}
 	return projectmcp.Dependencies{
-		SearchLaws:       searchLaws,
-		SearchLawContent: searchLawContent,
-		GetLaw:           getLaw,
-		GetArticle:       getArticle,
-		ListLawUpdates:   listLawUpdates,
+		SearchLaws:          searchLaws,
+		SearchLawContent:    searchLawContent,
+		SearchJudicialCases: searchJudicialCases,
+		GetLaw:              getLaw,
+		GetArticle:          getArticle,
+		ListLawUpdates:      listLawUpdates,
 	}, nil
+}
+
+func newSearchJudicialCasesService(
+	cfg config.Config,
+	routes application.ProviderRoutes,
+) (*judicialdecisionsearch.Service, error) {
+	searcher, exists := routes.JudicialDecisionSearch()
+	if !exists {
+		return nil, errors.New("primary judicial-decision.search binding がありません")
+	}
+	service, err := judicialdecisionsearch.NewService(
+		searcher,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"公開 search_judicial_cases service を初期化できません: %w",
+			err,
+		)
+	}
+	return service, nil
 }
 
 func newGetLawService(
