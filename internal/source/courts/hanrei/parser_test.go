@@ -124,6 +124,180 @@ func TestSearchHTMLContractErrors(t *testing.T) {
 	}
 }
 
+func TestParseSearchResponseClassifiesOfficialTooBroadQuery(t *testing.T) {
+	t.Parallel()
+
+	marker := `<ul class="errorMessage"><li><span>` +
+		`検索結果が2000件を超えました。「全文検索」欄の検索語を追加・変更してください。` +
+		`<br>（※上のタブを切り替えることで裁判所や事件の種類を絞り込んだ検索を行うこともできます。）` +
+		`</span></li></ul>`
+	page := func(content string) []byte {
+		return []byte(`<html><head><title>裁判例検索</title></head><body>` +
+			content +
+			`</body></html>`)
+	}
+	validResult := `<p>1件中</p><table class="search-result-table"><tbody><tr>` +
+		`<th><a href="./../1/detail2/index.html">最高裁判例</a></th>` +
+		`<td><p>令和1(オ)1` + "\n" + `事件名</p>` +
+		`<p>令和元年5月1日` + "\n" + `最高裁判所</p></td>` +
+		`<td class="file-col"></td></tr></tbody></table>`
+	cases := []struct {
+		name string
+		body []byte
+		code model.SourceErrorCode
+	}{
+		{
+			name: "visible official marker",
+			body: page(marker),
+			code: model.SourceErrorCodeUnsupportedQuery,
+		},
+		{
+			name: "duplicate marker",
+			body: page(marker + marker),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "other error message conflict",
+			body: page(
+				marker +
+					`<ul class="errorMessage"><li>別のエラーです。</li></ul>`,
+			),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "empty result conflict",
+			body: page(
+				marker +
+					`<p id="searched">該当する裁判例がありませんでした。</p>`,
+			),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "result table conflict",
+			body: page(
+				marker +
+					`<table class="search-result-table"><tbody></tbody></table>`,
+			),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "hidden marker",
+			body: page(`<div hidden>` + marker + `</div>`),
+			code: model.SourceErrorCodeSourceContractChanged,
+		},
+		{
+			name: "inline style marker",
+			body: page(`<div style="display: none">` + marker + `</div>`),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "inline style marker descendant",
+			body: page(
+				`<ul class="errorMessage">` +
+					`<li style="display: none">` +
+					tooBroadSearchMessagePrefix +
+					`</li><li>別のエラーです。</li></ul>`,
+			),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "closed details marker",
+			body: page(`<details>` + marker + `</details>`),
+			code: model.SourceErrorCodeSourceContractChanged,
+		},
+		{
+			name: "closed details first summary marker",
+			body: page(`<details><summary>` + marker + `</summary></details>`),
+			code: model.SourceErrorCodeUnsupportedQuery,
+		},
+		{
+			name: "closed details second summary marker",
+			body: page(
+				`<details><summary>概要</summary><summary>` +
+					marker +
+					`</summary></details>`,
+			),
+			code: model.SourceErrorCodeSourceContractChanged,
+		},
+		{
+			name: "closed details hidden descendant text",
+			body: page(
+				`<ul class="errorMessage"><li><details><summary></summary>` +
+					`<span>` + tooBroadSearchMessagePrefix + `</span>` +
+					`</details></li></ul>`,
+			),
+			code: model.SourceErrorCodeSourceContractChanged,
+		},
+		{
+			name: "closed dialog marker",
+			body: page(`<dialog>` + marker + `</dialog>`),
+			code: model.SourceErrorCodeSourceContractChanged,
+		},
+		{
+			name: "open details marker",
+			body: page(`<details open>` + marker + `</details>`),
+			code: model.SourceErrorCodeUnsupportedQuery,
+		},
+		{
+			name: "open dialog marker",
+			body: page(`<dialog open>` + marker + `</dialog>`),
+			code: model.SourceErrorCodeUnsupportedQuery,
+		},
+		{
+			name: "unknown error and empty result conflict",
+			body: page(
+				`<ul class="errorMessage"><li>別のエラーです。</li></ul>` +
+					`<p id="searched">該当する裁判例がありませんでした。</p>`,
+			),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "unknown error and result table conflict",
+			body: page(
+				`<ul class="errorMessage"><li>別のエラーです。</li></ul>` +
+					validResult,
+			),
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "unrecognized message",
+			body: page(
+				`<ul class="errorMessage"><li>別のエラーです。</li></ul>`,
+			),
+			code: model.SourceErrorCodeSourceContractChanged,
+		},
+	}
+	for _, testCase := range cases {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := parseSearchResponse(context.Background(), testCase.body)
+			assertSourceError(t, err, testCase.code)
+		})
+	}
+}
+
+func TestParseSearchResponseIgnoresClosedDetailsContent(t *testing.T) {
+	t.Parallel()
+
+	body := []byte(`<html><head><title>裁判例検索</title></head><body>` +
+		`<p>1件中</p><table class="search-result-table"><tbody><tr>` +
+		`<th><a href="./../1/detail2/index.html">最高裁判例</a>` +
+		`<details><summary>補足</summary>` +
+		`<a href="./../2/detail3/index.html">非表示リンク</a></details></th>` +
+		`<td><p>令和1(オ)1` + "\n" + `事件名</p>` +
+		`<p>令和元年5月1日` + "\n" + `最高裁判所</p></td>` +
+		`<td class="file-col"></td></tr></tbody></table></body></html>`)
+	response, err := parseSearchResponse(context.Background(), body)
+	if err != nil {
+		t.Fatalf("SOT-IF-044: 閉じた details の非表示内容で失敗した: %v", err)
+	}
+	if len(response.rows) != 1 ||
+		response.rows[0].detailHref != "./../1/detail2/index.html" {
+		t.Fatalf("SOT-IF-044: 表示された結果行 = %#v", response.rows)
+	}
+}
+
 func TestParseSearchResponseRejectsUnsafeAndOversizedInput(t *testing.T) {
 	t.Parallel()
 	cases := []struct {

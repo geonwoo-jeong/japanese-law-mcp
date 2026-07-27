@@ -24,11 +24,12 @@ https://www.courts.go.jp/hanrei/search1/index.html?query1={query}
 - 結果がある場合は `table.search-result-table` の行を使用する
 - 各結果行は、`th` 内の `/hanrei/{id}/detail{2..8}/index.html` への一つの公式詳細リンクと、情報を持つ `td` を持つ
 - 空結果は、`p#searched` に `該当する裁判例がありませんでした。` の表示が一つあり、契約を満たす結果行がない状態とする。この場合の総件数は 0 とする
+- 取得結果が 2000 件を超える場合は、表示されている一つの `ul.errorMessage` が `検索結果が2000件を超えました。「全文検索」欄の検索語を追加・変更してください。` で始まり、契約を満たす結果行と空結果表示がない状態とする。この場合は、公式情報源が検索語の絞り込みを求めた `unsupported_query` とする
 - 空結果でない総件数は、`{total}件中` の ASCII または全角数字を一つだけ解釈する
 
-同じ行に複数の異なる詳細 path がある、詳細 path を識別できない、必須の事件番号、裁判年月日若しくは裁判所名がない、または件数表示と行が矛盾する場合は `invalid_source_response` とする。識別子そのものがない場合は `source_contract_changed` とする。
+同じ行に複数の異なる詳細 path がある、詳細 path を識別できない、必須の事件番号、裁判年月日若しくは裁判所名がない、件数表示と行が矛盾する、2000 件超過表示が複数ある、または表示されている `ul.errorMessage` が結果行若しくは空結果表示と併存する場合は `invalid_source_response` とする。識別子そのものがない場合は `source_contract_changed` とする。
 
-script を実行せず、CSS、非表示の選択肢、modal、analytics、画像および外部 resource を取得しない。
+script を実行せず、CSS、非表示の選択肢、modal、analytics、画像および外部 resource を取得しない。閉じた `details` は最初の `summary` の子孫だけを表示対象とする。`ul.errorMessage`、その祖先または表示対象の子孫に inline `style` が一つでもある場合は、その内容にかかわらず CSS を実行しない条件では表示状態を確定できないものとして `invalid_source_response` とする。
 
 ## 資源参照
 
@@ -94,7 +95,7 @@ DOM 順を変更せず、先頭から `limit` 件まで返す。`SourcePage.retu
 
 ## 確認
 
-六カテゴリー、知財高裁表示、空結果、上限切詰め、総件数、欠落可能項目、複数 PDF、相対 URL、和暦境界、重複または矛盾した詳細 URL、DOM 深さ・node 数および script 非実行を fixture で確認する。
+六カテゴリー、知財高裁表示、空結果、2000 件超過表示、上限切詰め、総件数、欠落可能項目、複数 PDF、相対 URL、和暦境界、重複または矛盾した詳細 URL、DOM 深さ・node 数および script 非実行を fixture で確認する。
 
 ## 関連
 

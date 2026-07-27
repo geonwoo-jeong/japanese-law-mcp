@@ -153,26 +153,27 @@ func decodeSearchDocument(
 	if err != nil {
 		return searchResponse{}, err
 	}
+	tooBroadMarkers, visibleErrorMessages, err := collectSearchErrorMarkers(
+		ctx,
+		document,
+	)
+	if err != nil {
+		return searchResponse{}, err
+	}
 	if len(tables) == 0 {
-		return decodeEmptySearchResponse(emptyMarkers)
+		return decodeSearchResponseWithoutTable(
+			emptyMarkers,
+			tooBroadMarkers,
+			visibleErrorMessages,
+		)
 	}
 	if len(tables) != 1 {
 		return searchResponse{}, invalidSearchResponseError()
 	}
-	return decodePopulatedSearchResponse(ctx, tables[0], emptyMarkers)
-}
-
-func decodeEmptySearchResponse(markerCount int) (searchResponse, error) {
-	if markerCount == 1 {
-		return searchResponse{rows: []searchResultRow{}}, nil
-	}
-	if markerCount > 1 {
+	if visibleErrorMessages != 0 {
 		return searchResponse{}, invalidSearchResponseError()
 	}
-	return searchResponse{}, newSearchSourceError(
-		model.SourceErrorCodeSourceContractChanged,
-		"",
-	)
+	return decodePopulatedSearchResponse(ctx, tables[0], emptyMarkers)
 }
 
 func decodePopulatedSearchResponse(
@@ -496,33 +497,6 @@ func hasSearchPageTitle(ctx context.Context, root *html.Node) bool {
 		strings.Contains(normalizeDisplayText(text), "裁判例検索")
 }
 
-func collectEmptySearchMarkers(
-	ctx context.Context,
-	root *html.Node,
-) (int, error) {
-	candidates, err := collectElements(ctx, root, func(node *html.Node) bool {
-		id, exists := singleAttribute(node, "id")
-		return node.Data == "p" &&
-			exists &&
-			id == "searched" &&
-			!hasIgnoredAncestor(node)
-	})
-	if err != nil {
-		return 0, err
-	}
-	markerCount := 0
-	for _, candidate := range candidates {
-		text, textErr := nodeText(ctx, candidate)
-		if textErr != nil {
-			return 0, textErr
-		}
-		if normalizeDisplayText(text) == emptySearchMessage {
-			markerCount++
-		}
-	}
-	return markerCount, nil
-}
-
 func collectElements(
 	ctx context.Context,
 	root *html.Node,
@@ -586,36 +560,6 @@ func directSearchRows(
 	return rows, nil
 }
 
-func descendantElements(
-	ctx context.Context,
-	root *html.Node,
-	name string,
-) ([]*html.Node, error) {
-	found := make([]*html.Node, 0)
-	pending := make([]*html.Node, 0)
-	for child := root.LastChild; child != nil; child = child.PrevSibling {
-		pending = append(pending, child)
-	}
-	for len(pending) > 0 {
-		if err := searchHTMLContextError(ctx); err != nil {
-			return nil, err
-		}
-		last := len(pending) - 1
-		node := pending[last]
-		pending = pending[:last]
-		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
-			continue
-		}
-		if node.Type == html.ElementNode && node.Data == name {
-			found = append(found, node)
-		}
-		for child := node.LastChild; child != nil; child = child.PrevSibling {
-			pending = append(pending, child)
-		}
-	}
-	return found, nil
-}
-
 func displayLines(ctx context.Context, node *html.Node) ([]string, error) {
 	value, err := nodeTextWithBreaks(ctx, node)
 	if err != nil {
@@ -636,58 +580,6 @@ func displayLines(ctx context.Context, node *html.Node) ([]string, error) {
 		end--
 	}
 	return append([]string(nil), lines[start:end]...), nil
-}
-
-func nodeTextWithBreaks(ctx context.Context, root *html.Node) (string, error) {
-	var builder strings.Builder
-	var visit func(*html.Node) error
-	visit = func(node *html.Node) error {
-		if err := searchHTMLContextError(ctx); err != nil {
-			return err
-		}
-		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
-			return nil
-		}
-		if node.Type == html.TextNode {
-			builder.WriteString(node.Data)
-		}
-		if node.Type == html.ElementNode && node.Data == "br" {
-			builder.WriteByte('\n')
-		}
-		for child := node.FirstChild; child != nil; child = child.NextSibling {
-			if err := visit(child); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	if err := visit(root); err != nil {
-		return "", err
-	}
-	return builder.String(), nil
-}
-
-func nodeText(ctx context.Context, root *html.Node) (string, error) {
-	var builder strings.Builder
-	pending := []*html.Node{root}
-	for len(pending) > 0 {
-		if err := searchHTMLContextError(ctx); err != nil {
-			return "", err
-		}
-		last := len(pending) - 1
-		node := pending[last]
-		pending = pending[:last]
-		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
-			continue
-		}
-		if node.Type == html.TextNode {
-			builder.WriteString(node.Data)
-		}
-		for child := node.LastChild; child != nil; child = child.PrevSibling {
-			pending = append(pending, child)
-		}
-	}
-	return builder.String(), nil
 }
 
 func normalizeDisplayText(value string) string {
@@ -761,36 +653,6 @@ func isSearchResultTable(node *html.Node) bool {
 	return node.Data == "table" &&
 		hasClass(node, "search-result-table") &&
 		!hasIgnoredAncestor(node)
-}
-
-func hasIgnoredAncestor(node *html.Node) bool {
-	for current := node; current != nil; current = current.Parent {
-		if current.Type == html.ElementNode && isIgnoredSearchElement(current) {
-			return true
-		}
-	}
-	return false
-}
-
-func isIgnoredSearchElement(node *html.Node) bool {
-	if node == nil || node.Type != html.ElementNode {
-		return false
-	}
-	if _, hidden := singleAttribute(node, "hidden"); hidden {
-		return true
-	}
-	ariaHidden, _ := singleAttribute(node, "aria-hidden")
-	if strings.EqualFold(strings.TrimSpace(ariaHidden), "true") ||
-		hasClass(node, "modal") ||
-		hasClass(node, "d-none") {
-		return true
-	}
-	switch node.Data {
-	case "script", "style", "template":
-		return true
-	default:
-		return false
-	}
 }
 
 func searchRowLocation(row *html.Node) string {

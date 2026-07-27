@@ -34,7 +34,7 @@
 
 `source_busy` は `SOT-ENG-016` の `providerId + concurrencyGroup` を単位として、外部呼出しまたは解析を開始する前に返し、完了済み呼出しの履歴を保持して判定しない。公開する `operation` は拒否された現在の operation とし、内部の group 名は公開 detail に追加しない。`source_processing_limit` は同じ取得済み内容を自動再試行しない。
 
-`unsupported_query` は、共通 capability の入力検証を通過した値にだけ使用する。プロバイダー SOT が定義する期間、地域、文書種別、表現または公式機能の対象外であることを外部呼出し前に判定し、空結果、`not_found` または `invalid_argument` に読み替えない。
+`unsupported_query` は、共通 capability の入力検証を通過した値にだけ使用する。プロバイダー SOT が定義する期間、地域、文書種別、表現または公式機能の固定された対象外条件は、外部呼出し前に判定する。結果件数その他の外部応答を受け取らなければ判定できない公式制約は、プロバイダー SOT が契約識別子と利用者が変更できる条件を定義し、外部情報源がその制約への該当を明示した場合だけ `unsupported_query` とする。空結果、`not_found`、`invalid_argument` または識別できない構造を `unsupported_query` に読み替えない。
 
 MCP ツールへ公開するコードとの対応は、対応するツールまたはエラー契約の SOT が定義する。未定義の情報源エラーを既存コードへ黙って縮約しない。
 
