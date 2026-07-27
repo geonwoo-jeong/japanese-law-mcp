@@ -13,3 +13,4 @@
 - [11-local-distributions.md](11-local-distributions.md)
 - [12-local-execution-paths.md](12-local-execution-paths.md)
 - [13-local-streamable-http.md](13-local-streamable-http.md)
+- [14-release-please-automation.md](14-release-please-automation.md)

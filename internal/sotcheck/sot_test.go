@@ -84,7 +84,7 @@ func TestMarkdownLinksExist(t *testing.T) {
 	t.Parallel()
 
 	root := repositoryRoot(t)
-	for _, base := range []string{"AGENTS.md", "docs", "sot", "wiki"} {
+	for _, base := range []string{"README.md", "AGENTS.md", "docs", "sot", "wiki"} {
 		path := filepath.Join(root, base)
 		walkMarkdown(t, path, func(markdownPath string) {
 			validateLinks(t, markdownPath)

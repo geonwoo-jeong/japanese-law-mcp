@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/v17.6.0/schemas/config.json",
+  "always-update": true,
+  "group-pull-request-title-pattern": "chore: ${version} をリリースする",
+  "packages": {
+    ".": {
+      "release-type": "go",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "draft": true,
+      "force-tag-creation": true,
+      "changelog-path": "CHANGELOG.md",
+      "pull-request-title-pattern": "chore${scope}: ${version} をリリースする",
+      "pull-request-header": "この Pull Request は Release Please が Conventional Commits に基づいて更新しています。merge すると、対応する tag と draft release を作成し、同じ workflow で公式配布物を検証します。",
+      "pull-request-footer": "配布物は品質ゲートと四つの対象環境の smoke test がすべて成功した場合だけ公開されます。",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "機能",
+          "hidden": false
+        },
+        {
+          "type": "fix",
+          "section": "修正",
+          "hidden": false
+        },
+        {
+          "type": "perf",
+          "section": "性能",
+          "hidden": false
+        },
+        {
+          "type": "refactor",
+          "section": "内部改善",
+          "hidden": false
+        },
+        {
+          "type": "docs",
+          "section": "文書",
+          "hidden": false
+        },
+        {
+          "type": "revert",
+          "section": "取り消し",
+          "hidden": false
+        },
+        {
+          "type": "build",
+          "section": "ビルド",
+          "hidden": true
+        },
+        {
+          "type": "ci",
+          "section": "CI",
+          "hidden": true
+        },
+        {
+          "type": "chore",
+          "section": "保守",
+          "hidden": true
+        },
+        {
+          "type": "test",
+          "section": "テスト",
+          "hidden": true
+        }
+      ],
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "release-notes/CURRENT.md"
+        }
+      ]
+    }
+  }
+}

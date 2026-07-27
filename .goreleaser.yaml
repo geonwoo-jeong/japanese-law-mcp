@@ -45,7 +45,10 @@ source:
 
 release:
   draft: true
-  replace_existing_draft: true
+  replace_existing_draft: false
+  use_existing_draft: true
+  replace_existing_artifacts: true
+  mode: keep-existing
   target_commitish: "{{ .FullCommit }}"
   prerelease: auto
   include_meta: true

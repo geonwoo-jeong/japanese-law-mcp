@@ -2,8 +2,8 @@ name: 公式リリース
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,14 +13,156 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  release-please:
+    name: Release PR と draft release を管理する
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_ready: ${{ steps.resolve.outputs.release_ready }}
+      tag_name: ${{ steps.resolve.outputs.tag_name }}
+      version: ${{ steps.resolve.outputs.version }}
+      sha: ${{ steps.resolve.outputs.sha }}
+      upload_url: ${{ steps.resolve.outputs.upload_url }}
+
+    steps:
+      - name: Release Please を実行する
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: main
+
+      - name: main の対象 commit を取得する
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 新規または再開可能な draft release を特定する
+        id: resolve
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTION_RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          ACTION_SHA: ${{ steps.release.outputs.sha }}
+          ACTION_TAG: ${{ steps.release.outputs.tag_name }}
+          ACTION_UPLOAD_URL: ${{ steps.release.outputs.upload_url }}
+          ACTION_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          mark_not_ready() {
+            printf 'release_ready=false\n' >> "$GITHUB_OUTPUT"
+          }
+
+          fail_or_skip() {
+            local message="$1"
+            if [[ "$ACTION_RELEASE_CREATED" == "true" ]]; then
+              echo "$message" >&2
+              exit 1
+            fi
+            mark_not_ready
+            exit 0
+          }
+
+          version="$(
+            jq -er \
+              '.["."] |
+                select(
+                  test(
+                    "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)" +
+                    "(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+                  )
+                )' \
+              .release-please-manifest.json
+          )"
+          tag="v${version}"
+          release_state="${RUNNER_TEMP}/release-state.json"
+          status="$(
+            curl --silent --show-error --location \
+              --output "$release_state" \
+              --write-out '%{http_code}' \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/tags/${tag}"
+          )"
+          if [[ "$status" == "404" ]]; then
+            fail_or_skip "Release Please が作成した draft release を確認できません。"
+          fi
+          if [[ "$status" != "200" ]]; then
+            echo "draft release の取得に失敗しました: HTTP ${status}" >&2
+            exit 1
+          fi
+          if ! jq -e \
+            --arg tag "$tag" \
+            '.draft == true and
+              .tag_name == $tag and
+              (.upload_url | type == "string" and length > 0)' \
+            "$release_state" >/dev/null; then
+            fail_or_skip "現在の commit に再開可能な draft release はありません。"
+          fi
+          upload_url="$(jq -er '.upload_url' "$release_state")"
+
+          tag_ref="${RUNNER_TEMP}/tag-ref.json"
+          gh api \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" \
+            > "$tag_ref"
+          remote_tag_type="$(jq -r '.object.type' "$tag_ref")"
+          remote_tag_commit="$(jq -r '.object.sha' "$tag_ref")"
+          if [[ "$remote_tag_type" == "tag" ]]; then
+            remote_tag_commit="$(
+              gh api \
+                --header "Accept: application/vnd.github+json" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                "repos/${GITHUB_REPOSITORY}/git/tags/${remote_tag_commit}" \
+                --jq '.object.sha'
+            )"
+          elif [[ "$remote_tag_type" != "commit" ]]; then
+            fail_or_skip "Release Please の tag が commit を指していません。"
+          fi
+          if [[ "$remote_tag_commit" != "$GITHUB_SHA" ]]; then
+            fail_or_skip "draft release の tag は現在の main commit を指していません。"
+          fi
+
+          if [[ "$ACTION_RELEASE_CREATED" == "true" ]] &&
+            [[ "$ACTION_SHA" != "$GITHUB_SHA" ||
+              "$ACTION_TAG" != "$tag" ||
+              "$ACTION_VERSION" != "$version" ||
+              "$ACTION_UPLOAD_URL" != "$upload_url" ]]; then
+            echo "Release Please の出力と GitHub 上の release が一致しません。" >&2
+            exit 1
+          fi
+
+          {
+            printf 'release_ready=true\n'
+            printf 'sha=%s\n' "$GITHUB_SHA"
+            printf 'tag_name=%s\n' "$tag"
+            printf 'upload_url=%s\n' "$upload_url"
+            printf 'version=%s\n' "$version"
+          } >> "$GITHUB_OUTPUT"
+
   package:
-    name: 配布物を検証して draft を作成する
+    name: 配布物を作成して検証する
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_ready == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
       contents: write
     outputs:
-      version: ${{ steps.release-version.outputs.version }}
+      tag: ${{ needs.release-please.outputs.tag_name }}
+      version: ${{ needs.release-please.outputs.version }}
+      sha: ${{ needs.release-please.outputs.sha }}
+      upload-url: ${{ needs.release-please.outputs.upload_url }}
     env:
       GOENV: "off"
       GOFLAGS: "-mod=readonly"
@@ -32,11 +174,16 @@ jobs:
       GOTOOLCHAIN: "local"
       GOVCS: "public:git,private:off"
       GOWORK: "off"
+      RELEASE_SHA: ${{ needs.release-please.outputs.sha }}
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+      RELEASE_UPLOAD_URL: ${{ needs.release-please.outputs.upload_url }}
+      RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
 
     steps:
-      - name: リポジトリを取得する
+      - name: リリース対象を取得する
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.release-please.outputs.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -51,22 +198,29 @@ jobs:
             tools/go.sum
             tools/gitleaks/go.sum
 
-      - name: リリース版を確定する
-        id: release-version
+      - name: tag と生成元を照合する
         shell: bash
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
-          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          head_commit="$(git rev-parse 'HEAD^{commit}')"
+          tag_commit="$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          if [[ "$head_commit" != "$RELEASE_SHA" || "$tag_commit" != "$RELEASE_SHA" ]]; then
+            echo "Release Please の tag、commit および checkout が一致しません。" >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_TAG" != "v${RELEASE_VERSION}" ]]; then
+            echo "Release Please の tag と版が一致しません。" >&2
+            exit 1
+          fi
 
-      - name: リリース情報を検証する
+      - name: リリース契約を検証する
         run: >-
           go run ./cmd/release-check
-          --release-notes="release-notes/${GITHUB_REF_NAME}.md"
-          --tag="${GITHUB_REF_NAME}"
+          --release-notes="release-notes/CURRENT.md"
+          --tag="${RELEASE_TAG}"
           --repository=.
 
-      - name: 公開済みリリースの上書きを防ぐ
+      - name: draft release を照合する
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,50 +234,48 @@ jobs:
               --header "Accept: application/vnd.github+json" \
               --header "Authorization: Bearer ${GH_TOKEN}" \
               --header "X-GitHub-Api-Version: 2022-11-28" \
-              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/tags/${GITHUB_REF_NAME}"
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}"
           )"
-          case "$status" in
-            404)
-              ;;
-            200)
-              if ! jq -e '.draft == true' "$response_file" >/dev/null; then
-                echo "公開済みの同一 tag は上書きできません: ${GITHUB_REF_NAME}" >&2
-                exit 1
-              fi
-              ;;
-            *)
-              echo "release の状態を確認できませんでした: HTTP ${status}" >&2
-              exit 1
-              ;;
-          esac
+          if [[ "$status" != "200" ]] ||
+            ! jq -e \
+              --arg tag "$RELEASE_TAG" \
+              --arg upload_url "${RELEASE_UPLOAD_URL}" \
+              '.draft == true and
+                .tag_name == $tag and
+                .upload_url == $upload_url' \
+              "$response_file" >/dev/null; then
+            echo "検証対象の draft release を確認できません: ${RELEASE_TAG} (${RELEASE_SHA})" >&2
+            exit 1
+          fi
 
       - name: 権威ある品質ゲートを実行する
         run: go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 
-      - name: 公式配布物の draft を作成する
+      - name: 公式配布物を既存の draft release へ追加する
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
           distribution: goreleaser
           version: v2.17.0
-          args: release --clean --release-notes=release-notes/${{ github.ref_name }}.md
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 生成した配布物を検証する
         run: >-
           go run ./cmd/release-check
-          --release-notes="release-notes/${GITHUB_REF_NAME}.md"
-          --tag="${GITHUB_REF_NAME}"
+          --release-notes="release-notes/CURRENT.md"
+          --tag="${RELEASE_TAG}"
           --repository=.
           --dist=dist
-          --commit="${GITHUB_SHA}"
+          --commit="${RELEASE_SHA}"
 
       - name: smoke test 用の配布物を保存する
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: release-dist-${{ github.sha }}
+          name: release-dist-${{ needs.release-please.outputs.sha }}
           path: dist
           if-no-files-found: error
+          overwrite: true
           retention-days: 1
 
   smoke:
@@ -162,9 +314,10 @@ jobs:
       GOWORK: "off"
 
     steps:
-      - name: リポジトリを取得する
+      - name: リリース対象を取得する
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.package.outputs.sha }}
           persist-credentials: false
 
       - name: Go を設定する
@@ -178,30 +331,121 @@ jobs:
       - name: 配布物を取得する
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: release-dist-${{ github.sha }}
+          name: release-dist-${{ needs.package.outputs.sha }}
           path: dist
 
       - name: 新しい利用者環境で実行を確認する
         run: >-
           go run ./cmd/release-check
-          --release-notes="release-notes/${{ github.ref_name }}.md"
-          --tag="${{ github.ref_name }}"
+          --release-notes="release-notes/CURRENT.md"
+          --tag="${{ needs.package.outputs.tag }}"
           --repository=.
           --dist=dist
-          --commit="${{ github.sha }}"
+          --commit="${{ needs.package.outputs.sha }}"
           --target-os="${{ matrix.os }}"
           --target-arch="${{ matrix.arch }}"
 
   publish:
-    name: 検証済みの draft を公開する
-    needs: smoke
+    name: 検証済みの draft release を公開する
+    needs:
+      - package
+      - smoke
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write
+    env:
+      GOENV: "off"
+      GOFLAGS: "-mod=readonly"
+      GONOPROXY: ""
+      GONOSUMDB: ""
+      GOPRIVATE: ""
+      GOPROXY: "https://proxy.golang.org"
+      GOSUMDB: "sum.golang.org"
+      GOTOOLCHAIN: "local"
+      GOVCS: "public:git,private:off"
+      GOWORK: "off"
+      RELEASE_SHA: ${{ needs.package.outputs.sha }}
+      RELEASE_TAG: ${{ needs.package.outputs.tag }}
+      RELEASE_UPLOAD_URL: ${{ needs.package.outputs.upload-url }}
 
     steps:
-      - name: 公式リリースを公開する
+      - name: リリース対象を取得する
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.package.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Go を設定する
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.26.5"
+          check-latest: false
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: リリース情報を結合して公開する
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release edit "$GITHUB_REF_NAME" --draft=false --repo "$GITHUB_REPOSITORY"
+        run: |
+          set -euo pipefail
+          release_state="${RUNNER_TEMP}/release-state.json"
+          gh api \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" \
+            > "$release_state"
+          if ! jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg upload_url "${RELEASE_UPLOAD_URL}" \
+            '.draft == true and
+              .tag_name == $tag and
+              .upload_url == $upload_url' \
+            "$release_state" >/dev/null; then
+            echo "公開対象の draft release を確認できません: ${RELEASE_TAG} (${RELEASE_SHA})" >&2
+            exit 1
+          fi
+
+          head_commit="$(git rev-parse 'HEAD^{commit}')"
+          local_tag_commit="$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          tag_ref="${RUNNER_TEMP}/tag-ref.json"
+          gh api \
+            --header "Accept: application/vnd.github+json" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" \
+            > "$tag_ref"
+          remote_tag_type="$(jq -r '.object.type' "$tag_ref")"
+          remote_tag_commit="$(jq -r '.object.sha' "$tag_ref")"
+          if [[ "$remote_tag_type" == "tag" ]]; then
+            remote_tag_commit="$(
+              gh api \
+                --header "Accept: application/vnd.github+json" \
+                --header "X-GitHub-Api-Version: 2022-11-28" \
+                "repos/${GITHUB_REPOSITORY}/git/tags/${remote_tag_commit}" \
+                --jq '.object.sha'
+            )"
+          elif [[ "$remote_tag_type" != "commit" ]]; then
+            echo "release tag が commit を指していません: ${RELEASE_TAG}" >&2
+            exit 1
+          fi
+          if [[ "$head_commit" != "$RELEASE_SHA" ||
+            "$local_tag_commit" != "$RELEASE_SHA" ||
+            "$remote_tag_commit" != "$RELEASE_SHA" ]]; then
+            echo "公開直前の tag、commit および checkout が一致しません。" >&2
+            exit 1
+          fi
+
+          release_notes="${RUNNER_TEMP}/release-notes.md"
+          go run ./cmd/release-notes \
+            --changelog=CHANGELOG.md \
+            --release-notes=release-notes/CURRENT.md \
+            --tag="$RELEASE_TAG" \
+            --repository=. \
+            > "$release_notes"
+
+          gh release edit "$RELEASE_TAG" \
+            --notes-file "$release_notes" \
+            --draft=false \
+            --repo "$GITHUB_REPOSITORY"

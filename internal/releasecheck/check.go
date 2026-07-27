@@ -59,7 +59,7 @@ func ValidateRequest(request Request) error {
 }
 
 // Check は、SOT-DEL-004、SOT-DEL-007、SOT-DEL-010、SOT-DEL-011、
-// SOT-DEL-012、SOT-IF-019 および SOT-ENG-020 のリリース条件を検証する。
+// SOT-DEL-012、SOT-DEL-014、SOT-IF-019 および SOT-ENG-020 のリリース条件を検証する。
 func Check(ctx context.Context, request Request) error {
 	if ctx == nil {
 		return fmt.Errorf("検証コンテキストがありません")

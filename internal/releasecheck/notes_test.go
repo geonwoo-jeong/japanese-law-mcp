@@ -11,7 +11,7 @@ func TestValidateReleaseNotes(t *testing.T) {
 	t.Parallel()
 
 	repository := writeTestSOTRepository(t)
-	valid := `# v1.2.3
+	valid := `# Japanese Law MCP v1.2.3
 
 ## 提供する SOT
 
@@ -42,6 +42,30 @@ func TestValidateReleaseNotes(t *testing.T) {
 				"- SOT-DEL-004\n\n```text\n## 偽のセクション\n```",
 				1,
 			),
+		},
+		"Release Please の版更新注釈": {
+			tag: "v1.2.3",
+			notes: strings.Replace(
+				valid,
+				"# Japanese Law MCP v1.2.3",
+				"# Japanese Law MCP v1.2.3 <!-- x-release-please-version -->",
+				1,
+			),
+		},
+		"見出しの版が tag と異なる": {
+			tag: "v1.2.3",
+			notes: strings.Replace(
+				valid,
+				"# Japanese Law MCP v1.2.3",
+				"# Japanese Law MCP v1.2.4",
+				1,
+			),
+			wantErr: "見出し",
+		},
+		"見出しが不正": {
+			tag:     "v1.2.3",
+			notes:   strings.Replace(valid, "# Japanese Law MCP v1.2.3", "# release", 1),
+			wantErr: "見出し",
 		},
 		"タグに v がない": {
 			tag:     "1.2.3",
@@ -161,7 +185,7 @@ func TestValidateReleaseNotesRejectsInactiveSOT(t *testing.T) {
 
 	repository := writeTestSOTRepository(t)
 	writeTestSOT(t, repository, "SOT-DEL-099", "草案")
-	path := writeTestFile(t, "release-notes.md", []byte(`# release
+	path := writeTestFile(t, "release-notes.md", []byte(`# Japanese Law MCP v1.2.3
 
 ## 提供する SOT
 

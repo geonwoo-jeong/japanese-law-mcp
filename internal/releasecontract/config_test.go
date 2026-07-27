@@ -1,6 +1,7 @@
 package releasecontract_test
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,11 +14,12 @@ import (
 )
 
 const (
-	checkoutAction = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
-	setupGoAction  = "actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
-	goReleaser     = "goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94"
-	uploadArtifact = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
-	downloadAction = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+	checkoutAction      = "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"
+	setupGoAction       = "actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+	goReleaser          = "goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94"
+	uploadArtifact      = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+	downloadAction      = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+	releasePleaseAction = "googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7"
 )
 
 // SOT-DEL-010/SOT-DEL-004: 公式 archive の対象、内容、版および生成元を固定する。
@@ -78,50 +80,199 @@ func TestGoReleaserContract(t *testing.T) {
 	}
 	if !config.Release.Draft ||
 		!config.Release.IncludeMeta ||
-		!config.Release.ReplaceExistingDraft ||
-		config.Release.UseExistingDraft ||
-		config.Release.ReplaceExistingArtifacts ||
-		config.Release.Mode != "" ||
+		config.Release.ReplaceExistingDraft ||
+		!config.Release.UseExistingDraft ||
+		!config.Release.ReplaceExistingArtifacts ||
+		config.Release.Mode != "keep-existing" ||
 		config.Release.TargetCommitish != "{{ .FullCommit }}" {
 		t.Fatalf("release = %#v", config.Release)
 	}
 }
 
-// SOT-DEL-004/SOT-DEL-010/SOT-ENG-020: 品質ゲート後に draft を作り、4対象を確認してから公開する。
+// SOT-DEL-014: Release Please が更新する版、変更履歴およびリリース契約を固定する。
+func TestReleasePleaseConfigurationContract(t *testing.T) {
+	t.Parallel()
+
+	var manifest map[string]string
+	readJSON(t, ".release-please-manifest.json", &manifest)
+	if !reflect.DeepEqual(manifest, map[string]string{".": "0.0.0"}) {
+		t.Fatalf("release manifest = %#v", manifest)
+	}
+
+	var config releasePleaseConfig
+	readJSON(t, "release-please-config.json", &config)
+	if config.Schema !=
+		"https://raw.githubusercontent.com/googleapis/release-please/v17.6.0/schemas/config.json" {
+		t.Fatalf("release-please schema = %q", config.Schema)
+	}
+	if !config.AlwaysUpdate ||
+		config.GroupPullRequestTitlePattern != "chore: ${version} をリリースする" {
+		t.Fatalf("release-please root config = %#v", config)
+	}
+
+	root, exists := config.Packages["."]
+	if !exists || len(config.Packages) != 1 {
+		t.Fatalf("release-please packages = %#v", config.Packages)
+	}
+	if root.ReleaseType != "go" ||
+		root.IncludeComponentInTag ||
+		!root.IncludeVInTag ||
+		!root.Draft ||
+		!root.ForceTagCreation ||
+		root.ChangelogPath != "CHANGELOG.md" ||
+		root.PullRequestTitlePattern != "chore${scope}: ${version} をリリースする" {
+		t.Fatalf("release-please root package = %#v", root)
+	}
+	if strings.TrimSpace(root.PullRequestHeader) == "" ||
+		strings.TrimSpace(root.PullRequestFooter) == "" {
+		t.Fatalf("Release PR の日本語説明がありません: %#v", root)
+	}
+	if len(root.ExtraFiles) != 1 ||
+		root.ExtraFiles[0].Type != "generic" ||
+		root.ExtraFiles[0].Path != "release-notes/CURRENT.md" {
+		t.Fatalf("release-please extra-files = %#v", root.ExtraFiles)
+	}
+
+	gotSections := make([]string, 0, len(root.ChangelogSections))
+	for _, section := range root.ChangelogSections {
+		if !section.Hidden {
+			gotSections = append(gotSections, section.Type+"|"+section.Section)
+		}
+	}
+	assertStringSet(
+		t,
+		"公開する変更履歴セクション",
+		gotSections,
+		[]string{
+			"docs|文書",
+			"feat|機能",
+			"fix|修正",
+			"perf|性能",
+			"refactor|内部改善",
+			"revert|取り消し",
+		},
+	)
+
+	current, err := os.ReadFile(filepath.Join(repositoryRoot(t), "release-notes", "CURRENT.md"))
+	if err != nil {
+		t.Fatalf("現在のリリース契約を読み込めません: %v", err)
+	}
+	if !strings.Contains(
+		string(current),
+		"# Japanese Law MCP v0.0.0 <!-- x-release-please-version -->",
+	) {
+		t.Fatalf("現在のリリース契約に版更新注釈がありません: %s", current)
+	}
+}
+
+// SOT-DEL-004/SOT-DEL-010/SOT-DEL-014/SOT-ENG-020:
+// Release PR の merge 後だけ配布物を作り、4対象を確認してから公開する。
 func TestReleaseWorkflowContract(t *testing.T) {
 	t.Parallel()
 
 	var workflow releaseWorkflow
 	readYAML(t, ".github/workflows/release.yml", &workflow)
 
-	if !reflect.DeepEqual(workflow.On.Push.Tags, []string{"v*"}) {
-		t.Fatalf("release tag = %#v", workflow.On.Push.Tags)
+	if !reflect.DeepEqual(workflow.On.Push.Branches, []string{"main"}) ||
+		len(workflow.On.Push.Tags) != 0 {
+		t.Fatalf("release push 条件 = %#v", workflow.On.Push)
 	}
 	if workflow.Permissions["contents"] != "read" {
 		t.Fatalf("workflow permissions = %#v", workflow.Permissions)
 	}
-	for _, name := range []string{"package", "smoke", "publish"} {
+	for _, name := range []string{"release-please", "package", "smoke", "publish"} {
 		if _, ok := workflow.Jobs[name]; !ok {
 			t.Fatalf("job %q がありません", name)
 		}
 	}
-	if len(workflow.Jobs) != 3 {
-		t.Fatalf("job 数 = %d, want 3", len(workflow.Jobs))
+	if len(workflow.Jobs) != 4 {
+		t.Fatalf("job 数 = %d, want 4", len(workflow.Jobs))
 	}
 
+	assertReleasePleaseJob(t, workflow.Jobs["release-please"])
 	assertPackageJob(t, workflow.Jobs["package"])
 	assertSmokeJob(t, workflow.Jobs["smoke"])
 	assertPublishJob(t, workflow.Jobs["publish"])
 }
 
+func assertReleasePleaseJob(t *testing.T, job workflowJob) {
+	t.Helper()
+
+	if job.Permissions["contents"] != "write" ||
+		job.Permissions["issues"] != "write" ||
+		job.Permissions["pull-requests"] != "write" {
+		t.Fatalf("release-please permissions = %#v", job.Permissions)
+	}
+	step := requireActionStep(t, job.Steps, releasePleaseAction)
+	if step.ID != "release" ||
+		step.With["config-file"] != "release-please-config.json" ||
+		step.With["manifest-file"] != ".release-please-manifest.json" ||
+		step.With["target-branch"] != "main" {
+		t.Fatalf("release-please action = %#v", step)
+	}
+	for name, want := range map[string]string{
+		"release_ready": "${{ steps.resolve.outputs.release_ready }}",
+		"sha":           "${{ steps.resolve.outputs.sha }}",
+		"tag_name":      "${{ steps.resolve.outputs.tag_name }}",
+		"upload_url":    "${{ steps.resolve.outputs.upload_url }}",
+		"version":       "${{ steps.resolve.outputs.version }}",
+	} {
+		if job.Outputs[name] != want {
+			t.Fatalf("release-please output %q = %q, want %q", name, job.Outputs[name], want)
+		}
+	}
+
+	checkout := requireActionStep(t, job.Steps, checkoutAction)
+	if checkout.With["ref"] != "${{ github.sha }}" ||
+		checkout.With["fetch-depth"] != 0 ||
+		checkout.With["persist-credentials"] != false {
+		t.Fatalf("release-please checkout inputs = %#v", checkout.With)
+	}
+
+	resolveIndex := requireRunStep(t, job.Steps, "release_ready=")
+	resolve := job.Steps[resolveIndex]
+	if resolve.ID != "resolve" ||
+		resolve.Env["GH_TOKEN"] != "${{ secrets.GITHUB_TOKEN }}" ||
+		resolve.Env["ACTION_RELEASE_CREATED"] != "${{ steps.release.outputs.release_created }}" {
+		t.Fatalf("release の再開判定 step = %#v", resolve)
+	}
+	for _, fragment := range []string{
+		".release-please-manifest.json",
+		"$GITHUB_SHA",
+		"releases/tags/",
+		"/git/ref/tags/",
+		".draft == true",
+		".upload_url",
+		"ACTION_RELEASE_CREATED",
+		"GITHUB_OUTPUT",
+	} {
+		if !strings.Contains(resolve.Run, fragment) {
+			t.Fatalf("release の再開判定に %q がありません: %s", fragment, resolve.Run)
+		}
+	}
+}
+
 func assertPackageJob(t *testing.T, job workflowJob) {
 	t.Helper()
 
-	if job.Permissions["contents"] != "write" {
-		t.Fatalf("package permissions = %#v", job.Permissions)
+	if job.Permissions["contents"] != "write" ||
+		!needsInclude(job.Needs, "release-please") ||
+		!strings.Contains(job.If, "release_ready == 'true'") {
+		t.Fatalf(
+			"package 境界 = needs %#v, if %q, permissions %#v",
+			job.Needs,
+			job.If,
+			job.Permissions,
+		)
+	}
+	if job.Outputs["upload-url"] != "${{ needs.release-please.outputs.upload_url }}" ||
+		job.Env["RELEASE_UPLOAD_URL"] != "${{ needs.release-please.outputs.upload_url }}" {
+		t.Fatalf("package の release 識別子 = outputs %#v, env %#v", job.Outputs, job.Env)
 	}
 	checkout := requireActionStep(t, job.Steps, checkoutAction)
-	if checkout.With["fetch-depth"] != 0 || checkout.With["persist-credentials"] != false {
+	if checkout.With["fetch-depth"] != 0 ||
+		checkout.With["persist-credentials"] != false ||
+		checkout.With["ref"] != "${{ needs.release-please.outputs.sha }}" {
 		t.Fatalf("checkout inputs = %#v", checkout.With)
 	}
 	setup := requireActionStep(t, job.Steps, setupGoAction)
@@ -131,23 +282,30 @@ func assertPackageJob(t *testing.T, job workflowJob) {
 	releaser := requireActionStep(t, job.Steps, goReleaser)
 	if releaser.With["distribution"] != "goreleaser" ||
 		releaser.With["version"] != "v2.17.0" ||
-		!strings.Contains(asString(releaser.With["args"]), "--release-notes=") {
+		asString(releaser.With["args"]) != "release --clean" {
 		t.Fatalf("GoReleaser inputs = %#v", releaser.With)
 	}
-	requireActionStep(t, job.Steps, uploadArtifact)
+	upload := requireActionStep(t, job.Steps, uploadArtifact)
+	if upload.With["name"] != "release-dist-${{ needs.release-please.outputs.sha }}" ||
+		upload.With["overwrite"] != true {
+		t.Fatalf("smoke test 用 artifact = %#v", upload.With)
+	}
 
 	qualityIndex := requireRunStep(t, job.Steps, "go run ./cmd/quality-gate")
 	releaseIndex := indexActionStep(job.Steps, goReleaser)
 	artifactCheckIndex := requireRunStep(t, job.Steps, "--dist=dist")
 	immutableGuardIndex := requireRunStep(t, job.Steps, ".draft == true")
-	releaseNotesIndex := requireRunStep(t, job.Steps, "--release-notes=")
-	if releaseNotesIndex >= immutableGuardIndex ||
+	releaseContractIndex := requireRunStep(t, job.Steps, "release-notes/CURRENT.md")
+	sourceIndex := requireRunStep(t, job.Steps, "git rev-parse")
+	if releaseContractIndex >= immutableGuardIndex ||
+		sourceIndex >= immutableGuardIndex ||
 		qualityIndex >= releaseIndex ||
 		artifactCheckIndex <= releaseIndex ||
 		immutableGuardIndex >= releaseIndex {
 		t.Fatalf(
-			"step 順序が不正です: notes=%d, guard=%d, quality=%d, release=%d, check=%d",
-			releaseNotesIndex,
+			"step 順序が不正です: contract=%d, source=%d, guard=%d, quality=%d, release=%d, check=%d",
+			releaseContractIndex,
+			sourceIndex,
 			immutableGuardIndex,
 			qualityIndex,
 			releaseIndex,
@@ -157,12 +315,15 @@ func assertPackageJob(t *testing.T, job workflowJob) {
 	guard := job.Steps[immutableGuardIndex].Run
 	for _, fragment := range []string{
 		"${GITHUB_API_URL}",
-		"${GITHUB_REF_NAME}",
-		"404",
+		"${RELEASE_TAG}",
+		"${RELEASE_SHA}",
+		"${RELEASE_UPLOAD_URL}",
 		"200",
+		".draft == true",
+		".upload_url == $upload_url",
 	} {
 		if !strings.Contains(guard, fragment) {
-			t.Fatalf("公開済み release guard に %q がありません: %s", fragment, guard)
+			t.Fatalf("draft release guard に %q がありません: %s", fragment, guard)
 		}
 	}
 	for _, step := range job.Steps {
@@ -176,14 +337,21 @@ func assertPackageJob(t *testing.T, job workflowJob) {
 func assertSmokeJob(t *testing.T, job workflowJob) {
 	t.Helper()
 
-	if asString(job.Needs) != "package" || job.RunsOn != "${{ matrix.runner }}" {
+	if !needsInclude(job.Needs, "package") || job.RunsOn != "${{ matrix.runner }}" {
 		t.Fatalf("smoke job = needs %#v, runs-on %q", job.Needs, job.RunsOn)
 	}
-	requireActionStep(t, job.Steps, checkoutAction)
+	checkout := requireActionStep(t, job.Steps, checkoutAction)
+	if checkout.With["ref"] != "${{ needs.package.outputs.sha }}" {
+		t.Fatalf("smoke checkout inputs = %#v", checkout.With)
+	}
 	requireActionStep(t, job.Steps, setupGoAction)
-	requireActionStep(t, job.Steps, downloadAction)
+	download := requireActionStep(t, job.Steps, downloadAction)
+	if download.With["name"] != "release-dist-${{ needs.package.outputs.sha }}" {
+		t.Fatalf("smoke が取得する artifact 名 = %#v", download.With["name"])
+	}
 	smokeIndex := requireRunStep(t, job.Steps, "go run ./cmd/release-check")
-	if !strings.Contains(job.Steps[smokeIndex].Run, "--repository=.") {
+	if !strings.Contains(job.Steps[smokeIndex].Run, "--repository=.") ||
+		!strings.Contains(job.Steps[smokeIndex].Run, "release-notes/CURRENT.md") {
 		t.Fatalf("smoke release-check に repository がありません: %q", job.Steps[smokeIndex].Run)
 	}
 
@@ -203,12 +371,61 @@ func assertSmokeJob(t *testing.T, job workflowJob) {
 func assertPublishJob(t *testing.T, job workflowJob) {
 	t.Helper()
 
-	if asString(job.Needs) != "smoke" || job.Permissions["contents"] != "write" {
+	if !needsInclude(job.Needs, "package") ||
+		!needsInclude(job.Needs, "smoke") ||
+		job.Permissions["contents"] != "write" {
 		t.Fatalf("publish job = needs %#v, permissions %#v", job.Needs, job.Permissions)
 	}
+	checkout := requireActionStep(t, job.Steps, checkoutAction)
+	if checkout.With["ref"] != "${{ needs.package.outputs.sha }}" ||
+		checkout.With["fetch-depth"] != 0 ||
+		checkout.With["persist-credentials"] != false {
+		t.Fatalf("publish checkout inputs = %#v", checkout.With)
+	}
+	setup := requireActionStep(t, job.Steps, setupGoAction)
+	if setup.With["go-version"] != "1.26.5" {
+		t.Fatalf("publish の Go version = %#v", setup.With["go-version"])
+	}
+	if job.Env["RELEASE_UPLOAD_URL"] != "${{ needs.package.outputs.upload-url }}" {
+		t.Fatalf("publish の release 識別子 = %#v", job.Env)
+	}
 	index := requireRunStep(t, job.Steps, "gh release edit")
-	if !strings.Contains(job.Steps[index].Run, "--draft=false") {
-		t.Fatalf("release 公開 command = %q", job.Steps[index].Run)
+	for _, fragment := range []string{
+		"gh api",
+		"go run ./cmd/release-notes",
+		"CHANGELOG.md",
+		"release-notes/CURRENT.md",
+		"git rev-parse",
+		"/git/ref/tags/",
+		"${RELEASE_SHA}",
+		"${RELEASE_UPLOAD_URL}",
+		".upload_url == $upload_url",
+		"--notes-file",
+		"--draft=false",
+	} {
+		if !strings.Contains(job.Steps[index].Run, fragment) {
+			t.Fatalf("release 公開 command に %q がありません: %q", fragment, job.Steps[index].Run)
+		}
+	}
+	if strings.Contains(job.Steps[index].Run, "'.body") ||
+		strings.Contains(job.Steps[index].Run, `".body`) {
+		t.Fatalf("公開する release notes が可変な remote body を参照しています: %q", job.Steps[index].Run)
+	}
+}
+
+func needsInclude(value any, want string) bool {
+	switch needs := value.(type) {
+	case string:
+		return needs == want
+	case []any:
+		for _, need := range needs {
+			if asString(need) == want {
+				return true
+			}
+		}
+		return false
+	default:
+		return false
 	}
 }
 
@@ -280,6 +497,18 @@ func readYAML(t *testing.T, relativePath string, target any) {
 	}
 }
 
+func readJSON(t *testing.T, relativePath string, target any) {
+	t.Helper()
+
+	content, err := os.ReadFile(filepath.Join(repositoryRoot(t), filepath.FromSlash(relativePath)))
+	if err != nil {
+		t.Fatalf("%s を読み込めません: %v", relativePath, err)
+	}
+	if err := json.Unmarshal(content, target); err != nil {
+		t.Fatalf("%s を JSON として解釈できません: %v", relativePath, err)
+	}
+}
+
 func repositoryRoot(t *testing.T) string {
 	t.Helper()
 
@@ -347,7 +576,8 @@ type releaseSettings struct {
 type releaseWorkflow struct {
 	On struct {
 		Push struct {
-			Tags []string `yaml:"tags"`
+			Branches []string `yaml:"branches"`
+			Tags     []string `yaml:"tags"`
 		} `yaml:"push"`
 	} `yaml:"on"`
 	Permissions map[string]string      `yaml:"permissions"`
@@ -357,7 +587,10 @@ type releaseWorkflow struct {
 type workflowJob struct {
 	RunsOn      string            `yaml:"runs-on"`
 	Needs       any               `yaml:"needs"`
+	If          string            `yaml:"if"`
 	Permissions map[string]string `yaml:"permissions"`
+	Outputs     map[string]string `yaml:"outputs"`
+	Env         map[string]string `yaml:"env"`
 	Steps       []workflowStep    `yaml:"steps"`
 	Strategy    struct {
 		Matrix struct {
@@ -367,7 +600,42 @@ type workflowJob struct {
 }
 
 type workflowStep struct {
-	Uses string         `yaml:"uses"`
-	Run  string         `yaml:"run"`
-	With map[string]any `yaml:"with"`
+	ID   string            `yaml:"id"`
+	Uses string            `yaml:"uses"`
+	If   string            `yaml:"if"`
+	Run  string            `yaml:"run"`
+	Env  map[string]string `yaml:"env"`
+	With map[string]any    `yaml:"with"`
+}
+
+type releasePleaseConfig struct {
+	Schema                       string                          `json:"$schema"`
+	AlwaysUpdate                 bool                            `json:"always-update"`
+	GroupPullRequestTitlePattern string                          `json:"group-pull-request-title-pattern"`
+	Packages                     map[string]releasePleasePackage `json:"packages"`
+}
+
+type releasePleasePackage struct {
+	ReleaseType             string                          `json:"release-type"`
+	IncludeComponentInTag   bool                            `json:"include-component-in-tag"`
+	IncludeVInTag           bool                            `json:"include-v-in-tag"`
+	Draft                   bool                            `json:"draft"`
+	ForceTagCreation        bool                            `json:"force-tag-creation"`
+	ChangelogPath           string                          `json:"changelog-path"`
+	PullRequestTitlePattern string                          `json:"pull-request-title-pattern"`
+	PullRequestHeader       string                          `json:"pull-request-header"`
+	PullRequestFooter       string                          `json:"pull-request-footer"`
+	ChangelogSections       []releasePleaseChangelogSection `json:"changelog-sections"`
+	ExtraFiles              []releasePleaseExtraFile        `json:"extra-files"`
+}
+
+type releasePleaseChangelogSection struct {
+	Type    string `json:"type"`
+	Section string `json:"section"`
+	Hidden  bool   `json:"hidden"`
+}
+
+type releasePleaseExtraFile struct {
+	Type string `json:"type"`
+	Path string `json:"path"`
 }

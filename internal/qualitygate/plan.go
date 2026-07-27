@@ -562,7 +562,8 @@ func normalizeChangedPaths(paths []string) ([]string, error) {
 
 func needsSOTContract(paths []string) bool {
 	for _, path := range paths {
-		if path == "AGENTS.md" ||
+		if path == "README.md" ||
+			path == "AGENTS.md" ||
 			strings.HasPrefix(path, "docs/") ||
 			strings.HasPrefix(path, "sot/") ||
 			strings.HasPrefix(path, "wiki/") ||

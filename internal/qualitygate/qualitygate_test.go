@@ -114,7 +114,7 @@ func TestBuildPlanPreCommitSkipsUnrelatedConditionalChecks(t *testing.T) {
 		profile:      ProfilePreCommit,
 		repository:   "/repo",
 		snapshot:     snapshot,
-		changedPaths: []string{"README.md"},
+		changedPaths: []string{".gitignore"},
 	})
 	if err != nil {
 		t.Fatalf("計画の作成に失敗しました: %v", err)
@@ -129,6 +129,29 @@ func TestBuildPlanPreCommitSkipsUnrelatedConditionalChecks(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("不要な条件付き検査が含まれています:\n got: %q\nwant: %q", got, want)
+	}
+}
+
+func TestBuildPlanPreCommitChecksReadmeLinks(t *testing.T) {
+	t.Parallel()
+
+	snapshot := writeValidPrinciples(t)
+
+	steps, err := buildPlan(planInput{
+		profile:      ProfilePreCommit,
+		repository:   "/repo",
+		snapshot:     snapshot,
+		changedPaths: []string{"README.md"},
+	})
+	if err != nil {
+		t.Fatalf("計画の作成に失敗しました: %v", err)
+	}
+
+	signatures := stepSignatures(steps)
+	if !slices.ContainsFunc(signatures, func(signature string) bool {
+		return strings.HasPrefix(signature, "sot-contract|")
+	}) {
+		t.Fatalf("README.md の変更で SOT とリンクの検査が起動しません: %q", signatures)
 	}
 }
 

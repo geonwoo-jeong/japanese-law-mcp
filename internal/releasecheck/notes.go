@@ -49,6 +49,9 @@ func validateReleaseNotes(path, tag, repository string) error {
 	if err != nil {
 		return fmt.Errorf("リリース情報を読めません: %w", err)
 	}
+	if err := validateReleaseHeading(string(content), tag); err != nil {
+		return err
+	}
 	activeSOTIDs, err := loadActiveSOTIDs(repository)
 	if err != nil {
 		return fmt.Errorf("有効な SOT を読み込めません: %w", err)
@@ -56,6 +59,20 @@ func validateReleaseNotes(path, tag, repository string) error {
 	sections := parseH2Sections(string(content))
 	if err := validateReleaseSections(sections, activeSOTIDs); err != nil {
 		return err
+	}
+	return nil
+}
+
+func validateReleaseHeading(content, tag string) error {
+	normalized := strings.ReplaceAll(content, "\r\n", "\n")
+	heading, _, _ := strings.Cut(normalized, "\n")
+	expected := "# Japanese Law MCP " + tag
+	annotated := expected + " <!-- x-release-please-version -->"
+	if heading != expected && heading != annotated {
+		return fmt.Errorf(
+			"リリース情報の見出しは「%s」でなければなりません",
+			expected,
+		)
 	}
 	return nil
 }

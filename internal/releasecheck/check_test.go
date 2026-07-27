@@ -12,7 +12,7 @@ import (
 func TestCheck(t *testing.T) {
 	t.Parallel()
 
-	notes := writeTestFile(t, "release-notes.md", []byte(`# release
+	notes := writeTestFile(t, "release-notes.md", []byte(`# Japanese Law MCP v1.2.3
 
 ## 提供する SOT
 
@@ -38,7 +38,7 @@ func TestCheck(t *testing.T) {
 func TestCheckWithDistribution(t *testing.T) {
 	t.Parallel()
 
-	notes := writeTestFile(t, "release-notes.md", []byte(`# release
+	notes := writeTestFile(t, "release-notes.md", []byte(`# Japanese Law MCP v1.2.3
 
 ## 提供する SOT
 
