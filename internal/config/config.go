@@ -22,6 +22,7 @@ type Values struct {
 	Diagnostics    bool
 	Providers      map[string]ProviderConfig
 	ProviderRoutes map[string]ProviderRoute
+	ExtensionPacks map[string]ExtensionPackConfig
 }
 
 // Config は、検証済みで変更不能な起動設定を保持する。
@@ -33,9 +34,10 @@ type Config struct {
 	diagnostics    bool
 	providers      map[string]ProviderConfig
 	providerRoutes map[ProviderRouteKey]ProviderRoute
+	extensionPacks map[string]ExtensionPackConfig
 }
 
-// Default は、SOT-IF-026 と SOT-IF-029 が定める既定の起動設定を返す。
+// Default は、SOT-IF-026、SOT-IF-029 と SOT-IF-040 が定める既定の起動設定を返す。
 func Default() Config {
 	providers, err := resolveProviderConfigs(nil)
 	if err != nil {
@@ -45,6 +47,10 @@ func Default() Config {
 	if err != nil {
 		panic("組込み provider route を構成できません")
 	}
+	extensionPacks, err := resolveExtensionPacks(nil)
+	if err != nil {
+		panic("組込み extension pack 設定を構成できません")
+	}
 	return Config{
 		transport:      TransportStdio,
 		requestTimeout: 30 * time.Second,
@@ -53,6 +59,7 @@ func Default() Config {
 		diagnostics:    false,
 		providers:      providers,
 		providerRoutes: providerRoutes,
+		extensionPacks: extensionPacks,
 	}
 }
 
@@ -78,6 +85,13 @@ func New(values Values) (Config, error) {
 			NewValidationError(err),
 		)
 	}
+	extensionPacks, err := resolveExtensionPacks(values.ExtensionPacks)
+	if err != nil {
+		return Config{}, fmt.Errorf(
+			"設定を検証できません: %w",
+			NewValidationError(err),
+		)
+	}
 
 	origins := make([]string, len(values.AllowedOrigins))
 	copy(origins, values.AllowedOrigins)
@@ -90,6 +104,7 @@ func New(values Values) (Config, error) {
 		diagnostics:    values.Diagnostics,
 		providers:      providers,
 		providerRoutes: providerRoutes,
+		extensionPacks: extensionPacks,
 	}, nil
 }
 
@@ -146,4 +161,15 @@ func (c Config) ProviderRoute(key ProviderRouteKey) (ProviderRoute, bool) {
 		return ProviderRoute{}, false
 	}
 	return cloneProviderRoute(route), true
+}
+
+// ExtensionPacks は、検証済み拡張パック設定の複製を返す。
+func (c Config) ExtensionPacks() map[string]ExtensionPackConfig {
+	return cloneExtensionPacks(c.extensionPacks)
+}
+
+// JudicialCasesEnabled は、裁判例拡張パックが有効かを返す。
+func (c Config) JudicialCasesEnabled() bool {
+	pack, exists := c.extensionPacks[ExtensionPackJudicialCases]
+	return exists && pack.Enabled
 }

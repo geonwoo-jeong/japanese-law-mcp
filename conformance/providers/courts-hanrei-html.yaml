@@ -5,9 +5,11 @@ rows:
     majorVersion: 1
     operation: "GET /hanrei/{decisionId}/detail{categoryNumber}/index.html"
     interfaceSotIds:
+      - SOT-IF-040
       - SOT-IF-042
       - SOT-IF-043
       - SOT-IF-045
+      - SOT-IF-046
     budgetSotId: SOT-IF-043
     budgetKey: judicial-read-html
     concurrencyGroup: courts-hanrei-html
@@ -70,9 +72,11 @@ rows:
     majorVersion: 1
     operation: "GET /hanrei/search1/index.html"
     interfaceSotIds:
+      - SOT-IF-040
       - SOT-IF-041
       - SOT-IF-043
       - SOT-IF-044
+      - SOT-IF-046
     budgetSotId: SOT-IF-043
     budgetKey: judicial-search-html
     concurrencyGroup: courts-hanrei-html

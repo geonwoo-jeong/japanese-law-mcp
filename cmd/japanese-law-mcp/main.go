@@ -69,6 +69,9 @@ func newServerRunnerWithTransports(
 	runHTTP streamableHTTPRunner,
 ) cli.Runner {
 	return func(ctx context.Context, cfg config.Config) error {
+		if err := validateExtensionPackActivation(cfg); err != nil {
+			return err
+		}
 		registry, routes, err := newProviderRoutes(cfg)
 		if err != nil {
 			return err
@@ -100,6 +103,17 @@ func newServerRunnerWithTransports(
 			return errors.New("対応していないトランスポートです")
 		}
 	}
+}
+
+func validateExtensionPackActivation(cfg config.Config) error {
+	if !cfg.JudicialCasesEnabled() {
+		return nil
+	}
+	return config.NewValidationError(
+		errors.New(
+			"judicial-cases に必要な provider、route および MCP tool を一括構成できません",
+		),
+	)
 }
 
 func newPublicServer(

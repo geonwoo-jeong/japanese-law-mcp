@@ -293,6 +293,43 @@ func TestServerRunnerRejectsProviderConfigurationBeforeTransport(t *testing.T) {
 	}
 }
 
+func TestServerRunnerRejectsUnwiredJudicialCasesBeforeTransport(t *testing.T) {
+	t.Parallel()
+
+	values := defaultTestConfigValues()
+	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
+		config.ExtensionPackJudicialCases: {Enabled: true},
+	}
+	cfg, err := config.New(values)
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+
+	stdioCalled := false
+	httpCalled := false
+	err = newServerRunnerWithTransports(
+		"test-version",
+		func(context.Context, stdio.Server) error {
+			stdioCalled = true
+			return nil
+		},
+		func(
+			context.Context,
+			*sdk.Server,
+			streamablehttp.Options,
+		) error {
+			httpCalled = true
+			return nil
+		},
+	)(context.Background(), cfg)
+	if !config.IsValidationError(err) {
+		t.Fatalf("SOT-IF-040: 起動前の設定エラー = %v", err)
+	}
+	if stdioCalled || httpCalled {
+		t.Fatal("SOT-IF-040: 不完全な judicial-cases 構成で transport を開始しました")
+	}
+}
+
 func TestServerRunnerRejectsProviderConfigurationBeforeHTTPStart(t *testing.T) {
 	t.Parallel()
 

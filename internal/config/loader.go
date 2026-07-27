@@ -36,7 +36,7 @@ func Load(options LoadOptions) (Config, error) {
 	if err := readConfigFile(settings, options); err != nil {
 		return Config{}, err
 	}
-	providerValues, err := loadProviderFileValues(settings.ConfigFileUsed())
+	fileValues, err := loadStructuredFileValues(settings.ConfigFileUsed())
 	if err != nil {
 		return Config{}, NewValidationError(err)
 	}
@@ -56,8 +56,9 @@ func Load(options LoadOptions) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	values.Providers = providerValues.providers
-	values.ProviderRoutes = providerValues.providerRoutes
+	values.Providers = fileValues.providers
+	values.ProviderRoutes = fileValues.providerRoutes
+	values.ExtensionPacks = fileValues.extensionPacks
 	return New(values)
 }
 
@@ -134,8 +135,8 @@ func validateFileSettings(settings *viper.Viper) error {
 			if _, ok := value.(bool); !ok {
 				return fmt.Errorf("設定項目 diagnostics の型が正しくありません")
 			}
-		case keyProviders, keyProviderRoutes:
-			// provider 階層は、空 namespace と atomic object を保持する専用 decoder で検証する。
+		case keyProviders, keyProviderRoutes, keyExtensionPacks:
+			// 構造化 namespace は、空 object と atomic object を保持する専用 decoder で検証する。
 		}
 	}
 	return nil
@@ -161,6 +162,8 @@ func canonicalConfigKey(key string) string {
 		return keyProviders
 	case strings.ToLower(keyProviderRoutes):
 		return keyProviderRoutes
+	case strings.ToLower(keyExtensionPacks):
+		return keyExtensionPacks
 	default:
 		return ""
 	}

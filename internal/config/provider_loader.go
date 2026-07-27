@@ -12,40 +12,47 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-type providerFileValues struct {
+type structuredFileValues struct {
 	providers      map[string]ProviderConfig
 	providerRoutes map[string]ProviderRoute
+	extensionPacks map[string]ExtensionPackConfig
 }
 
-func loadProviderFileValues(path string) (providerFileValues, error) {
+func loadStructuredFileValues(path string) (structuredFileValues, error) {
 	if path == "" {
-		return providerFileValues{}, nil
+		return structuredFileValues{}, nil
 	}
 	data, err := os.ReadFile(path) //nolint:gosec // SOT-IF-020: 利用者が明示した設定ファイルを読み取るための入力境界であり、内容は直後に形式と項目を検証する。
 	if err != nil {
-		return providerFileValues{}, fmt.Errorf("設定ファイルを読み込めません")
+		return structuredFileValues{}, fmt.Errorf("設定ファイルを読み込めません")
 	}
 	document, err := decodeConfigDocument(filepath.Ext(path), data)
 	if err != nil {
-		return providerFileValues{}, fmt.Errorf("設定ファイルの構造を解釈できません: %w", err)
+		return structuredFileValues{}, fmt.Errorf("設定ファイルの構造を解釈できません: %w", err)
 	}
 	if err := validateTopLevelDocument(document); err != nil {
-		return providerFileValues{}, err
+		return structuredFileValues{}, err
 	}
 
 	providersValue, providersPresent := findDocumentValue(document, keyProviders)
 	providers, err := decodeProviders(providersValue, providersPresent)
 	if err != nil {
-		return providerFileValues{}, err
+		return structuredFileValues{}, err
 	}
 	routesValue, routesPresent := findDocumentValue(document, keyProviderRoutes)
 	routes, err := decodeProviderRoutes(routesValue, routesPresent)
 	if err != nil {
-		return providerFileValues{}, err
+		return structuredFileValues{}, err
 	}
-	return providerFileValues{
+	packsValue, packsPresent := findDocumentValue(document, keyExtensionPacks)
+	packs, err := decodeExtensionPacks(packsValue, packsPresent)
+	if err != nil {
+		return structuredFileValues{}, err
+	}
+	return structuredFileValues{
 		providers:      providers,
 		providerRoutes: routes,
+		extensionPacks: packs,
 	}, nil
 }
 
