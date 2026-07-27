@@ -105,6 +105,28 @@ func TestDecodeSearchResponseBodyLimitsBytesBeforeCharsetConversion(t *testing.T
 	assertSourceError(t, err, model.SourceErrorCodeSourceResponseTooLarge)
 }
 
+func TestDecodeSearchResponseBodyUsesCumulativeDecodeBudget(t *testing.T) {
+	t.Parallel()
+	source := bytes.Repeat([]byte("x"), maximumSearchDecompressedBytes*3/8)
+	encoded, _, err := transform.Bytes(
+		unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewEncoder(),
+		source,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = decodeSearchResponseBody(
+		context.Background(),
+		context.Background(),
+		fetchedSearchResponse{
+			encodedBody:     gzipBytes(t, encoded),
+			contentType:     "text/html; charset=utf-16le",
+			contentEncoding: "gzip",
+		},
+	)
+	assertSourceError(t, err, model.SourceErrorCodeSourceResponseTooLarge)
+}
+
 func TestFetchSearchResponseDoesNotRetry(t *testing.T) {
 	t.Parallel()
 	var calls atomic.Int32

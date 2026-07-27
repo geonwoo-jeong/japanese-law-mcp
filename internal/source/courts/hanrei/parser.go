@@ -45,6 +45,9 @@ func parseSearchResponse(
 	if err := searchHTMLContextError(ctx); err != nil {
 		return searchResponse{}, err
 	}
+	if err := validateSearchHTMLTokenBudget(ctx, body); err != nil {
+		return searchResponse{}, err
+	}
 	document, err := html.Parse(&htmlContextReader{
 		ctx:    ctx,
 		reader: bytes.NewReader(body),
@@ -56,6 +59,77 @@ func parseSearchResponse(
 		return searchResponse{}, err
 	}
 	return decodeSearchDocument(ctx, document)
+}
+
+func validateSearchHTMLTokenBudget(ctx context.Context, body []byte) error {
+	tokenizer := html.NewTokenizer(&htmlContextReader{
+		ctx:    ctx,
+		reader: bytes.NewReader(body),
+	})
+	count := 0
+	openElements := make([]string, 0, maximumSearchHTMLDepth)
+	for {
+		if err := searchHTMLContextError(ctx); err != nil {
+			return err
+		}
+		tokenType := tokenizer.Next()
+		switch tokenType {
+		case html.ErrorToken:
+			if errors.Is(tokenizer.Err(), io.EOF) {
+				return nil
+			}
+			return invalidSearchResponseError()
+		case html.StartTagToken, html.SelfClosingTagToken:
+			token := tokenizer.Token()
+			count += 1 + len(token.Attr)
+			if count > maximumSearchHTMLNodes {
+				return newSearchSourceError(
+					model.SourceErrorCodeSourceResponseTooLarge,
+					"",
+				)
+			}
+			if tokenType == html.StartTagToken &&
+				!isVoidSearchHTMLElement(token.Data) {
+				openElements = append(openElements, token.Data)
+				if len(openElements) > maximumSearchHTMLDepth {
+					return newSearchSourceError(
+						model.SourceErrorCodeUnsafeSourceContent,
+						"",
+					)
+				}
+			}
+		case html.EndTagToken:
+			token := tokenizer.Token()
+			for index := len(openElements) - 1; index >= 0; index-- {
+				if openElements[index] == token.Data {
+					openElements = openElements[:index]
+					break
+				}
+			}
+		case html.TextToken:
+			if strings.TrimSpace(string(tokenizer.Text())) != "" {
+				count++
+			}
+		case html.CommentToken:
+			count++
+		}
+		if count > maximumSearchHTMLNodes {
+			return newSearchSourceError(
+				model.SourceErrorCodeSourceResponseTooLarge,
+				"",
+			)
+		}
+	}
+}
+
+func isVoidSearchHTMLElement(name string) bool {
+	switch name {
+	case "area", "base", "br", "col", "embed", "hr", "img", "input",
+		"link", "meta", "param", "source", "track", "wbr":
+		return true
+	default:
+		return false
+	}
 }
 
 func decodeSearchDocument(
@@ -109,6 +183,9 @@ func decodePopulatedSearchResponse(
 	rows, err := directSearchRows(ctx, table)
 	if err != nil {
 		return searchResponse{}, err
+	}
+	if len(rows) == 0 && emptyMarkerCount == 1 {
+		return searchResponse{rows: []searchResultRow{}}, nil
 	}
 	if emptyMarkerCount != 0 || len(rows) == 0 {
 		return searchResponse{}, invalidSearchResponseError()
@@ -165,7 +242,7 @@ func classifySearchCells(
 	row *html.Node,
 ) (headers []*html.Node, informationCells []*html.Node, fileCells []*html.Node) {
 	for child := row.FirstChild; child != nil; child = child.NextSibling {
-		if child.Type != html.ElementNode {
+		if child.Type != html.ElementNode || hasIgnoredAncestor(child) {
 			continue
 		}
 		switch child.Data {
@@ -460,6 +537,9 @@ func collectElements(
 		last := len(pending) - 1
 		node := pending[last]
 		pending = pending[:last]
+		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
+			continue
+		}
 		if node.Type == html.ElementNode && match(node) {
 			found = append(found, node)
 		}
@@ -482,6 +562,9 @@ func directSearchRows(
 		if child.Type != html.ElementNode {
 			continue
 		}
+		if hasIgnoredAncestor(child) {
+			continue
+		}
 		if child.Data == "tr" {
 			rows = append(rows, child)
 			continue
@@ -493,7 +576,9 @@ func directSearchRows(
 			if err := searchHTMLContextError(ctx); err != nil {
 				return nil, err
 			}
-			if row.Type == html.ElementNode && row.Data == "tr" {
+			if row.Type == html.ElementNode &&
+				row.Data == "tr" &&
+				!hasIgnoredAncestor(row) {
 				rows = append(rows, row)
 			}
 		}
@@ -518,6 +603,9 @@ func descendantElements(
 		last := len(pending) - 1
 		node := pending[last]
 		pending = pending[:last]
+		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
+			continue
+		}
 		if node.Type == html.ElementNode && node.Data == name {
 			found = append(found, node)
 		}
@@ -557,6 +645,9 @@ func nodeTextWithBreaks(ctx context.Context, root *html.Node) (string, error) {
 		if err := searchHTMLContextError(ctx); err != nil {
 			return err
 		}
+		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
+			return nil
+		}
 		if node.Type == html.TextNode {
 			builder.WriteString(node.Data)
 		}
@@ -586,6 +677,9 @@ func nodeText(ctx context.Context, root *html.Node) (string, error) {
 		last := len(pending) - 1
 		node := pending[last]
 		pending = pending[:last]
+		if node.Type == html.ElementNode && isIgnoredSearchElement(node) {
+			continue
+		}
 		if node.Type == html.TextNode {
 			builder.WriteString(node.Data)
 		}
@@ -671,20 +765,32 @@ func isSearchResultTable(node *html.Node) bool {
 
 func hasIgnoredAncestor(node *html.Node) bool {
 	for current := node; current != nil; current = current.Parent {
-		if current.Type != html.ElementNode {
-			continue
-		}
-		if _, hidden := singleAttribute(current, "hidden"); hidden {
-			return true
-		}
-		ariaHidden, _ := singleAttribute(current, "aria-hidden")
-		if strings.EqualFold(strings.TrimSpace(ariaHidden), "true") ||
-			hasClass(current, "modal") ||
-			hasClass(current, "d-none") {
+		if current.Type == html.ElementNode && isIgnoredSearchElement(current) {
 			return true
 		}
 	}
 	return false
+}
+
+func isIgnoredSearchElement(node *html.Node) bool {
+	if node == nil || node.Type != html.ElementNode {
+		return false
+	}
+	if _, hidden := singleAttribute(node, "hidden"); hidden {
+		return true
+	}
+	ariaHidden, _ := singleAttribute(node, "aria-hidden")
+	if strings.EqualFold(strings.TrimSpace(ariaHidden), "true") ||
+		hasClass(node, "modal") ||
+		hasClass(node, "d-none") {
+		return true
+	}
+	switch node.Data {
+	case "script", "style", "template":
+		return true
+	default:
+		return false
+	}
 }
 
 func searchRowLocation(row *html.Node) string {

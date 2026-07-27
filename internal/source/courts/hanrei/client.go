@@ -198,7 +198,7 @@ func decodeSearchResponseBody(
 		parent,
 		processing,
 		fetched.contentType,
-		bytes.NewReader(decoded),
+		decoded,
 	)
 }
 
@@ -206,42 +206,55 @@ func decodeSearchCharset(
 	parent context.Context,
 	processing context.Context,
 	contentType string,
-	reader io.Reader,
+	body []byte,
 ) ([]byte, error) {
-	decodedReader, err := newSearchCharsetReader(processing, contentType, reader)
+	decodedReader, converts, err := newSearchCharsetReader(
+		processing,
+		contentType,
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return nil, err
 	}
-	return copySearchBody(parent, processing, decodedReader)
+	if !converts {
+		return body, nil
+	}
+	remaining := maximumSearchDecompressedBytes - len(body)
+	return copySearchBodyWithLimit(
+		parent,
+		processing,
+		decodedReader,
+		remaining,
+	)
 }
 
 func newSearchCharsetReader(
 	processing context.Context,
 	contentType string,
 	reader io.Reader,
-) (io.Reader, error) {
+) (io.Reader, bool, error) {
 	_, parameters, err := mime.ParseMediaType(contentType)
 	if err != nil {
-		return nil, newSearchSourceError(
+		return nil, false, newSearchSourceError(
 			model.SourceErrorCodeSourceContractChanged,
 			"",
 		)
 	}
 	charsetLabel := strings.TrimSpace(parameters["charset"])
 	if charsetLabel == "" || strings.EqualFold(charsetLabel, "utf-8") {
-		return &searchContextReader{ctx: processing, reader: reader}, nil
+		return &searchContextReader{ctx: processing, reader: reader}, false, nil
 	}
 	decodedReader, err := charset.NewReaderLabel(
 		charsetLabel,
 		&searchContextReader{ctx: processing, reader: reader},
 	)
 	if err != nil {
-		return nil, newSearchSourceError(
+		return nil, false, newSearchSourceError(
 			model.SourceErrorCodeSourceContractChanged,
 			"",
 		)
 	}
-	return decodedReader, nil
+	return decodedReader, true, nil
 }
 
 func copySearchBody(
@@ -249,9 +262,29 @@ func copySearchBody(
 	processing context.Context,
 	reader io.Reader,
 ) ([]byte, error) {
+	return copySearchBodyWithLimit(
+		parent,
+		processing,
+		reader,
+		maximumSearchDecompressedBytes,
+	)
+}
+
+func copySearchBodyWithLimit(
+	parent context.Context,
+	processing context.Context,
+	reader io.Reader,
+	limit int,
+) ([]byte, error) {
+	if limit < 0 {
+		return nil, newSearchSourceError(
+			model.SourceErrorCodeSourceResponseTooLarge,
+			"",
+		)
+	}
 	body, err := io.ReadAll(io.LimitReader(
 		&searchContextReader{ctx: processing, reader: reader},
-		maximumSearchDecompressedBytes+1,
+		int64(limit)+1,
 	))
 	if budgetErr := searchProcessingError(parent, processing); budgetErr != nil {
 		return nil, budgetErr
@@ -262,7 +295,7 @@ func copySearchBody(
 			"",
 		)
 	}
-	if len(body) > maximumSearchDecompressedBytes {
+	if len(body) > limit {
 		return nil, newSearchSourceError(
 			model.SourceErrorCodeSourceResponseTooLarge,
 			"",

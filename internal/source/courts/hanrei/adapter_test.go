@@ -204,6 +204,52 @@ func TestJudicialDecisionSearchAdapterIgnoresTheadRowsInLocation(t *testing.T) {
 	}
 }
 
+func TestJudicialDecisionSearchAdapterIgnoresHiddenRowContent(t *testing.T) {
+	t.Parallel()
+	body := []byte(`<!doctype html><html><head><title>裁判例検索</title></head><body>
+<p>1件中</p>
+<table class="search-result-table"><tbody><tr>
+<th>
+  <a href="./../12345/detail2/index.html">最高裁判例</a>
+  <span hidden><a href="./../54321/detail3/index.html">高裁判例</a></span>
+</th>
+<td>
+  <p>令和6年（受）第1号<span aria-hidden="true">非表示事件</span>
+損害賠償請求事件</p>
+  <p>令和6年5月1日
+最高裁判所</p>
+  <div class="modal"><p>非表示日付</p><p>非表示裁判所</p></div>
+</td>
+<td class="file-col">
+  <a href="/assets/hanrei/12345.pdf">全文</a>
+  <span class="d-none"><a href="https://example.com/secret.pdf">非表示</a></span>
+</td>
+</tr></tbody></table>
+</body></html>`)
+	adapter := newTestAdapter(t, staticHTMLDoer(body))
+
+	page, err := adapter.Search(
+		context.Background(),
+		mustSearchRequest(t, "非表示", 20, ""),
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-044: 非表示要素を含む Search() のエラー = %v", err)
+	}
+	items := page.Items()
+	if len(items) != 1 {
+		t.Fatalf("items の件数 = %d", len(items))
+	}
+	summary := items[0].Data()
+	caseName, exists := summary.CaseName()
+	if !exists || caseName != "損害賠償請求事件" {
+		t.Errorf("caseName = %q, %t", caseName, exists)
+	}
+	if documents := summary.Documents(); len(documents) != 1 ||
+		documents[0].URL() != "https://www.courts.go.jp/assets/hanrei/12345.pdf" {
+		t.Errorf("documents = %#v", documents)
+	}
+}
+
 func TestJudicialDecisionSearchAdapterRejectsContinuationBeforeFetch(t *testing.T) {
 	t.Parallel()
 	var calls atomic.Int32
@@ -217,12 +263,36 @@ func TestJudicialDecisionSearchAdapterRejectsContinuationBeforeFetch(t *testing.
 	if err == nil || !strings.Contains(err.Error(), "continuationToken") {
 		t.Fatalf("SOT-IF-041/SOT-IF-044: 予約 token のエラー = %v", err)
 	}
+	var argumentError judicialdecisionsearch.ArgumentError
+	if !errors.As(err, &argumentError) ||
+		argumentError.Code() != model.ErrorCodeInvalidArgument ||
+		argumentError.Field() != "continuationToken" {
+		t.Fatalf("SOT-IF-044: 予約 token が invalid_argument ではない: %T %v", err, err)
+	}
 	if strings.Contains(err.Error(), "秘密") {
 		t.Fatalf("SOT-IF-043: エラーが入力を含む: %v", err)
 	}
 	if calls.Load() != 0 {
 		t.Fatalf("SOT-ENG-016: 拒否後の外部呼出し回数 = %d", calls.Load())
 	}
+}
+
+func TestJudicialDecisionSearchAdapterAcceptsEmptyResultTable(t *testing.T) {
+	t.Parallel()
+	body := []byte(`<html><head><title>裁判例検索</title></head><body>` +
+		`<p id="searched">該当する裁判例がありませんでした。</p>` +
+		`<table class="search-result-table"><tbody></tbody></table>` +
+		`</body></html>`)
+	adapter := newTestAdapter(t, staticHTMLDoer(body))
+
+	page, err := adapter.Search(
+		context.Background(),
+		mustSearchRequest(t, "空テーブル", 20, ""),
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-044: 空結果 table のエラー = %v", err)
+	}
+	assertMappedPage(t, page, 0, 0)
 }
 
 func TestJudicialDecisionSearchAdapterNormalizesHTTPFailures(t *testing.T) {

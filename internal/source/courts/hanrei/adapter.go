@@ -66,9 +66,17 @@ func (a *JudicialDecisionSearchAdapter) Search(
 		return judicialdecisionsearch.Page{}, err
 	}
 	if _, exists := request.ContinuationToken(); exists {
-		return judicialdecisionsearch.Page{}, fmt.Errorf(
-			"courts-hanrei-html では continuationToken を使用できません",
+		argumentError, err := judicialdecisionsearch.NewArgumentError(
+			"continuationToken",
+			"courts-hanrei-html では使用できません",
 		)
+		if err != nil {
+			return judicialdecisionsearch.Page{}, fmt.Errorf(
+				"裁判所 search adapter の入力エラーを分類できません: %w",
+				err,
+			)
+		}
+		return judicialdecisionsearch.Page{}, argumentError
 	}
 	if err := a.acquire(ctx); err != nil {
 		return judicialdecisionsearch.Page{}, err
