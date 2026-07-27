@@ -11,7 +11,7 @@ import (
 const (
 	lawSearchResourceType    = "law"
 	lawSearchMediaType       = "application/json"
-	lawSearchMappingMethod   = "SOT-IF-009"
+	lawSearchMappingMethod   = "SOT-IF-050"
 	eGovOfficialLawURLPrefix = "https://laws.e-gov.go.jp/law/"
 )
 

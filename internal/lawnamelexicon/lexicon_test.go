@@ -210,6 +210,26 @@ func TestLoadRejectsMalformedOrInconsistentData(t *testing.T) {
 				1,
 			),
 		},
+		{
+			name:     "正規化後に別法令と衝突する補足略称",
+			official: validOfficialFixture,
+			supplemental: `{
+  "schemaVersion": 1,
+  "datasetId": "test-supplemental",
+  "entries": [
+    {
+      "lawId": "425AC0000000027",
+      "lawNumber": "平成二十五年法律第二十七号",
+      "title": "行政手続における特定の個人を識別するための番号の利用等に関する法律",
+      "alias": "個 人 情 報 保 護 法",
+      "kind": "common-abbreviation",
+      "sourceName": "国立国会図書館 日本法令索引",
+      "sourceUrl": "https://hourei.ndl.go.jp/simple/detail?current=1&lawId=0000129572",
+      "confirmedAt": "2026-07-27"
+    }
+  ]
+}`,
+		},
 	}
 
 	for _, testCase := range tests {

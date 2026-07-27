@@ -190,7 +190,7 @@ func validSchemaInstance() map[string]any {
 				"capabilityId":          "law.search",
 				"majorVersion":          float64(1),
 				"operation":             "GET /laws",
-				"interfaceSotIds":       []any{"SOT-IF-004", "SOT-IF-009", "SOT-IF-022"},
+				"interfaceSotIds":       []any{"SOT-IF-004", "SOT-IF-050", "SOT-IF-022"},
 				"budgetSotId":           "SOT-IF-004",
 				"budgetKey":             "laws-json",
 				"concurrencyGroup":      "provider-http",

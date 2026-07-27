@@ -97,7 +97,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		"law.article.read":   {"SOT-IF-004", "SOT-IF-011", "SOT-IF-012", "SOT-IF-025"},
 		"law.content.search": {"SOT-IF-004", "SOT-IF-010", "SOT-IF-023", "SOT-IF-028"},
 		"law.document.read":  {"SOT-IF-004", "SOT-IF-011", "SOT-IF-024"},
-		"law.search":         {"SOT-IF-004", "SOT-IF-009", "SOT-IF-022"},
+		"law.search":         {"SOT-IF-004", "SOT-IF-050", "SOT-IF-022"},
 	}
 	wantFixtures := map[string]string{
 		"law.article.read":   "law-article-read-v1",
@@ -511,7 +511,7 @@ func validRowYAML(providerID, capabilityID, operation, budgetKey string) string 
     operation: %s
     interfaceSotIds:
       - SOT-IF-004
-      - SOT-IF-009
+      - SOT-IF-050
       - SOT-IF-022
     budgetSotId: SOT-IF-004
     budgetKey: %s

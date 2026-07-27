@@ -35,27 +35,27 @@ func TestSearchLawsFacadePreservesPublicOffsetAndOmittedAsOf(t *testing.T) {
 	})
 	result, err := facade.Search(context.Background(), request)
 	if err != nil {
-		t.Fatalf("SOT-IF-009/030: Search() のエラー = %v", err)
+		t.Fatalf("SOT-IF-050/049: Search() のエラー = %v", err)
 	}
 	if result.TotalCount() != 2 || len(result.Items()) != 1 {
 		t.Fatalf("SOT-MODEL-006: result = %#v", result)
 	}
 	if nextOffset, exists := result.NextOffset(); !exists || nextOffset != 1 {
-		t.Fatalf("SOT-IF-009: nextOffset = %d, %t", nextOffset, exists)
+		t.Fatalf("SOT-IF-050: nextOffset = %d, %t", nextOffset, exists)
 	}
 	if captured == nil {
-		t.Fatal("SOT-IF-009: HTTP request がない")
+		t.Fatal("SOT-IF-050: HTTP request がない")
 	}
 	query := captured.URL.Query()
 	if query.Has("asof") {
-		t.Fatalf("SOT-IF-009/030: 省略した asof を送信した: %q", query.Get("asof"))
+		t.Fatalf("SOT-IF-050/049: 省略した asof を送信した: %q", query.Get("asof"))
 	}
 	if query.Get("law_title") != "地方自治" ||
 		query.Get("limit") != "1" ||
 		query.Get("offset") != "0" ||
 		query.Get("response_format") != "json" ||
 		query.Get("order") != "+law_info.law_id" {
-		t.Fatalf("SOT-IF-009: query = %#v", query)
+		t.Fatalf("SOT-IF-050: query = %#v", query)
 	}
 }
 
@@ -84,14 +84,14 @@ func TestSearchLawsFacadeSendsExplicitAsOfAndOffset(t *testing.T) {
 	})
 	result, err := facade.Search(context.Background(), request)
 	if err != nil {
-		t.Fatalf("SOT-IF-009/030: Search() のエラー = %v", err)
+		t.Fatalf("SOT-IF-050/049: Search() のエラー = %v", err)
 	}
 	if result.TotalCount() != 0 || result.Items() == nil || len(result.Items()) != 0 {
 		t.Fatalf("SOT-MODEL-006: 空結果 = %#v", result)
 	}
 	if captured.URL.Query().Get("asof") != "2026-07-26" ||
 		captured.URL.Query().Get("offset") != "40" {
-		t.Fatalf("SOT-IF-009: query = %#v", captured.URL.Query())
+		t.Fatalf("SOT-IF-050: query = %#v", captured.URL.Query())
 	}
 }
 

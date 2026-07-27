@@ -24,19 +24,19 @@ func TestParseLawSearchResponseAndMapItems(t *testing.T) {
 		0,
 	)
 	if err != nil {
-		t.Fatalf("SOT-IF-009: parseLawSearchResponse() のエラー = %v", err)
+		t.Fatalf("SOT-IF-050: parseLawSearchResponse() のエラー = %v", err)
 	}
 	if response.totalCount != 2 || response.count != 1 || len(response.laws) != 1 {
-		t.Fatalf("SOT-IF-009: response = %#v", response)
+		t.Fatalf("SOT-IF-050: response = %#v", response)
 	}
 	if nextOffset == nil || *nextOffset != 1 {
-		t.Fatalf("SOT-IF-009: nextOffset = %v", nextOffset)
+		t.Fatalf("SOT-IF-050: nextOffset = %v", nextOffset)
 	}
 
 	retrievedAt := time.Date(2026, 7, 26, 12, 0, 0, 0, time.FixedZone("JST", 9*60*60))
 	items, err := mapLawSearchItems(response, retrievedAt)
 	if err != nil {
-		t.Fatalf("SOT-IF-009/SOT-IF-015: mapLawSearchItems() のエラー = %v", err)
+		t.Fatalf("SOT-IF-050/SOT-IF-015: mapLawSearchItems() のエラー = %v", err)
 	}
 	if len(items) != 1 {
 		t.Fatalf("SOT-IF-022: items の長さ = %d", len(items))
@@ -54,13 +54,13 @@ func TestParseLawSearchResponseAcceptsEmptyResult(t *testing.T) {
 		0,
 	)
 	if err != nil {
-		t.Fatalf("SOT-IF-009/SOT-IF-022: 空結果のエラー = %v", err)
+		t.Fatalf("SOT-IF-050/SOT-IF-022: 空結果のエラー = %v", err)
 	}
 	if response.totalCount != 0 || response.count != 0 || len(response.laws) != 0 {
 		t.Fatalf("SOT-IF-022: 空結果 = %#v", response)
 	}
 	if nextOffset != nil {
-		t.Fatalf("SOT-IF-009: 空結果の nextOffset = %d", *nextOffset)
+		t.Fatalf("SOT-IF-050: 空結果の nextOffset = %d", *nextOffset)
 	}
 }
 
@@ -74,10 +74,10 @@ func TestParseLawSearchResponseDerivesMissingNextOffset(t *testing.T) {
 		0,
 	)
 	if err != nil {
-		t.Fatalf("SOT-IF-009: next_offset 導出のエラー = %v", err)
+		t.Fatalf("SOT-IF-050: next_offset 導出のエラー = %v", err)
 	}
 	if nextOffset == nil || *nextOffset != 1 {
-		t.Fatalf("SOT-IF-009: 導出した nextOffset = %v", nextOffset)
+		t.Fatalf("SOT-IF-050: 導出した nextOffset = %v", nextOffset)
 	}
 }
 
@@ -381,11 +381,11 @@ func assertMappedLawSearchItem(
 		ref.Key().SourceID() != providerID ||
 		ref.Key().ResourceType() != lawSearchResourceType ||
 		ref.Key().ResourceID() != "322CO0000000016" {
-		t.Fatalf("SOT-IF-009/SOT-IF-022: ref = %#v", ref)
+		t.Fatalf("SOT-IF-050/SOT-IF-022: ref = %#v", ref)
 	}
 	versionID, exists := ref.Key().VersionID()
 	if !exists || versionID != "322CO0000000016_20240401_506CO0000000161" {
-		t.Fatalf("SOT-IF-009: versionId = %q, %t", versionID, exists)
+		t.Fatalf("SOT-IF-050: versionId = %q, %t", versionID, exists)
 	}
 	provenance := item.Provenance()
 	if len(provenance) != 1 ||
@@ -393,11 +393,11 @@ func assertMappedLawSearchItem(
 		provenance[0].MediaType() != lawSearchMediaType ||
 		provenance[0].Transformation() != model.ProvenanceTransformationNormalized ||
 		!provenance[0].RetrievedAt().Equal(retrievedAt) {
-		t.Fatalf("SOT-IF-009/SOT-IF-015: provenance = %#v", provenance)
+		t.Fatalf("SOT-IF-050/SOT-IF-015: provenance = %#v", provenance)
 	}
 	methodID, exists := provenance[0].MethodID()
 	if !exists || methodID != lawSearchMappingMethod {
-		t.Fatalf("SOT-IF-009: methodId = %q, %t", methodID, exists)
+		t.Fatalf("SOT-IF-050: methodId = %q, %t", methodID, exists)
 	}
 
 	encoded, err := json.Marshal(item.Data())
@@ -414,7 +414,7 @@ func assertMappedLawSearchItem(
 		got["lawNumber"] != "昭和二十二年政令第十六号" ||
 		got["promulgationDate"] != "1947-05-03" ||
 		got["revisionEffectiveDate"] != "2024-04-01" {
-		t.Fatalf("SOT-IF-009: LawSummary = %s", encoded)
+		t.Fatalf("SOT-IF-050: LawSummary = %s", encoded)
 	}
 }
 
@@ -425,14 +425,14 @@ func assertLawSearchSourceError(
 ) {
 	t.Helper()
 	if err == nil {
-		t.Fatalf("SOT-IF-009: error = nil, want %q", want)
+		t.Fatalf("SOT-IF-050: error = nil, want %q", want)
 	}
 	var sourceError model.SourceError
 	if !errors.As(err, &sourceError) {
-		t.Fatalf("SOT-IF-009: error type = %T, want model.SourceError", err)
+		t.Fatalf("SOT-IF-050: error type = %T, want model.SourceError", err)
 	}
 	if sourceError.Code() != want {
-		t.Fatalf("SOT-IF-009: error code = %q, want %q", sourceError.Code(), want)
+		t.Fatalf("SOT-IF-050: error code = %q, want %q", sourceError.Code(), want)
 	}
 }
 

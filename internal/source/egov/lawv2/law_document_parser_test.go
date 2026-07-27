@@ -26,7 +26,7 @@ func TestParseLawDocumentResponseExtractsMetadataAndExactLawElement(t *testing.T
 		response.law.lawNumber != "昭和二十二年政令第十六号" ||
 		response.law.promulgationDate != "1947-05-03" ||
 		response.law.revisionEffectiveDate != "2024-04-01" {
-		t.Fatalf("SOT-IF-009/011: law metadata = %#v", response.law)
+		t.Fatalf("SOT-IF-050/011: law metadata = %#v", response.law)
 	}
 	start := bytes.Index(body, []byte("<Law "))
 	endMarker := []byte("</Law>")

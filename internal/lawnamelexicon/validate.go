@@ -6,7 +6,10 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 const maxLexiconStringBytes = 2048
@@ -124,18 +127,27 @@ func validateSupplementalDataset(
 	}
 	officialByLawID := make(map[string]officialEntry, len(official.Entries))
 	termOwners := make(map[string]string)
+	normalizedOwners := make(map[string]string)
 	for _, entry := range official.Entries {
 		officialByLawID[entry.LawID] = entry
 		termOwners[entry.Title] = entry.LawID
+		registerNormalizedOwner(normalizedOwners, entry.Title, entry.LawID)
 		if entry.TitleKana != "" {
 			termOwners[entry.TitleKana] = entry.LawID
+			registerNormalizedOwner(
+				normalizedOwners,
+				entry.TitleKana,
+				entry.LawID,
+			)
 		}
 		for _, alias := range *entry.Aliases {
 			if existing, exists := termOwners[alias]; exists &&
 				existing != entry.LawID {
+				registerNormalizedOwner(normalizedOwners, alias, entry.LawID)
 				continue
 			}
 			termOwners[alias] = entry.LawID
+			registerNormalizedOwner(normalizedOwners, alias, entry.LawID)
 		}
 	}
 
@@ -169,7 +181,15 @@ func validateSupplementalDataset(
 				index,
 			)
 		}
+		if existing, exists := normalizedOwners[comparisonKey(entry.Alias)]; exists &&
+			existing != entry.LawID {
+			return fmt.Errorf(
+				"entries[%d] は正規化後に別の法令の語と衝突しています",
+				index,
+			)
+		}
 		termOwners[entry.Alias] = entry.LawID
+		registerNormalizedOwner(normalizedOwners, entry.Alias, entry.LawID)
 	}
 	return nil
 }
@@ -245,4 +265,41 @@ func validateHTTPSURL(name string, value string) error {
 		return fmt.Errorf("%s は userinfo のない HTTPS URL でなければなりません", name)
 	}
 	return nil
+}
+
+func registerNormalizedOwner(
+	owners map[string]string,
+	value string,
+	lawID string,
+) {
+	key := comparisonKey(value)
+	if key == "" {
+		return
+	}
+	if _, exists := owners[key]; !exists {
+		owners[key] = lawID
+	}
+}
+
+func comparisonKey(value string) string {
+	normalized := norm.NFKC.String(value)
+	var builder strings.Builder
+	builder.Grow(len(normalized))
+	for _, current := range normalized {
+		if unicode.IsSpace(current) || unicode.IsPunct(current) {
+			continue
+		}
+		switch {
+		case current >= 'A' && current <= 'Z':
+			current += 'a' - 'A'
+		case current >= '\u30a1' && current <= '\u30f6':
+			current -= '\u0060'
+		case current == '\u30fd':
+			current = '\u309d'
+		case current == '\u30fe':
+			current = '\u309e'
+		}
+		builder.WriteRune(current)
+	}
+	return builder.String()
 }
