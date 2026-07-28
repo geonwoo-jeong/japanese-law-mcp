@@ -69,6 +69,9 @@ func TestLoadBuildsImmutableEntriesFromOfficialAndSupplementalData(
 		t.Fatalf("SOT-ENG-022: entries = %d", len(entries))
 	}
 	if entries[0].ResourceID != "415AC0000000057" ||
+		entries[0].RevisionID !=
+			"415AC0000000057_20250601_504AC0000000068" ||
+		entries[0].LawNumber != "平成十五年法律第五十七号" ||
 		entries[0].Canonical != "個人情報の保護に関する法律" ||
 		!containsString(entries[0].Terms, "個人情報保護法") ||
 		!containsString(entries[0].Terms, "個情法") {
@@ -278,6 +281,8 @@ func TestEmbeddedLexiconContainsCompleteEGovSnapshotAndSupplements(
 		t,
 		entries,
 		"335AC0000000105",
+		"335AC0000000105_20260721_508AC0000000052",
+		"昭和三十五年法律第百五号",
 		"道路交通法",
 		"道交法",
 	)
@@ -285,6 +290,8 @@ func TestEmbeddedLexiconContainsCompleteEGovSnapshotAndSupplements(
 		t,
 		entries,
 		"415AC0000000057",
+		"415AC0000000057_20260717_508AC0000000062",
+		"平成十五年法律第五十七号",
 		"個人情報の保護に関する法律",
 		"個情法",
 	)
@@ -292,6 +299,8 @@ func TestEmbeddedLexiconContainsCompleteEGovSnapshotAndSupplements(
 		t,
 		entries,
 		"425AC0000000027",
+		"425AC0000000027_20260717_508AC0000000056",
+		"平成二十五年法律第二十七号",
 		"行政手続における特定の個人を識別するための番号の利用等に関する法律",
 		"マイナ法",
 	)
@@ -299,6 +308,8 @@ func TestEmbeddedLexiconContainsCompleteEGovSnapshotAndSupplements(
 		t,
 		entries,
 		"322AC0000000049",
+		"322AC0000000049_20260717_508AC0000000060",
+		"昭和二十二年法律第四十九号",
 		"労働基準法",
 		"労基法",
 	)
@@ -306,6 +317,8 @@ func TestEmbeddedLexiconContainsCompleteEGovSnapshotAndSupplements(
 		t,
 		entries,
 		"322AC0000000054",
+		"322AC0000000054_20260521_505AC0000000063",
+		"昭和二十二年法律第五十四号",
 		"昭和二十二年法律第五十四号（私的独占の禁止及び公正取引の確保に関する法律）",
 		"独禁法",
 	)
@@ -315,6 +328,8 @@ func assertLexiconTerm(
 	t *testing.T,
 	entries []Entry,
 	resourceID string,
+	revisionID string,
+	lawNumber string,
 	canonical string,
 	term string,
 ) {
@@ -323,7 +338,10 @@ func assertLexiconTerm(
 		if entry.ResourceID != resourceID {
 			continue
 		}
-		if entry.Canonical != canonical || !containsString(entry.Terms, term) {
+		if entry.RevisionID != revisionID ||
+			entry.LawNumber != lawNumber ||
+			entry.Canonical != canonical ||
+			!containsString(entry.Terms, term) {
 			t.Fatalf("SOT-ENG-022: entry = %#v", entry)
 		}
 		return

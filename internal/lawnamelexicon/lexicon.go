@@ -26,9 +26,11 @@ var (
 	embeddedSupplemental []byte
 )
 
-// Entry は、一つの法令の識別子、正式名称および登録語の複製である。
+// Entry は、一つの法令の識別子、法令番号、正式名称および登録語の複製である。
 type Entry struct {
 	ResourceID string
+	RevisionID string
+	LawNumber  string
 	Canonical  string
 	Terms      []string
 }
@@ -88,6 +90,8 @@ func (l *Lexicon) Entries() []Entry {
 	for index, entry := range l.entries {
 		entries[index] = Entry{
 			ResourceID: entry.ResourceID,
+			RevisionID: entry.RevisionID,
+			LawNumber:  entry.LawNumber,
 			Canonical:  entry.Canonical,
 			Terms:      append([]string(nil), entry.Terms...),
 		}
@@ -145,6 +149,8 @@ func buildLexicon(
 		terms = slices.Compact(terms)
 		entries = append(entries, Entry{
 			ResourceID: sourceEntry.LawID,
+			RevisionID: sourceEntry.RevisionID,
+			LawNumber:  sourceEntry.LawNumber,
 			Canonical:  sourceEntry.Title,
 			Terms:      append([]string(nil), terms...),
 		})
