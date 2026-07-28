@@ -224,6 +224,33 @@ func TestAggregateSemanticCaseEvaluationsは未初期化と混在状態を拒否
 				initialized:         true,
 			},
 		},
+		{
+			name: "request_error_with_high_confidence",
+			evaluation: SemanticCaseEvaluation{
+				caseID:              "holdout-invalid-request-high-confidence",
+				categoryIDs:         []string{"input-boundary"},
+				coverageIDs:         []string{"input-query-empty"},
+				expectedKind:        legalquerycorpus.SemanticExpectedKindRequestError,
+				requestErrorMatched: true,
+				highConfidence: comparisonAssertion{
+					matched:    true,
+					applicable: true,
+				},
+				initialized: true,
+			},
+		},
+		{
+			name: "non_ranking_plan_with_ranking_fields",
+			evaluation: SemanticCaseEvaluation{
+				caseID:             "holdout-invalid-unsupported-ranking",
+				categoryIDs:        []string{"unsupported-scope"},
+				coverageIDs:        []string{"unsupported-resource"},
+				expectedKind:       legalquerycorpus.SemanticExpectedKindPlan,
+				planOutcomeMatched: true,
+				primaryTop1Matched: true,
+				initialized:        true,
+			},
+		},
 	}
 
 	for _, test := range tests {

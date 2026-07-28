@@ -236,11 +236,22 @@ func validateSemanticCaseEvaluation(evaluation SemanticCaseEvaluation) error {
 	}
 	switch evaluation.ExpectedKind() {
 	case legalquerycorpus.SemanticExpectedKindPlan:
+		if !evaluation.rankingApplicable &&
+			(evaluation.PrimaryTop1Matched() ||
+				evaluation.PrimaryTop2Matched() ||
+				evaluation.highConfidence.applicable ||
+				evaluation.highConfidence.matched) {
+			return fmt.Errorf("ranking 非適用の plan 評価に ranking 指標を混在させることはできません")
+		}
 		if evaluation.RequestErrorMatched() {
 			return fmt.Errorf("plan 評価に request_error の結果を混在させることはできません")
 		}
 	case legalquerycorpus.SemanticExpectedKindRequestError:
 		if evaluation.PlanOutcomeMatched() ||
+			evaluation.PrimaryTop1Matched() ||
+			evaluation.PrimaryTop2Matched() ||
+			evaluation.highConfidence.applicable ||
+			evaluation.highConfidence.matched ||
 			evaluation.rankingApplicable ||
 			len(evaluation.Meanings()) > 0 {
 			return fmt.Errorf("request_error 評価に plan の結果を混在させることはできません")
