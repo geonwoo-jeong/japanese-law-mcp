@@ -259,6 +259,9 @@ func lawReadIntentMatchesRequestRef(
 		return ref == requestRef
 	}
 	key := requestRef.Key()
+	if key.ResourceType() != string(legalquery.ResourceLaw) {
+		return false
+	}
 	lawID, exists := input.LawID()
 	if !exists || lawID != key.ResourceID() {
 		return false
@@ -282,5 +285,58 @@ func lawArticleReadIntentMatchesRequestRef(
 	if !exists {
 		return false
 	}
-	return lawID == requestRef.Key().ResourceID()
+	key := requestRef.Key()
+	return key.ResourceType() == string(legalquery.ResourceLaw) &&
+		lawID == key.ResourceID()
+}
+
+func TestOfficialIdentifierGroundingは異なるRefを拒否する(t *testing.T) {
+	matching := newRepositoryCorpusTestRef(t, "law", "129AC0000000089")
+	mismatched := newRepositoryCorpusTestRef(t, "law", "140AC0000000045")
+	wrongResource := newRepositoryCorpusTestRef(
+		t,
+		"judicial-decision",
+		"129AC0000000089",
+	)
+	input, err := legalquery.NewLawReadIntentV1(
+		legalquery.LawReadIntentV1Values{LawID: "129AC0000000089"},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-022: test law read intent error = %v", err)
+	}
+
+	if !lawReadIntentMatchesRequestRef(input, matching) {
+		t.Fatal("SOT-MODEL-022: 同じ law resource ID の ref を根拠として認識しません")
+	}
+	if lawReadIntentMatchesRequestRef(input, mismatched) {
+		t.Fatal("SOT-MODEL-022: 異なる law resource ID の ref を根拠として認識しました")
+	}
+	if lawReadIntentMatchesRequestRef(input, wrongResource) {
+		t.Fatal("SOT-MODEL-022: 異なる resource type の ref を根拠として認識しました")
+	}
+}
+
+func newRepositoryCorpusTestRef(
+	t *testing.T,
+	resourceType string,
+	resourceID string,
+) model.SourceResourceRef {
+	t.Helper()
+
+	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
+		SourceID:     "test-source",
+		ResourceType: resourceType,
+		ResourceID:   resourceID,
+	})
+	if err != nil {
+		t.Fatalf("SOT-MODEL-011: test resource key error = %v", err)
+	}
+	ref, err := model.NewSourceResourceRef(model.SourceResourceRefValues{
+		ProviderID: "test-provider",
+		Key:        key,
+	})
+	if err != nil {
+		t.Fatalf("SOT-MODEL-016: test resource ref error = %v", err)
+	}
+	return ref
 }
