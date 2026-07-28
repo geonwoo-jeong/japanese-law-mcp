@@ -155,7 +155,7 @@ func (r *Resolver) ResolveMatches(
 	if err != nil {
 		return nil, err
 	}
-	if len(fuzzyTargets) != 1 {
+	if len(fuzzyTargets) == 0 {
 		return nil, nil
 	}
 	return matchesFromTargets(
@@ -174,7 +174,8 @@ func (r *Resolver) resolveFuzzyTargets(
 	}
 
 	bestDistance := 4
-	bestTargets := make([]target, 0)
+	var bestTerm fuzzyTerm
+	ambiguousTerm := false
 	checked := 0
 	for length := max(3, len(queryRunes)-3); length <= len(queryRunes)+3; length++ {
 		for _, term := range r.fuzzy[length] {
@@ -198,19 +199,19 @@ func (r *Resolver) resolveFuzzyTargets(
 				continue
 			case distance < bestDistance:
 				bestDistance = distance
-				bestTargets = appendUniqueTargets(nil, term.targets)
+				bestTerm = term
+				ambiguousTerm = false
 			default:
-				bestTargets = appendUniqueTargets(bestTargets, term.targets)
+				if term.value != bestTerm.value {
+					ambiguousTerm = true
+				}
 			}
 		}
 	}
-	if bestDistance == 4 {
+	if bestDistance == 4 || ambiguousTerm {
 		return nil, nil
 	}
-	if len(bestTargets) != 1 {
-		return nil, nil
-	}
-	return append([]target(nil), bestTargets...), nil
+	return append([]target(nil), bestTerm.targets...), nil
 }
 
 func matchesFromTargets(values []target, kind MatchKind) []Match {

@@ -24,3 +24,4 @@
 - [22-legal-query-candidate.md](22-legal-query-candidate.md)
 - [23-legal-query-plan.md](23-legal-query-plan.md)
 - [24-legal-query-result.md](24-legal-query-result.md)
+- [25-legal-query-preprocess-result.md](25-legal-query-preprocess-result.md)

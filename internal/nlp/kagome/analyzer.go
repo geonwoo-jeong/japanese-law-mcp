@@ -25,6 +25,34 @@ type Analyzer struct {
 	gate      chan struct{}
 }
 
+// TokenOccurrence は、Kagome token と原文上の UTF-8 byte span を保持する。
+type TokenOccurrence struct {
+	surface        string
+	startByte      int
+	endByte        int
+	userDictionary bool
+}
+
+// Surface は、原文に現れた token 表記を返す。
+func (o TokenOccurrence) Surface() string {
+	return o.surface
+}
+
+// StartByte は、token の開始 byte offset を返す。
+func (o TokenOccurrence) StartByte() int {
+	return o.startByte
+}
+
+// EndByte は、token の終端 byte offset を返す。
+func (o TokenOccurrence) EndByte() int {
+	return o.endByte
+}
+
+// UserDictionary は、token が起動時の user dictionary に由来するかを返す。
+func (o TokenOccurrence) UserDictionary() bool {
+	return o.userDictionary
+}
+
 // NewAnalyzer は、登録語を複製して不変な tokenizer を構築する。
 func NewAnalyzer(terms []string) (*Analyzer, error) {
 	if len(terms) == 0 || len(terms) > maxDictionaryTermCount {
@@ -87,6 +115,55 @@ func (a *Analyzer) RegisteredTerms(
 	ctx context.Context,
 	input string,
 ) ([]string, error) {
+	tokens, err := a.analyze(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	seen := make(map[string]struct{})
+	terms := make([]string, 0)
+	for _, token := range tokens {
+		if token.Class != tokenizer.USER || token.Surface == "" {
+			continue
+		}
+		if _, duplicated := seen[token.Surface]; duplicated {
+			continue
+		}
+		seen[token.Surface] = struct{}{}
+		terms = append(terms, token.Surface)
+	}
+	return terms, nil
+}
+
+// AnalyzeTokenOccurrences は、BOS/EOS を除く token と原文上の byte span を返す。
+func (a *Analyzer) AnalyzeTokenOccurrences(
+	ctx context.Context,
+	input string,
+) ([]TokenOccurrence, error) {
+	tokens, err := a.analyze(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	occurrences := make([]TokenOccurrence, 0, len(tokens))
+	for _, token := range tokens {
+		if token.Surface == "" {
+			continue
+		}
+		startByte := token.Position
+		occurrences = append(occurrences, TokenOccurrence{
+			surface:        token.Surface,
+			startByte:      startByte,
+			endByte:        startByte + len(token.Surface),
+			userDictionary: token.Class == tokenizer.USER,
+		})
+	}
+	return occurrences, nil
+}
+
+func (a *Analyzer) analyze(
+	ctx context.Context,
+	input string,
+) ([]tokenizer.Token, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context は必須です")
 	}
@@ -115,18 +192,5 @@ func (a *Analyzer) RegisteredTerms(
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-
-	seen := make(map[string]struct{})
-	terms := make([]string, 0)
-	for _, token := range tokens {
-		if token.Class != tokenizer.USER || token.Surface == "" {
-			continue
-		}
-		if _, duplicated := seen[token.Surface]; duplicated {
-			continue
-		}
-		seen[token.Surface] = struct{}{}
-		terms = append(terms, token.Surface)
-	}
-	return terms, nil
+	return tokens, nil
 }
