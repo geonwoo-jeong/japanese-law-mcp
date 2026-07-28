@@ -1,0 +1,55 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-safety-11",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "search-only",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "129AC0000000089"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "search-only"
+    ]
+  },
+  "leakageGroupId": "holdout-safety-known-minpo-multistep",
+  "request": {
+    "query": "民法を検索し、法令IDが確定している民法の全文も読む"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 1
+}

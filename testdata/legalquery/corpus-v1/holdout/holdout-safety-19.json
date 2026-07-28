@@ -1,0 +1,31 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-safety-19",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-safety-nonja-ref-english",
+  "request": {
+    "query": "read this resource",
+    "ref": {
+      "key": {
+        "resourceId": "405AC0000000088",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 1
+}

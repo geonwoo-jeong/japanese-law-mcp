@@ -1,0 +1,64 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-ambiguity-alias",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "administrative",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "行政機関の保有する情報の公開に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "agency",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "独立行政法人等の保有する情報の公開に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "administrative",
+      "agency"
+    ]
+  },
+  "leakageGroupId": "development-ambiguity-alias",
+  "request": {
+    "query": "開示法の候補となる法令を示してください。"
+  },
+  "schemaVersion": 1
+}

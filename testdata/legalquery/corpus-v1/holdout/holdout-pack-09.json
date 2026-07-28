@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-pack-09",
+  "coverageIds": [
+    "intent-judicial-decision-search",
+    "pack-judicial-enabled",
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "医療機器の誤作動"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-pack-whitespace",
+  "request": {
+    "query": "裁判例を　「医療機器の誤作動」　で検索してください。"
+  },
+  "schemaVersion": 1
+}

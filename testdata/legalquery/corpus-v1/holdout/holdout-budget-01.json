@@ -1,0 +1,84 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-01",
+  "coverageIds": [
+    "boundary-budget-limit",
+    "budget-capability-call-limit",
+    "budget-item-limit",
+    "budget-page-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "成年後見"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2026-07-01"
+            },
+            "resource": "law",
+            "task": "list_updates"
+          },
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "成年後見"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-multi-source-ordinary",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "民法を検索し、成年後見の条文・更新・裁判例も各一ページ確認してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 1
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-intent-05",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [],
+              "anyTerms": [
+                "電子計算機",
+                "電磁的記録"
+              ],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-intent-content-any",
+  "request": {
+    "limitPerAttempt": 6,
+    "query": "法令本文で「電子計算機」または「電磁的記録」を含む条文を検索する"
+  },
+  "schemaVersion": 1
+}
