@@ -67,7 +67,7 @@ testdata/
 - `candidate.go`: `LegalQueryCandidate` と型付き step の組立て
 - `planner.go`: profile と前処理結果からの候補生成
 - `selector.go`: score、margin、pack および対象外の分離判定
-- `materializer.go`: logical input と選択済み route から既存 capability request を作る能力別 facade
+- `materializer.go`: `SOT-ARCH-026` の選択済み binding metadata から既存 capability request を作る能力別 materializer
 - `executor.go`: item 予算の事前配分、計画順、限定並列、context、部分失敗および呼出し予算
 - `result.go`: 能力別結果から `LegalQueryResult` への lossless な組立て
 - `service.go`: 一回の照会を調整する公開アプリケーション入口
@@ -77,7 +77,7 @@ testdata/
 
 `legalquery` は、既存能力の request/result 型、共通の `SourceResourceRef`、provider 非依存の `resourceinput` と自身が所有する interface にだけ依存し、MCP SDK、`internal/source/...` または provider descriptor の具象型を import しない。
 
-能力別 facade は registry interface から選択済み binding を受け取り、provider DTO を扱わず既存 capability request を新しく作る。法令 ID からの `SourceResourceRef` 組立てと、入力 `ref` の provider/resource 照合を materializer に閉じる。planner と profile は provider ID を生成しない。
+能力別 facade と materializer は、`SOT-ARCH-026` の binding interface と変換規則に従う。planner と profile は provider ID を生成しない。
 
 入力 `ref` は `request.go` で `law` または `judicial-decision` の共通構造まで検証し、能力別 facade、registry および materializer で採用済み provider/source metadata、pack 状態および選択した read capability との一致を外部呼出し前に検証する。前段と後段の検証を一方へ省略または重複実装しない。
 
@@ -137,6 +137,7 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ARCH-007: 依存方向](../30-architecture/07-dependency-direction.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-026: 統合照会の request materialization](../30-architecture/26-unified-query-request-materialization.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
 - [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)

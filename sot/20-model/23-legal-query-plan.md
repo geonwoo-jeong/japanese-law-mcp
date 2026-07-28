@@ -115,11 +115,7 @@ retry、adapter 内の通信および provider ごとの同時実行制御は、
 
 ## request materialization
 
-計画確定後、executor は計画順に、各 step の `(capabilityId, capabilityMajorVersion)` route と能力別 request materializer を解決する。
-
-materializer は logical input、検証済みの任意の `ref`、選択した binding および `effectiveLimit` から既存 capability request を新しく作る。検索 request に continuation を設定せず、read request の `SourceResourceRef` は入力の `ref` を検証して保持するか、法令 ID と選択 binding から決定的に組み立てる。
-
-materialization で型、resource、provider または route の不一致を検出した場合は外部呼出し前に失敗する。planner、profile または candidate が provider DTO を扱わない。
+計画確定後、executor は計画順に各 step の確定済み `LegalQueryStepBudget` を渡し、`SOT-ARCH-026` に従って binding の選択と既存 capability request の materialization を行う。plan は provider metadata、provider DTO または materialized request を保持しない。
 
 ## 不変条件
 
@@ -133,13 +129,14 @@ materialization で型、resource、provider または route の不一致を検�
 
 ## 確認
 
-一候補、二候補、明確化、pack 無効、対象外との混在、十六候補上限、四 step 上限、ID と `ref` の materialization、起動時 route 検証、item 予算の各 `R/C` 組合せ、同点の決定性および計画確定後の追加・再配分禁止をモデルテストで確認する。`available` で空でない `requiredPacks`、複数の unsupported 理由、混在要求で保持した内部候補の非選択、および同点候補を profile の順序のまま保持することも確認する。
+一候補、二候補、明確化、pack 無効、対象外との混在、十六候補上限、四 step 上限、選択 step と materialization へ渡す予算の対応、item 予算の各 `R/C` 組合せ、同点の決定性および計画確定後の追加・再配分禁止をモデルテストで確認する。`available` で空でない `requiredPacks`、複数の unsupported 理由、混在要求で保持した内部候補の非選択、および同点候補を profile の順序のまま保持することも確認する。
 
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-026: QueryProfileContribution](26-query-profile-contribution.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
+- [SOT-ARCH-026: 統合照会の request materialization](../30-architecture/26-unified-query-request-materialization.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](../30-architecture/19-extension-pack-activation-boundary.md)
 - [SOT-IF-026: プロバイダールーティング設定](../40-interfaces/26-provider-routing-configuration.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

@@ -61,11 +61,11 @@ MCP handler は `SOT-ARCH-006` に従い薄く保つ。統合照会の planner �
 
 `application/legalquery` と query profile は `internal/source/...` を import しない。provider package は `application/legalquery`、query profile、Kagome または辞書 package を import しない。provider の選択は既存ユースケースの先にある registry だけが行う。
 
-planner は `SourceResourceRef` を生成しない。入力で受け取った `ref` は共通モデルの不透明な exact target として保持できるが、provider と resource の照合は能力別 facade と registry が行う。法令 ID から provider を含む read request を作る処理も、route 選択後の request materializer が行う。
+planner は `SourceResourceRef` を生成しない。入力で受け取った `ref` は共通モデルの不透明な exact target として保持する。binding の選択、採用済み provider と source の照合、および法令 ID からの read request 組立ては `SOT-ARCH-026` に従う。
 
-transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公開入力で許可する `law` または `judicial-decision` resource type までを検証する。採用済み provider/source metadata、pack の状態および選択した read capability との一致は request 単体では決めず、外部呼出し前に能力別 facade、registry および request materializer が検証する。前段の構造検証だけで `ref` の実行を許可しない。
+transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公開入力で許可する `law` または `judicial-decision` resource type までを検証する。request 単体で決めない実行時の対応関係は `SOT-ARCH-026` の境界で検証し、前段の構造検証だけで `ref` の実行を許可しない。
 
-request materializer は provider DTO を返さず、既存 capability SOT が定める request 型だけを返す。裁判例の事件番号、題名または URL を canonical `ref` へ推測変換する resolver は初期版に設けない。
+裁判例の事件番号、題名または URL を canonical `ref` へ推測変換する resolver は初期版に設けない。
 
 各段階は入力を変更せず新しい値を返す。辞書、profile、tokenizer、registry および route は起動後に変更せず、照会間で候補、入力、結果または学習状態を保持しない。
 
@@ -98,5 +98,6 @@ request materializer は provider DTO を返さず、既存 capability SOT が�
 - [SOT-ARCH-012: プロバイダーの登録](12-provider-registry.md)
 - [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](21-provider-independent-query-preprocessing.md)
+- [SOT-ARCH-026: 統合照会の request materialization](26-unified-query-request-materialization.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](../50-engineering/25-unified-query-package-layout.md)
