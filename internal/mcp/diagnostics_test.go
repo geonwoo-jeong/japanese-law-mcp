@@ -64,6 +64,22 @@ func TestAddDiagnosticsWritesPublicFieldsOnly(t *testing.T) {
 			},
 			wantLeak: "外部エラー時の秘密検索語",
 		},
+		{
+			name: "unified query invalid argument",
+			dependencies: Dependencies{
+				QueryLegalInformation: &recordingQueryLegalInformationPort{},
+			},
+			arguments: map[string]any{
+				"query":   "診断へ出してはいけない統合照会",
+				"unknown": true,
+			},
+			want: diagnosticEvent{
+				Component: "mcp",
+				Operation: "query_legal_information",
+				ErrorCode: "invalid_argument",
+			},
+			wantLeak: "診断へ出してはいけない統合照会",
+		},
 	}
 	for _, testCase := range tests {
 		testCase := testCase
@@ -96,7 +112,7 @@ func TestAddDiagnosticsWritesPublicFieldsOnly(t *testing.T) {
 				t.Fatalf("Connect() error = %v", err)
 			}
 			result, err := session.CallTool(ctx, &sdk.CallToolParams{
-				Name:      "search_laws",
+				Name:      testCase.want.Operation,
 				Arguments: testCase.arguments,
 			})
 			if err != nil {

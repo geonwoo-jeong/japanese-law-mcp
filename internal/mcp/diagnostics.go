@@ -74,6 +74,7 @@ func knownDiagnosticOperation(operation string) string {
 		"get_judicial_case",
 		"get_law",
 		"list_law_updates",
+		"query_legal_information",
 		"search_judicial_cases",
 		"search_law_content",
 		"search_laws":
