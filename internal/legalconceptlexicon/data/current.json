@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "lexiconVersion": "legal-concept-2026-07-28",
-  "generatedAt": "2026-07-28T00:00:00Z",
+  "lexiconVersion": "legal-concept-2026-07-28-2",
+  "generatedAt": "2026-07-28T04:31:05Z",
   "entries": [
     {
       "conceptId": "adult-guardianship",
@@ -86,6 +86,7 @@
       "sourceUrl": "https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/koyoukintou/ryouritsu/ikuji/",
       "confirmedAt": "2026-07-28",
       "mappingNote": "一般に育休と呼ばれる内容を、育児休業の正式語へ対応付ける。",
+      "conflictGroupId": "childcare-leave-group",
       "selectionPolicy": "single_candidate",
       "candidates": [
         {
@@ -93,6 +94,27 @@
           "resource": "law_provision",
           "inputKind": "law_content_search",
           "officialTerm": "育児休業",
+          "requiredPacks": []
+        }
+      ]
+    },
+    {
+      "conceptId": "childcare-leave-benefit",
+      "canonical": "育休",
+      "terms": ["育休"],
+      "comparisonTerms": ["育休"],
+      "sourceName": "厚生労働省 産休・育休中の経済的支援 かんたん試算ツール",
+      "sourceUrl": "https://shussan.ikukyu-simu.mhlw.go.jp/",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般に育休と呼ばれる内容には、育児休業の制度に加えて雇用保険の育児休業給付を探す意図もあるため、別候補として保持する。",
+      "conflictGroupId": "childcare-leave-group",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "育児休業給付",
           "requiredPacks": []
         }
       ]
@@ -114,6 +136,33 @@
           "inputKind": "law_content_search",
           "officialTerm": "申込みの撤回",
           "requiredPacks": []
+        }
+      ]
+    },
+    {
+      "conceptId": "online-defamation",
+      "canonical": "ネット中傷",
+      "terms": ["ネット中傷"],
+      "comparisonTerms": ["ねっと中傷"],
+      "sourceName": "警察庁 インターネット上の誹謗中傷等への対応",
+      "sourceUrl": "https://www.npa.go.jp/bureau/cyber/countermeasures/defamation.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "警察庁資料は、インターネット上の誹謗中傷が内容により名誉毀損罪や侮辱罪等の対象となり得ると説明している。本 entry は法的評価を確定せず、名誉毀損に関する法令本文と裁判例の検索を候補として保持する。",
+      "selectionPolicy": "ambiguous_no_auto_execute",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "名誉毀損",
+          "requiredPacks": []
+        },
+        {
+          "task": "search",
+          "resource": "judicial_decision",
+          "inputKind": "judicial_decision_search",
+          "officialTerm": "名誉毀損",
+          "requiredPacks": ["judicial-cases"]
         }
       ]
     },
@@ -146,6 +195,7 @@
       "sourceUrl": "https://houmukyoku.moj.go.jp/tokyo/page000001_00195.html",
       "confirmedAt": "2026-07-28",
       "mappingNote": "一般概念としての永住権から、条文検索と裁判例検索の両候補を作る。",
+      "conflictGroupId": "permanent-residence-group",
       "selectionPolicy": "ambiguous_no_auto_execute",
       "candidates": [
         {
@@ -161,6 +211,27 @@
           "inputKind": "judicial_decision_search",
           "officialTerm": "永住許可",
           "requiredPacks": ["judicial-cases"]
+        }
+      ]
+    },
+    {
+      "conceptId": "permanent-residence-permission",
+      "canonical": "永住権",
+      "terms": ["永住権"],
+      "comparisonTerms": ["永住権"],
+      "sourceName": "出入国在留管理庁 永住許可申請",
+      "sourceUrl": "https://www.moj.go.jp/isa/applications/procedures/16-4.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般に永住権と呼ばれる内容を、出入国在留管理庁資料で用いられる永住許可の法令本文検索候補として保持する。",
+      "conflictGroupId": "permanent-residence-group",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "永住許可",
+          "requiredPacks": []
         }
       ]
     },

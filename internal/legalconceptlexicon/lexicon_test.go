@@ -257,9 +257,12 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-ENG-023: LoadEmbedded() error = %v", err)
 	}
+	if lexicon.Version() != "legal-concept-2026-07-28-2" {
+		t.Fatalf("SOT-ENG-023: embedded version = %q", lexicon.Version())
+	}
 	entries := lexicon.Entries()
-	if len(entries) != 8 {
-		t.Fatalf("SOT-ENG-023: entry count = %d, want 8", len(entries))
+	if len(entries) != 11 {
+		t.Fatalf("SOT-ENG-023: entry count = %d, want 11", len(entries))
 	}
 
 	expected := []expectedEntry{
@@ -312,14 +315,28 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 			},
 		},
 		{
-			conceptID: "childcare-leave",
-			term:      "育休",
-			policy:    SelectionPolicySingleCandidate,
+			conceptID:       "childcare-leave",
+			term:            "育休",
+			conflictGroupID: "childcare-leave-group",
+			policy:          SelectionPolicySingleCandidate,
 			candidates: []expectedCandidate{
 				{
 					resource:     "law_provision",
 					inputKind:    "law_content_search",
 					officialTerm: "育児休業",
+				},
+			},
+		},
+		{
+			conceptID:       "childcare-leave-benefit",
+			term:            "育休",
+			conflictGroupID: "childcare-leave-group",
+			policy:          SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "育児休業給付",
 				},
 			},
 		},
@@ -336,6 +353,24 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 			},
 		},
 		{
+			conceptID: "online-defamation",
+			term:      "ネット中傷",
+			policy:    SelectionPolicyAmbiguousNoAutoExecute,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "名誉毀損",
+				},
+				{
+					resource:      "judicial_decision",
+					inputKind:     "judicial_decision_search",
+					officialTerm:  "名誉毀損",
+					requiredPacks: []string{"judicial-cases"},
+				},
+			},
+		},
+		{
 			conceptID: "overtime-premium-pay",
 			term:      "残業代",
 			policy:    SelectionPolicySingleCandidate,
@@ -348,9 +383,10 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 			},
 		},
 		{
-			conceptID: "permanent-residence",
-			term:      "永住権",
-			policy:    SelectionPolicyAmbiguousNoAutoExecute,
+			conceptID:       "permanent-residence",
+			term:            "永住権",
+			conflictGroupID: "permanent-residence-group",
+			policy:          SelectionPolicyAmbiguousNoAutoExecute,
 			candidates: []expectedCandidate{
 				{
 					resource:     "law_provision",
@@ -362,6 +398,19 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 					inputKind:     "judicial_decision_search",
 					officialTerm:  "永住許可",
 					requiredPacks: []string{"judicial-cases"},
+				},
+			},
+		},
+		{
+			conceptID:       "permanent-residence-permission",
+			term:            "永住権",
+			conflictGroupID: "permanent-residence-group",
+			policy:          SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "永住許可",
 				},
 			},
 		},
@@ -384,10 +433,11 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 }
 
 type expectedEntry struct {
-	conceptID  string
-	term       string
-	policy     SelectionPolicy
-	candidates []expectedCandidate
+	conceptID       string
+	term            string
+	conflictGroupID string
+	policy          SelectionPolicy
+	candidates      []expectedCandidate
 }
 
 type expectedCandidate struct {
@@ -408,6 +458,13 @@ func assertEntry(t *testing.T, entries []Entry, want expectedEntry) {
 		}
 		if entry.SelectionPolicy != want.policy {
 			t.Fatalf("SOT-ENG-023: selectionPolicy = %q", entry.SelectionPolicy)
+		}
+		if entry.ConflictGroupID != want.conflictGroupID {
+			t.Fatalf(
+				"SOT-ENG-023: conflictGroupId = %q, want %q",
+				entry.ConflictGroupID,
+				want.conflictGroupID,
+			)
 		}
 		if len(entry.Candidates) != len(want.candidates) {
 			t.Fatalf("SOT-ENG-023: candidates = %#v", entry.Candidates)

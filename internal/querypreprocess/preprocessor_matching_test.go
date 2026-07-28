@@ -309,12 +309,88 @@ func TestNewEmbeddedLoadsOneImmutableSharedVocabulary(t *testing.T) {
 		t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
 	}
 	if len(result.LawNameMentions()) != 1 ||
-		len(result.LegalConceptMentions()) != 1 ||
+		len(result.LegalConceptMentions()) != 2 ||
 		len(result.ArticleMentions()) != 1 ||
 		len(result.CueMentions()) != 1 {
 		t.Fatalf(
 			"SOT-MODEL-025: 組込み語彙の前処理結果 = %#v",
 			snapshotResult(result),
 		)
+	}
+	concepts := result.LegalConceptMentions()
+	if concepts[0].ConceptID() != "permanent-residence" ||
+		concepts[1].ConceptID() != "permanent-residence-permission" {
+		t.Fatalf(
+			"SOT-ENG-023: 衝突する法概念 = %#v",
+			snapshotResult(result).concepts,
+		)
+	}
+}
+
+func TestNewEmbeddedPreservesEveryGroundedConceptForOneSurface(t *testing.T) {
+	t.Parallel()
+
+	preprocessor, err := querypreprocess.NewEmbedded(nil)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: NewEmbedded() のエラー = %v", err)
+	}
+	tests := []struct {
+		query      string
+		conceptIDs []string
+	}{
+		{
+			query: "育休",
+			conceptIDs: []string{
+				"childcare-leave",
+				"childcare-leave-benefit",
+			},
+		},
+		{
+			query:      "ネット中傷",
+			conceptIDs: []string{"online-defamation"},
+		},
+		{
+			query: "永住権",
+			conceptIDs: []string{
+				"permanent-residence",
+				"permanent-residence-permission",
+			},
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.query, func(t *testing.T) {
+			t.Parallel()
+
+			result, preprocessErr := preprocessor.Preprocess(
+				context.Background(),
+				mustRequest(t, test.query),
+			)
+			if preprocessErr != nil {
+				t.Fatalf(
+					"SOT-MODEL-025: Preprocess() のエラー = %v",
+					preprocessErr,
+				)
+			}
+			mentions := result.LegalConceptMentions()
+			conceptIDs := make([]string, 0, len(mentions))
+			for _, mention := range mentions {
+				conceptIDs = append(conceptIDs, mention.ConceptID())
+				if mention.Surface() != test.query ||
+					mention.MatchKind() != legalquery.PreprocessMatchExact {
+					t.Fatalf(
+						"SOT-MODEL-025: 法概念 mention = %#v",
+						mention,
+					)
+				}
+			}
+			if !slices.Equal(conceptIDs, test.conceptIDs) {
+				t.Fatalf(
+					"SOT-ENG-023: concept IDs = %#v, want %#v",
+					conceptIDs,
+					test.conceptIDs,
+				)
+			}
+		})
 	}
 }
