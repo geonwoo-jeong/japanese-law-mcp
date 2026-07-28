@@ -36,9 +36,9 @@ span は原文 UTF-8 の byte offset で、`startByte` を含み `endByte` を�
 
 法令名と法概念の `matchKind` は次のいずれかとする。
 
-1. `exact`: 原文の出現 `surface` 自体が、検証済みの辞書表記または cue 表記と完全一致した
+1. `exact`: 外側の空白を除いた照会文全体が、検証済みの辞書表記または cue 表記と完全一致した
 2. `comparison_normalized`: `surface` と検証済み表記が Unicode 比較用正規化後に一致した
-3. `registered_term`: Kagome が自然文から user dictionary 登録語として、その span の表記を抽出した
+3. `registered_term`: Kagome が自然文の一部から user dictionary 登録語として、その span の表記を抽出した
 4. `unique_typo_correction`: 最小編集距離となる既存の検証済み表記が一つだけであり、その補正先へ一意に到達した
 
 cue は最初の三種類だけを使用し、誤記から task または resource の明示 cue を作らない。
@@ -67,7 +67,7 @@ cue は最初の三種類だけを使用し、誤記から task または resour
 
 原文は `LegalQueryRequest` の上限に従う。比較用正規化値は 4096 byte 以下とする。各出現配列は六十四件以下、cue 出現は百二十八件以下、全出現の合計は二百五十六件以下とする。上限を超えた場合は黙って切り捨てず、外部情報源を呼ぶ前に前処理エラーとする。
 
-constructor は原文、`ref` および全配列を複製して検証する。getter は内部配列を変更できない複製として返す。辞書、索引、Kagome tokenizer および cue 語彙は起動後に変更せず、前処理結果を照会間で保持しない。
+constructor は原文、原文から決定的に導出した比較用正規化値、`ref` および全配列を複製して検証する。getter は内部配列を変更できない複製として返す。辞書、索引、Kagome tokenizer および cue 語彙は起動後に変更せず、前処理結果を照会間で保持しない。
 
 結果は score、confidence、task、resource、capability、required pack、候補、選択、provider ID、route、外部 DTO、検索結果または法的結論を持たない。辞書内部の候補 template と weight も保持しない。
 

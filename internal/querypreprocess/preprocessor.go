@@ -113,9 +113,6 @@ func New(values Values) (*Preprocessor, error) {
 	if isNilAnalyzer(values.Analyzer) {
 		return nil, fmt.Errorf("前処理 analyzer は必須です")
 	}
-	if len(values.LawNames) == 0 {
-		return nil, fmt.Errorf("法令名辞書は一件以上必要です")
-	}
 	if len(values.Cues) > maxCueEntries {
 		return nil, fmt.Errorf("cue 語彙は %d 件以下でなければなりません", maxCueEntries)
 	}
@@ -171,9 +168,16 @@ func New(values Values) (*Preprocessor, error) {
 			}
 		}
 	}
-	lawResolver, err := searchquery.NewResolver(lawResolverEntries, values.Analyzer)
-	if err != nil {
-		return nil, fmt.Errorf("法令名 resolver を構築できません: %w", err)
+	var lawResolver *searchquery.Resolver
+	var err error
+	if len(lawResolverEntries) > 0 {
+		lawResolver, err = searchquery.NewResolver(
+			lawResolverEntries,
+			values.Analyzer,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("法令名 resolver を構築できません: %w", err)
+		}
 	}
 
 	conceptsByID := make(map[string]legalconceptlexicon.Entry, len(values.LegalConcepts))

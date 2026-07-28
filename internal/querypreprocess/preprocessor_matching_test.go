@@ -90,6 +90,39 @@ func TestPreprocessDistinguishesFourLawNameMatchKinds(t *testing.T) {
 	}
 }
 
+func TestPreprocessAcceptsConceptAndCueOnlyProfile(t *testing.T) {
+	t.Parallel()
+
+	preprocessor := mustNewPreprocessor(
+		t,
+		nil,
+		testConceptEntries(),
+		testCueEntries(),
+	)
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, "永住権を検索"),
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: Preprocess() のエラー = %v", err)
+	}
+	if len(result.LawNameMentions()) != 0 {
+		t.Fatalf("SOT-ARCH-021: lawNameMentions = %#v", result.LawNameMentions())
+	}
+	concepts := result.LegalConceptMentions()
+	if len(concepts) != 1 ||
+		concepts[0].ConceptID() != "permanent-residence" ||
+		concepts[0].MatchKind() != legalquery.PreprocessMatchRegisteredTerm {
+		t.Fatalf("SOT-ARCH-021: concept mentions = %#v", concepts)
+	}
+	cues := result.CueMentions()
+	if len(cues) != 1 ||
+		cues[0].CueID() != "task-search" ||
+		cues[0].MatchKind() != legalquery.PreprocessMatchRegisteredTerm {
+		t.Fatalf("SOT-ARCH-021: cue mentions = %#v", cues)
+	}
+}
+
 func TestPreprocessPreservesEveryTargetOfAmbiguousAliasAndTypo(
 	t *testing.T,
 ) {

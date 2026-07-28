@@ -164,6 +164,49 @@ func (r *Resolver) ResolveMatches(
 	), nil
 }
 
+// ResolveUniqueTypoMatches は、解析器を再実行せず、一意な誤記補正だけを返す。
+func (r *Resolver) ResolveUniqueTypoMatches(
+	ctx context.Context,
+	query string,
+) ([]Match, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("context は必須です")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if r == nil || isNilInterface(r.analyzer) {
+		return nil, fmt.Errorf("検索語 resolver は初期化されていません")
+	}
+	if !utf8.ValidString(query) ||
+		len(query) == 0 ||
+		len(query) > maxQueryBytes {
+		return nil, fmt.Errorf(
+			"検索語は有効な UTF-8 で 1 byte 以上 %d byte 以下でなければなりません",
+			maxQueryBytes,
+		)
+	}
+
+	if len(r.exact[query]) > 0 {
+		return nil, nil
+	}
+	key := comparisonKey(query)
+	if len(r.normalized[key]) > 0 {
+		return nil, nil
+	}
+	targets, err := r.resolveFuzzyTargets(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	if len(targets) == 0 {
+		return nil, nil
+	}
+	return matchesFromTargets(
+		targets,
+		MatchKindUniqueTypoCorrection,
+	), nil
+}
+
 func (r *Resolver) resolveFuzzyTargets(
 	ctx context.Context,
 	query string,

@@ -8,7 +8,6 @@ import (
 	"unicode"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/nlp/kagome"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querynormalization"
 )
@@ -60,7 +59,6 @@ func (p *Preprocessor) Preprocess(
 	}
 	if p == nil ||
 		isNilAnalyzer(p.analyzer) ||
-		p.lawResolver == nil ||
 		p.normalizedTerms == nil ||
 		p.identifiers == nil {
 		return legalquery.PreprocessResult{}, fmt.Errorf("前処理器は初期化されていません")
@@ -94,7 +92,12 @@ func (p *Preprocessor) Preprocess(
 		positioned,
 		registered,
 	)
-	typoLawDrafts, typoConceptDrafts, err := p.typoDrafts(ctx, query, tokens)
+	typoLawDrafts, typoConceptDrafts, err := p.typoDrafts(
+		ctx,
+		query,
+		tokens,
+		dictionaryDraftSpans(lawDrafts, conceptDrafts),
+	)
 	if err != nil {
 		return legalquery.PreprocessResult{}, err
 	}
@@ -249,6 +252,9 @@ func validateTokenOccurrences(
 	query string,
 	tokens []kagome.TokenOccurrence,
 ) error {
+	if len(tokens) == 0 {
+		return fmt.Errorf("形態素解析 token が原文全体を保持していません")
+	}
 	previousEnd := 0
 	for index, token := range tokens {
 		if token.StartByte() != previousEnd ||
@@ -262,7 +268,7 @@ func validateTokenOccurrences(
 		}
 		previousEnd = token.EndByte()
 	}
-	if len(tokens) > 0 && previousEnd != len(query) {
+	if previousEnd != len(query) {
 		return fmt.Errorf("形態素解析 token が原文全体を保持していません")
 	}
 	return nil
@@ -272,8 +278,9 @@ func (p *Preprocessor) typoDrafts(
 	ctx context.Context,
 	query string,
 	tokens []kagome.TokenOccurrence,
+	protectedSpans []byteSpan,
 ) ([]lawDraft, []conceptDraft, error) {
-	candidates, err := typoCandidates(query, tokens)
+	candidates, err := typoCandidates(query, tokens, protectedSpans)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -285,32 +292,34 @@ func (p *Preprocessor) typoDrafts(
 				return nil, nil, err
 			}
 		}
-		matches, err := p.lawResolver.ResolveMatches(ctx, candidate.surface)
-		if err != nil {
-			return nil, nil, fmt.Errorf("法令名の誤記候補を判定できません: %w", err)
-		}
-		for _, match := range matches {
-			if match.Kind() != searchquery.MatchKindUniqueTypoCorrection {
-				continue
+		if p.lawResolver != nil {
+			matches, err := p.lawResolver.ResolveUniqueTypoMatches(
+				ctx,
+				candidate.surface,
+			)
+			if err != nil {
+				return nil, nil, fmt.Errorf("法令名の誤記候補を判定できません: %w", err)
 			}
-			laws = append(laws, lawDraft{
-				startByte: candidate.startByte,
-				endByte:   candidate.endByte,
-				lawID:     match.ResourceID(),
-				matchKind: legalquery.PreprocessMatchUniqueTypoCorrection,
-			})
+			for _, match := range matches {
+				laws = append(laws, lawDraft{
+					startByte: candidate.startByte,
+					endByte:   candidate.endByte,
+					lawID:     match.ResourceID(),
+					matchKind: legalquery.PreprocessMatchUniqueTypoCorrection,
+				})
+			}
 		}
 		if p.conceptResolver == nil {
 			continue
 		}
-		matches, err = p.conceptResolver.ResolveMatches(ctx, candidate.surface)
+		matches, err := p.conceptResolver.ResolveUniqueTypoMatches(
+			ctx,
+			candidate.surface,
+		)
 		if err != nil {
 			return nil, nil, fmt.Errorf("法概念の誤記候補を判定できません: %w", err)
 		}
 		for _, match := range matches {
-			if match.Kind() != searchquery.MatchKindUniqueTypoCorrection {
-				continue
-			}
 			concepts = append(concepts, conceptDraft{
 				startByte: candidate.startByte,
 				endByte:   candidate.endByte,
@@ -331,6 +340,7 @@ type typoCandidate struct {
 func typoCandidates(
 	query string,
 	tokens []kagome.TokenOccurrence,
+	protectedSpans []byteSpan,
 ) ([]typoCandidate, error) {
 	values := make([]typoCandidate, 0)
 	seen := make(map[string]struct{})
@@ -344,6 +354,13 @@ func typoCandidates(
 			}
 			startByte := tokens[start].StartByte()
 			endByte := tokens[end].EndByte()
+			if strictlyContainsAny(
+				startByte,
+				endByte,
+				protectedSpans,
+			) {
+				continue
+			}
 			surface := query[startByte:endByte]
 			key := querynormalization.ComparisonKey(surface)
 			runeCount := len([]rune(key))
@@ -372,6 +389,41 @@ func typoCandidates(
 		}
 	}
 	return values, nil
+}
+
+func dictionaryDraftSpans(
+	laws []lawDraft,
+	concepts []conceptDraft,
+) []byteSpan {
+	values := make([]byteSpan, 0, len(laws)+len(concepts))
+	for _, draft := range laws {
+		values = append(values, byteSpan{
+			startByte: draft.startByte,
+			endByte:   draft.endByte,
+		})
+	}
+	for _, draft := range concepts {
+		values = append(values, byteSpan{
+			startByte: draft.startByte,
+			endByte:   draft.endByte,
+		})
+	}
+	return values
+}
+
+func strictlyContainsAny(
+	startByte int,
+	endByte int,
+	values []byteSpan,
+) bool {
+	for _, value := range values {
+		if startByte <= value.startByte &&
+			value.endByte <= endByte &&
+			(startByte != value.startByte || endByte != value.endByte) {
+			return true
+		}
+	}
+	return false
 }
 
 func isLexicalToken(value string) bool {

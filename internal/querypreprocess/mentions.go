@@ -97,8 +97,7 @@ func lawNameDominatesConcept(
 		}
 		switch law.MatchKind() {
 		case legalquery.PreprocessMatchExact,
-			legalquery.PreprocessMatchComparisonNormalized,
-			legalquery.PreprocessMatchRegisteredTerm:
+			legalquery.PreprocessMatchComparisonNormalized:
 			return true
 		}
 	}

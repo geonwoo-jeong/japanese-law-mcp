@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querynormalization"
 )
 
 // PreprocessResultValues は、前処理結果を構築する値である。
@@ -128,6 +129,9 @@ func (r PreprocessResult) Validate() error {
 			"comparisonKey は有効な UTF-8 で %d byte 以下でなければなりません",
 			maxPreprocessComparisonBytes,
 		)
+	}
+	if expected := querynormalization.ComparisonKey(r.query); r.comparisonKey != expected {
+		return fmt.Errorf("comparisonKey は query の比較用正規化値と一致しなければなりません")
 	}
 
 	total := len(r.lawNameMentions) +

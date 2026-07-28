@@ -2,6 +2,7 @@ package searchquery
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"testing"
 )
@@ -55,5 +56,41 @@ func TestResolveMatchesPreservesTargetsOfOneUniqueCorrectedTerm(t *testing.T) {
 			canonical,
 			resolved,
 		)
+	}
+}
+
+func TestResolveUniqueTypoMatchesDoesNotInvokeAnalyzer(t *testing.T) {
+	t.Parallel()
+
+	resolver := mustResolver(t, []EntryValues{{
+		ResourceID: "labor-contract",
+		Canonical:  "労働契約法",
+	}}, analyzerStub{err: errors.New("呼び出してはならない解析器")})
+
+	got, err := resolver.ResolveUniqueTypoMatches(
+		context.Background(),
+		"労契約法",
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: ResolveUniqueTypoMatches() のエラー = %v", err)
+	}
+	want := []Match{{
+		resourceID: "labor-contract",
+		canonical:  "労働契約法",
+		kind:       MatchKindUniqueTypoCorrection,
+	}}
+	if !slices.Equal(got, want) {
+		t.Fatalf("SOT-ARCH-021: typo matches = %#v, want %#v", got, want)
+	}
+
+	exact, err := resolver.ResolveUniqueTypoMatches(
+		context.Background(),
+		"労働契約法",
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: 完全一致の判定エラー = %v", err)
+	}
+	if exact != nil {
+		t.Fatalf("SOT-ARCH-021: 完全一致を誤記として返しました: %#v", exact)
 	}
 }

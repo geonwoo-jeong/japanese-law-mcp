@@ -316,6 +316,10 @@ func TestPreprocessResultRejectsInvalidQueryComparisonKeyAndRef(t *testing.T) {
 			Query:         "民法",
 			ComparisonKey: string([]byte{'a', 0xff}),
 		},
+		"query から導出されていない comparison key": {
+			Query:         "民法",
+			ComparisonKey: "刑法",
+		},
 		"不正な ref": {
 			Query:         "民法",
 			ComparisonKey: "民法",
