@@ -197,7 +197,8 @@ func TestPreprocessFailsInsteadOfTruncatingMentionOverflow(t *testing.T) {
 		len(result.IdentifierMentions()) != 0 ||
 		len(result.DateMentions()) != 0 ||
 		len(result.ArticleMentions()) != 0 ||
-		len(result.ParagraphMentions()) != 0 {
+		len(result.ParagraphMentions()) != 0 ||
+		len(result.QueryTermMentions()) != 0 {
 		t.Fatalf(
 			"SOT-MODEL-025: エラー時に途中結果を返しました: %#v",
 			snapshotResult(result),

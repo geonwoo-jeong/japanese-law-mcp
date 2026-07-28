@@ -31,6 +31,7 @@ type TokenOccurrence struct {
 	startByte      int
 	endByte        int
 	userDictionary bool
+	partOfSpeech   []string
 }
 
 // Surface は、原文に現れた token 表記を返す。
@@ -51,6 +52,11 @@ func (o TokenOccurrence) EndByte() int {
 // UserDictionary は、token が起動時の user dictionary に由来するかを返す。
 func (o TokenOccurrence) UserDictionary() bool {
 	return o.userDictionary
+}
+
+// PartOfSpeech は、Kagome が返した品詞階層の複製を返す。
+func (o TokenOccurrence) PartOfSpeech() []string {
+	return append([]string(nil), o.partOfSpeech...)
 }
 
 // NewAnalyzer は、登録語を複製して不変な tokenizer を構築する。
@@ -155,6 +161,7 @@ func (a *Analyzer) AnalyzeTokenOccurrences(
 			startByte:      startByte,
 			endByte:        startByte + len(token.Surface),
 			userDictionary: token.Class == tokenizer.USER,
+			partOfSpeech:   append([]string(nil), token.POS()...),
 		})
 	}
 	return occurrences, nil

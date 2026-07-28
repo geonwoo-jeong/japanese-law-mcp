@@ -132,6 +132,24 @@ func (p *Preprocessor) Preprocess(
 	if err != nil {
 		return legalquery.PreprocessResult{}, err
 	}
+	protectedSpans := make([]byteSpan, 0)
+	protectedSpans = appendMentionSpans(protectedSpans, lawMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, conceptMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, cueMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, identifierMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, dateMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, articleMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, paragraphMentions)
+	queryTermMentions, err := extractQueryTermMentions(
+		ctx,
+		query,
+		tokens,
+		protectedSpans,
+		cueMentions,
+	)
+	if err != nil {
+		return legalquery.PreprocessResult{}, err
+	}
 
 	values := legalquery.PreprocessResultValues{
 		Query:                query,
@@ -143,6 +161,7 @@ func (p *Preprocessor) Preprocess(
 		DateMentions:         dateMentions,
 		ArticleMentions:      articleMentions,
 		ParagraphMentions:    paragraphMentions,
+		QueryTermMentions:    queryTermMentions,
 	}
 	if ref, exists := request.Ref(); exists {
 		values.Ref = &ref

@@ -14,6 +14,7 @@ type tokenOccurrenceSnapshot struct {
 	startByte      int
 	endByte        int
 	userDictionary bool
+	partOfSpeech   []string
 }
 
 func TestAnalyzeTokenOccurrencesPreservesUTF8ByteSpansAndDuplicates(
@@ -83,12 +84,14 @@ func TestAnalyzeTokenOccurrencesPreservesUTF8ByteSpansAndDuplicates(
 			startByte:      len("前"),
 			endByte:        len("前個情法"),
 			userDictionary: true,
+			partOfSpeech:   []string{"検索登録語"},
 		},
 		{
 			surface:        "個情法",
 			startByte:      len("前個情法と"),
 			endByte:        len("前個情法と個情法"),
 			userDictionary: true,
+			partOfSpeech:   []string{"検索登録語"},
 		},
 	}
 	if !reflect.DeepEqual(registered, want) {
@@ -139,6 +142,60 @@ func TestAnalyzeTokenOccurrencesHonorsCancellationAndInputLimit(t *testing.T) {
 		t.Fatalf(
 			"SOT-ARCH-021: %d byte の入力を受理しました",
 			maxAnalyzerInputBytes+1,
+		)
+	}
+}
+
+func TestAnalyzeTokenOccurrencesCopiesPartOfSpeech(t *testing.T) {
+	t.Parallel()
+
+	analyzer, err := NewAnalyzer([]string{"検索"})
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: NewAnalyzer() のエラー = %v", err)
+	}
+	occurrences, err := analyzer.AnalyzeTokenOccurrences(
+		context.Background(),
+		"営業秘密を検索",
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: AnalyzeTokenOccurrences() のエラー = %v", err)
+	}
+
+	var nounFound bool
+	var registeredFound bool
+	for _, occurrence := range occurrences {
+		partOfSpeech := occurrence.PartOfSpeech()
+		if len(partOfSpeech) == 0 {
+			t.Fatalf(
+				"SOT-ARCH-021: %q の品詞がありません",
+				occurrence.Surface(),
+			)
+		}
+		switch occurrence.Surface() {
+		case "営業", "秘密":
+			if partOfSpeech[0] == "名詞" {
+				nounFound = true
+			}
+		case "検索":
+			if occurrence.UserDictionary() &&
+				partOfSpeech[0] == "検索登録語" {
+				registeredFound = true
+			}
+		}
+
+		original := append([]string(nil), partOfSpeech...)
+		partOfSpeech[0] = "変更済み"
+		if !reflect.DeepEqual(occurrence.PartOfSpeech(), original) {
+			t.Fatalf(
+				"SOT-ARCH-021: %q の品詞 getter から値を変更できました",
+				occurrence.Surface(),
+			)
+		}
+	}
+	if !nounFound || !registeredFound {
+		t.Fatalf(
+			"SOT-ARCH-021: 名詞または user dictionary 品詞を確認できません: %#v",
+			snapshotTokenOccurrences(occurrences),
 		)
 	}
 }
@@ -237,5 +294,6 @@ func snapshotTokenOccurrence(
 		startByte:      occurrence.StartByte(),
 		endByte:        occurrence.EndByte(),
 		userDictionary: occurrence.UserDictionary(),
+		partOfSpeech:   occurrence.PartOfSpeech(),
 	}
 }

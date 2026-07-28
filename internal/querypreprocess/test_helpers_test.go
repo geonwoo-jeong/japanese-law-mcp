@@ -252,6 +252,7 @@ type preprocessSnapshot struct {
 	dates       []string
 	articles    []string
 	paragraphs  []string
+	queryTerms  []string
 }
 
 func snapshotResult(result legalquery.PreprocessResult) preprocessSnapshot {
@@ -320,6 +321,15 @@ func snapshotResult(result legalquery.PreprocessResult) preprocessSnapshot {
 			mention.Span().StartByte(),
 			mention.Span().EndByte(),
 			mention.ParagraphNumber(),
+		))
+	}
+	for _, mention := range result.QueryTermMentions() {
+		snapshot.queryTerms = append(snapshot.queryTerms, fmt.Sprintf(
+			"%d:%d:%s:%s",
+			mention.Span().StartByte(),
+			mention.Span().EndByte(),
+			mention.Kind(),
+			mention.Surface(),
 		))
 	}
 	return snapshot

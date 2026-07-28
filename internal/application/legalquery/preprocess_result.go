@@ -22,6 +22,7 @@ type PreprocessResultValues struct {
 	DateMentions         []DateMention
 	ArticleMentions      []ArticleMention
 	ParagraphMentions    []ParagraphMention
+	QueryTermMentions    []QueryTermMention
 }
 
 // PreprocessResult は、原文上の位置を保持した provider 非依存の事実である。
@@ -36,6 +37,7 @@ type PreprocessResult struct {
 	dateMentions         []DateMention
 	articleMentions      []ArticleMention
 	paragraphMentions    []ParagraphMention
+	queryTermMentions    []QueryTermMention
 }
 
 // NewPreprocessResult は、入力を複製し、正規順と上限を検証する。
@@ -50,6 +52,7 @@ func NewPreprocessResult(values PreprocessResultValues) (PreprocessResult, error
 		dateMentions:         append([]DateMention(nil), values.DateMentions...),
 		articleMentions:      append([]ArticleMention(nil), values.ArticleMentions...),
 		paragraphMentions:    append([]ParagraphMention(nil), values.ParagraphMentions...),
+		queryTermMentions:    append([]QueryTermMention(nil), values.QueryTermMentions...),
 	}
 	if values.Ref != nil {
 		ref := *values.Ref
@@ -114,6 +117,11 @@ func (r PreprocessResult) ParagraphMentions() []ParagraphMention {
 	return append([]ParagraphMention(nil), r.paragraphMentions...)
 }
 
+// QueryTermMentions は、一般検索語出現の複製を返す。
+func (r PreprocessResult) QueryTermMentions() []QueryTermMention {
+	return append([]QueryTermMention(nil), r.queryTermMentions...)
+}
+
 // Validate は、前処理結果の構造、位置、順序および上限を確認する。
 func (r PreprocessResult) Validate() error {
 	request, err := NewRequest(RequestValues{Query: r.query, Ref: r.ref})
@@ -140,7 +148,8 @@ func (r PreprocessResult) Validate() error {
 		len(r.identifierMentions) +
 		len(r.dateMentions) +
 		len(r.articleMentions) +
-		len(r.paragraphMentions)
+		len(r.paragraphMentions) +
+		len(r.queryTermMentions)
 	if total > maxPreprocessTotalMentions {
 		return fmt.Errorf(
 			"前処理の全出現は %d 件以下でなければなりません",
@@ -212,6 +221,17 @@ func (r PreprocessResult) Validate() error {
 		maxPreprocessMentions,
 		func(value ParagraphMention) string {
 			return strconv.Itoa(value.ParagraphNumber())
+		},
+	); err != nil {
+		return err
+	}
+	if err := validateMentionSequence(
+		r.query,
+		"queryTermMentions",
+		r.queryTermMentions,
+		maxPreprocessMentions,
+		func(value QueryTermMention) string {
+			return string(value.Kind())
 		},
 	); err != nil {
 		return err
