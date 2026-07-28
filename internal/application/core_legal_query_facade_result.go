@@ -24,7 +24,7 @@ func validateLawSearchFacadeResult(
 		return fmt.Errorf("law.search@1 の結果が request.limit を超えています")
 	}
 	for index, item := range items {
-		if err := validateCoreFacadeRef(item.Ref(), binding); err != nil {
+		if err := validateLegalQueryFacadeRef(item.Ref(), binding); err != nil {
 			return fmt.Errorf(
 				"law.search@1 の items[%d] が選択済み binding と一致しません: %w",
 				index,
@@ -53,7 +53,7 @@ func validateLawContentFacadeResult(
 		)
 	}
 	for index, item := range items {
-		if err := validateCoreFacadeRef(item.Ref(), binding); err != nil {
+		if err := validateLegalQueryFacadeRef(item.Ref(), binding); err != nil {
 			return fmt.Errorf(
 				"law.content.search@1 の items[%d] が選択済み binding と一致しません: %w",
 				index,
@@ -76,7 +76,7 @@ func validateLawUpdateFacadeResult(
 		return fmt.Errorf("law.update.list@1 の結果日付が request.date と一致しません")
 	}
 	for index, item := range result.Items() {
-		if err := validateCoreFacadeRef(item.Ref(), binding); err != nil {
+		if err := validateLegalQueryFacadeRef(item.Ref(), binding); err != nil {
 			return fmt.Errorf(
 				"law.update.list@1 の items[%d] が選択済み binding と一致しません: %w",
 				index,
@@ -178,7 +178,7 @@ func validateCoreFacadeResource[T interface{ Validate() error }](
 	if err := result.Validate(); err != nil {
 		return fmt.Errorf("%s の結果が有効ではありません: %w", capabilityID, err)
 	}
-	if err := validateCoreFacadeRef(result.Ref(), binding); err != nil {
+	if err := validateLegalQueryFacadeRef(result.Ref(), binding); err != nil {
 		return fmt.Errorf(
 			"%s の結果が選択済み binding と一致しません: %w",
 			capabilityID,
@@ -188,7 +188,7 @@ func validateCoreFacadeResource[T interface{ Validate() error }](
 	return nil
 }
 
-func validateCoreFacadeRef(
+func validateLegalQueryFacadeRef(
 	ref model.SourceResourceRef,
 	binding ProviderBindingMetadata,
 ) error {

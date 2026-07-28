@@ -3,6 +3,7 @@ package legalquery
 import (
 	"context"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
@@ -37,4 +38,19 @@ type CoreCapabilityFacade interface {
 		LawUpdateListIntentV1,
 		LegalQueryStepBudget,
 	) (lawupdatelist.Page, error)
+}
+
+// JudicialCasesCapabilityFacade は、裁判例 pack の logical input を型付き能力へ接続する。
+type JudicialCasesCapabilityFacade interface {
+	Validate() error
+	SearchJudicialDecisions(
+		context.Context,
+		JudicialDecisionSearchIntentV1,
+		LegalQueryStepBudget,
+	) (judicialdecisionsearch.Page, error)
+	ReadJudicialDecision(
+		context.Context,
+		JudicialDecisionReadIntentV1,
+		LegalQueryStepBudget,
+	) (model.SourcedResource[model.JudicialDecisionDetails], error)
 }

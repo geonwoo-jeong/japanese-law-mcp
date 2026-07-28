@@ -28,7 +28,7 @@ func (f CoreLegalQueryFacade) SearchLaws(
 			err,
 		)
 	}
-	if err := validateCoreFacadeCollectionBudget(budget); err != nil {
+	if err := validateLegalQueryFacadeCollectionBudget(budget); err != nil {
 		return lawsearch.Page{}, err
 	}
 	binding, err := f.primaryBinding(
@@ -57,7 +57,7 @@ func (f CoreLegalQueryFacade) SearchLaws(
 	}
 	result, err := port.Search(ctx, request)
 	if err != nil {
-		return lawsearch.Page{}, coreFacadeExecutedError(err)
+		return lawsearch.Page{}, legalQueryFacadeExecutedError(err)
 	}
 	if err := validateLawSearchFacadeResult(result, request, binding); err != nil {
 		return lawsearch.Page{}, err
@@ -80,7 +80,7 @@ func (f CoreLegalQueryFacade) SearchLawContent(
 			err,
 		)
 	}
-	if err := validateCoreFacadeCollectionBudget(budget); err != nil {
+	if err := validateLegalQueryFacadeCollectionBudget(budget); err != nil {
 		return lawcontentsearch.Page{}, err
 	}
 	binding, err := f.primaryBinding(
@@ -114,7 +114,7 @@ func (f CoreLegalQueryFacade) SearchLawContent(
 	}
 	result, err := port.Search(ctx, request)
 	if err != nil {
-		return lawcontentsearch.Page{}, coreFacadeExecutedError(err)
+		return lawcontentsearch.Page{}, legalQueryFacadeExecutedError(err)
 	}
 	if err := validateLawContentFacadeResult(result, request, binding); err != nil {
 		return lawcontentsearch.Page{}, err
@@ -135,7 +135,7 @@ func (f CoreLegalQueryFacade) ReadLawDocument(
 		return model.SourcedResource[model.LawDocumentRepresentation]{},
 			fmt.Errorf("law read logical input が有効ではありません: %w", err)
 	}
-	if err := validateCoreFacadeReadBudget(budget); err != nil {
+	if err := validateLegalQueryFacadeReadBudget(budget); err != nil {
 		return model.SourcedResource[model.LawDocumentRepresentation]{}, err
 	}
 	binding, err := f.lawBinding(
@@ -167,7 +167,7 @@ func (f CoreLegalQueryFacade) ReadLawDocument(
 	result, err := port.Read(ctx, request)
 	if err != nil {
 		return model.SourcedResource[model.LawDocumentRepresentation]{},
-			coreFacadeExecutedError(err)
+			legalQueryFacadeExecutedError(err)
 	}
 	if err := validateLawDocumentFacadeResult(
 		result,
@@ -192,7 +192,7 @@ func (f CoreLegalQueryFacade) ReadLawArticle(
 		return model.SourcedResource[model.LawArticleFragment]{},
 			fmt.Errorf("law article read logical input が有効ではありません: %w", err)
 	}
-	if err := validateCoreFacadeReadBudget(budget); err != nil {
+	if err := validateLegalQueryFacadeReadBudget(budget); err != nil {
 		return model.SourcedResource[model.LawArticleFragment]{}, err
 	}
 	binding, err := f.lawBinding(
@@ -224,7 +224,7 @@ func (f CoreLegalQueryFacade) ReadLawArticle(
 	result, err := port.Read(ctx, request)
 	if err != nil {
 		return model.SourcedResource[model.LawArticleFragment]{},
-			coreFacadeExecutedError(err)
+			legalQueryFacadeExecutedError(err)
 	}
 	if err := validateLawArticleFacadeResult(
 		result,
@@ -251,7 +251,7 @@ func (f CoreLegalQueryFacade) ListLawUpdates(
 			err,
 		)
 	}
-	if err := validateCoreFacadeCollectionBudget(budget); err != nil {
+	if err := validateLegalQueryFacadeCollectionBudget(budget); err != nil {
 		return lawupdatelist.Page{}, err
 	}
 	binding, err := f.primaryBinding(
@@ -285,7 +285,7 @@ func (f CoreLegalQueryFacade) ListLawUpdates(
 	}
 	result, err := port.List(ctx, request)
 	if err != nil {
-		return lawupdatelist.Page{}, coreFacadeExecutedError(err)
+		return lawupdatelist.Page{}, legalQueryFacadeExecutedError(err)
 	}
 	if err := validateLawUpdateFacadeResult(result, request, binding); err != nil {
 		return lawupdatelist.Page{}, err
@@ -293,7 +293,7 @@ func (f CoreLegalQueryFacade) ListLawUpdates(
 	return result, nil
 }
 
-func coreFacadeExecutedError(cause error) error {
+func legalQueryFacadeExecutedError(cause error) error {
 	result, err := legalquery.NewExecutedStepError(cause)
 	if err != nil {
 		return fmt.Errorf("provider port error を分類できません: %w", err)

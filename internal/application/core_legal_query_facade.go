@@ -133,7 +133,7 @@ func (f CoreLegalQueryFacade) validateCallContext(ctx context.Context) error {
 	return nil
 }
 
-func validateCoreFacadeCollectionBudget(
+func validateLegalQueryFacadeCollectionBudget(
 	budget legalquery.LegalQueryStepBudget,
 ) error {
 	if err := budget.Validate(); err != nil {
@@ -148,7 +148,7 @@ func validateCoreFacadeCollectionBudget(
 	return nil
 }
 
-func validateCoreFacadeReadBudget(
+func validateLegalQueryFacadeReadBudget(
 	budget legalquery.LegalQueryStepBudget,
 ) error {
 	if err := budget.Validate(); err != nil {
@@ -208,19 +208,19 @@ func (f CoreLegalQueryFacade) explicitLawBinding(
 		majorVersion,
 	)
 	if !exists {
-		return ProviderBindingMetadata{}, coreFacadeInvalidRef(
+		return ProviderBindingMetadata{}, legalQueryFacadeInvalidRef(
 			"に対応する採用済み capability binding がありません",
 		)
 	}
 	if ref.Key().SourceID() != binding.SourceID() {
-		return ProviderBindingMetadata{}, coreFacadeInvalidRef(
+		return ProviderBindingMetadata{}, legalQueryFacadeInvalidRef(
 			"の sourceId が採用済み provider と一致しません",
 		)
 	}
 	return binding, nil
 }
 
-func coreFacadeInvalidRef(reason string) error {
+func legalQueryFacadeInvalidRef(reason string) error {
 	result, err := legalquery.NewArgumentError("ref", reason)
 	if err != nil {
 		return fmt.Errorf("ref の入力エラーを作成できません: %w", err)
