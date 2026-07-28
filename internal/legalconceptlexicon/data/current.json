@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "lexiconVersion": "legal-concept-2026-07-28",
+  "generatedAt": "2026-07-28T00:00:00Z",
+  "entries": [
+    {
+      "conceptId": "adult-guardianship",
+      "canonical": "成年後見",
+      "terms": ["成年後見"],
+      "comparisonTerms": ["成年後見"],
+      "sourceName": "裁判所 成年後見制度（後見・保佐・補助）の概要を知りたい方へ",
+      "sourceUrl": "https://www.courts.go.jp/saiban/koukenp00/koukenp1/index.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般概念としての成年後見から、条文検索と裁判例検索の両候補を作る。",
+      "selectionPolicy": "ambiguous_no_auto_execute",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "成年後見",
+          "requiredPacks": []
+        },
+        {
+          "task": "search",
+          "resource": "judicial_decision",
+          "inputKind": "judicial_decision_search",
+          "officialTerm": "成年後見",
+          "requiredPacks": ["judicial-cases"]
+        }
+      ]
+    },
+    {
+      "conceptId": "annual-paid-leave",
+      "canonical": "有休",
+      "terms": ["有休"],
+      "comparisonTerms": ["有休"],
+      "sourceName": "厚生労働省 年次有給休暇とはどのような制度ですか。",
+      "sourceUrl": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudoukijun/faq/kijyunhou_6_00001.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般に有休と呼ばれる内容を、法令本文検索では年次有給休暇の正式語で確認する。",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "年次有給休暇",
+          "requiredPacks": []
+        }
+      ]
+    },
+    {
+      "conceptId": "child-support",
+      "canonical": "養育費",
+      "terms": ["養育費"],
+      "comparisonTerms": ["養育費"],
+      "sourceName": "裁判所 養育費に関する手続",
+      "sourceUrl": "https://www.courts.go.jp/saiban/syurui/syurui_kazi/youikuhi-tetsuzuki/index.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般概念としての養育費から、条文検索と裁判例検索の両候補を作る。",
+      "selectionPolicy": "ambiguous_no_auto_execute",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "養育費",
+          "requiredPacks": []
+        },
+        {
+          "task": "search",
+          "resource": "judicial_decision",
+          "inputKind": "judicial_decision_search",
+          "officialTerm": "養育費",
+          "requiredPacks": ["judicial-cases"]
+        }
+      ]
+    },
+    {
+      "conceptId": "childcare-leave",
+      "canonical": "育休",
+      "terms": ["育休"],
+      "comparisonTerms": ["育休"],
+      "sourceName": "厚生労働省 育児休業制度特設サイト",
+      "sourceUrl": "https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/koyoukintou/ryouritsu/ikuji/",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般に育休と呼ばれる内容を、育児休業の正式語へ対応付ける。",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "育児休業",
+          "requiredPacks": []
+        }
+      ]
+    },
+    {
+      "conceptId": "cooling-off",
+      "canonical": "クーリング・オフ",
+      "terms": ["クーリング・オフ"],
+      "comparisonTerms": ["くーりんぐおふ"],
+      "sourceName": "消費者庁 特定商取引法ガイド 訪問販売",
+      "sourceUrl": "https://www.no-trouble.caa.go.jp/what/doortodoorsales/",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "クーリングオフの法令本文検索では、正式語として申込みの撤回を使う。",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "申込みの撤回",
+          "requiredPacks": []
+        }
+      ]
+    },
+    {
+      "conceptId": "overtime-premium-pay",
+      "canonical": "残業代",
+      "terms": ["残業代"],
+      "comparisonTerms": ["残業代"],
+      "sourceName": "厚生労働省 時間外・休日労働と割増賃金",
+      "sourceUrl": "https://www.check-roudou.mhlw.go.jp/study/roudousya_jikangai.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "法定時間外の残業代に関する法令本文検索では、割増賃金の正式語を使う。",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "割増賃金",
+          "requiredPacks": []
+        }
+      ]
+    },
+    {
+      "conceptId": "permanent-residence",
+      "canonical": "永住権",
+      "terms": ["永住権"],
+      "comparisonTerms": ["永住権"],
+      "sourceName": "東京法務局 （国籍関係）永住許可手続について",
+      "sourceUrl": "https://houmukyoku.moj.go.jp/tokyo/page000001_00195.html",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般概念としての永住権から、条文検索と裁判例検索の両候補を作る。",
+      "selectionPolicy": "ambiguous_no_auto_execute",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "永住許可",
+          "requiredPacks": []
+        },
+        {
+          "task": "search",
+          "resource": "judicial_decision",
+          "inputKind": "judicial_decision_search",
+          "officialTerm": "永住許可",
+          "requiredPacks": ["judicial-cases"]
+        }
+      ]
+    },
+    {
+      "conceptId": "unemployment-basic-allowance",
+      "canonical": "失業手当",
+      "terms": ["失業手当"],
+      "comparisonTerms": ["失業手当"],
+      "sourceName": "厚生労働省 離職されたみなさまへ",
+      "sourceUrl": "https://www.mhlw.go.jp/content/11600000/000951119.pdf",
+      "confirmedAt": "2026-07-28",
+      "mappingNote": "一般に失業手当と呼ばれる内容を、雇用保険の基本手当へ対応付ける。",
+      "selectionPolicy": "single_candidate",
+      "candidates": [
+        {
+          "task": "search",
+          "resource": "law_provision",
+          "inputKind": "law_content_search",
+          "officialTerm": "基本手当",
+          "requiredPacks": []
+        }
+      ]
+    }
+  ]
+}
