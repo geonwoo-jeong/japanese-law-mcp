@@ -23,6 +23,7 @@ type SelectedCapabilityBinding interface {
 
 // CoreRequestMaterializer は、法令コアの logical input を型付き request に変換する。
 type CoreRequestMaterializer interface {
+	Validate() error
 	MaterializeLawSearch(
 		LawSearchIntentV1,
 		SelectedCapabilityBinding,
@@ -52,6 +53,7 @@ type CoreRequestMaterializer interface {
 
 // JudicialCasesRequestMaterializer は、裁判例 pack の logical input を変換する。
 type JudicialCasesRequestMaterializer interface {
+	Validate() error
 	MaterializeJudicialDecisionSearch(
 		JudicialDecisionSearchIntentV1,
 		SelectedCapabilityBinding,
@@ -74,6 +76,11 @@ func NewCoreMaterializer() CoreMaterializer {
 	return CoreMaterializer{initialized: true}
 }
 
+// Validate は、法令コア materializer が constructor で作成されたことを確認する。
+func (m CoreMaterializer) Validate() error {
+	return validateMaterializer(m.initialized, "CoreMaterializer")
+}
+
 // JudicialCasesMaterializer は、裁判例の既存 capability request を作る。
 type JudicialCasesMaterializer struct {
 	initialized bool
@@ -82,6 +89,11 @@ type JudicialCasesMaterializer struct {
 // NewJudicialCasesMaterializer は、検証可能な裁判例 materializer を返す。
 func NewJudicialCasesMaterializer() JudicialCasesMaterializer {
 	return JudicialCasesMaterializer{initialized: true}
+}
+
+// Validate は、裁判例 materializer が constructor で作成されたことを確認する。
+func (m JudicialCasesMaterializer) Validate() error {
+	return validateMaterializer(m.initialized, "JudicialCasesMaterializer")
 }
 
 type selectedCapabilityBindingSnapshot struct {
