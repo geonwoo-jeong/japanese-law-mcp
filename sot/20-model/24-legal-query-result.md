@@ -137,6 +137,10 @@ pack 無効の非実行を `partial` にしない。実行した全 attempt が�
 3. `対象の法令名、法令 ID または条番号を指定してください。`
 4. `対象の裁判例を検索する語または裁判例の ref を指定してください。`
 
+result assembler は `needs_clarification` plan の `selected` が一件以上ならその候補だけを、空なら `rankedCandidates` の上位二件までを、質問を選ぶ内部 pool とする。この pool 自体、候補 ID または score は公開しない。
+
+pool が空なら一番目と二番目の質問を返す。pool 内の step に二種類以上の task があれば一番目、二種類以上の resource があれば二番目を候補にする。二問未満で、resource が `law` と `law_provision` だけなら三番目、`judicial_decision` だけなら四番目を追加する。質問は常に上表の順序で重複なく並べ、二問に達した時点で追加しない。
+
 質問は入力本文、内部 token または score を反復せず、task、resource、法令若しくは裁判例のどれを指定すべきかだけを案内する。
 
 ## 確認

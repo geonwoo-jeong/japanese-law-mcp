@@ -107,7 +107,7 @@ effectiveLimit = min(
 
 step は最大四つなので `effectiveLimit` は一以上となる。`C == 0` の場合は collection limit を作らない。
 
-検索 capability request は `effectiveLimit` を使用し、continuation を省略する。`law.update.list@1` は完全一覧を取得する既存契約を変更せず、result assembler が計画順の先頭から `effectiveLimit` 件だけを公開 preview へ投影し、残件を `hasMore` と情報源の正確な `totalCount` で示す。
+検索 capability request は `effectiveLimit` を使用し、continuation を省略する。`law.update.list@1` は完全一覧を取得する既存契約を変更せず、executor の能力結果 mapping が計画順の先頭から `effectiveLimit` 件だけを attempt の公開 preview へ投影し、残件を `hasMore` と情報源の正確な `totalCount` で示す。最終 result assembler は検証済み attempt を再切出しせず保持する。
 
 空結果、失敗または実際の返却件数が上限未満でも、未使用分を後続 step へ再配分しない。これにより並列の完了順と結果件数で公開結果が変わらない。
 

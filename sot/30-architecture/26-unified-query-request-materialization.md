@@ -25,7 +25,7 @@ materializer は受け取った binding metadata の capability ID と major ver
 
 `law.search@1`、`law.content.search@1` および `judicial-decision.search@1` は、確定済み `effectiveLimit` を request の `limit` に設定し、`continuationToken` を空にする。logical input、利用者入力または capability の既定値から別の上限を補わない。
 
-`law.update.list@1` は一日分の完全一覧を返す既存契約を保つため、request に上限または continuation を追加しない。collection 予算の存在だけを検証し、返却 preview の切出しには `SOT-MODEL-023` の result assembler 規則を適用する。
+`law.update.list@1` は一日分の完全一覧を返す既存契約を保つため、request に上限または continuation を追加しない。collection 予算の存在だけを検証し、executor の能力結果 mapping で `SOT-MODEL-023` の公開 preview 規則を適用する。最終 result assembler はこの attempt を再切出ししない。
 
 ## 能力別の変換
 

@@ -77,7 +77,7 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 
 `limitPerAttempt` は collection step の希望上限であり、確定値ではない。executor は、read item の予約と選択済み collection step 数を使う `SOT-MODEL-023` の式で、全 collection step の `effectiveLimit` を外部呼出し前に確定する。
 
-検索 capability には `effectiveLimit` を渡し、read capability では limit を使わない。`law.update.list@1` は完全一覧という既存契約を変更せず、公開結果だけを `effectiveLimit` 件へ切り詰め、`hasMore` と正確な総件数を保持する。空結果や失敗後に item 予算を再配分しない。
+検索 capability には `effectiveLimit` を渡し、read capability では limit を使わない。`law.update.list@1` は完全一覧という既存契約を変更せず、executor の能力結果 mapping で attempt の公開結果だけを `effectiveLimit` 件へ切り詰め、`hasMore` と正確な総件数を保持する。最終 result assembler は検証済み attempt を再切出ししない。空結果や失敗後に item 予算を再配分しない。
 
 全体では候補二件、ranked candidate 十六件、capability 呼出し四回、返却 item 四十件および最初の page だけという固定予算を超えない。
 

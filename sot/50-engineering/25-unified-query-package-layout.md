@@ -68,8 +68,8 @@ testdata/
 - `planner.go`: profile と前処理結果からの候補生成
 - `selector.go`: score、margin、pack および対象外の分離判定
 - `materializer.go`: `SOT-ARCH-026` の選択済み binding metadata から既存 capability request を作る能力別 materializer
-- `executor.go`: item 予算の事前配分、計画順、限定並列、context、部分失敗および呼出し予算
-- `result.go`: 能力別結果から `LegalQueryResult` への lossless な組立て
+- `executor.go`: item 予算の事前配分、計画順、限定並列、context、部分失敗、呼出し予算および能力結果から上限内の型付き attempt への mapping
+- `result.go`: 検証済み attempt を再切出しせず、状態、固定 notice および明確化質問を導出する `LegalQueryResult` への lossless な組立て
 - `service.go`: 一回の照会を調整する公開アプリケーション入口
 - `ports.go`: 前処理、profile、pack 状態および能力別ユースケースの必要最小 interface
 
