@@ -48,7 +48,32 @@ func (p *Profile) buildSearchSubjects(
 	input legalquery.CandidateGenerationInput,
 ) ([]candidateDraft, bool, error) {
 	result := make([]candidateDraft, 0)
+	caseNumbers := input.CaseNumberMentions()
+	for _, caseNumber := range caseNumbers {
+		searchInput, err := legalquery.NewJudicialDecisionSearchIntentV1(
+			legalquery.JudicialDecisionSearchIntentV1Values{
+				Query: caseNumber.SearchText(),
+			},
+		)
+		if err != nil {
+			return nil, false, err
+		}
+		result = append(result, candidateDraft{
+			evidence: []legalquery.EvidenceCode{
+				legalquery.EvidenceStructuredReference,
+				legalquery.EvidenceExplicitTask,
+				legalquery.EvidenceExplicitResource,
+			},
+			steps: []stepDraft{{
+				startByte: caseNumber.Span().StartByte(),
+				input:     searchInput,
+			}},
+		})
+	}
 	for _, term := range input.QueryTermMentions() {
+		if queryTermDuplicatesCaseNumber(term, caseNumbers) {
+			continue
+		}
 		searchInput, err := legalquery.NewJudicialDecisionSearchIntentV1(
 			legalquery.JudicialDecisionSearchIntentV1Values{
 				Query: term.Surface(),
@@ -155,6 +180,18 @@ func (p *Profile) buildSearchSubjects(
 			result[right].steps[0].startByte
 	})
 	return result, ambiguous, nil
+}
+
+func queryTermDuplicatesCaseNumber(
+	term legalquery.QueryTermMention,
+	caseNumbers []legalquery.JudicialCaseNumberMention,
+) bool {
+	for _, caseNumber := range caseNumbers {
+		if term.Span() == caseNumber.Span() {
+			return true
+		}
+	}
+	return false
 }
 
 func isJudicialConceptCandidate(

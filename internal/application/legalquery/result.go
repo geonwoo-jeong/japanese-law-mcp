@@ -37,24 +37,26 @@ const (
 )
 
 const (
-	legalQueryFirstPageNotice        = "最初のページだけを返しています。続きが必要な場合は対応する専門ツールを使用してください。"
-	legalQuerySeparateAttemptsNotice = "複数の解釈または step の件数、順位および継続位置は統合していません。"
-	legalQueryPartialFailureNotice   = "一部の step が失敗しました。attempts の error を確認してください。"
-	legalQueryPackDisabledNotice     = "必要な拡張パックが無効です。interpretations の requiredPacks を確認してください。"
-	legalQueryNonJapaneseNotice      = "日本語の法情報取得要求を入力してください。"
-	legalQueryMixedUnsupportedNotice = "法情報の取得要求と法的助言、翻訳または対象外の要求を分けて入力してください。"
-	legalQueryUnsupportedScopeNotice = "指定した task または resource は統合照会の採用範囲外です。対応する専門ツールを確認してください。"
+	legalQueryFirstPageNotice            = "最初のページだけを返しています。続きが必要な場合は対応する専門ツールを使用してください。"
+	legalQuerySeparateAttemptsNotice     = "複数の解釈または step の件数、順位および継続位置は統合していません。"
+	legalQueryPartialFailureNotice       = "一部の step が失敗しました。attempts の error を確認してください。"
+	legalQueryPackDisabledNotice         = "必要な拡張パックが無効です。interpretations の requiredPacks を確認してください。"
+	legalQueryNonJapaneseNotice          = "日本語の法情報取得要求を入力してください。"
+	legalQueryStandaloneStructuredNotice = "事件番号、識別子または日付だけを指定する場合は、対応する専門ツールを使用してください。"
+	legalQueryMixedUnsupportedNotice     = "法情報の取得要求と法的助言、翻訳または対象外の要求を分けて入力してください。"
+	legalQueryUnsupportedScopeNotice     = "指定した task または resource は統合照会の採用範囲外です。対応する専門ツールを確認してください。"
 )
 
 // 公開 JSON Schema と result assembler が同じ固定注意を参照するための別名である。
 const (
-	LegalQueryFirstPageNotice        = legalQueryFirstPageNotice
-	LegalQuerySeparateAttemptsNotice = legalQuerySeparateAttemptsNotice
-	LegalQueryPartialFailureNotice   = legalQueryPartialFailureNotice
-	LegalQueryPackDisabledNotice     = legalQueryPackDisabledNotice
-	LegalQueryNonJapaneseNotice      = legalQueryNonJapaneseNotice
-	LegalQueryMixedUnsupportedNotice = legalQueryMixedUnsupportedNotice
-	LegalQueryUnsupportedScopeNotice = legalQueryUnsupportedScopeNotice
+	LegalQueryFirstPageNotice            = legalQueryFirstPageNotice
+	LegalQuerySeparateAttemptsNotice     = legalQuerySeparateAttemptsNotice
+	LegalQueryPartialFailureNotice       = legalQueryPartialFailureNotice
+	LegalQueryPackDisabledNotice         = legalQueryPackDisabledNotice
+	LegalQueryNonJapaneseNotice          = legalQueryNonJapaneseNotice
+	LegalQueryStandaloneStructuredNotice = legalQueryStandaloneStructuredNotice
+	LegalQueryMixedUnsupportedNotice     = legalQueryMixedUnsupportedNotice
+	LegalQueryUnsupportedScopeNotice     = legalQueryUnsupportedScopeNotice
 )
 
 // LegalQueryResult は、六つの公開成功結果だけを許す閉じた interface である。

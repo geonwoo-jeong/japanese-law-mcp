@@ -53,7 +53,7 @@ func TestServiceQueryは無効な入力で後段を呼ばない(t *testing.T) {
 	}
 }
 
-func TestServiceQueryは三種類の非実行を正常結果として返す(
+func TestServiceQueryは四種類の非実行を正常結果として返す(
 	t *testing.T,
 ) {
 	t.Parallel()
@@ -63,6 +63,7 @@ func TestServiceQueryは三種類の非実行を正常結果として返す(
 		profile   selectorTestProfile
 		packState PackState
 		status    LegalQueryResultStatus
+		notices   []string
 	}{
 		{
 			name: "needs clarification",
@@ -71,6 +72,18 @@ func TestServiceQueryは三種類の非実行を正常結果として返す(
 			},
 			packState: mustSelectorTestPackState(t, nil, nil),
 			status:    LegalQueryResultStatusNeedsClarification,
+		},
+		{
+			name: "standalone structured",
+			profile: selectorTestProfile{
+				signals: []CandidateGenerationSignal{
+					CandidateSignalStandaloneStructuredQuery,
+				},
+				selectionMode: QuerySelectionModeAutomatic,
+			},
+			packState: mustSelectorTestPackState(t, nil, nil),
+			status:    LegalQueryResultStatusUnsupported,
+			notices:   []string{LegalQueryStandaloneStructuredNotice},
 		},
 		{
 			name: "unsupported",
@@ -128,6 +141,14 @@ func TestServiceQueryは三種類の非実行を正常結果として返す(
 			}
 			if got := serviceResultStatus(t, result); got != test.status {
 				t.Fatalf("status = %q, want %q", got, test.status)
+			}
+			if test.notices != nil &&
+				!slices.Equal(result.Notices(), test.notices) {
+				t.Fatalf(
+					"SOT-MODEL-024: notices = %#v, want %#v",
+					result.Notices(),
+					test.notices,
+				)
 			}
 			if recorder.callCount() != 0 {
 				t.Fatalf(

@@ -19,6 +19,7 @@
 | `dateMentions` | span、surface、`Date` | 原文に完全な暦日として明記された日付 |
 | `articleMentions` | span、surface、provision、article number | 条番号または枝番号を含む条番号 |
 | `paragraphMentions` | span、surface、paragraph number | 項番号 |
+| `caseNumberMentions` | span、surface、era、year、case code、serial number、search text | `SOT-MODEL-027` の完全な裁判事件番号 |
 | `queryTermMentions` | span、surface、kind | 原文で検索対象として区切られた引用句、または一回の形態素解析から文法的な検索対象として確認できた句 |
 
 入力 `ref` は原文上の出現ではないため span を作らず、構造を検証した複製と有無を別に保持する。前処理結果は `ref` の provider、source、pack または選択した read capability との対応を決めない。
@@ -65,7 +66,7 @@ cue は最初の三種類だけを使用し、誤記から task または resour
 - 上記の句に `と`、`または`、`又は`、`若しくは`、`および`、`及び`、`並びに` または読点で直接並列された句は、個別の出現として採用する
 - 原文全体が一つの名詞句と句読点または空白だけからなる場合は、明示 cue がなくても一つの弱い一般語として採用できる
 
-法令名、法概念、cue、公式識別子、日付、条、項、`quoted_phrase` または user dictionary token と一 byte でも重なる形態素句は作らず、それらを名詞句の境界とする。不完全または入れ子になった引用区切りの内側も保護し、そこにある文字列を `morphological_phrase` として再解釈しない。引用区切りの内側にある cue は辞書出現として保持しても、引用区切りの外側にある形態素句の構文上の接続根拠にはしない。`morphological_phrase` の候補を作るために task、resource または provider 固有語を共通前処理へ埋め込まず、能力別 profile が注入した cue の位置だけを構文上の境界として利用する。
+法令名、法概念、cue、公式識別子、日付、条、項、事件番号、`quoted_phrase` または user dictionary token と一 byte でも重なる形態素句は作らず、それらを名詞句の境界とする。不完全または入れ子になった引用区切りの内側も保護し、そこにある文字列を `morphological_phrase` として再解釈しない。引用区切りの内側にある cue は辞書出現として保持しても、引用区切りの外側にある形態素句の構文上の接続根拠にはしない。`morphological_phrase` の候補を作るために task、resource または provider 固有語を共通前処理へ埋め込まず、能力別 profile が注入した cue の位置だけを構文上の境界として利用する。
 
 query profile は、`queryTermMentions` と cue その他の出現の位置から候補を作り、`all`、`any`、`exclude`、一つの検索か複数 step か、および採用する task/resource を決める。引用句または形態素句を外部情報源へそのまま送れるとはみなさず、選んだ logical input の constructor で能力ごとの文字数、空白および演算子制約を検証する。
 
@@ -79,13 +80,15 @@ query profile は、`queryTermMentions` と cue その他の出現の位置か�
 
 識別子らしい未知の文字列を、形式だけから公式識別子として採用しない。法令名辞書の同じ固定スナップショットで対応を確認できた値だけを出現にする。法令番号が複数法令へ対応する場合は、同じ span に対象ごとの出現を保持する。
 
+完全な裁判事件番号は `identifierMentions` ではなく、[SOT-MODEL-027](27-judicial-case-number-mention.md) の `caseNumberMentions` として保持する。これは入力の構造を確認した位置付き事実であり、公式情報源で存在または一意な資源対応を確認した識別子ではない。
+
 日付は西暦の `YYYY年M月D日` または `YYYY-MM-DD` として完全に明記され、実在する暦日だけを `YYYY-MM-DD` の `Date` へ変換する。年若しくは月だけの値、相対日、現在日または識別子内部の八桁数字から日付を補わない。
 
 条番号は正の十進整数を `_` で連結した `LawArticleLocation` と同じ正規形へ変換する。例えば `第398条の2` は `398_2` とする。項番号は一以上の整数とする。原始附則を原文で明示した条だけを `supplementary` とし、それ以外を `main` とする。
 
 ## 上限と不変性
 
-原文は `LegalQueryRequest` の上限に従う。比較用正規化値は 4096 byte 以下とする。各出現配列は六十四件以下、cue 出現は百二十八件以下、全出現の合計は二百五十六件以下とする。`queryTermMentions` も各配列と全出現の上限に含める。上限を超えた場合は黙って切り捨てず、外部情報源を呼ぶ前に前処理エラーとする。
+原文は `LegalQueryRequest` の上限に従う。比較用正規化値は 4096 byte 以下とする。各出現配列は六十四件以下、cue 出現は百二十八件以下、全出現の合計は二百五十六件以下とする。`caseNumberMentions` と `queryTermMentions` も各配列と全出現の上限に含める。上限を超えた場合は黙って切り捨てず、外部情報源を呼ぶ前に前処理エラーとする。
 
 constructor は原文、原文から決定的に導出した比較用正規化値、`ref` および全配列を複製して検証する。getter は内部配列を変更できない複製として返す。辞書、索引、Kagome tokenizer および cue 語彙は起動後に変更せず、前処理結果を照会間で保持しない。
 
@@ -105,6 +108,7 @@ nil context と cancellation を拒否またはそのまま伝播し、途中ま
 - 正式名称、別名、比較用正規化、Kagome 抽出、一意な誤記および曖昧な補正先を区別する
 - 同じ表記が複数対象に対応する事実を保持し、一件へ選ばない
 - 法令名と法概念の競合、profile cue の差替え、入力 `ref` の複製および provider 非選択を確認する
+- 完全な事件番号を型付き出現として抽出し、不完全な事件番号を採用せず、事件番号だけから `ref` を作らない
 - 引用区切りを除いた検索語、内部空白、同じ語の複数 span、空・不完全・入れ子の引用および引用と辞書出現の併存を確認する
 - 文法的に接続した最大名詞句と並列句だけを抽出し、後続する自立名詞を持つ数詞修飾部は保持し、述語を越えた cue、制御語、単独数詞、事件番号、user dictionary token および保護された構造化 span を一般検索語にしない
 - query profile が一般検索語へ論理条件と task/resource を付与し、能力別 logical input の制約を満たさない原文をそのまま外部情報源へ送らない
@@ -115,6 +119,7 @@ nil context と cancellation を拒否またはそのまま伝播し、途中ま
 - [SOT-MODEL-016: SourceResourceRef](16-source-resource-ref.md)
 - [SOT-MODEL-018: LawArticleLocation](18-law-article-location.md)
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
+- [SOT-MODEL-027: JudicialCaseNumberMention](27-judicial-case-number-mention.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)

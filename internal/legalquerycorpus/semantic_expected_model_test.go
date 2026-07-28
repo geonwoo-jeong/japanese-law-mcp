@@ -177,6 +177,41 @@ func TestSemanticExpectedはzero値と直接JSON復元を拒否する(t *testing
 	}
 }
 
+func TestExpectedPlanは構造だけの理由を単独で受理する(t *testing.T) {
+	t.Parallel()
+
+	values := ExpectedPlanValues{
+		Decision: legalquery.PlanDecisionUnsupported,
+		ReasonCodes: []legalquery.ReasonCode{
+			legalquery.ReasonCodeStandaloneStructuredQuery,
+		},
+	}
+	if _, err := NewExpectedPlan(values); err != nil {
+		t.Fatalf("SOT-MODEL-023: standalone reason を拒否しました: %v", err)
+	}
+	values.ReasonCodes = []legalquery.ReasonCode{
+		legalquery.ReasonCodeStandaloneStructuredQuery,
+		legalquery.ReasonCodeUnsupportedTaskOrResource,
+	}
+	if _, err := NewExpectedPlan(values); err == nil {
+		t.Fatal("SOT-MODEL-023: standalone reason と他 reason の併存を受理しました")
+	}
+	expected, err := decodeSemanticExpectedV1(
+		mustJSONBytes(t, validExpectedPlansForAllDecisions()["single"]),
+	)
+	if err != nil {
+		t.Fatalf("試験用 expected plan を復元できません: %v", err)
+	}
+	meaning := expected.(ExpectedPlan).Meanings()[0]
+	values.ReasonCodes = []legalquery.ReasonCode{
+		legalquery.ReasonCodeStandaloneStructuredQuery,
+	}
+	values.Meanings = []ExpectedMeaning{meaning}
+	if _, err := NewExpectedPlan(values); err == nil {
+		t.Fatal("SOT-MODEL-023: standalone reason と meaning の併存を受理しました")
+	}
+}
+
 func TestSemanticExpected公開型は動的JSONを持たない(t *testing.T) {
 	t.Parallel()
 

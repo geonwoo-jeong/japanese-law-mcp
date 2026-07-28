@@ -17,7 +17,7 @@ func TestLoadEmbeddedは裁判例二能力と共有校正を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "judicial-cases" ||
-		metadata.ProfileVersion() != "judicial-cases-2026-07-29-1" ||
+		metadata.ProfileVersion() != "judicial-cases-2026-07-29-2" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-29-1" {
 		t.Fatalf("metadata = %#v", metadata)

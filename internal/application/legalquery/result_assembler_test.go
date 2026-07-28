@@ -292,6 +292,11 @@ func TestAssembleLegalQueryNonExecutionResultMapsUnsupportedNotices(t *testing.T
 			notices: []string{LegalQueryNonJapaneseNotice},
 		},
 		{
+			name:    "決定的な構造だけ",
+			reasons: []ReasonCode{ReasonCodeStandaloneStructuredQuery},
+			notices: []string{LegalQueryStandaloneStructuredNotice},
+		},
+		{
 			name:    "対象外意図との混在",
 			reasons: []ReasonCode{ReasonCodeMixedUnsupportedIntent},
 			notices: []string{LegalQueryMixedUnsupportedNotice},
@@ -638,6 +643,19 @@ func assemblerUnsupportedPlan(
 	reasons ...ReasonCode,
 ) LegalQueryPlan {
 	t.Helper()
+	if len(reasons) == 1 &&
+		reasons[0] == ReasonCodeStandaloneStructuredQuery {
+		plan, err := NewLegalQueryPlan(planTestValues(
+			PlanDecisionUnsupported,
+			nil,
+			nil,
+			reasons,
+		))
+		if err != nil {
+			t.Fatalf("試験用 unsupported plan を作成できません: %v", err)
+		}
+		return plan
+	}
 	candidate := assemblerCandidate(
 		t,
 		"candidate-unsupported",

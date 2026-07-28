@@ -177,3 +177,53 @@ func TestCandidateGenerationは五stepのhedgePairを拒否する(t *testing.T) 
 		t.Fatal("SOT-MODEL-026: 五 step の hedge pair を受理しました")
 	}
 }
+
+func TestCandidateGenerationは構造だけの信号を候補と言語信号から分離する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	base := CandidateGenerationValues{
+		ProfileID:      "core",
+		ProfileVersion: "core-v2",
+		RankingVersion: "ranking-v1",
+		Signals: []CandidateGenerationSignal{
+			CandidateSignalStandaloneStructuredQuery,
+		},
+		SelectionMode: QuerySelectionModeAutomatic,
+	}
+	generation, err := NewCandidateGeneration(base)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-026: standalone contribution = %v", err)
+	}
+	if len(generation.Candidates()) != 0 ||
+		len(generation.Signals()) != 1 ||
+		generation.Signals()[0] !=
+			CandidateSignalStandaloneStructuredQuery {
+		t.Fatalf("SOT-MODEL-026: generation = %#v", generation)
+	}
+
+	withCandidate := base
+	withCandidate.Candidates = []LegalQueryCandidate{
+		mustServiceSingleCandidate(t),
+	}
+	if _, err := NewCandidateGeneration(withCandidate); err == nil {
+		t.Fatal("SOT-MODEL-026: standalone signal と候補の併存を受理しました")
+	}
+	withLanguage := base
+	withLanguage.Signals = []CandidateGenerationSignal{
+		CandidateSignalNonJapaneseQuery,
+		CandidateSignalStandaloneStructuredQuery,
+	}
+	if _, err := NewCandidateGeneration(withLanguage); err == nil {
+		t.Fatal("SOT-MODEL-026: standalone signal と言語信号の併存を受理しました")
+	}
+	withOther := base
+	withOther.Signals = []CandidateGenerationSignal{
+		CandidateSignalStandaloneStructuredQuery,
+		CandidateSignalUnsupportedTaskOrResource,
+	}
+	if _, err := NewCandidateGeneration(withOther); err == nil {
+		t.Fatal("SOT-MODEL-026: standalone signal と他 signal の併存を受理しました")
+	}
+}

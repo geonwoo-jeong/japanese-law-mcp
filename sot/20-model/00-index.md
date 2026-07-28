@@ -26,3 +26,4 @@
 - [24-legal-query-result.md](24-legal-query-result.md)
 - [25-legal-query-preprocess-result.md](25-legal-query-preprocess-result.md)
 - [26-query-profile-contribution.md](26-query-profile-contribution.md)
+- [27-judicial-case-number-mention.md](27-judicial-case-number-mention.md)

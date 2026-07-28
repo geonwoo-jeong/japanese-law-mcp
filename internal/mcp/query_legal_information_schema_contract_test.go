@@ -207,6 +207,17 @@ func TestQueryLegalInformationOutputSchemaValidatesNonExecutionResults(t *testin
 			"日本語の法情報取得要求を入力してください。",
 		},
 	})
+	standaloneUnsupported := map[string]any{
+		"status":          string(legalquery.LegalQueryResultStatusUnsupported),
+		"decision":        string(legalquery.LegalQueryResultDecisionNoExecution),
+		"language":        "ja",
+		"interpretations": []any{},
+		"attempts":        []any{},
+		"notices": []any{
+			legalquery.LegalQueryStandaloneStructuredNotice,
+		},
+	}
+	assertQuerySchemaAccepts(t, schema, standaloneUnsupported)
 	assertQuerySchemaAccepts(t, schema, map[string]any{
 		"status": string(
 			legalquery.LegalQueryResultStatusCapabilityUnavailable,
@@ -289,6 +300,17 @@ func TestQueryLegalInformationOutputSchemaValidatesNonExecutionResults(t *testin
 				"日本語の法情報取得要求を入力してください。",
 			},
 			"candidateId": "candidate-1",
+		},
+		"standalone notice と他 notice の併存": map[string]any{
+			"status":          string(legalquery.LegalQueryResultStatusUnsupported),
+			"decision":        string(legalquery.LegalQueryResultDecisionNoExecution),
+			"language":        "ja",
+			"interpretations": []any{},
+			"attempts":        []any{},
+			"notices": []any{
+				legalquery.LegalQueryStandaloneStructuredNotice,
+				legalquery.LegalQueryNonJapaneseNotice,
+			},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {

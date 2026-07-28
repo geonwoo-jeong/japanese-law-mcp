@@ -39,6 +39,16 @@ func (p *Profile) Generate(
 	if err := input.Validate(); err != nil {
 		return legalquery.CandidateGeneration{}, fmt.Errorf("candidate generation input が有効ではありません: %w", err)
 	}
+	if input.StandaloneStructuredQuery() {
+		return p.newGeneration(
+			nil,
+			[]legalquery.CandidateGenerationSignal{
+				legalquery.CandidateSignalStandaloneStructuredQuery,
+			},
+			legalquery.QuerySelectionModeAutomatic,
+			nil,
+		)
+	}
 	cues, err := p.resolveCues(input.CueMentions())
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err

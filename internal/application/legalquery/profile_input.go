@@ -21,6 +21,7 @@ const (
 // 原文と比較キーを公開せず、profile による再解析を構造的に防ぐ。
 type CandidateGenerationInput struct {
 	language             QueryLanguage
+	standaloneStructured bool
 	ref                  *model.SourceResourceRef
 	lawNameMentions      []LawNameMention
 	legalConceptMentions []LegalConceptMention
@@ -29,6 +30,7 @@ type CandidateGenerationInput struct {
 	dateMentions         []DateMention
 	articleMentions      []ArticleMention
 	paragraphMentions    []ParagraphMention
+	caseNumberMentions   []JudicialCaseNumberMention
 	queryTermMentions    []QueryTermMention
 }
 
@@ -44,6 +46,7 @@ func NewCandidateGenerationInput(
 	}
 	input := CandidateGenerationInput{
 		language:             classifyQueryLanguage(result),
+		standaloneStructured: classifyStandaloneStructuredQuery(result),
 		lawNameMentions:      result.LawNameMentions(),
 		legalConceptMentions: result.LegalConceptMentions(),
 		cueMentions:          result.CueMentions(),
@@ -51,6 +54,7 @@ func NewCandidateGenerationInput(
 		dateMentions:         result.DateMentions(),
 		articleMentions:      result.ArticleMentions(),
 		paragraphMentions:    result.ParagraphMentions(),
+		caseNumberMentions:   result.CaseNumberMentions(),
 		queryTermMentions:    result.QueryTermMentions(),
 	}
 	if ref, exists := result.Ref(); exists {
@@ -62,6 +66,11 @@ func NewCandidateGenerationInput(
 // Language は、原文を公開せず script 分類だけを返す。
 func (i CandidateGenerationInput) Language() QueryLanguage {
 	return i.language
+}
+
+// StandaloneStructuredQuery は、照会全体が決定的な構造だけかを返す。
+func (i CandidateGenerationInput) StandaloneStructuredQuery() bool {
+	return i.standaloneStructured
 }
 
 // Ref は、入力で受け取った参照の複製と有無を返す。
@@ -107,6 +116,11 @@ func (i CandidateGenerationInput) ParagraphMentions() []ParagraphMention {
 	return append([]ParagraphMention(nil), i.paragraphMentions...)
 }
 
+// CaseNumberMentions は、裁判事件番号出現の複製を返す。
+func (i CandidateGenerationInput) CaseNumberMentions() []JudicialCaseNumberMention {
+	return append([]JudicialCaseNumberMention(nil), i.caseNumberMentions...)
+}
+
 // QueryTermMentions は、一般検索語出現の複製を返す。
 func (i CandidateGenerationInput) QueryTermMentions() []QueryTermMention {
 	return append([]QueryTermMention(nil), i.queryTermMentions...)
@@ -122,6 +136,18 @@ func (i CandidateGenerationInput) Validate() error {
 		if err := i.ref.Validate(); err != nil {
 			return fmt.Errorf("ref が有効ではありません: %w", err)
 		}
+	}
+	if i.standaloneStructured &&
+		!validStandaloneStructuredFacts(
+			i.lawNameMentions,
+			i.legalConceptMentions,
+			i.cueMentions,
+			i.identifierMentions,
+			i.dateMentions,
+			i.caseNumberMentions,
+			i.queryTermMentions,
+		) {
+		return fmt.Errorf("standalone structured query の事実が有効ではありません")
 	}
 	for index, mention := range i.lawNameMentions {
 		if err := mention.Validate(); err != nil {
@@ -158,12 +184,109 @@ func (i CandidateGenerationInput) Validate() error {
 			return fmt.Errorf("paragraphMentions[%d]: %w", index, err)
 		}
 	}
+	for index, mention := range i.caseNumberMentions {
+		if err := mention.Validate(); err != nil {
+			return fmt.Errorf("caseNumberMentions[%d]: %w", index, err)
+		}
+	}
 	for index, mention := range i.queryTermMentions {
 		if err := mention.Validate(); err != nil {
 			return fmt.Errorf("queryTermMentions[%d]: %w", index, err)
 		}
 	}
 	return nil
+}
+
+func classifyStandaloneStructuredQuery(result PreprocessResult) bool {
+	if !validStandaloneStructuredFacts(
+		result.LawNameMentions(),
+		result.LegalConceptMentions(),
+		result.CueMentions(),
+		result.IdentifierMentions(),
+		result.DateMentions(),
+		result.CaseNumberMentions(),
+		result.QueryTermMentions(),
+	) {
+		return false
+	}
+	structuredSpans := standaloneStructuredSpans(
+		result.IdentifierMentions(),
+		result.DateMentions(),
+		result.CaseNumberMentions(),
+	)
+	covered := make([]bool, len(result.Query()))
+	for _, span := range structuredSpans {
+		for index := span.StartByte(); index < span.EndByte(); index++ {
+			covered[index] = true
+		}
+	}
+	for startByte, character := range result.Query() {
+		if unicode.IsSpace(character) ||
+			unicode.IsPunct(character) ||
+			unicode.IsSymbol(character) {
+			continue
+		}
+		if !covered[startByte] {
+			return false
+		}
+	}
+	return true
+}
+
+func validStandaloneStructuredFacts(
+	lawNames []LawNameMention,
+	concepts []LegalConceptMention,
+	cues []CueMention,
+	identifiers []IdentifierMention,
+	dates []DateMention,
+	caseNumbers []JudicialCaseNumberMention,
+	queryTerms []QueryTermMention,
+) bool {
+	if len(identifiers)+len(dates)+len(caseNumbers) == 0 ||
+		len(lawNames) > 0 ||
+		len(concepts) > 0 ||
+		len(cues) > 0 {
+		return false
+	}
+	structuredSpans := standaloneStructuredSpans(
+		identifiers,
+		dates,
+		caseNumbers,
+	)
+	for _, term := range queryTerms {
+		if term.Kind() != QueryTermMentionQuotedPhrase ||
+			!containsQuerySpan(structuredSpans, term.Span()) {
+			return false
+		}
+	}
+	return true
+}
+
+func standaloneStructuredSpans(
+	identifiers []IdentifierMention,
+	dates []DateMention,
+	caseNumbers []JudicialCaseNumberMention,
+) []QuerySpan {
+	spans := make([]QuerySpan, 0, len(identifiers)+len(dates)+len(caseNumbers))
+	for _, mention := range identifiers {
+		spans = append(spans, mention.Span())
+	}
+	for _, mention := range dates {
+		spans = append(spans, mention.Span())
+	}
+	for _, mention := range caseNumbers {
+		spans = append(spans, mention.Span())
+	}
+	return spans
+}
+
+func containsQuerySpan(values []QuerySpan, target QuerySpan) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }
 
 func classifyQueryLanguage(result PreprocessResult) QueryLanguage {
@@ -198,6 +321,9 @@ func classifyQueryLanguage(result PreprocessResult) QueryLanguage {
 		mark(mention.Span())
 	}
 	for _, mention := range result.ParagraphMentions() {
+		mark(mention.Span())
+	}
+	for _, mention := range result.CaseNumberMentions() {
 		mark(mention.Span())
 	}
 	for _, mention := range result.QueryTermMentions() {

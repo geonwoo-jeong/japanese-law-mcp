@@ -41,6 +41,15 @@ func (p *Profile) Generate(
 			err,
 		)
 	}
+	if input.StandaloneStructuredQuery() {
+		return p.newGeneration(
+			nil,
+			[]legalquery.CandidateGenerationSignal{
+				legalquery.CandidateSignalStandaloneStructuredQuery,
+			},
+			legalquery.QuerySelectionModeAutomatic,
+		)
+	}
 	cues, err := p.resolveCues(input.CueMentions())
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err

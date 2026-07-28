@@ -62,6 +62,17 @@ func selectUnsupported(
 	candidates []LegalQueryCandidate,
 	signals []CandidateGenerationSignal,
 ) *semanticSelection {
+	if slices.Contains(
+		signals,
+		CandidateSignalStandaloneStructuredQuery,
+	) {
+		return &semanticSelection{
+			decision: PlanDecisionUnsupported,
+			reasons: []ReasonCode{
+				ReasonCodeStandaloneStructuredQuery,
+			},
+		}
+	}
 	if slices.Contains(signals, CandidateSignalNonJapaneseQuery) {
 		return &semanticSelection{
 			decision: PlanDecisionUnsupported,

@@ -22,6 +22,7 @@ type PreprocessResultValues struct {
 	DateMentions         []DateMention
 	ArticleMentions      []ArticleMention
 	ParagraphMentions    []ParagraphMention
+	CaseNumberMentions   []JudicialCaseNumberMention
 	QueryTermMentions    []QueryTermMention
 }
 
@@ -37,6 +38,7 @@ type PreprocessResult struct {
 	dateMentions         []DateMention
 	articleMentions      []ArticleMention
 	paragraphMentions    []ParagraphMention
+	caseNumberMentions   []JudicialCaseNumberMention
 	queryTermMentions    []QueryTermMention
 }
 
@@ -52,6 +54,7 @@ func NewPreprocessResult(values PreprocessResultValues) (PreprocessResult, error
 		dateMentions:         append([]DateMention(nil), values.DateMentions...),
 		articleMentions:      append([]ArticleMention(nil), values.ArticleMentions...),
 		paragraphMentions:    append([]ParagraphMention(nil), values.ParagraphMentions...),
+		caseNumberMentions:   append([]JudicialCaseNumberMention(nil), values.CaseNumberMentions...),
 		queryTermMentions:    append([]QueryTermMention(nil), values.QueryTermMentions...),
 	}
 	if values.Ref != nil {
@@ -117,6 +120,11 @@ func (r PreprocessResult) ParagraphMentions() []ParagraphMention {
 	return append([]ParagraphMention(nil), r.paragraphMentions...)
 }
 
+// CaseNumberMentions は、裁判事件番号出現の複製を返す。
+func (r PreprocessResult) CaseNumberMentions() []JudicialCaseNumberMention {
+	return append([]JudicialCaseNumberMention(nil), r.caseNumberMentions...)
+}
+
 // QueryTermMentions は、一般検索語出現の複製を返す。
 func (r PreprocessResult) QueryTermMentions() []QueryTermMention {
 	return append([]QueryTermMention(nil), r.queryTermMentions...)
@@ -149,6 +157,7 @@ func (r PreprocessResult) Validate() error {
 		len(r.dateMentions) +
 		len(r.articleMentions) +
 		len(r.paragraphMentions) +
+		len(r.caseNumberMentions) +
 		len(r.queryTermMentions)
 	if total > maxPreprocessTotalMentions {
 		return fmt.Errorf(
@@ -221,6 +230,22 @@ func (r PreprocessResult) Validate() error {
 		maxPreprocessMentions,
 		func(value ParagraphMention) string {
 			return strconv.Itoa(value.ParagraphNumber())
+		},
+	); err != nil {
+		return err
+	}
+	if err := validateMentionSequence(
+		r.query,
+		"caseNumberMentions",
+		r.caseNumberMentions,
+		maxPreprocessMentions,
+		func(value JudicialCaseNumberMention) string {
+			return strings.Join([]string{
+				value.Era(),
+				strconv.Itoa(value.Year()),
+				value.CaseCode(),
+				strconv.Itoa(value.SerialNumber()),
+			}, "\x00")
 		},
 	); err != nil {
 		return err

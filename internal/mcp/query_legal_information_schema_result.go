@@ -419,7 +419,10 @@ func queryLegalInformationUnsupportedNoticesSchema() *jsonschema.Schema {
 		legalquery.LegalQueryMixedUnsupportedNotice,
 		legalquery.LegalQueryUnsupportedScopeNotice,
 	}
-	enums := make([]any, 0, 7)
+	enums := make([]any, 0, 8)
+	enums = append(enums, []any{
+		legalquery.LegalQueryStandaloneStructuredNotice,
+	})
 	for mask := 1; mask < 1<<len(values); mask++ {
 		noticeSet := make([]any, 0, len(values))
 		for index, value := range values {

@@ -33,6 +33,12 @@ func validatePlanDefinition(plan LegalQueryPlan) error {
 	if err := validateReasonCodes(plan.decision, plan.reasonCodes); err != nil {
 		return err
 	}
+	if slices.Equal(
+		plan.reasonCodes,
+		[]ReasonCode{ReasonCodeStandaloneStructuredQuery},
+	) && len(plan.rankedCandidates) != 0 {
+		return fmt.Errorf("standalone structured query は rankedCandidates を持てません")
+	}
 	return nil
 }
 
@@ -209,6 +215,10 @@ func validateReasonCodes(
 	case PlanDecisionCapabilityUnavailable:
 		return requireExactReason(values, ReasonCodeRequiredPackDisabled)
 	case PlanDecisionUnsupported:
+		if len(values) == 1 &&
+			values[0] == ReasonCodeStandaloneStructuredQuery {
+			return nil
+		}
 		return requireReasonsFrom(
 			values,
 			1,
@@ -260,10 +270,12 @@ func reasonCodeRank(value ReasonCode) (int, bool) {
 		return 4, true
 	case ReasonCodeNonJapaneseQuery:
 		return 5, true
-	case ReasonCodeMixedUnsupportedIntent:
+	case ReasonCodeStandaloneStructuredQuery:
 		return 6, true
-	case ReasonCodeUnsupportedTaskOrResource:
+	case ReasonCodeMixedUnsupportedIntent:
 		return 7, true
+	case ReasonCodeUnsupportedTaskOrResource:
+		return 8, true
 	default:
 		return 0, false
 	}

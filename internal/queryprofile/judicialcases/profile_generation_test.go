@@ -25,9 +25,9 @@ func TestProfileは引用語と形態素語を裁判例検索へ変換する(t *
 			wantQuery: "医療過誤",
 		},
 		{
-			name:      "引用された事件番号",
-			query:     "「令和5年（受）第123号」の判例を検索してください。",
-			wantQuery: "令和5年（受）第123号",
+			name:      "引用語",
+			query:     "「医療過誤」の判例を検索してください。",
+			wantQuery: "医療過誤",
 		},
 	}
 	for _, test := range tests {
@@ -52,6 +52,142 @@ func TestProfileは引用語と形態素語を裁判例検索へ変換する(t *
 				},
 			) {
 				t.Fatalf("evidence = %#v", candidate.EvidenceCodes())
+			}
+		})
+	}
+}
+
+func TestProfileは事件番号surfaceを構造化参照検索へ保持する(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		surface string
+		search  string
+	}{
+		{
+			surface: "平成25(オ)1079",
+			search:  "平成25(オ)1079",
+		},
+		{
+			surface: "令和4年（ネ）第１００３９号",
+			search:  "令和4年(ネ)第10039号",
+		},
+		{
+			surface: "平成26年特（わ）第914号",
+			search:  "平成26年特(わ)第914号",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.surface, func(t *testing.T) {
+			t.Parallel()
+
+			generation := generateQuery(
+				t,
+				test.surface+" の裁判例を検索してください。",
+				nil,
+			)
+			candidate := findSearchCandidate(t, generation, test.search)
+			if !slices.Equal(candidate.EvidenceCodes(), []legalquery.EvidenceCode{
+				legalquery.EvidenceStructuredReference,
+				legalquery.EvidenceExplicitTask,
+				legalquery.EvidenceExplicitResource,
+			}) {
+				t.Fatalf("事件番号検索 evidence = %#v", candidate.EvidenceCodes())
+			}
+			for _, generated := range generation.Candidates() {
+				if len(generated.Steps()) == 1 {
+					input, ok := generated.Steps()[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+					if ok && input.Query() == test.search &&
+						generated.CandidateID() != candidate.CandidateID() {
+						t.Fatalf(
+							"同じ事件番号候補を重複生成しました: %#v",
+							generation.Candidates(),
+						)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestProfileは引用された事件番号を一つの構造化検索へ変換する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const surface = "令和5年（受）第123号"
+	const search = "令和5年(受)第123号"
+	generation := generateQuery(
+		t,
+		"「"+surface+"」の判例を検索してください。",
+		nil,
+	)
+	candidate := findSearchCandidate(t, generation, search)
+	if !slices.Equal(candidate.EvidenceCodes(), []legalquery.EvidenceCode{
+		legalquery.EvidenceStructuredReference,
+		legalquery.EvidenceExplicitTask,
+		legalquery.EvidenceExplicitResource,
+	}) {
+		t.Fatalf("引用事件番号 evidence = %#v", candidate.EvidenceCodes())
+	}
+	if len(generation.Candidates()) != 1 {
+		t.Fatalf("引用事件番号 candidates = %#v", generation.Candidates())
+	}
+}
+
+func TestProfileは事件番号だけからreadまたはrefを推測しない(t *testing.T) {
+	t.Parallel()
+
+	const surface = "平成25(オ)1079"
+	generation := generateQuery(
+		t,
+		surface+" の裁判例本文を取得してください。",
+		nil,
+	)
+	for _, candidate := range generation.Candidates() {
+		for _, step := range candidate.Steps() {
+			if step.InputKind() == legalquery.InputKindJudicialDecisionRead {
+				t.Fatalf("事件番号から read を推測しました: %#v", candidate)
+			}
+		}
+	}
+}
+
+func TestProfileは事件番号とtaskとresourceの三事実が揃うまで候補を作らない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		query      string
+		standalone bool
+	}{
+		{query: "平成25(オ)1079", standalone: true},
+		{query: "「平成25(オ)1079」", standalone: true},
+		{query: "平成25(オ)1079、令和7(わ)第207号。", standalone: true},
+		{query: "平成25(オ)1079を検索してください。"},
+		{query: "平成25(オ)1079の裁判例"},
+	} {
+		test := test
+		t.Run(test.query, func(t *testing.T) {
+			t.Parallel()
+
+			generation := generateQuery(t, test.query, nil)
+			if len(generation.Candidates()) != 0 {
+				t.Fatalf("根拠不足の candidates = %#v", generation.Candidates())
+			}
+			hasStandalone := slices.Contains(
+				generation.Signals(),
+				legalquery.CandidateSignalStandaloneStructuredQuery,
+			)
+			if hasStandalone != test.standalone {
+				t.Fatalf(
+					"standalone signal = %t, want %t; signals=%#v",
+					hasStandalone,
+					test.standalone,
+					generation.Signals(),
+				)
 			}
 		})
 	}

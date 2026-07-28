@@ -1,6 +1,9 @@
 package legalquery
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 // CandidateGenerationSignal は、selector が候補と分離して扱う入力信号である。
 type CandidateGenerationSignal string
@@ -8,6 +11,8 @@ type CandidateGenerationSignal string
 const (
 	// CandidateSignalNonJapaneseQuery は、日本語入力境界外を表す。
 	CandidateSignalNonJapaneseQuery CandidateGenerationSignal = "non_japanese_query"
+	// CandidateSignalStandaloneStructuredQuery は、決定的な構造だけの入力を表す。
+	CandidateSignalStandaloneStructuredQuery CandidateGenerationSignal = "standalone_structured_query"
 	// CandidateSignalUnsupportedLegalAdvice は、法的助言の明示要求を表す。
 	CandidateSignalUnsupportedLegalAdvice CandidateGenerationSignal = "unsupported_legal_advice"
 	// CandidateSignalUnsupportedTranslation は、翻訳の明示要求を表す。
@@ -150,6 +155,23 @@ func (g CandidateGeneration) Validate() error {
 		}
 		previousRank = rank
 	}
+	if slices.Contains(
+		g.signals,
+		CandidateSignalStandaloneStructuredQuery,
+	) {
+		if len(g.candidates) != 0 {
+			return fmt.Errorf("standalone structured query は候補を持てません")
+		}
+		if slices.Contains(
+			g.signals,
+			CandidateSignalNonJapaneseQuery,
+		) {
+			return fmt.Errorf("standalone structured query は non-Japanese signal と併存できません")
+		}
+		if len(g.signals) != 1 {
+			return fmt.Errorf("standalone structured query は他の signal と併存できません")
+		}
+	}
 	if err := validateCandidateHedgePairs(
 		g.selectionMode,
 		g.hedgePairs,
@@ -210,14 +232,16 @@ func candidateGenerationSignalRank(
 	switch value {
 	case CandidateSignalNonJapaneseQuery:
 		return 0, true
-	case CandidateSignalUnsupportedLegalAdvice:
+	case CandidateSignalStandaloneStructuredQuery:
 		return 1, true
-	case CandidateSignalUnsupportedTranslation:
+	case CandidateSignalUnsupportedLegalAdvice:
 		return 2, true
-	case CandidateSignalUnsupportedTaskOrResource:
+	case CandidateSignalUnsupportedTranslation:
 		return 3, true
-	case CandidateSignalReservedPackRequest:
+	case CandidateSignalUnsupportedTaskOrResource:
 		return 4, true
+	case CandidateSignalReservedPackRequest:
+		return 5, true
 	default:
 		return 0, false
 	}

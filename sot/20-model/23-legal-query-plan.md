@@ -33,7 +33,7 @@
 
 `decision=single` は一つ、`decision=hedged` は二つの `available` な候補だけを実行対象とする。上位二候補のどちらかが `pack_disabled` で安全な一意解釈を選べない場合は、利用できる候補だけを実行せず `capability_unavailable` とする。残りの decision は外部情報源を呼び出さない。
 
-`needs_clarification` の `selected` は、利用者へ示す候補を零件以上二件以下の `available` な selection として持つことができる。`capability_unavailable` は一件以上二件以下の `pack_disabled` な selection を持つ。`unsupported` は採用済みの task/resource 候補を `selected` にせず空にし、対象外、言語境界違反または混在要求を `reasonCodes` で表す。混在要求の判定根拠を内部で検査できるように、`unsupported` の `rankedCandidates` は、取得 span から既に生成された採用済み task/resource 候補に限って零件以上十六件以下を保持できる。この内部候補を選択または部分実行してはならない。
+`needs_clarification` の `selected` は、利用者へ示す候補を零件以上二件以下の `available` な selection として持つことができる。`capability_unavailable` は一件以上二件以下の `pack_disabled` な selection を持つ。`unsupported` は採用済みの task/resource 候補を `selected` にせず空にし、対象外、言語境界違反、決定的な構造だけの入力または混在要求を `reasonCodes` で表す。混在要求の判定根拠を内部で検査できるように、`unsupported` の `rankedCandidates` は、取得 span から既に生成された採用済み task/resource 候補に限って零件以上十六件以下を保持できる。この内部候補を選択または部分実行してはならない。`standalone_structured_query` は候補を持たず、他の理由と併存しない。
 
 一つの照会文に、法的助言、未採用 task/resource または翻訳と、実行可能な取得意図が混在する場合は、実行可能な部分だけを抜き出さず `unsupported` とする。一つの複数 step 候補に無効な pack の step が含まれる場合も、他 step を部分実行せず `capability_unavailable` とする。
 
@@ -53,8 +53,9 @@
 | 4 | `ambiguous_candidates` | 安全に一意化または二候補化できない |
 | 5 | `required_pack_disabled` | 必要な採用済み拡張パックが無効 |
 | 6 | `non_japanese_query` | 日本語入力境界を満たさない |
-| 7 | `mixed_unsupported_intent` | 取得意図と対象外意図が混在する |
-| 8 | `unsupported_task_or_resource` | task または resource が採用範囲外である |
+| 7 | `standalone_structured_query` | 決定的な識別子、事件番号または日付だけで日本語の取得要求がない |
+| 8 | `mixed_unsupported_intent` | 取得意図と対象外意図が混在する |
+| 9 | `unsupported_task_or_resource` | task または resource が採用範囲外である |
 
 decision ごとの組合せは次に限定する。
 
@@ -62,7 +63,7 @@ decision ごとの組合せは次に限定する。
 - `hedged`: `hedged_close_candidates` 一件
 - `needs_clarification`: `below_execution_threshold` または `ambiguous_candidates` を一件以上二件以下
 - `capability_unavailable`: `required_pack_disabled` 一件
-- `unsupported`: `non_japanese_query`、`mixed_unsupported_intent` または `unsupported_task_or_resource` を一件以上三件以下
+- `unsupported`: `standalone_structured_query` 一件だけ、または `non_japanese_query`、`mixed_unsupported_intent` 若しくは `unsupported_task_or_resource` を一件以上三件以下
 
 ## 固定予算
 

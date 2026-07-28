@@ -46,12 +46,17 @@ selector は上位二候補が一つの hedge pair と完全に一致する場�
 信号は次の値だけを固定順かつ重複なく持つ。
 
 1. `non_japanese_query`
-2. `unsupported_legal_advice`
-3. `unsupported_translation`
-4. `unsupported_task_or_resource`
-5. `reserved_pack_request`
+2. `standalone_structured_query`
+3. `unsupported_legal_advice`
+4. `unsupported_translation`
+5. `unsupported_task_or_resource`
+6. `reserved_pack_request`
 
 非日本語入力は意味解釈を行わず候補を空にする。
+
+`standalone_structured_query` は、`SOT-IF-051` が日本語照会文として扱わない、決定的な識別子、事件番号または日付だけの入力を表す。非空白文字の全体が前処理で検証した公式識別子、事件番号若しくは日付の span、またはそれらを区切る句読点と記号だけからなり、task、resource、法令名、法概念若しくは構造化 span と異なる一般検索語がない場合にだけ生成する。同じ span の `quoted_phrase` は、決定的な構造だけという判定を変更しない。
+
+この判定は言語信号より先に行い、該当する場合は候補を空にして `standalone_structured_query` だけを返す。したがって ISO 日付だけのように日本語 script もない入力を `non_japanese_query` と重複させない。
 
 法的助言、翻訳または未採用 task/resource が採用済みの取得意図と混在する場合、profile は取得意図から生成できた候補を `candidates` に保持し、対象外信号も返す。`unsupported_legal_advice` または `unsupported_translation` だけを理由に候補の根拠強度を再評価してはならず、明示された取得 task と形態素文脈または一般語から生成できた候補も保持する。
 
@@ -80,7 +85,7 @@ profile set は、固定順の profile ID、各 profile version、ranking versio
 
 ## 確認
 
-自動選択、明確化必須、明示二候補、略称衝突、独立した概念候補、二主題、四主題、五主題、対象外との混在および予約済み pack を profile test で確認する。
+自動選択、明確化必須、明示二候補、略称衝突、独立した概念候補、二主題、四主題、五主題、非日本語入力、決定的な構造だけの入力、対象外との混在および予約済み pack を profile test で確認する。
 
 存在しない候補を参照する hedge pair、自己参照、逆順重複、五 step 以上、異なる ranking version、score policy 不一致、十七候補、profile 間 ID・意味衝突および同点順の変更を拒否することを model test で確認する。
 
@@ -91,4 +96,5 @@ profile set は、固定順の profile ID、各 profile version、ranking versio
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
+- [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

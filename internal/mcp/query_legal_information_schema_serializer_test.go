@@ -62,6 +62,12 @@ func TestQueryLegalInformationOutputSchemaAcceptsModelSerialization(
 	if err != nil {
 		t.Fatalf("unsupported result を作成できません: %v", err)
 	}
+	standaloneUnsupported, err := legalquery.NewLegalQueryUnsupportedResult(
+		fixture.standaloneUnsupportedPlan,
+	)
+	if err != nil {
+		t.Fatalf("standalone unsupported result を作成できません: %v", err)
+	}
 
 	schema := newQueryLegalInformationOutputSchema()
 	for name, result := range map[string]legalquery.LegalQueryResult{
@@ -71,6 +77,7 @@ func TestQueryLegalInformationOutputSchemaAcceptsModelSerialization(
 		"needs_clarification":    clarification,
 		"capability_unavailable": unavailable,
 		"unsupported":            unsupported,
+		"standalone_unsupported": standaloneUnsupported,
 	} {
 		t.Run(name, func(t *testing.T) {
 			encoded, marshalErr := json.Marshal(result)
@@ -118,13 +125,14 @@ func TestQueryLegalInformationInputSchemaExtensionsMatchRequestBoundary(
 }
 
 type querySchemaModelFixture struct {
-	availablePlan     legalquery.LegalQueryPlan
-	clarificationPlan legalquery.LegalQueryPlan
-	unavailablePlan   legalquery.LegalQueryPlan
-	unsupportedPlan   legalquery.LegalQueryPlan
-	nonemptyAttempt   legalquery.LegalQueryLawSearchAttempt
-	emptyAttempt      legalquery.LegalQueryLawSearchAttempt
-	failedAttempt     legalquery.LegalQueryFailedAttempt
+	availablePlan             legalquery.LegalQueryPlan
+	clarificationPlan         legalquery.LegalQueryPlan
+	unavailablePlan           legalquery.LegalQueryPlan
+	unsupportedPlan           legalquery.LegalQueryPlan
+	standaloneUnsupportedPlan legalquery.LegalQueryPlan
+	nonemptyAttempt           legalquery.LegalQueryLawSearchAttempt
+	emptyAttempt              legalquery.LegalQueryLawSearchAttempt
+	failedAttempt             legalquery.LegalQueryFailedAttempt
 }
 
 func newQuerySchemaModelFixture(t *testing.T) querySchemaModelFixture {
@@ -226,10 +234,32 @@ func newQuerySchemaModelFixture(t *testing.T) querySchemaModelFixture {
 				legalquery.ReasonCodeNonJapaneseQuery,
 			},
 		),
-		nonemptyAttempt: nonemptyAttempt,
-		emptyAttempt:    emptyAttempt,
-		failedAttempt:   failedAttempt,
+		standaloneUnsupportedPlan: querySchemaStandaloneUnsupportedPlan(t),
+		nonemptyAttempt:           nonemptyAttempt,
+		emptyAttempt:              emptyAttempt,
+		failedAttempt:             failedAttempt,
 	}
+}
+
+func querySchemaStandaloneUnsupportedPlan(
+	t *testing.T,
+) legalquery.LegalQueryPlan {
+	t.Helper()
+
+	plan, err := legalquery.NewLegalQueryPlan(
+		legalquery.LegalQueryPlanValues{
+			ProfileVersion: "schema-serializer-v2",
+			Decision:       legalquery.PlanDecisionUnsupported,
+			ReasonCodes: []legalquery.ReasonCode{
+				legalquery.ReasonCodeStandaloneStructuredQuery,
+			},
+			LimitPerAttempt: legalquery.DefaultLimitPerAttempt,
+		},
+	)
+	if err != nil {
+		t.Fatalf("standalone unsupported plan を作成できません: %v", err)
+	}
+	return plan
 }
 
 func querySchemaModelStep(

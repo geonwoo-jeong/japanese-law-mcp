@@ -53,6 +53,8 @@ const (
 	ReasonCodeRequiredPackDisabled ReasonCode = "required_pack_disabled"
 	// ReasonCodeNonJapaneseQuery は、日本語入力境界を満たさないことを表す。
 	ReasonCodeNonJapaneseQuery ReasonCode = "non_japanese_query"
+	// ReasonCodeStandaloneStructuredQuery は、決定的な構造だけの入力を表す。
+	ReasonCodeStandaloneStructuredQuery ReasonCode = "standalone_structured_query"
 	// ReasonCodeMixedUnsupportedIntent は、取得意図と対象外意図が混在することを表す。
 	ReasonCodeMixedUnsupportedIntent ReasonCode = "mixed_unsupported_intent"
 	// ReasonCodeUnsupportedTaskOrResource は、task または resource が採用範囲外であることを表す。

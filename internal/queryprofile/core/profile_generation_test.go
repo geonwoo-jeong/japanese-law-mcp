@@ -128,6 +128,11 @@ func TestProfileは安全信号を候補と分離する(t *testing.T) {
 		signal legalquery.CandidateGenerationSignal
 	}{
 		{
+			name:   "決定的な構造だけ",
+			query:  "平成25(オ)1079、令和7(わ)第207号。",
+			signal: legalquery.CandidateSignalStandaloneStructuredQuery,
+		},
+		{
 			name:   "非日本語",
 			query:  "search Japanese statutes",
 			signal: legalquery.CandidateSignalNonJapaneseQuery,

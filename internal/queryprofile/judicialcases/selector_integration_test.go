@@ -60,6 +60,92 @@ func TestSelectorは裁判例検索をpack状態だけで実行可否へ分け�
 	}
 }
 
+func TestSelectorは事件番号候補の意味をpack状態で変更しない(t *testing.T) {
+	t.Parallel()
+
+	const query = "令和０１年（受）第０１０５５号の裁判例を検索してください。"
+	disabled := planQuery(t, query, nil, false)
+	enabled := planQuery(t, query, nil, true)
+	if disabled.Decision() != legalquery.PlanDecisionCapabilityUnavailable ||
+		enabled.Decision() != legalquery.PlanDecisionSingle {
+		t.Fatalf(
+			"plan decisions = disabled:%q enabled:%q",
+			disabled.Decision(),
+			enabled.Decision(),
+		)
+	}
+	assertSingleJudicialSelection(
+		t,
+		disabled,
+		legalquery.SelectionAvailabilityPackDisabled,
+	)
+	assertSingleJudicialSelection(
+		t,
+		enabled,
+		legalquery.SelectionAvailabilityAvailable,
+	)
+	disabledCandidate := disabled.RankedCandidates()[0]
+	enabledCandidate := enabled.RankedCandidates()[0]
+	if !slices.Equal(
+		disabledCandidate.RequiredPacks(),
+		enabledCandidate.RequiredPacks(),
+	) ||
+		!slices.Equal(
+			disabledCandidate.EvidenceCodes(),
+			enabledCandidate.EvidenceCodes(),
+		) {
+		t.Fatalf(
+			"pack 状態で意味候補が変わりました: disabled=%#v enabled=%#v",
+			disabledCandidate,
+			enabledCandidate,
+		)
+	}
+	for name, candidate := range map[string]legalquery.LegalQueryCandidate{
+		"disabled": disabledCandidate,
+		"enabled":  enabledCandidate,
+	} {
+		steps := candidate.Steps()
+		if len(steps) != 1 {
+			t.Fatalf("%s steps = %#v", name, steps)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+		if !ok || input.Query() != "令和元年(受)第1055号" {
+			t.Fatalf("%s logical input = %#v", name, steps[0].LogicalInput())
+		}
+	}
+}
+
+func TestSelectorは事件番号だけの入力をpackより先に対象外とする(t *testing.T) {
+	t.Parallel()
+
+	for _, enabled := range []bool{false, true} {
+		plan := planQuery(
+			t,
+			"「平成25(オ)1079」、令和7(わ)第207号。",
+			nil,
+			enabled,
+		)
+		if plan.Decision() != legalquery.PlanDecisionUnsupported ||
+			!slices.Equal(
+				plan.ReasonCodes(),
+				[]legalquery.ReasonCode{
+					legalquery.ReasonCodeStandaloneStructuredQuery,
+				},
+			) ||
+			len(plan.RankedCandidates()) != 0 ||
+			len(plan.Selected()) != 0 {
+			t.Fatalf(
+				"pack=%t plan = decision:%q reasons:%#v ranked:%#v selected:%#v",
+				enabled,
+				plan.Decision(),
+				plan.ReasonCodes(),
+				plan.RankedCandidates(),
+				plan.Selected(),
+			)
+		}
+	}
+}
+
 func TestSelectorは有効な裁判例refだけをread候補にする(t *testing.T) {
 	t.Parallel()
 

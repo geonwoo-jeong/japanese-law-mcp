@@ -2,6 +2,7 @@ package legalquery
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 )
 
@@ -362,6 +363,7 @@ func orderedGenerationSignals(
 	result := make([]CandidateGenerationSignal, 0, len(values))
 	for _, signal := range []CandidateGenerationSignal{
 		CandidateSignalNonJapaneseQuery,
+		CandidateSignalStandaloneStructuredQuery,
 		CandidateSignalUnsupportedLegalAdvice,
 		CandidateSignalUnsupportedTranslation,
 		CandidateSignalUnsupportedTaskOrResource,
@@ -389,6 +391,23 @@ func (r QueryProfileSetResult) validate() error {
 	}
 	if err := r.selection.Validate(); err != nil {
 		return fmt.Errorf("selection policy が有効ではありません: %w", err)
+	}
+	if slices.Contains(
+		r.signals,
+		CandidateSignalStandaloneStructuredQuery,
+	) {
+		if len(r.rankedCandidates) != 0 {
+			return fmt.Errorf("standalone structured query は候補を持てません")
+		}
+		if slices.Contains(
+			r.signals,
+			CandidateSignalNonJapaneseQuery,
+		) {
+			return fmt.Errorf("standalone structured query は non-Japanese signal と併存できません")
+		}
+		if len(r.signals) != 1 {
+			return fmt.Errorf("standalone structured query は他の signal と併存できません")
+		}
 	}
 	return validateAggregateHedgePairs(r.hedgePairs, r.rankedCandidates)
 }

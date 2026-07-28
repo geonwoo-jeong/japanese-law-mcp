@@ -275,6 +275,8 @@ func deriveLegalQueryNotices(
 		switch reasonCode {
 		case ReasonCodeNonJapaneseQuery:
 			notices = append(notices, legalQueryNonJapaneseNotice)
+		case ReasonCodeStandaloneStructuredQuery:
+			notices = append(notices, legalQueryStandaloneStructuredNotice)
 		case ReasonCodeMixedUnsupportedIntent:
 			notices = append(notices, legalQueryMixedUnsupportedNotice)
 		case ReasonCodeUnsupportedTaskOrResource:

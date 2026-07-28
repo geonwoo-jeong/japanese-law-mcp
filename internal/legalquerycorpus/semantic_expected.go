@@ -114,6 +114,12 @@ func (p ExpectedPlan) Validate() error {
 	); err != nil {
 		return err
 	}
+	if len(p.reasonCodes) == 1 &&
+		p.reasonCodes[0] ==
+			legalquery.ReasonCodeStandaloneStructuredQuery &&
+		len(p.meanings) != 0 {
+		return fmt.Errorf("standalone structured query は meanings を持てません")
+	}
 	return validateExpectedPlanShape(
 		p.decision,
 		len(p.meanings),
@@ -375,6 +381,11 @@ func validateExpectedReasonCodes(
 	case legalquery.PlanDecisionCapabilityUnavailable:
 		return requireExpectedExactReason(values, legalquery.ReasonCodeRequiredPackDisabled)
 	case legalquery.PlanDecisionUnsupported:
+		if len(values) == 1 &&
+			values[0] ==
+				legalquery.ReasonCodeStandaloneStructuredQuery {
+			return nil
+		}
 		return requireExpectedReasons(
 			values,
 			1,
@@ -441,10 +452,12 @@ func expectedReasonRank(value legalquery.ReasonCode) (int, bool) {
 		return 4, true
 	case legalquery.ReasonCodeNonJapaneseQuery:
 		return 5, true
-	case legalquery.ReasonCodeMixedUnsupportedIntent:
+	case legalquery.ReasonCodeStandaloneStructuredQuery:
 		return 6, true
-	case legalquery.ReasonCodeUnsupportedTaskOrResource:
+	case legalquery.ReasonCodeMixedUnsupportedIntent:
 		return 7, true
+	case legalquery.ReasonCodeUnsupportedTaskOrResource:
+		return 8, true
 	default:
 		return 0, false
 	}

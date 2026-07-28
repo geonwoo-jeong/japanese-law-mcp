@@ -92,11 +92,18 @@ func (p *Preprocessor) Preprocess(
 		positioned,
 		registered,
 	)
+	caseNumberMentions, caseNumberSpans, err :=
+		extractJudicialCaseNumbers(query)
+	if err != nil {
+		return legalquery.PreprocessResult{}, err
+	}
+	typoProtectedSpans := dictionaryDraftSpans(lawDrafts, conceptDrafts)
+	typoProtectedSpans = append(typoProtectedSpans, caseNumberSpans...)
 	typoLawDrafts, typoConceptDrafts, err := p.typoDrafts(
 		ctx,
 		query,
 		tokens,
-		dictionaryDraftSpans(lawDrafts, conceptDrafts),
+		typoProtectedSpans,
 	)
 	if err != nil {
 		return legalquery.PreprocessResult{}, err
@@ -140,6 +147,7 @@ func (p *Preprocessor) Preprocess(
 	protectedSpans = appendMentionSpans(protectedSpans, dateMentions)
 	protectedSpans = appendMentionSpans(protectedSpans, articleMentions)
 	protectedSpans = appendMentionSpans(protectedSpans, paragraphMentions)
+	protectedSpans = appendMentionSpans(protectedSpans, caseNumberMentions)
 	queryTermMentions, err := extractQueryTermMentions(
 		ctx,
 		query,
@@ -161,6 +169,7 @@ func (p *Preprocessor) Preprocess(
 		DateMentions:         dateMentions,
 		ArticleMentions:      articleMentions,
 		ParagraphMentions:    paragraphMentions,
+		CaseNumberMentions:   caseNumberMentions,
 		QueryTermMentions:    queryTermMentions,
 	}
 	if ref, exists := request.Ref(); exists {
