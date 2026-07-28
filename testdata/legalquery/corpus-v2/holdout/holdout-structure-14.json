@@ -1,0 +1,54 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-14",
+  "coverageIds": [
+    "intent-law-article-read",
+    "name-official",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "405AC0000000088",
+              "location": {
+                "articleNumber": "5",
+                "paragraphNumber": 3,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-admin-procedure-5-read",
+  "request": {
+    "query": "行政手続法第5条第3項を読んで"
+  },
+  "schemaVersion": 1
+}

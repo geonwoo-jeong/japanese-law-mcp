@@ -71,6 +71,8 @@ func TestRepositoryCorpusV1は公開Loaderですべて検証できる(t *testing
 	assertRepositoryCorpusManifestDigest(
 		t,
 		repositoryRoot,
+		"testdata/legalquery/corpus-v1/manifest.json",
+		repositoryCorpusV1ManifestSHA256,
 	)
 	assertRepositoryCorpusReproducible(
 		t,
@@ -81,18 +83,23 @@ func TestRepositoryCorpusV1は公開Loaderですべて検証できる(t *testing
 	assertRepositoryCorpusImmutable(t, corpus)
 }
 
-func assertRepositoryCorpusManifestDigest(t *testing.T, repositoryRoot string) {
+func assertRepositoryCorpusManifestDigest(
+	t *testing.T,
+	repositoryRoot string,
+	manifestPath string,
+	expected string,
+) {
 	t.Helper()
 
 	data, err := fs.ReadFile(
 		os.DirFS(repositoryRoot),
-		"testdata/legalquery/corpus-v1/manifest.json",
+		manifestPath,
 	)
 	if err != nil {
 		t.Fatalf("SOT-ENG-024: manifest の固定 byte を読めません: %v", err)
 	}
 	digest := fmt.Sprintf("%x", sha256.Sum256(data))
-	if digest != repositoryCorpusV1ManifestSHA256 {
+	if digest != expected {
 		t.Fatalf("SOT-ENG-024: manifest SHA-256 = %q", digest)
 	}
 }

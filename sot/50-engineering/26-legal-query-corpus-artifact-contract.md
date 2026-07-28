@@ -20,7 +20,7 @@
 testdata/legalquery/
 ├── schemas/
 │   └── legal-query-corpus-v1.schema.json
-└── corpus-v1/
+└── corpus-vN/
     ├── manifest.json
     ├── development/
     │   └── {caseId}.json

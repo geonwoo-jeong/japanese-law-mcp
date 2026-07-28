@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-19",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "ref",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-ref-resource-empty",
+  "request": {
+    "query": "空の法令参照を読む",
+    "ref": {
+      "key": {
+        "resourceId": "",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 1
+}

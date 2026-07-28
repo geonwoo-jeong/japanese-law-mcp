@@ -53,6 +53,7 @@ testdata/
 └── legalquery/
     ├── schemas/
     ├── corpus-v1/
+    ├── corpus-v2/
     └── baselines/
 ```
 

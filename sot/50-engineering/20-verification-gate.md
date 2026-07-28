@@ -30,10 +30,10 @@
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 ```
 
-統合照会を実装した clean checkout では、中央の品質ゲートが次を同じ検査スナップショット内で呼び出す。利用者の実照会または外部ネットワークを評価入力にしない。
+統合照会の標準評価 command を導入した clean checkout では、中央の品質ゲートが次を同じ検査スナップショット内で呼び出す。利用者の実照会または外部ネットワークを評価入力にしない。初回導入までは、この command が使用する固定 corpus と baseline の版だけを本規定で先に固定し、command が存在するものとして成功扱いしない。初回導入では command、baseline、中央品質ゲートへの接続および全受入基準の成功を同じ変更で完了する。
 
 ```text
-go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v1 --profile-set=default --baseline=./testdata/legalquery/baselines/default.json --format=json
+go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v2 --profile-set=default --baseline=./testdata/legalquery/baselines/default.json --format=json
 ```
 
 `SOT-ENG-018` の適用変更または初回導入では、検査対象のソース状態に対して provider 固有の比較を行う command と中央の標準コマンドを次の順に実行し、両方の成功を変更完了の条件とする。ローカルでは現在の working tree と index を含むソース状態を対象に `provider-onboarding-fit` を実行し、その後に clean checkout した同じ変更内容に対して中央の品質ゲートを実行する。CI では checkout した対象 commit に対して両方の command を順に実行する。
