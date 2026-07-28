@@ -81,35 +81,56 @@ func (r *Resolver) Resolve(
 	ctx context.Context,
 	query string,
 ) (string, bool, error) {
+	matches, err := r.ResolveMatches(ctx, query)
+	if err != nil {
+		return "", false, err
+	}
+	if len(matches) != 1 {
+		return "", false, nil
+	}
+	return matches[0].canonical, true, nil
+}
+
+// ResolveMatches は、最初に成立した照合方法の候補を決定的な順序で返す。
+func (r *Resolver) ResolveMatches(
+	ctx context.Context,
+	query string,
+) ([]Match, error) {
 	if ctx == nil {
-		return "", false, fmt.Errorf("context は必須です")
+		return nil, fmt.Errorf("context は必須です")
 	}
 	if err := ctx.Err(); err != nil {
-		return "", false, err
+		return nil, err
+	}
+	if r == nil || isNilInterface(r.analyzer) {
+		return nil, fmt.Errorf("検索語 resolver は初期化されていません")
 	}
 	if !utf8.ValidString(query) ||
 		len(query) == 0 ||
 		len(query) > maxQueryBytes {
-		return "", false, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"検索語は有効な UTF-8 で 1 byte 以上 %d byte 以下でなければなりません",
 			maxQueryBytes,
 		)
 	}
 
-	if canonical, found, unique := selectTarget(r.exact[query]); found {
-		return canonical, unique, nil
+	if targets := r.exact[query]; len(targets) > 0 {
+		return matchesFromTargets(targets, MatchKindExact), nil
 	}
 	key := comparisonKey(query)
-	if canonical, found, unique := selectTarget(r.normalized[key]); found {
-		return canonical, unique, nil
+	if targets := r.normalized[key]; len(targets) > 0 {
+		return matchesFromTargets(
+			targets,
+			MatchKindComparisonNormalized,
+		), nil
 	}
 
 	terms, err := r.analyzer.RegisteredTerms(ctx, query)
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
 	if len(terms) > maxAnalyzedTermCount {
-		return "", false, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"解析した登録語は %d 件以下でなければなりません",
 			maxAnalyzedTermCount,
 		)
@@ -122,20 +143,34 @@ func (r *Resolver) Resolve(
 			r.normalized[termKey],
 		)
 	}
-	if canonical, found, unique := selectTarget(analyzedTargets); found {
-		return canonical, unique, nil
+	if len(analyzedTargets) > 0 {
+		slices.SortFunc(analyzedTargets, compareTargets)
+		return matchesFromTargets(
+			analyzedTargets,
+			MatchKindRegisteredTerm,
+		), nil
 	}
 
-	return r.resolveFuzzy(ctx, key)
+	fuzzyTargets, err := r.resolveFuzzyTargets(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	if len(fuzzyTargets) != 1 {
+		return nil, nil
+	}
+	return matchesFromTargets(
+		fuzzyTargets,
+		MatchKindUniqueTypoCorrection,
+	), nil
 }
 
-func (r *Resolver) resolveFuzzy(
+func (r *Resolver) resolveFuzzyTargets(
 	ctx context.Context,
 	query string,
-) (string, bool, error) {
+) ([]target, error) {
 	queryRunes := []rune(query)
 	if len(queryRunes) < 3 {
-		return "", false, nil
+		return nil, nil
 	}
 
 	bestDistance := 4
@@ -146,7 +181,7 @@ func (r *Resolver) resolveFuzzy(
 			checked++
 			if checked%64 == 0 {
 				if err := ctx.Err(); err != nil {
-					return "", false, err
+					return nil, err
 				}
 			}
 			maximum := fuzzyMaximum(length)
@@ -170,13 +205,24 @@ func (r *Resolver) resolveFuzzy(
 		}
 	}
 	if bestDistance == 4 {
-		return "", false, nil
+		return nil, nil
 	}
-	canonical, found, unique := selectTarget(bestTargets)
-	if !found || !unique {
-		return "", false, nil
+	if len(bestTargets) != 1 {
+		return nil, nil
 	}
-	return canonical, true, nil
+	return append([]target(nil), bestTargets...), nil
+}
+
+func matchesFromTargets(values []target, kind MatchKind) []Match {
+	matches := make([]Match, len(values))
+	for index, value := range values {
+		matches[index] = Match{
+			resourceID: value.resourceID,
+			canonical:  value.canonical,
+			kind:       kind,
+		}
+	}
+	return matches
 }
 
 func validateEntry(entry EntryValues) error {
@@ -252,16 +298,6 @@ func appendUniqueTarget(values []target, addition target) []target {
 		}
 	}
 	return append(values, addition)
-}
-
-func selectTarget(values []target) (string, bool, bool) {
-	if len(values) == 0 {
-		return "", false, false
-	}
-	if len(values) != 1 {
-		return "", true, false
-	}
-	return values[0].canonical, true, true
 }
 
 func compareTargets(left target, right target) int {

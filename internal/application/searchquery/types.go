@@ -23,6 +23,42 @@ type EntryValues struct {
 	Terms      []string
 }
 
+// MatchKind は、辞書 entry へ到達したプロバイダー非依存の照合方法を表す。
+type MatchKind string
+
+const (
+	// MatchKindExact は、登録語との完全一致を表す。
+	MatchKindExact MatchKind = "exact"
+	// MatchKindComparisonNormalized は、比較用正規化後の一致を表す。
+	MatchKindComparisonNormalized MatchKind = "comparison_normalized"
+	// MatchKindRegisteredTerm は、Kagome が抽出した登録語との一致を表す。
+	MatchKindRegisteredTerm MatchKind = "registered_term"
+	// MatchKindUniqueTypoCorrection は、一意な軽微誤記補正を表す。
+	MatchKindUniqueTypoCorrection MatchKind = "unique_typo_correction"
+)
+
+// Match は、一つの辞書 entry と照合方法を表す不変な値である。
+type Match struct {
+	resourceID string
+	canonical  string
+	kind       MatchKind
+}
+
+// ResourceID は、辞書 entry の不透明な資源識別子を返す。
+func (m Match) ResourceID() string {
+	return m.resourceID
+}
+
+// Canonical は、辞書で検証済みの正式検索語を返す。
+func (m Match) Canonical() string {
+	return m.canonical
+}
+
+// Kind は、辞書 entry へ到達した照合方法を返す。
+func (m Match) Kind() MatchKind {
+	return m.kind
+}
+
 type target struct {
 	resourceID string
 	canonical  string
