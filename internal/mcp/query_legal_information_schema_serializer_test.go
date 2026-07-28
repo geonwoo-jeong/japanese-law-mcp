@@ -91,7 +91,12 @@ func TestQueryLegalInformationInputSchemaExtensionsMatchRequestBoundary(
 ) {
 	t.Parallel()
 
-	querySchema := newQueryLegalInformationInputSchema().Properties["query"]
+	inputSchema := newQueryLegalInformationInputSchema()
+	if got := inputSchema.Extra["x-maxJsonBytes"]; got !=
+		queryLegalInformationMaxArgumentsBytes {
+		t.Fatalf("x-maxJsonBytes = %v", got)
+	}
+	querySchema := inputSchema.Properties["query"]
 	if got := querySchema.Extra["x-maxUtf8Bytes"]; got != legalquery.MaxQueryBytes {
 		t.Fatalf("x-maxUtf8Bytes = %v", got)
 	}

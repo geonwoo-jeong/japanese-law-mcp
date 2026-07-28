@@ -70,5 +70,35 @@ func (e ArgumentError) Validate() error {
 		containsASCIIControl(e.reason) {
 		return fmt.Errorf("ArgumentError の reason が有効ではありません")
 	}
+	if !isDefinedArgumentReason(e.field, e.reason) {
+		return fmt.Errorf("ArgumentError の reason が定義されていません")
+	}
 	return nil
+}
+
+func isDefinedArgumentReason(field string, reason string) bool {
+	switch field {
+	case "query":
+		switch reason {
+		case "は有効な UTF-8 でなければなりません",
+			"は一文字以上でなければなりません",
+			"は UTF-8 で 2048 byte 以下でなければなりません",
+			"に ASCII 制御文字を含めることはできません":
+			return true
+		}
+	case "limitPerAttempt":
+		return reason == "は 1 以上 20 以下でなければなりません"
+	case "ref":
+		switch reason {
+		case "は有効な SourceResourceRef でなければなりません",
+			"の resourceType は law または judicial-decision でなければなりません",
+			"に対応する採用済み capability binding がありません",
+			"の sourceId が採用済み provider と一致しません",
+			"の providerId は選択済み binding と一致しなければなりません",
+			"の sourceId は選択済み binding と一致しなければなりません",
+			"の resourceType は選択した能力と一致しなければなりません":
+			return true
+		}
+	}
+	return false
 }

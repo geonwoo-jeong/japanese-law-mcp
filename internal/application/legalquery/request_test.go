@@ -85,14 +85,16 @@ func TestNewRequestRejectsInvalidQuery(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]string{
-		"空文字":          "",
-		"Unicode 空白だけ": "\u3000 \u00a0",
-		"内部タブ":         "民\t法",
-		"内部改行":         "民\n法",
-		"内部 NUL":       "民\x00法",
-		"DEL":          "民\x7f法",
-		"不正な UTF-8":    string([]byte{'a', 0xff}),
-		"2048 byte 超":  strings.Repeat("法", 683),
+		"空文字":            "",
+		"Unicode 空白だけ":   "\u3000 \u00a0",
+		"内部タブ":           "民\t法",
+		"内部改行":           "民\n法",
+		"内部 NUL":         "民\x00法",
+		"DEL":            "民\x7f法",
+		"先頭の ASCII 制御文字": "\n民法",
+		"末尾の ASCII 制御文字": "民法\n",
+		"不正な UTF-8":      string([]byte{'a', 0xff}),
+		"2048 byte 超":    strings.Repeat("法", 683),
 	}
 	for name, query := range tests {
 		name, query := name, query

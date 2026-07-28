@@ -16,6 +16,8 @@
 
 `query` は有効な UTF-8 でなければならず、U+0000 から U+001F および U+007F の ASCII 制御文字を含めない。先頭と末尾の Unicode White_Space を除いた値を検証済み原文とし、比較用正規化値で置き換えない。
 
+MCP `arguments` の JSON byte 列全体は、前後の空白を含めて 16384 byte 以下とする。上限を超えた入力は JSON の走査または項目値の複製より前に `invalid_argument` とする。`inputSchema` には、この JSON 全体の byte 上限を `x-maxJsonBytes` として明示する。
+
 `ref` を指定する場合は、`SOT-MODEL-016` の構造、採用済み provider/source metadata、resource type および入力から選んだ read resource との一致を外部呼出し前に検証する。pack が無効でも、その pack が採用した provider/source metadata との一致は検証でき、binding がないことを `invalid_argument` にせず `capability_unavailable` の判定へ渡す。
 
 transport 非依存 request の作成時には、共通構造と `law` または `judicial-decision` resource type までを検証する。採用済み metadata、pack 状態および選択した read resource との一致は、計画と route の確定後、request materialization より前に追加検証する。いずれか一方だけで上記の検証を完了したとは扱わない。

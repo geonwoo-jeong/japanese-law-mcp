@@ -35,6 +35,9 @@ func newQueryLegalInformationInputSchema() *jsonschema.Schema {
 		"query",
 	)
 	schema.Schema = queryLegalInformationSchemaVersion
+	schema.Extra = map[string]any{
+		"x-maxJsonBytes": queryLegalInformationMaxArgumentsBytes,
+	}
 	schema.Defs = map[string]*jsonschema.Schema{
 		"QueryInputResourceRef": queryLegalInformationInputResourceRefSchema(),
 		"QueryInputResourceKey": queryLegalInformationInputResourceKeySchema(),

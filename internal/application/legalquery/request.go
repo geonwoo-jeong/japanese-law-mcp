@@ -41,6 +41,12 @@ func NewRequest(values RequestValues) (Request, error) {
 			"は有効な UTF-8 でなければなりません",
 		)
 	}
+	if containsASCIIControl(values.Query) {
+		return Request{}, invalidArgument(
+			"query",
+			"に ASCII 制御文字を含めることはできません",
+		)
+	}
 
 	limitPerAttempt := DefaultLimitPerAttempt
 	if values.LimitPerAttempt != nil {

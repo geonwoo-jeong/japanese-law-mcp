@@ -44,6 +44,11 @@ func TestNewArgumentErrorAcceptsOnlyDefinedSafeDetails(t *testing.T) {
 		{name: "外側の空白", field: "ref", reason: " は有効ではありません"},
 		{name: "ASCII 制御文字", field: "limitPerAttempt", reason: "は\n範囲外です"},
 		{
+			name:   "未定義の動的 reason",
+			field:  "query",
+			reason: "は秘密値 token=example を含みます",
+		},
+		{
 			name:   "reason の上限超過",
 			field:  "query",
 			reason: strings.Repeat("法", 86),
