@@ -2,6 +2,9 @@ package legalqueryeval
 
 import (
 	"fmt"
+	"sort"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 )
 
 // MetricCounter は、一つの評価指標の分子と分母を保持する。
@@ -34,6 +37,7 @@ type CategoryMetrics struct {
 	caseCount         int
 	planOutcome       MetricCounter
 	requestError      MetricCounter
+	meaningSignature  MetricCounter
 	top1              MetricCounter
 	top2              MetricCounter
 	highConfidence    MetricCounter
@@ -52,6 +56,11 @@ func (m CategoryMetrics) PlanOutcomeMetric() MetricCounter { return m.planOutcom
 
 // RequestErrorMetric は、request_error 完全一致指標を返す。
 func (m CategoryMetrics) RequestErrorMetric() MetricCounter { return m.requestError }
+
+// MeaningSignatureMetric は、全期待意味が候補に存在する case 指標を返す。
+func (m CategoryMetrics) MeaningSignatureMetric() MetricCounter {
+	return m.meaningSignature
+}
 
 // Top1Metric は、主正解 top-1 指標を返す。
 func (m CategoryMetrics) Top1Metric() MetricCounter { return m.top1 }
@@ -73,6 +82,7 @@ type SemanticCaseMetrics struct {
 	caseCount         int
 	planOutcome       MetricCounter
 	requestError      MetricCounter
+	meaningSignature  MetricCounter
 	top1              MetricCounter
 	top2              MetricCounter
 	highConfidence    MetricCounter
@@ -89,6 +99,11 @@ func (m SemanticCaseMetrics) PlanOutcomeMetric() MetricCounter { return m.planOu
 
 // RequestErrorMetric は、request_error 完全一致指標を返す。
 func (m SemanticCaseMetrics) RequestErrorMetric() MetricCounter { return m.requestError }
+
+// MeaningSignatureMetric は、全期待意味が候補に存在する全体 case 指標を返す。
+func (m SemanticCaseMetrics) MeaningSignatureMetric() MetricCounter {
+	return m.meaningSignature
+}
 
 // Top1Metric は、主正解 top-1 指標を返す。
 func (m SemanticCaseMetrics) Top1Metric() MetricCounter { return m.top1 }
@@ -117,21 +132,47 @@ func AggregateSemanticCaseEvaluations(
 	categoryMap := make(map[string]*CategoryMetrics)
 	categoryOrder := make([]string, 0)
 	metrics := SemanticCaseMetrics{}
+	seenCases := make(map[string]struct{}, len(evaluations))
 
-	for _, evaluation := range evaluations {
+	for index, evaluation := range evaluations {
+		if err := validateSemanticCaseEvaluation(evaluation); err != nil {
+			return SemanticCaseMetrics{}, fmt.Errorf(
+				"evaluations[%d] が有効ではありません: %w",
+				index,
+				err,
+			)
+		}
+		if _, exists := seenCases[evaluation.CaseID()]; exists {
+			return SemanticCaseMetrics{}, fmt.Errorf(
+				"caseId %q を重複して集計できません",
+				evaluation.CaseID(),
+			)
+		}
+		seenCases[evaluation.CaseID()] = struct{}{}
 		metrics.caseCount++
-		applyEvaluation(&metrics.planOutcome, evaluation.ExpectedKind() == "plan", evaluation.PlanOutcomeMatched())
-		applyEvaluation(&metrics.requestError, evaluation.ExpectedKind() == "request_error", evaluation.RequestErrorMatched())
+		applyEvaluation(
+			&metrics.planOutcome,
+			evaluation.ExpectedKind() == legalquerycorpus.SemanticExpectedKindPlan,
+			evaluation.PlanOutcomeMatched(),
+		)
+		applyEvaluation(
+			&metrics.requestError,
+			evaluation.ExpectedKind() == legalquerycorpus.SemanticExpectedKindRequestError,
+			evaluation.RequestErrorMatched(),
+		)
+		applyEvaluation(
+			&metrics.meaningSignature,
+			len(evaluation.Meanings()) > 0,
+			allMeaningSignaturesMatched(evaluation.Meanings()),
+		)
 		applyEvaluation(&metrics.top1, hasPlanRanking(evaluation), evaluation.PrimaryTop1Matched())
 		applyEvaluation(&metrics.top2, hasPlanRanking(evaluation), evaluation.PrimaryTop2Matched())
 		highMatched, highApplicable := evaluation.HighConfidencePrecision()
 		applyEvaluation(&metrics.highConfidence, highApplicable, highMatched)
-		for _, meaning := range evaluation.Meanings() {
-			evidenceMatched, evidenceApplicable := meaning.EvidenceAssertion()
-			conceptMatched, conceptApplicable := meaning.ConceptAssertion()
-			applyEvaluation(&metrics.evidenceAssertion, evidenceApplicable, evidenceMatched)
-			applyEvaluation(&metrics.conceptAssertion, conceptApplicable, conceptMatched)
-		}
+		evidenceMatched, evidenceApplicable := caseEvidenceAssertion(evaluation.Meanings())
+		conceptMatched, conceptApplicable := caseConceptAssertion(evaluation.Meanings())
+		applyEvaluation(&metrics.evidenceAssertion, evidenceApplicable, evidenceMatched)
+		applyEvaluation(&metrics.conceptAssertion, conceptApplicable, conceptMatched)
 
 		for _, categoryID := range evaluation.CategoryIDs() {
 			categoryMetrics, exists := categoryMap[categoryID]
@@ -141,20 +182,38 @@ func AggregateSemanticCaseEvaluations(
 				categoryOrder = append(categoryOrder, categoryID)
 			}
 			categoryMetrics.caseCount++
-			applyEvaluation(&categoryMetrics.planOutcome, evaluation.ExpectedKind() == "plan", evaluation.PlanOutcomeMatched())
-			applyEvaluation(&categoryMetrics.requestError, evaluation.ExpectedKind() == "request_error", evaluation.RequestErrorMatched())
+			applyEvaluation(
+				&categoryMetrics.planOutcome,
+				evaluation.ExpectedKind() == legalquerycorpus.SemanticExpectedKindPlan,
+				evaluation.PlanOutcomeMatched(),
+			)
+			applyEvaluation(
+				&categoryMetrics.requestError,
+				evaluation.ExpectedKind() == legalquerycorpus.SemanticExpectedKindRequestError,
+				evaluation.RequestErrorMatched(),
+			)
+			applyEvaluation(
+				&categoryMetrics.meaningSignature,
+				len(evaluation.Meanings()) > 0,
+				allMeaningSignaturesMatched(evaluation.Meanings()),
+			)
 			applyEvaluation(&categoryMetrics.top1, hasPlanRanking(evaluation), evaluation.PrimaryTop1Matched())
 			applyEvaluation(&categoryMetrics.top2, hasPlanRanking(evaluation), evaluation.PrimaryTop2Matched())
 			applyEvaluation(&categoryMetrics.highConfidence, highApplicable, highMatched)
-			for _, meaning := range evaluation.Meanings() {
-				evidenceMatched, evidenceApplicable := meaning.EvidenceAssertion()
-				conceptMatched, conceptApplicable := meaning.ConceptAssertion()
-				applyEvaluation(&categoryMetrics.evidenceAssertion, evidenceApplicable, evidenceMatched)
-				applyEvaluation(&categoryMetrics.conceptAssertion, conceptApplicable, conceptMatched)
-			}
+			applyEvaluation(
+				&categoryMetrics.evidenceAssertion,
+				evidenceApplicable,
+				evidenceMatched,
+			)
+			applyEvaluation(
+				&categoryMetrics.conceptAssertion,
+				conceptApplicable,
+				conceptMatched,
+			)
 		}
 	}
 
+	sort.Strings(categoryOrder)
 	metrics.categories = make([]CategoryMetrics, 0, len(categoryOrder))
 	for _, categoryID := range categoryOrder {
 		value, exists := categoryMap[categoryID]
@@ -164,6 +223,32 @@ func AggregateSemanticCaseEvaluations(
 		metrics.categories = append(metrics.categories, *value)
 	}
 	return metrics, nil
+}
+
+func validateSemanticCaseEvaluation(evaluation SemanticCaseEvaluation) error {
+	if !evaluation.initialized {
+		return fmt.Errorf("SemanticCaseEvaluation は evaluator で作成しなければなりません")
+	}
+	if evaluation.CaseID() == "" ||
+		len(evaluation.CategoryIDs()) == 0 ||
+		len(evaluation.CoverageIDs()) == 0 {
+		return fmt.Errorf("SemanticCaseEvaluation の識別情報が不足しています")
+	}
+	switch evaluation.ExpectedKind() {
+	case legalquerycorpus.SemanticExpectedKindPlan:
+		if evaluation.RequestErrorMatched() {
+			return fmt.Errorf("plan 評価に request_error の結果を混在させることはできません")
+		}
+	case legalquerycorpus.SemanticExpectedKindRequestError:
+		if evaluation.PlanOutcomeMatched() ||
+			evaluation.rankingApplicable ||
+			len(evaluation.Meanings()) > 0 {
+			return fmt.Errorf("request_error 評価に plan の結果を混在させることはできません")
+		}
+	default:
+		return fmt.Errorf("SemanticCaseEvaluation の expected kind が定義されていません")
+	}
+	return nil
 }
 
 func applyEvaluation(counter *MetricCounter, applicable bool, matched bool) {
@@ -177,5 +262,54 @@ func applyEvaluation(counter *MetricCounter, applicable bool, matched bool) {
 }
 
 func hasPlanRanking(evaluation SemanticCaseEvaluation) bool {
-	return evaluation.ExpectedKind() == "plan" && len(evaluation.Meanings()) > 0
+	return evaluation.ExpectedKind() == legalquerycorpus.SemanticExpectedKindPlan &&
+		evaluation.rankingApplicable
+}
+
+func allMeaningSignaturesMatched(meanings []MeaningEvaluation) bool {
+	for _, meaning := range meanings {
+		if !meaning.SignatureMatched() {
+			return false
+		}
+	}
+	return len(meanings) > 0
+}
+
+func caseEvidenceAssertion(
+	meanings []MeaningEvaluation,
+) (matched bool, applicable bool) {
+	return aggregateMeaningAssertions(meanings, func(
+		meaning MeaningEvaluation,
+	) (bool, bool) {
+		return meaning.EvidenceAssertion()
+	})
+}
+
+func caseConceptAssertion(
+	meanings []MeaningEvaluation,
+) (matched bool, applicable bool) {
+	return aggregateMeaningAssertions(meanings, func(
+		meaning MeaningEvaluation,
+	) (bool, bool) {
+		return meaning.ConceptAssertion()
+	})
+}
+
+func aggregateMeaningAssertions(
+	meanings []MeaningEvaluation,
+	assertion func(MeaningEvaluation) (bool, bool),
+) (matched bool, applicable bool) {
+	matched = true
+	for _, meaning := range meanings {
+		currentMatched, currentApplicable := assertion(meaning)
+		if !currentApplicable {
+			continue
+		}
+		applicable = true
+		matched = matched && currentMatched
+	}
+	if !applicable {
+		return false, false
+	}
+	return matched, true
 }

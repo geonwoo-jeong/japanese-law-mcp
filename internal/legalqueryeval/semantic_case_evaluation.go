@@ -44,18 +44,18 @@ func (e MeaningEvaluation) ConceptAssertion() (matched bool, applicable bool) {
 
 // SemanticCaseEvaluation は、semantic fixture 一件に対する評価結果を保持する。
 type SemanticCaseEvaluation struct {
-	caseID                    string
-	categoryIDs               []string
-	coverageIDs               []string
-	expectedKind              legalquerycorpus.SemanticExpectedKind
-	requestErrorMatched       bool
-	planDecisionMatched       bool
-	reasonCodesMatched        bool
-	selectedMeaningIDsMatched bool
-	primaryTop1Matched        bool
-	primaryTop2Matched        bool
-	highConfidence            comparisonAssertion
-	meanings                  []MeaningEvaluation
+	caseID              string
+	categoryIDs         []string
+	coverageIDs         []string
+	expectedKind        legalquerycorpus.SemanticExpectedKind
+	requestErrorMatched bool
+	planOutcomeMatched  bool
+	rankingApplicable   bool
+	primaryTop1Matched  bool
+	primaryTop2Matched  bool
+	highConfidence      comparisonAssertion
+	meanings            []MeaningEvaluation
+	initialized         bool
 }
 
 // CaseID は、評価した fixture ID を返す。
@@ -85,9 +85,7 @@ func (e SemanticCaseEvaluation) RequestErrorMatched() bool {
 
 // PlanOutcomeMatched は、decision、reasonCodes および selection がすべて一致したか返す。
 func (e SemanticCaseEvaluation) PlanOutcomeMatched() bool {
-	return e.planDecisionMatched &&
-		e.reasonCodesMatched &&
-		e.selectedMeaningIDsMatched
+	return e.planOutcomeMatched
 }
 
 // PrimaryTop1Matched は、主正解が順位一位か返す。
@@ -130,24 +128,36 @@ func EvaluateSemanticPlanCase(
 	if err != nil {
 		return SemanticCaseEvaluation{}, err
 	}
-	selectedMatched, err := compareSelectedMeaningIDs(expectedPlan, actualPlan)
+	selectedMatched, err := compareSelectedMeaningIDs(
+		semanticCase,
+		expectedPlan,
+		actualPlan,
+	)
 	if err != nil {
 		return SemanticCaseEvaluation{}, err
 	}
 
-	top1Matched, top2Matched, highConfidence := evaluatePrimaryRanking(meanings, actualPlan)
+	rankingApplicable := isRankingDecision(expectedPlan.Decision()) &&
+		len(meanings) > 0
+	top1Matched, top2Matched, highConfidence := evaluatePrimaryRanking(
+		rankingApplicable,
+		meanings,
+		actualPlan,
+	)
 	return SemanticCaseEvaluation{
-		caseID:                    semanticCase.CaseID(),
-		categoryIDs:               semanticCase.CategoryIDs(),
-		coverageIDs:               semanticCase.CoverageIDs(),
-		expectedKind:              legalquerycorpus.SemanticExpectedKindPlan,
-		planDecisionMatched:       actualPlan.Decision() == expectedPlan.Decision(),
-		reasonCodesMatched:        slices.Equal(actualPlan.ReasonCodes(), expectedPlan.ReasonCodes()),
-		selectedMeaningIDsMatched: selectedMatched,
-		primaryTop1Matched:        top1Matched,
-		primaryTop2Matched:        top2Matched,
-		highConfidence:            highConfidence,
-		meanings:                  meanings,
+		caseID:       semanticCase.CaseID(),
+		categoryIDs:  semanticCase.CategoryIDs(),
+		coverageIDs:  semanticCase.CoverageIDs(),
+		expectedKind: legalquerycorpus.SemanticExpectedKindPlan,
+		planOutcomeMatched: actualPlan.Decision() == expectedPlan.Decision() &&
+			slices.Equal(actualPlan.ReasonCodes(), expectedPlan.ReasonCodes()) &&
+			selectedMatched,
+		rankingApplicable:  rankingApplicable,
+		primaryTop1Matched: top1Matched,
+		primaryTop2Matched: top2Matched,
+		highConfidence:     highConfidence,
+		meanings:           meanings,
+		initialized:        true,
 	}, nil
 }
 
@@ -174,6 +184,7 @@ func EvaluateSemanticRequestErrorCase(
 		expectedKind: legalquerycorpus.SemanticExpectedKindRequestError,
 		requestErrorMatched: argumentError.Code() == expectedError.ErrorCode() &&
 			argumentError.Field() == string(expectedError.Field()),
+		initialized: true,
 	}, nil
 }
 
@@ -223,6 +234,7 @@ func evaluateExpectedMeaning(
 }
 
 func compareSelectedMeaningIDs(
+	semanticCase legalquerycorpus.SemanticCase,
 	expected legalquerycorpus.ExpectedPlan,
 	actual legalquery.LegalQueryPlan,
 ) (bool, error) {
@@ -231,6 +243,11 @@ func compareSelectedMeaningIDs(
 		candidates[candidate.CandidateID()] = candidate
 	}
 
+	expectedByID := make(map[string]legalquerycorpus.ExpectedMeaning, len(expected.Meanings()))
+	for _, meaning := range expected.Meanings() {
+		expectedByID[meaning.MeaningID()] = meaning
+	}
+	enabledPacks := semanticCase.EnabledPacks()
 	actualMeaningIDs := make([]string, 0, len(actual.Selected()))
 	for _, selection := range actual.Selected() {
 		candidate, exists := candidates[selection.CandidateID()]
@@ -242,6 +259,16 @@ func compareSelectedMeaningIDs(
 			return false, err
 		}
 		if !matched {
+			return false, nil
+		}
+		expectedMeaning, exists := expectedByID[matchedMeaningID]
+		if !exists {
+			return false, fmt.Errorf("selection の期待意味 %q が存在しません", matchedMeaningID)
+		}
+		if selection.Availability() != expectedSelectionAvailability(
+			expectedMeaning.RequiredPacks(),
+			enabledPacks,
+		) {
 			return false, nil
 		}
 		actualMeaningIDs = append(actualMeaningIDs, matchedMeaningID)
@@ -274,10 +301,11 @@ func matchedExpectedMeaningID(
 }
 
 func evaluatePrimaryRanking(
+	applicable bool,
 	meanings []MeaningEvaluation,
 	actual legalquery.LegalQueryPlan,
 ) (top1Matched bool, top2Matched bool, highConfidence comparisonAssertion) {
-	if len(meanings) == 0 {
+	if !applicable || len(meanings) == 0 {
 		return false, false, comparisonAssertion{}
 	}
 
@@ -293,4 +321,40 @@ func evaluatePrimaryRanking(
 		matched:    top1Matched,
 		applicable: true,
 	}
+}
+
+func isRankingDecision(decision legalquery.PlanDecision) bool {
+	switch decision {
+	case legalquery.PlanDecisionSingle,
+		legalquery.PlanDecisionHedged,
+		legalquery.PlanDecisionNeedsClarification,
+		legalquery.PlanDecisionCapabilityUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+func expectedSelectionAvailability(
+	requiredPacks []string,
+	enabledPacks []string,
+) legalquery.SelectionAvailability {
+	requiredIndex := 0
+	enabledIndex := 0
+	for requiredIndex < len(requiredPacks) &&
+		enabledIndex < len(enabledPacks) {
+		switch {
+		case requiredPacks[requiredIndex] == enabledPacks[enabledIndex]:
+			requiredIndex++
+			enabledIndex++
+		case requiredPacks[requiredIndex] > enabledPacks[enabledIndex]:
+			enabledIndex++
+		default:
+			return legalquery.SelectionAvailabilityPackDisabled
+		}
+	}
+	if requiredIndex != len(requiredPacks) {
+		return legalquery.SelectionAvailabilityPackDisabled
+	}
+	return legalquery.SelectionAvailabilityAvailable
 }

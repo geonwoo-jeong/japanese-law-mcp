@@ -59,6 +59,28 @@ func mustSemanticPlanCase(
 ) legalquerycorpus.SemanticCase {
 	t.Helper()
 
+	return mustSemanticPlanCaseWithSafety(
+		t,
+		caseID,
+		coverageIDs,
+		query,
+		enabledPacks,
+		nil,
+		expected,
+	)
+}
+
+func mustSemanticPlanCaseWithSafety(
+	t *testing.T,
+	caseID string,
+	coverageIDs []string,
+	query string,
+	enabledPacks []string,
+	safetyVariant *legalquerycorpus.SafetyVariant,
+	expected legalquerycorpus.ExpectedPlan,
+) legalquerycorpus.SemanticCase {
+	t.Helper()
+
 	request, err := legalquerycorpus.NewRequest(legalquerycorpus.RequestValues{
 		Query: query,
 	})
@@ -72,6 +94,7 @@ func mustSemanticPlanCase(
 			CaseID:         caseID,
 			LeakageGroupID: caseID + "-group",
 			CoverageIDs:    coverageIDs,
+			SafetyVariant:  safetyVariant,
 			EnabledPacks:   enabledPacks,
 			Request:        request,
 			Expected:       expected,
@@ -159,6 +182,30 @@ func mustPlan(
 ) legalquery.LegalQueryPlan {
 	t.Helper()
 
+	return mustPlanWithSelectionAvailabilities(
+		t,
+		profileVersion,
+		decision,
+		ranked,
+		selectedIDs,
+		nil,
+		reasonCodes,
+		limitPerAttempt,
+	)
+}
+
+func mustPlanWithSelectionAvailabilities(
+	t *testing.T,
+	profileVersion string,
+	decision legalquery.PlanDecision,
+	ranked []legalquery.LegalQueryCandidate,
+	selectedIDs []string,
+	availabilityByCandidateID map[string]legalquery.SelectionAvailability,
+	reasonCodes []legalquery.ReasonCode,
+	limitPerAttempt int,
+) legalquery.LegalQueryPlan {
+	t.Helper()
+
 	selected := make([]legalquery.LegalQueryPlanSelection, 0, len(selectedIDs))
 	candidates := make(map[string]legalquery.LegalQueryCandidate, len(ranked))
 	for _, candidate := range ranked {
@@ -169,9 +216,12 @@ func mustPlan(
 		if !exists {
 			t.Fatalf("試験用 selection が未知の candidateId を参照しました: %s", candidateID)
 		}
-		availability := legalquery.SelectionAvailabilityAvailable
-		if len(candidate.RequiredPacks()) > 0 {
-			availability = legalquery.SelectionAvailabilityPackDisabled
+		availability, exists := availabilityByCandidateID[candidateID]
+		if !exists {
+			availability = legalquery.SelectionAvailabilityAvailable
+			if len(candidate.RequiredPacks()) > 0 {
+				availability = legalquery.SelectionAvailabilityPackDisabled
+			}
 		}
 		selection, err := legalquery.NewLegalQueryPlanSelection(
 			legalquery.LegalQueryPlanSelectionValues{
