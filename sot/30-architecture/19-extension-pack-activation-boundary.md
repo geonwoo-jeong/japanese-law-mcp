@@ -33,9 +33,13 @@
 
 ## 統合照会への contribution
 
-統合法情報照会の公開ツール自体は法令コアに属し、拡張パックの有効化で登録または解除しない。拡張パックは、固有の専門ツールと capability に加え、その pack が採用した query profile の実行 contribution、request materializer および型付き result variant を同じ製品機能の集合として有効化する。
+統合法情報照会の公開ツール自体は法令コアに属し、拡張パックの有効化で登録または解除しない。拡張パックは、固有の専門ツールと capability に加え、統合照会の能力別 facade、request materializer および型付き result variant を同じ製品機能の集合として有効化する。
 
-採用済みだが無効な pack への明示的な照会を `capability_unavailable` と判定する最小限の cue、およびその pack が既に公開結果へ付与した `SourceResourceRef` を構造検証する provider/source metadata は、外部呼出しを行わない core 構成に置ける。これらは capability、binding、provider route または結果取得を有効にするものではなく、意味の弱い別 resource への誤った切替えと既知 `ref` の誤った入力エラーを防ぐためだけに使う。
+query profile の意味認識 contribution と、能力別 facade、request materializer、result variant、binding および route から成る実行 contribution は分けて扱う。採用済み pack の意味認識 contribution は、pack の有効状態にかかわらず composition root の固定 profile set へ含める。selector は `SOT-ARCH-023` に従って意味順位を先に確定し、その後で pack の実行可否を付与する。無効な pack を `capability_unavailable` とするために必要な型付き候補は、`SOT-MODEL-026` に従ってその意味を所有する profile が生成し、core や selector が候補を捏造しない。
+
+この常設部分には、採用済み pack の profile metadata、cue、候補生成規則、共有辞書版、およびその pack が既に公開結果へ付与した `SourceResourceRef` を構造検証する provider/source metadata を含められる。これらは外部呼出しを行わない統合照会の意味契約であり、起動時に法令コア profile と同じく検証する。不整合を無視して profile set または `profileVersion` を pack の有効状態ごとに変えず、検証に失敗した binary は transport を開始しない。
+
+無効な pack では、意味認識後の選択を `pack_disabled` とし、能力別 facade、request materializer、binding、provider route、結果取得および専門ツールを構成しない。常設した意味認識 contribution は capability、binding、provider route または結果取得を有効にするものではなく、意味の弱い別 resource への誤った切替えと既知 `ref` の誤った入力エラーを防ぐためだけに使う。
 
 query profile contribution は capability ID または provider route の代替識別子にしない。profile は capability を要求し、provider binding の選択は既存の route が行う。
 
@@ -59,7 +63,7 @@ query profile contribution は capability ID または provider route の代替�
 
 ## 確認
 
-各拡張パックの採用時に、無設定起動では法令コアの公開面と既定 route が変わらず、明示的に有効化した pack だけの専門ツール、profile contribution、request materializer、result variant および binding が追加されることを設定テストと composition root のテストで確認する。無効な pack の照会が別 resource を呼び出さないことも確認する。
+各拡張パックの採用時に、無設定起動では法令コアの公開面と既定 route が変わらず、採用済み profile の意味認識 contribution だけが外部呼出しなしで固定され、明示的に有効化した pack だけの専門ツール、能力別 facade、request materializer、result variant および binding が追加されることを設定テストと composition root のテストで確認する。無効な pack の照会が `capability_unavailable` となり、法令コアまたは無効な pack の provider を呼び出さないことも確認する。
 
 ## 関連
 

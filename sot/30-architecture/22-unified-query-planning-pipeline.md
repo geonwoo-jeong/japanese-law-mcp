@@ -57,7 +57,7 @@ MCP handler は `SOT-ARCH-006` に従い薄く保つ。統合照会の planner �
 
 ## 依存方向
 
-`application/legalquery` が所有する interface を、共通前処理、query profile および能力別 application facade が実装する。composition root は、法令コア profile、有効な拡張パックの profile、能力別 facade、route、request materializer および予算を起動時に検証して注入する。
+`application/legalquery` が所有する interface を、共通前処理、query profile および能力別 application facade が実装する。composition root は、法令コア profile と採用済み拡張パックの意味認識 profile を固定順で常に検証して注入し、有効な拡張パックについてだけ能力別 facade、route および request materializer を追加する。予算は pack の有効状態にかかわらず同じ規則で起動時に検証する。
 
 `application/legalquery` と query profile は `internal/source/...` を import しない。provider package は `application/legalquery`、query profile、Kagome または辞書 package を import しない。provider の選択は既存ユースケースの先にある registry だけが行う。
 

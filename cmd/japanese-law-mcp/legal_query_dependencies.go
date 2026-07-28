@@ -9,37 +9,48 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querypreprocess"
 	coreprofile "github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/core"
+	judicialcasesprofile "github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/judicialcases"
 )
 
 const judicialCasesPackID = "judicial-cases"
 
-type coreLegalQueryPlanningDependencies struct {
+type legalQueryPlanningDependencies struct {
 	preprocessor legalquery.QueryPreprocessor
 	profiles     legalquery.QueryProfileSet
 }
 
-var loadCoreLegalQueryPlanningDependencies = sync.OnceValues(
-	func() (coreLegalQueryPlanningDependencies, error) {
-		profile, err := coreprofile.LoadEmbedded()
+// 意味認識用の profile と cue は pack 状態より先に固定し、実行 facade だけを pack 有効時に構成する。
+var loadLegalQueryPlanningDependencies = sync.OnceValues(
+	func() (legalQueryPlanningDependencies, error) {
+		core, err := coreprofile.LoadEmbedded()
 		if err != nil {
-			return coreLegalQueryPlanningDependencies{},
+			return legalQueryPlanningDependencies{},
 				fmt.Errorf("法令コア query profile を初期化できません: %w", err)
 		}
+		judicialCases, err := judicialcasesprofile.LoadEmbedded()
+		if err != nil {
+			return legalQueryPlanningDependencies{},
+				fmt.Errorf("裁判例 query profile を初期化できません: %w", err)
+		}
+		cues := append(
+			core.CueVocabulary(),
+			judicialCases.CueVocabulary()...,
+		)
 		preprocessor, err := querypreprocess.NewEmbedded(
-			profile.CueVocabulary(),
+			cues,
 		)
 		if err != nil {
-			return coreLegalQueryPlanningDependencies{},
+			return legalQueryPlanningDependencies{},
 				fmt.Errorf("統合照会の前処理器を初期化できません: %w", err)
 		}
 		profiles, err := legalquery.NewQueryProfileSet(
-			[]legalquery.QueryProfile{profile},
+			[]legalquery.QueryProfile{core, judicialCases},
 		)
 		if err != nil {
-			return coreLegalQueryPlanningDependencies{},
-				fmt.Errorf("法令コア query profile set を初期化できません: %w", err)
+			return legalQueryPlanningDependencies{},
+				fmt.Errorf("統合照会 query profile set を初期化できません: %w", err)
 		}
-		return coreLegalQueryPlanningDependencies{
+		return legalQueryPlanningDependencies{
 			preprocessor: preprocessor,
 			profiles:     profiles,
 		}, nil
@@ -50,7 +61,7 @@ func newLegalQueryService(
 	cfg config.Config,
 	routes application.ProviderRoutes,
 ) (*legalquery.Service, error) {
-	planning, err := loadCoreLegalQueryPlanningDependencies()
+	planning, err := loadLegalQueryPlanningDependencies()
 	if err != nil {
 		return nil, err
 	}

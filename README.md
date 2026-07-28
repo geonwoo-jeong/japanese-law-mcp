@@ -18,7 +18,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `get_article` | 本則または原始附則の条・項を XML と出典付きで取得する | e-Gov 法令 API Version 2 |
 | `search_law_content` | e-Gov の本文検索式で一致位置を検索する | e-Gov 法令 API Version 2 |
 | `list_law_updates` | 指定日に更新一覧へ掲載された法令を取得する | e-Gov 法令 API Version 1 |
-| `query_legal_information` | 日本語の照会文から法令コアの取得方法を選び、解釈ごとの型付き結果を返す | e-Gov 法令 API Version 2・Version 1 |
+| `query_legal_information` | 日本語の照会文から利用可能な法情報の取得方法を選び、解釈ごとの型付き結果を返す | e-Gov 法令 API Version 2・Version 1、最高裁判所「裁判例検索」（有効時） |
 
 `judicial-cases` を明示的に有効化すると、次の二つを同時に追加します。
 
@@ -45,11 +45,11 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 
 ## 統合法情報照会
 
-`query_legal_information` は、一つの日本語照会文から法令名検索、法令本文検索、法令本文取得、条文取得または更新一覧取得を選びます。判断できない場合は推測で取得せず `needs_clarification`、法的助言や翻訳などの対象外要求は `unsupported` として返します。
+`query_legal_information` は、一つの日本語照会文から法令名検索、法令本文検索、法令本文取得、条文取得または更新一覧取得を選びます。`judicial-cases` が有効な場合は、裁判例検索と、入力した検証済み `ref` による裁判例詳細の取得も選択できます。判断できない場合は推測で取得せず `needs_clarification`、法的助言や翻訳などの対象外要求は `unsupported` として返します。
 
 `それぞれ`、`個別に`、`一つずつ`、`各々`、または複数の主題をまとめて修飾する `について` がある場合は、二つ以上四つ以下の主題を原文順の独立した検索 step にできます。単に語を列挙しただけの入力は、個別検索を明示したものとは扱いません。
 
-裁判例を統合照会から選択する profile contribution は現在の実装対象に残っています。`judicial-cases` を有効にした場合も、裁判例の確定的な検索と取得には現時点では `search_judicial_cases` と `get_judicial_case` を使用してください。
+`judicial-cases` が無効でも裁判例の意図は法令検索へ置き換えずに認識し、外部情報源を呼ばない `capability_unavailable` として返します。事件番号、題名または URL だけから裁判例詳細の `ref` を推測することはありません。入力を決定的に指定した検索や取得、ページ継続には、引き続き `search_judicial_cases` と `get_judicial_case` を使用できます。
 
 ## インストール
 
