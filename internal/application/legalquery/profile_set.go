@@ -65,10 +65,46 @@ func NewQueryProfileSet(profiles []QueryProfile) (QueryProfileSet, error) {
 	}, nil
 }
 
+// Validate は、構築済みの profile、metadata および集合版が現在も一致することを確認する。
+func (s QueryProfileSet) Validate() error {
+	rebuilt, err := NewQueryProfileSet(s.profiles)
+	if err != nil {
+		return fmt.Errorf("profile set の構成が有効ではありません: %w", err)
+	}
+	if len(s.metadata) != len(rebuilt.metadata) {
+		return fmt.Errorf("profile set の profiles と metadata の件数が一致しません")
+	}
+	for index := range s.metadata {
+		if queryProfileMetadataSignature(s.metadata[index]) !=
+			queryProfileMetadataSignature(rebuilt.metadata[index]) {
+			return fmt.Errorf(
+				"profiles[%d] の metadata が構築時と一致しません",
+				index,
+			)
+		}
+	}
+	if s.profileVersion != rebuilt.profileVersion {
+		return fmt.Errorf("profile set version が構築時の metadata と一致しません")
+	}
+	if s.rankingVersion != rebuilt.rankingVersion {
+		return fmt.Errorf("rankingVersion が構築時の metadata と一致しません")
+	}
+	if s.selection != rebuilt.selection {
+		return fmt.Errorf("selection policy が構築時の metadata と一致しません")
+	}
+	return nil
+}
+
 // Collect は、全 contribution を部分結果なしで回収し、安定順位を確定する。
 func (s QueryProfileSet) Collect(
 	preprocessed PreprocessResult,
 ) (QueryProfileSetResult, error) {
+	if err := s.Validate(); err != nil {
+		return QueryProfileSetResult{}, fmt.Errorf(
+			"profile set が有効ではありません: %w",
+			err,
+		)
+	}
 	if err := preprocessed.Validate(); err != nil {
 		return QueryProfileSetResult{}, fmt.Errorf(
 			"preprocessed が有効ではありません: %w",
@@ -96,8 +132,9 @@ func (s QueryProfileSet) Collect(
 		if err != nil {
 			return QueryProfileSetResult{}, err
 		}
-		contribution, err := CollectProfileCandidates(
+		contribution, err := collectProfileCandidatesForMetadata(
 			profile,
+			currentMetadata,
 			preprocessed,
 			scope,
 		)
@@ -110,7 +147,7 @@ func (s QueryProfileSet) Collect(
 		}
 		if err := aggregate.add(
 			contribution,
-			s.metadata[index].Score(),
+			currentMetadata.Score(),
 		); err != nil {
 			return QueryProfileSetResult{}, fmt.Errorf(
 				"profiles[%d] の contribution を集約できません: %w",

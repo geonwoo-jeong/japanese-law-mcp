@@ -22,6 +22,20 @@ func CollectProfileCandidates(
 		return CandidateGeneration{}, fmt.Errorf("profile は必須です")
 	}
 	metadata := profile.Metadata()
+	return collectProfileCandidatesForMetadata(
+		profile,
+		metadata,
+		preprocessed,
+		scope,
+	)
+}
+
+func collectProfileCandidatesForMetadata(
+	profile QueryProfile,
+	metadata QueryProfileMetadata,
+	preprocessed PreprocessResult,
+	scope CandidateIDScope,
+) (CandidateGeneration, error) {
 	if err := metadata.Validate(); err != nil {
 		return CandidateGeneration{}, fmt.Errorf("profile metadata が有効ではありません: %w", err)
 	}
@@ -52,6 +66,19 @@ func CollectProfileCandidates(
 	if generation.RankingVersion() != metadata.RankingVersion() {
 		return CandidateGeneration{}, fmt.Errorf(
 			"profile が metadata と異なる rankingVersion を返しました",
+		)
+	}
+	currentMetadata := profile.Metadata()
+	if err := currentMetadata.Validate(); err != nil {
+		return CandidateGeneration{}, fmt.Errorf(
+			"profile metadata が候補生成中に無効になりました: %w",
+			err,
+		)
+	}
+	if queryProfileMetadataSignature(currentMetadata) !=
+		queryProfileMetadataSignature(metadata) {
+		return CandidateGeneration{}, fmt.Errorf(
+			"profile metadata が候補生成中に変更されました",
 		)
 	}
 	return generation, nil
