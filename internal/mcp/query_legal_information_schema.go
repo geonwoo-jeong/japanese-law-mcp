@@ -8,6 +8,7 @@ func newQueryLegalInformationOutputSchema() *jsonschema.Schema {
 	definitions := queryLegalInformationDefinitions()
 	return &jsonschema.Schema{
 		Schema: queryLegalInformationSchemaVersion,
+		Type:   "object",
 		OneOf: []*jsonschema.Schema{
 			queryLegalInformationSchemaRef("LegalQueryCompletedResult"),
 			queryLegalInformationSchemaRef("LegalQueryEmptyResult"),

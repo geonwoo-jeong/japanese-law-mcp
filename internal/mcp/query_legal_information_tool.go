@@ -11,6 +11,31 @@ import (
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+func addQueryLegalInformationTool(
+	server *sdk.Server,
+	querier legalquery.Port,
+) {
+	server.AddTool(
+		&sdk.Tool{
+			Name: "query_legal_information",
+			Description: "日本語の法情報照会文から、利用可能な法令情報の取得方法を選び、" +
+				"解釈ごとの型付き結果を返します。",
+			InputSchema:  newQueryLegalInformationInputSchema(),
+			OutputSchema: newQueryLegalInformationOutputSchema(),
+		},
+		func(
+			ctx context.Context,
+			request *sdk.CallToolRequest,
+		) (*sdk.CallToolResult, error) {
+			return callQueryLegalInformation(
+				ctx,
+				querier,
+				request.Params.Arguments,
+			)
+		},
+	)
+}
+
 func callQueryLegalInformation(
 	ctx context.Context,
 	querier legalquery.Port,

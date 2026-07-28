@@ -281,3 +281,40 @@ func TestVerifyTotalCoverageRejectsInvalidProfile(t *testing.T) {
 		})
 	}
 }
+
+func TestVerifyTotalCoverageAcceptsLongProfileLine(t *testing.T) {
+	t.Parallel()
+
+	profilePath := filepath.Join(t.TempDir(), "coverage.out")
+	longFileName := strings.Repeat("very-long-directory-name/", 4000) + "target.go"
+	profile := strings.Join([]string{
+		"mode: atomic",
+		longFileName + ":1.1,2.1 1 1",
+	}, "\n") + "\n"
+	if err := os.WriteFile(profilePath, []byte(profile), 0o600); err != nil {
+		t.Fatalf("coverage profile を作成できませんでした: %v", err)
+	}
+
+	if err := verifyTotalCoverage(profilePath, 100); err != nil {
+		t.Fatalf("長い coverage 行が拒否されました: %v", err)
+	}
+}
+
+func TestVerifyTotalCoverageIgnoresBlankLines(t *testing.T) {
+	t.Parallel()
+
+	profilePath := filepath.Join(t.TempDir(), "coverage.out")
+	profile := strings.Join([]string{
+		"mode: atomic",
+		"",
+		"github.com/example/project/a.go:1.1,2.1 1 1",
+		"",
+	}, "\n")
+	if err := os.WriteFile(profilePath, []byte(profile), 0o600); err != nil {
+		t.Fatalf("coverage profile を作成できませんでした: %v", err)
+	}
+
+	if err := verifyTotalCoverage(profilePath, 100); err != nil {
+		t.Fatalf("末尾や途中の空行を含む coverage が拒否されました: %v", err)
+	}
+}

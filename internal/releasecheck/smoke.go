@@ -26,6 +26,7 @@ var officialToolNames = []string{
 	"get_article",
 	"get_law",
 	"list_law_updates",
+	"query_legal_information",
 	"search_law_content",
 	"search_laws",
 }

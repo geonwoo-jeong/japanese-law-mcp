@@ -141,6 +141,9 @@ func TestQueryLegalInformationOutputSchemaIsClosedDiscriminatedUnion(t *testing.
 	t.Parallel()
 
 	schema := newQueryLegalInformationOutputSchema()
+	if schema.Type != "object" {
+		t.Fatalf("result schema type = %q, want object", schema.Type)
+	}
 	if got := len(schema.OneOf); got != 6 {
 		t.Fatalf("result oneOf variant count = %d, want 6", got)
 	}

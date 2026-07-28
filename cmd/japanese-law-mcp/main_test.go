@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -552,6 +553,7 @@ func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
 		"get_judicial_case",
 		"get_law",
 		"list_law_updates",
+		"query_legal_information",
 		"search_judicial_cases",
 		"search_law_content",
 		"search_laws",
@@ -667,15 +669,47 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	if err != nil {
 		t.Fatalf("子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 5 ||
+	if tools.Tools == nil || len(tools.Tools) != 6 ||
 		tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
 		tools.Tools[2].Name != "list_law_updates" ||
-		tools.Tools[3].Name != "search_law_content" ||
-		tools.Tools[4].Name != "search_laws" {
+		tools.Tools[3].Name != "query_legal_information" ||
+		tools.Tools[4].Name != "search_law_content" ||
+		tools.Tools[5].Name != "search_laws" {
 		t.Fatalf(
-			"公開ツール一覧 = %#v, want get_article、get_law、list_law_updates、search_law_content、search_laws",
+			"公開ツール一覧 = %#v, want 法令コア六ツール",
 			tools.Tools,
+		)
+	}
+	queryResult, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name: "query_legal_information",
+		Arguments: map[string]any{
+			"query": "民法を検索して英訳してください",
+		},
+	})
+	if err != nil {
+		t.Fatalf("統合照会を呼び出せません: %v", err)
+	}
+	if queryResult == nil || queryResult.IsError {
+		t.Fatalf("対象外意図の統合照会が tool error になりました: %#v", queryResult)
+	}
+	if len(queryResult.Content) != 1 {
+		t.Fatalf("統合照会 content の件数 = %d, want 1", len(queryResult.Content))
+	}
+	content, ok := queryResult.Content[0].(*sdk.TextContent)
+	if !ok {
+		t.Fatalf("統合照会 content の型 = %T", queryResult.Content[0])
+	}
+	var queryPayload struct {
+		Status string `json:"status"`
+	}
+	if err := json.Unmarshal([]byte(content.Text), &queryPayload); err != nil {
+		t.Fatalf("統合照会の結果を解析できません: %v", err)
+	}
+	if queryPayload.Status != "unsupported" {
+		t.Fatalf(
+			"統合照会 status = %q, want unsupported",
+			queryPayload.Status,
 		)
 	}
 	if err := session.Close(); err != nil {
@@ -761,12 +795,13 @@ func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HTTP 子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 5 ||
+	if tools.Tools == nil || len(tools.Tools) != 6 ||
 		tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
 		tools.Tools[2].Name != "list_law_updates" ||
-		tools.Tools[3].Name != "search_law_content" ||
-		tools.Tools[4].Name != "search_laws" {
+		tools.Tools[3].Name != "query_legal_information" ||
+		tools.Tools[4].Name != "search_law_content" ||
+		tools.Tools[5].Name != "search_laws" {
 		t.Fatalf("HTTP 公開ツール一覧 = %#v", tools.Tools)
 	}
 	callResult, err := session.CallTool(ctx, &sdk.CallToolParams{

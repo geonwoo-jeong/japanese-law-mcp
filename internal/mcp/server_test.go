@@ -63,15 +63,22 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	listLawUpdates := &recordingListLawUpdatesPort{
 		result: mustListLawUpdatesResult(t),
 	}
+	queryLegalInformation := &recordingQueryLegalInformationPort{
+		result: queryLegalInformationResultFixture(
+			t,
+			newQuerySchemaModelFixture(t),
+		)["unsupported"],
+	}
 	go func() {
 		serverResult <- NewServerWithDependencies(
 			"test-version",
 			Dependencies{
-				SearchLaws:       stubSearchLawsPort{},
-				SearchLawContent: stubSearchLawContentPort{},
-				GetLaw:           stubGetLawPort{},
-				GetArticle:       &recordingGetArticlePort{},
-				ListLawUpdates:   listLawUpdates,
+				SearchLaws:            stubSearchLawsPort{},
+				SearchLawContent:      stubSearchLawContentPort{},
+				GetLaw:                stubGetLawPort{},
+				GetArticle:            &recordingGetArticlePort{},
+				ListLawUpdates:        listLawUpdates,
+				QueryLegalInformation: queryLegalInformation,
 			},
 		).Run(ctx, serverTransport)
 	}()
@@ -117,27 +124,52 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 5 {
-		t.Fatalf("ツール数 = %d, want 5", len(tools.Tools))
+	if len(tools.Tools) != 6 {
+		t.Fatalf("ツール数 = %d, want 6", len(tools.Tools))
 	}
 	if tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
 		tools.Tools[2].Name != "list_law_updates" ||
-		tools.Tools[3].Name != "search_law_content" ||
-		tools.Tools[4].Name != "search_laws" {
+		tools.Tools[3].Name != "query_legal_information" ||
+		tools.Tools[4].Name != "search_law_content" ||
+		tools.Tools[5].Name != "search_laws" {
 		t.Fatalf(
-			"tool names = %q, %q, %q, %q, %q",
+			"tool names = %q, %q, %q, %q, %q, %q",
 			tools.Tools[0].Name,
 			tools.Tools[1].Name,
 			tools.Tools[2].Name,
 			tools.Tools[3].Name,
 			tools.Tools[4].Name,
+			tools.Tools[5].Name,
 		)
 	}
 	for _, tool := range tools.Tools {
 		if tool.InputSchema == nil || tool.OutputSchema == nil {
 			t.Fatalf("%s の schema がありません", tool.Name)
 		}
+	}
+	callResult, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name: "query_legal_information",
+		Arguments: map[string]any{
+			"query": "永住許可について教えてください",
+		},
+	})
+	if err != nil {
+		t.Fatalf("query_legal_information を呼び出せません: %v", err)
+	}
+	if callResult == nil || callResult.IsError {
+		t.Fatalf(
+			"query_legal_information の結果 = %#v, want success",
+			callResult,
+		)
+	}
+	if calls, _, request := queryLegalInformation.snapshot(); calls != 1 ||
+		request.Query() != "永住許可について教えてください" {
+		t.Fatalf(
+			"query_legal_information の application 呼出し = %d, query = %q",
+			calls,
+			request.Query(),
+		)
 	}
 
 	if err := session.Close(); err != nil {

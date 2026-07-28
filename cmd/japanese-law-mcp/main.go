@@ -225,13 +225,18 @@ func newPublicDependencies(
 	if err != nil {
 		return projectmcp.Dependencies{}, err
 	}
+	queryLegalInformation, err := newLegalQueryService(cfg, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
 	return projectmcp.Dependencies{
-		SearchLaws:       searchLaws,
-		SearchLawContent: searchLawContent,
-		GetLaw:           getLaw,
-		GetArticle:       getArticle,
-		ListLawUpdates:   listLawUpdates,
-		JudicialCases:    judicialCases,
+		SearchLaws:            searchLaws,
+		SearchLawContent:      searchLawContent,
+		GetLaw:                getLaw,
+		GetArticle:            getArticle,
+		ListLawUpdates:        listLawUpdates,
+		QueryLegalInformation: queryLegalInformation,
+		JudicialCases:         judicialCases,
 	}, nil
 }
 
