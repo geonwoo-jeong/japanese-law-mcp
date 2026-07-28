@@ -1,6 +1,7 @@
 package legalconceptlexicon
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -112,6 +113,34 @@ func TestLoadBuildsImmutableLexicon(t *testing.T) {
 		nilLexicon.Terms() != nil ||
 		nilLexicon.ComparisonTerms() != nil {
 		t.Fatal("nil Lexicon が値を返しました")
+	}
+}
+
+func TestLoadAcceptsEquivalentSurfaceFormsWithOneComparisonTerm(t *testing.T) {
+	t.Parallel()
+
+	value := replaceOnce(
+		t,
+		validFixture,
+		`"terms": ["永住権"],`,
+		`"terms": ["クーリングオフ", "クーリング・オフ"],`,
+	)
+	value = replaceOnce(
+		t,
+		value,
+		`"comparisonTerms": ["永住権"],`,
+		`"comparisonTerms": ["くーりんぐおふ"],`,
+	)
+
+	lexicon, err := Load([]byte(value))
+	if err != nil {
+		t.Fatalf("SOT-ENG-023: 同じ比較語へ正規化される表記を受理できません: %v", err)
+	}
+	entry := lexicon.Entries()[0]
+	if len(entry.Terms) != 2 ||
+		len(entry.ComparisonTerms) != 1 ||
+		entry.ComparisonTerms[0] != "くーりんぐおふ" {
+		t.Fatalf("SOT-ENG-023: entry = %#v", entry)
 	}
 }
 
@@ -232,36 +261,170 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 	if len(entries) != 8 {
 		t.Fatalf("SOT-ENG-023: entry count = %d, want 8", len(entries))
 	}
-	assertEntry(t, entries, "cooling-off", "クーリング・オフ", "申込みの撤回")
-	assertEntry(t, entries, "annual-paid-leave", "有休", "年次有給休暇")
-	assertEntry(t, entries, "unemployment-basic-allowance", "失業手当", "基本手当")
-	assertEntry(t, entries, "adult-guardianship", "成年後見", "成年後見")
-	assertEntry(t, entries, "permanent-residence", "永住権", "永住許可")
+
+	expected := []expectedEntry{
+		{
+			conceptID: "adult-guardianship",
+			term:      "成年後見",
+			policy:    SelectionPolicyAmbiguousNoAutoExecute,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "成年後見",
+				},
+				{
+					resource:      "judicial_decision",
+					inputKind:     "judicial_decision_search",
+					officialTerm:  "成年後見",
+					requiredPacks: []string{"judicial-cases"},
+				},
+			},
+		},
+		{
+			conceptID: "annual-paid-leave",
+			term:      "有休",
+			policy:    SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "年次有給休暇",
+				},
+			},
+		},
+		{
+			conceptID: "child-support",
+			term:      "養育費",
+			policy:    SelectionPolicyAmbiguousNoAutoExecute,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "養育費",
+				},
+				{
+					resource:      "judicial_decision",
+					inputKind:     "judicial_decision_search",
+					officialTerm:  "養育費",
+					requiredPacks: []string{"judicial-cases"},
+				},
+			},
+		},
+		{
+			conceptID: "childcare-leave",
+			term:      "育休",
+			policy:    SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "育児休業",
+				},
+			},
+		},
+		{
+			conceptID: "cooling-off",
+			term:      "クーリング・オフ",
+			policy:    SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "申込みの撤回",
+				},
+			},
+		},
+		{
+			conceptID: "overtime-premium-pay",
+			term:      "残業代",
+			policy:    SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "割増賃金",
+				},
+			},
+		},
+		{
+			conceptID: "permanent-residence",
+			term:      "永住権",
+			policy:    SelectionPolicyAmbiguousNoAutoExecute,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "永住許可",
+				},
+				{
+					resource:      "judicial_decision",
+					inputKind:     "judicial_decision_search",
+					officialTerm:  "永住許可",
+					requiredPacks: []string{"judicial-cases"},
+				},
+			},
+		},
+		{
+			conceptID: "unemployment-basic-allowance",
+			term:      "失業手当",
+			policy:    SelectionPolicySingleCandidate,
+			candidates: []expectedCandidate{
+				{
+					resource:     "law_provision",
+					inputKind:    "law_content_search",
+					officialTerm: "基本手当",
+				},
+			},
+		},
+	}
+	for _, value := range expected {
+		assertEntry(t, entries, value)
+	}
 }
 
-func assertEntry(
-	t *testing.T,
-	entries []Entry,
-	conceptID string,
-	term string,
-	officialTerm string,
-) {
+type expectedEntry struct {
+	conceptID  string
+	term       string
+	policy     SelectionPolicy
+	candidates []expectedCandidate
+}
+
+type expectedCandidate struct {
+	resource      string
+	inputKind     string
+	officialTerm  string
+	requiredPacks []string
+}
+
+func assertEntry(t *testing.T, entries []Entry, want expectedEntry) {
 	t.Helper()
 	for _, entry := range entries {
-		if entry.ConceptID != conceptID {
+		if entry.ConceptID != want.conceptID {
 			continue
 		}
-		if !contains(entry.Terms, term) {
+		if !contains(entry.Terms, want.term) {
 			t.Fatalf("SOT-ENG-023: terms = %#v", entry.Terms)
 		}
-		for _, candidate := range entry.Candidates {
-			if candidate.OfficialTerm == officialTerm {
-				return
+		if entry.SelectionPolicy != want.policy {
+			t.Fatalf("SOT-ENG-023: selectionPolicy = %q", entry.SelectionPolicy)
+		}
+		if len(entry.Candidates) != len(want.candidates) {
+			t.Fatalf("SOT-ENG-023: candidates = %#v", entry.Candidates)
+		}
+		for index, candidate := range entry.Candidates {
+			expectedCandidate := want.candidates[index]
+			if string(candidate.Task) != "search" ||
+				string(candidate.Resource) != expectedCandidate.resource ||
+				string(candidate.InputKind) != expectedCandidate.inputKind ||
+				candidate.OfficialTerm != expectedCandidate.officialTerm ||
+				!slices.Equal(candidate.RequiredPacks, expectedCandidate.requiredPacks) {
+				t.Fatalf("SOT-ENG-023: candidate = %#v", candidate)
 			}
 		}
-		t.Fatalf("SOT-ENG-023: entry = %#v", entry)
+		return
 	}
-	t.Fatalf("SOT-ENG-023: conceptId %q がありません", conceptID)
+	t.Fatalf("SOT-ENG-023: conceptId %q がありません", want.conceptID)
 }
 
 func contains(values []string, want string) bool {

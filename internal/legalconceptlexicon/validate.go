@@ -100,9 +100,6 @@ func validateEntry(value datasetEntry) error {
 	if err := validateStringList("comparisonTerms", value.ComparisonTerms); err != nil {
 		return err
 	}
-	if len(value.Terms) != len(value.ComparisonTerms) {
-		return fmt.Errorf("terms と comparisonTerms の件数は一致しなければなりません")
-	}
 	derivedComparisonTerms := make([]string, 0, len(value.Terms))
 	for _, term := range value.Terms {
 		key := querynormalization.ComparisonKey(term)
