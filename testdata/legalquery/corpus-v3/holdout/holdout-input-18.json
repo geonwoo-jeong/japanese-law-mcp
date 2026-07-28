@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-18",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "ref",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-ref-provider-case",
+  "request": {
+    "query": "この法令参照を読む",
+    "ref": {
+      "key": {
+        "resourceId": "405AC0000000088",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "E-Gov-Law-Api-V2"
+    }
+  },
+  "schemaVersion": 1
+}

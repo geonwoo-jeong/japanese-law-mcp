@@ -1,0 +1,121 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-10",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-item-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "129AC0000000089",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law",
+            "task": "read"
+          },
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "location": {
+                "articleNumber": "90",
+                "provision": "main"
+              },
+              "ref": {
+                "key": {
+                  "resourceId": "129AC0000000089",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          },
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "location": {
+                "articleNumber": "95",
+                "provision": "main"
+              },
+              "ref": {
+                "key": {
+                  "resourceId": "129AC0000000089",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          },
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "location": {
+                "articleNumber": "96",
+                "provision": "main"
+              },
+              "ref": {
+                "key": {
+                  "resourceId": "129AC0000000089",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-lawref-four-reads",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "この法令参照の本文、第90条、第95条、第96条を順に読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "129AC0000000089",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 1
+}

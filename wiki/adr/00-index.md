@@ -4,3 +4,4 @@
 
 - [ADR-001: 能力別ポートとプロバイダー別 anti-corruption layer](01-capability-ports-and-provider-adapters.md)
 - [ADR-002: 入力根拠を明示した評価コーパス Version 2](02-grounded-evaluation-corpus-v2.md)
+- [ADR-003: 開発用根拠 assertion を補完した評価コーパス Version 3](03-grounded-evidence-assertions-corpus-v3.md)

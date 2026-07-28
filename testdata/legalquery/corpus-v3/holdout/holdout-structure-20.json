@@ -1,0 +1,71 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-20",
+  "coverageIds": [
+    "intent-law-article-read",
+    "name-official",
+    "structure-article",
+    "structure-complete-date",
+    "structure-multiple-explicit-intents",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "asOf": "2025-01-01",
+              "lawId": "345AC0000000048",
+              "location": {
+                "articleNumber": "30",
+                "paragraphNumber": 1,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          },
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "asOf": "2025-01-01",
+              "lawId": "345AC0000000048",
+              "location": {
+                "articleNumber": "30",
+                "paragraphNumber": 2,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-copyright-30-read",
+  "request": {
+    "query": "2025年1月1日時点の著作権法第30条第1項と第2項を読んで"
+  },
+  "schemaVersion": 1
+}

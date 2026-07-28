@@ -1,0 +1,27 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-12",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-limit-zero",
+  "request": {
+    "limitPerAttempt": 0,
+    "query": "行政手続法を検索",
+    "ref": {
+      "key": {
+        "resourceId": "405AC0000000088",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "E-Gov-Law-Api-V2"
+    }
+  },
+  "schemaVersion": 1
+}

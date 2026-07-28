@@ -1,6 +1,6 @@
 # ADR-002: 入力根拠を明示した評価コーパス Version 2
 
-- 状態: 採用
+- 状態: 採用（既定 corpus の指定は ADR-003 により置換）
 - 決定日: 2026-07-28
 
 ## 背景
@@ -31,13 +31,13 @@
 | seed | `20260727` | `20260727` |
 | holdout digest | `5b909cc6d80a5d94664b7598b8824ebfc30ed39151172084b235dc210f0ab2ac` | `25b06db5e29ada2922e970a8c569ee9d2e73ce22fae4ffe3ce5880043d3543b8` |
 
-標準評価 command を導入するときは `corpus-v2` を使用する。`corpus-v1` も loader の再現性試験を残し、過去の digest を検証できる状態にする。
+この決定時点では、標準評価 command を導入するときに `corpus-v2` を使用することとした。`corpus-v1` も loader の再現性試験を残し、過去の digest を検証できる状態にする。後に [ADR-003](03-grounded-evidence-assertions-corpus-v3.md) が既定 corpus の指定だけを `corpus-v3` へ置き換えた。
 
 ## 検証結果
 
 - `corpus-v1` と `corpus-v2` は、公開 loader による schema、fixture checksum、集合分離、最小件数および holdout digest の検証に成功した。
 - `corpus-v2` の development と holdout について、期待する完全日付が照会文に存在すること、および `official_identifier` が照会文の実 ID または同じ資源を指す `ref` に根拠を持つことを試験した。
-- profile と期待値を変更していない。意味評価 command と baseline の導入前であるため、意味指標の変更前後比較は行わず、この変更を全評価ゲートの成功とは扱わない。初回 profile 採用時に `corpus-v2` 全件を評価する。
+- profile と期待値を変更していない。意味評価 command と baseline の導入前であるため、意味指標の変更前後比較は行わず、この変更を全評価ゲートの成功とは扱わない。この決定時点では初回 profile 採用時に `corpus-v2` 全件を評価する予定とし、後に [ADR-003](03-grounded-evidence-assertions-corpus-v3.md) が評価対象の既定だけを置き換えた。
 
 ## 帰結
 
