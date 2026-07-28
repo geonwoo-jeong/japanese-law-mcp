@@ -22,16 +22,22 @@ const (
 type CandidateGenerationValues struct {
 	ProfileID      string
 	ProfileVersion string
+	RankingVersion string
 	Candidates     []LegalQueryCandidate
 	Signals        []CandidateGenerationSignal
+	SelectionMode  QuerySelectionMode
+	HedgePairs     []CandidateHedgePair
 }
 
 // CandidateGeneration は、一 profile の候補と安全信号を不変に保持する。
 type CandidateGeneration struct {
 	profileID      string
 	profileVersion string
+	rankingVersion string
 	candidates     []LegalQueryCandidate
 	signals        []CandidateGenerationSignal
+	selectionMode  QuerySelectionMode
+	hedgePairs     []CandidateHedgePair
 }
 
 // NewCandidateGeneration は、候補、ID および信号を複製して検証する。
@@ -45,8 +51,11 @@ func NewCandidateGeneration(
 	generation := CandidateGeneration{
 		profileID:      values.ProfileID,
 		profileVersion: values.ProfileVersion,
+		rankingVersion: values.RankingVersion,
 		candidates:     candidates,
 		signals:        append([]CandidateGenerationSignal(nil), values.Signals...),
+		selectionMode:  values.SelectionMode,
+		hedgePairs:     append([]CandidateHedgePair(nil), values.HedgePairs...),
 	}
 	if err := generation.Validate(); err != nil {
 		return CandidateGeneration{}, err
@@ -64,6 +73,11 @@ func (g CandidateGeneration) ProfileVersion() string {
 	return g.profileVersion
 }
 
+// RankingVersion は、profile set 内で共有する順位校正版を返す。
+func (g CandidateGeneration) RankingVersion() string {
+	return g.rankingVersion
+}
+
 // Candidates は、候補配列の深い複製を返す。
 func (g CandidateGeneration) Candidates() []LegalQueryCandidate {
 	candidates, err := cloneLegalQueryCandidates(g.candidates)
@@ -78,6 +92,16 @@ func (g CandidateGeneration) Signals() []CandidateGenerationSignal {
 	return append([]CandidateGenerationSignal(nil), g.signals...)
 }
 
+// SelectionMode は、profile が指定した自動選択の可否を返す。
+func (g CandidateGeneration) SelectionMode() QuerySelectionMode {
+	return g.selectionMode
+}
+
+// HedgePairs は、profile が明示した候補対の複製を返す。
+func (g CandidateGeneration) HedgePairs() []CandidateHedgePair {
+	return append([]CandidateHedgePair(nil), g.hedgePairs...)
+}
+
 // Validate は、profile、候補 ID、step ID および信号順を確認する。
 func (g CandidateGeneration) Validate() error {
 	if err := validateQueryPlanID("profileId", g.profileID); err != nil {
@@ -86,13 +110,19 @@ func (g CandidateGeneration) Validate() error {
 	if err := validateProfileVersion(g.profileVersion); err != nil {
 		return err
 	}
+	if err := validateProfileVersion(g.rankingVersion); err != nil {
+		return fmt.Errorf("rankingVersion が有効ではありません: %w", err)
+	}
+	if !isQuerySelectionMode(g.selectionMode) {
+		return fmt.Errorf("selectionMode が定義されていません")
+	}
 	if len(g.candidates) > maximumCandidateOrdinal {
 		return fmt.Errorf(
 			"candidates は %d 件以下でなければなりません",
 			maximumCandidateOrdinal,
 		)
 	}
-	candidateIDs := make(map[string]struct{}, len(g.candidates))
+	candidateIDs := make(map[string]int, len(g.candidates))
 	stepIDs := make(map[string]struct{})
 	for index, candidate := range g.candidates {
 		if err := candidate.Validate(); err != nil {
@@ -101,7 +131,7 @@ func (g CandidateGeneration) Validate() error {
 		if _, exists := candidateIDs[candidate.CandidateID()]; exists {
 			return fmt.Errorf("candidateId を重複させることはできません")
 		}
-		candidateIDs[candidate.CandidateID()] = struct{}{}
+		candidateIDs[candidate.CandidateID()] = index
 		for _, step := range candidate.Steps() {
 			if _, exists := stepIDs[step.StepID()]; exists {
 				return fmt.Errorf("stepId を候補間で重複させることはできません")
@@ -120,8 +150,59 @@ func (g CandidateGeneration) Validate() error {
 		}
 		previousRank = rank
 	}
+	if err := validateCandidateHedgePairs(
+		g.selectionMode,
+		g.hedgePairs,
+		g.candidates,
+		candidateIDs,
+	); err != nil {
+		return err
+	}
 	return nil
 }
+
+func validateCandidateHedgePairs(
+	mode QuerySelectionMode,
+	pairs []CandidateHedgePair,
+	candidates []LegalQueryCandidate,
+	candidateIndexes map[string]int,
+) error {
+	if mode == QuerySelectionModeClarificationRequired && len(pairs) > 0 {
+		return fmt.Errorf(
+			"clarification_required は hedge pair を持つことができません",
+		)
+	}
+	seen := make(map[string]struct{}, len(pairs))
+	for index, pair := range pairs {
+		if err := pair.Validate(); err != nil {
+			return fmt.Errorf("hedgePairs[%d] が有効ではありません: %w", index, err)
+		}
+		firstIndex, firstExists := candidateIndexes[pair.FirstCandidateID()]
+		secondIndex, secondExists := candidateIndexes[pair.SecondCandidateID()]
+		if !firstExists || !secondExists {
+			return fmt.Errorf("hedge pair は contribution 内の候補だけを参照できます")
+		}
+		if firstIndex >= secondIndex {
+			return fmt.Errorf("hedge pair は profile の候補順を保持しなければなりません")
+		}
+		key := pair.FirstCandidateID() + "\x00" + pair.SecondCandidateID()
+		if _, exists := seen[key]; exists {
+			return fmt.Errorf("hedge pair を重複させることはできません")
+		}
+		seen[key] = struct{}{}
+		if len(candidates[firstIndex].Steps())+
+			len(candidates[secondIndex].Steps()) > MaxCapabilityCalls {
+			return fmt.Errorf("hedge pair の step は合計四件以下でなければなりません")
+		}
+	}
+	return nil
+}
+
+// QueryProfileContribution は、query profile の生成結果を表す別名である。
+type QueryProfileContribution = CandidateGeneration
+
+// QueryProfileContributionValues は、profile contribution の構築値を表す別名である。
+type QueryProfileContributionValues = CandidateGenerationValues
 
 func candidateGenerationSignalRank(
 	value CandidateGenerationSignal,

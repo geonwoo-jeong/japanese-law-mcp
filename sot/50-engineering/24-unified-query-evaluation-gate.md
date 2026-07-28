@@ -68,7 +68,7 @@ high-confidence の分母が零件の場合は基準を満たしたと扱わず�
 
 ## profile の校正
 
-score の重み、閾値、margin、tie-break、根拠コード、辞書または誤記規則を変更する場合は、新しい profile version を割り当てる。
+score の重み、閾値、margin、tie-break、根拠コード、辞書、誤記規則、selection mode または hedge pair の生成規則を変更する場合は、新しい profile version を割り当てる。複数 profile 間の score scale、confidence、閾値、margin または tie-break を変更する場合は、新しい ranking version も割り当てる。
 
 重みと閾値は開発用集合で調整し、holdout 集合は採用判定にだけ使用する。公開 repository の holdout は秘密試験ではなく、固定 digest と変更履歴で過適合を監査する集合とする。profile、重み、閾値、辞書または誤記規則を変更する変更では holdout fixture を同時に変更しない。
 

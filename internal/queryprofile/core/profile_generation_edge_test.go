@@ -81,7 +81,9 @@ func TestProfileは一般検索語の論理演算子を型付き条件へ変換�
 	}
 }
 
-func TestProfileは取得意図と対象外意図の混在から候補を作らない(t *testing.T) {
+func TestProfileは取得意図と対象外意図の混在で強い根拠候補を保持する(
+	t *testing.T,
+) {
 	t.Parallel()
 
 	generation := generateQuery(
@@ -89,11 +91,56 @@ func TestProfileは取得意図と対象外意図の混在から候補を作ら�
 		"民法第709条を英訳して法的に判断してください。",
 		nil,
 	)
-	if len(generation.Candidates()) != 0 ||
-		!slices.Contains(
-			generation.Signals(),
-			legalquery.CandidateSignalUnsupportedTranslation,
-		) ||
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf(
+			"SOT-MODEL-026: mixed unsupported candidates = %#v, want 1 件",
+			candidates,
+		)
+	}
+	candidate := candidates[0]
+	if !slices.Equal(
+		candidate.EvidenceCodes(),
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceStructuredReference,
+			legalquery.EvidenceExplicitResource,
+			legalquery.EvidenceOfficialAlias,
+		},
+	) {
+		t.Fatalf(
+			"SOT-MODEL-026: mixed unsupported evidence = %#v",
+			candidate.EvidenceCodes(),
+		)
+	}
+	steps := candidate.Steps()
+	if len(steps) != 1 {
+		t.Fatalf(
+			"SOT-MODEL-026: mixed unsupported steps = %#v, want 1 件",
+			steps,
+		)
+	}
+	input, ok := steps[0].LogicalInput().(legalquery.LawArticleReadIntentV1)
+	if !ok {
+		t.Fatalf(
+			"SOT-MODEL-026: mixed unsupported logical input = %T",
+			steps[0].LogicalInput(),
+		)
+	}
+	lawID, exists := input.LawID()
+	location := input.Location()
+	if !exists ||
+		lawID != "129AC0000000089" ||
+		location.Provision() != "main" ||
+		location.ArticleNumber() != "709" {
+		t.Fatalf(
+			"SOT-MODEL-026: mixed unsupported logical input = %#v",
+			input,
+		)
+	}
+	if !slices.Contains(
+		generation.Signals(),
+		legalquery.CandidateSignalUnsupportedTranslation,
+	) ||
 		!slices.Contains(
 			generation.Signals(),
 			legalquery.CandidateSignalUnsupportedLegalAdvice,

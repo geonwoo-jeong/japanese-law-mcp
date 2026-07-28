@@ -25,3 +25,4 @@
 - [23-legal-query-plan.md](23-legal-query-plan.md)
 - [24-legal-query-result.md](24-legal-query-result.md)
 - [25-legal-query-preprocess-result.md](25-legal-query-preprocess-result.md)
+- [26-query-profile-contribution.md](26-query-profile-contribution.md)

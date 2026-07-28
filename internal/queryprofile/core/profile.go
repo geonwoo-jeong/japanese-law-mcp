@@ -38,6 +38,7 @@ type profileDocument struct {
 	SchemaVersion  int                     `json:"schemaVersion"`
 	ProfileID      string                  `json:"profileId"`
 	ProfileVersion string                  `json:"profileVersion"`
+	RankingVersion string                  `json:"rankingVersion"`
 	CueSetVersion  string                  `json:"cueSetVersion"`
 	Targets        []targetDocument        `json:"targets"`
 	Score          scoreDocument           `json:"score"`
@@ -311,6 +312,7 @@ func buildMetadata(
 			SchemaVersion:              document.SchemaVersion,
 			ProfileID:                  document.ProfileID,
 			ProfileVersion:             document.ProfileVersion,
+			RankingVersion:             document.RankingVersion,
 			CueSetVersion:              document.CueSetVersion,
 			LawNameLexiconVersion:      document.Lexicons.LawNames,
 			LegalConceptLexiconVersion: document.Lexicons.LegalConcepts,

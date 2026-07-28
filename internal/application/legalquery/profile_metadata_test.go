@@ -32,6 +32,7 @@ func TestQueryProfileMetadataはscore選択辞書版を不変に保持する(t *
 		SchemaVersion:              1,
 		ProfileID:                  "core",
 		ProfileVersion:             "core-2026-07-28-1",
+		RankingVersion:             "ranking-2026-07-28-1",
 		CueSetVersion:              "core-cues-2026-07-28-1",
 		LawNameLexiconVersion:      "law-name-2026-07-27",
 		LegalConceptLexiconVersion: "legal-concept-2026-07-28-2",
@@ -50,6 +51,7 @@ func TestQueryProfileMetadataはscore選択辞書版を不変に保持する(t *
 	}
 	if metadata.ProfileID() != "core" ||
 		metadata.ProfileVersion() != "core-2026-07-28-1" ||
+		metadata.RankingVersion() != "ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "core-cues-2026-07-28-1" ||
 		metadata.LawNameLexiconVersion() != "law-name-2026-07-27" ||
 		metadata.LegalConceptLexiconVersion() != "legal-concept-2026-07-28-2" {
@@ -141,6 +143,7 @@ func TestQueryProfileMetadataは重複targetと不完全tieBreakを拒否する(
 		SchemaVersion:              1,
 		ProfileID:                  "core",
 		ProfileVersion:             "core-v1",
+		RankingVersion:             "ranking-v1",
 		CueSetVersion:              "core-cues-v1",
 		LawNameLexiconVersion:      "law-name-v1",
 		LegalConceptLexiconVersion: "legal-concept-v1",

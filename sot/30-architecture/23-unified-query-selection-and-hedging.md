@@ -12,17 +12,20 @@ planner は、`SOT-PROD-011` が許可する七つの task/resource 組合せだ
 
 根拠は `SOT-MODEL-022` の順序を基本とする。公式識別子と構造化参照を最も強く、一般名詞だけの一致を最も弱く扱う。正式名称、公式略称、法概念および一意な誤記補正は、それぞれの出典と衝突規則を満たす場合だけ根拠にする。
 
-候補の `semanticScore`、同点規則、単独選択閾値、最低実行閾値および二候補を選ぶ margin は、版付き profile に固定する。score は確率ではなく、異なる profile version 間で数値を比較しない。
+候補の `semanticScore`、同点規則、単独選択閾値、最低実行閾値および二候補を選ぶ margin は、版付き profile に固定する。score は確率ではなく、`SOT-MODEL-026` の同じ ranking version と校正値を持たない contribution 間で数値を比較しない。
+
+profile は score だけでは表せない候補間の安全関係を `SOT-MODEL-026` の `selectionMode` と `hedgePairs` で返す。selector は略称衝突、弱い一般語、自動実行しない辞書候補または四 step を超える複数主題を候補の形から推測せず、profile が指定した明確化を優先する。
 
 ## 選択
 
 選択は次の順序で行う。
 
 1. 有効な候補を意味 score と固定 tie-break で順位付けする。
-2. 上位候補が単独選択閾値を満たし、二位との差が単独 margin 以上なら一候補を選ぶ。
-3. 上位二候補がともに最低実行閾値を満たし、差が hedge margin 以下で、独立実行しても意味が変わらない場合だけ二候補を選ぶ。
-4. 上記を満たさない場合は、外部情報源を呼ばず明確化を求める。
-5. 意味順位を確定した後で pack の実行可否を付与する。
+2. `selectionMode=clarification_required` なら、score 差だけで上書きせず外部情報源を呼ばない明確化とする。
+3. 上位候補が単独選択閾値を満たし、二位との差が単独 margin 以上なら一候補を選ぶ。
+4. 上位二候補がともに最低実行閾値を満たし、差が hedge margin 以下で、有効な第三候補がなく、同じ contribution の `hedgePairs` に明示され、全 step が四件以下の場合だけ二候補を選ぶ。
+5. 上記を満たさない場合は、外部情報源を呼ばず明確化を求める。
+6. 意味順位を確定した後で pack の実行可否を付与する。
 
 上位候補または hedge 対象に必要な採用済み pack が無効なら `capability_unavailable` とし、利用可能な候補だけ、または法令コアの下位候補を代替実行しない。未採用 task/resource は `unsupported` とする。
 
@@ -30,7 +33,7 @@ planner は、`SOT-PROD-011` が許可する七つの task/resource 組合せだ
 
 法令コアと有効な pack が必要とする route、binding および request materializer は起動時に検証し、不備があれば transport を開始しない。正常起動後の route 不備を意味候補の availability または runtime fallback として扱わない。
 
-閾値の具体的な数値は SOT へ直接埋め込まず、`SOT-ENG-024` の評価コーパスと profile version によって受け入れる。
+閾値の具体的な数値は SOT へ直接埋め込まず、`SOT-ENG-024` の評価コーパス、profile version および ranking version によって受け入れる。
 
 ## 実行
 
@@ -59,11 +62,14 @@ planner は、`SOT-PROD-011` が許可する七つの task/resource 組合せだ
 
 無効な裁判例 pack を法令検索へ置き換えないこと、空結果後に別候補を追加しないこと、検索第一件を読まないこと、`effectiveLimit` を再配分しないこと、および候補数、呼出し数、item 数の上限を超えないことを明示的に検証する。
 
+score が単独条件を満たしても `clarification_required` を実行しないこと、近接していても hedge pair でない略称衝突を実行しないこと、同じ候補内の複数主題を hedge と扱わないこと、および異なる profile の候補を即席の hedge pair にしないことも確認する。
+
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
+- [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](13-source-composition.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

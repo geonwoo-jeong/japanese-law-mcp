@@ -24,6 +24,7 @@ type QueryProfileMetadataValues struct {
 	SchemaVersion              int
 	ProfileID                  string
 	ProfileVersion             string
+	RankingVersion             string
 	CueSetVersion              string
 	LawNameLexiconVersion      string
 	LegalConceptLexiconVersion string
@@ -38,6 +39,7 @@ type QueryProfileMetadata struct {
 	schemaVersion              int
 	profileID                  string
 	profileVersion             string
+	rankingVersion             string
 	cueSetVersion              string
 	lawNameLexiconVersion      string
 	legalConceptLexiconVersion string
@@ -55,6 +57,7 @@ func NewQueryProfileMetadata(
 		schemaVersion:              values.SchemaVersion,
 		profileID:                  values.ProfileID,
 		profileVersion:             values.ProfileVersion,
+		rankingVersion:             values.RankingVersion,
 		cueSetVersion:              values.CueSetVersion,
 		lawNameLexiconVersion:      values.LawNameLexiconVersion,
 		legalConceptLexiconVersion: values.LegalConceptLexiconVersion,
@@ -79,6 +82,10 @@ func (m QueryProfileMetadata) ProfileID() string {
 
 func (m QueryProfileMetadata) ProfileVersion() string {
 	return m.profileVersion
+}
+
+func (m QueryProfileMetadata) RankingVersion() string {
+	return m.rankingVersion
 }
 
 func (m QueryProfileMetadata) CueSetVersion() string {
@@ -119,6 +126,7 @@ func (m QueryProfileMetadata) Validate() error {
 	}
 	for field, value := range map[string]string{
 		"profileVersion":             m.profileVersion,
+		"rankingVersion":             m.rankingVersion,
 		"cueSetVersion":              m.cueSetVersion,
 		"lawNameLexiconVersion":      m.lawNameLexiconVersion,
 		"legalConceptLexiconVersion": m.legalConceptLexiconVersion,

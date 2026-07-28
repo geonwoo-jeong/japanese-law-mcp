@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "profileVersion": "core-2026-07-28-3",
+  "profileVersion": "core-2026-07-28-4",
+  "rankingVersion": "legal-query-ranking-2026-07-28-1",
   "cueSetVersion": "core-cues-2026-07-28-3",
   "targets": [
     {
@@ -75,7 +76,7 @@
     "mediumConfidenceAt": 80
   },
   "selection": {
-    "singleThreshold": 120,
+    "singleThreshold": 85,
     "minimumExecutionThreshold": 80,
     "singleMargin": 25,
     "hedgeMargin": 10

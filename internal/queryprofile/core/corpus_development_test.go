@@ -28,8 +28,19 @@ func TestProfileはcorpusV4Developmentのcore意味を製品辞書から生成�
 	if err != nil {
 		t.Fatalf("corpus-v4 を読み込めません: %v", err)
 	}
+	profileSet, err := legalquery.NewQueryProfileSet(
+		[]legalquery.QueryProfile{profile},
+	)
+	if err != nil {
+		t.Fatalf("core profile set を構築できません: %v", err)
+	}
+	packState, err := legalquery.NewStaticPackState(nil, nil)
+	if err != nil {
+		t.Fatalf("core pack state を構築できません: %v", err)
+	}
 
 	processed := 0
+	planned := 0
 	for _, semanticCase := range corpus.Development() {
 		expected, isPlan := semanticCase.Expected().(legalquerycorpus.ExpectedPlan)
 		if !isPlan {
@@ -76,10 +87,46 @@ func TestProfileはcorpusV4Developmentのcore意味を製品辞書から生成�
 			}
 			assertCoreMeanings(t, coreMeanings, candidates)
 			assertDevelopmentSignals(t, expected, generation.Signals())
+			if len(coreMeanings) != len(expected.Meanings()) {
+				return
+			}
+			profileSetResult, err := profileSet.Collect(preprocessed)
+			if err != nil {
+				t.Fatalf("profile set の集約エラー = %v", err)
+			}
+			plan, err := legalquery.SelectLegalQueryPlan(
+				legalquery.SelectorInput{
+					ProfileSetResult: profileSetResult,
+					PackState:        packState,
+					LimitPerAttempt:  request.LimitPerAttempt(),
+				},
+			)
+			if err != nil {
+				t.Fatalf("selector のエラー = %v", err)
+			}
+			evaluation, err := legalqueryeval.EvaluateSemanticPlanCase(
+				currentCase,
+				plan,
+			)
+			if err != nil {
+				t.Fatalf("plan 評価のエラー = %v", err)
+			}
+			if !evaluation.PlanOutcomeMatched() {
+				t.Fatalf(
+					"decision/reason/selection が期待値と一致しません: decision=%q reasons=%#v selected=%#v",
+					plan.Decision(),
+					plan.ReasonCodes(),
+					plan.Selected(),
+				)
+			}
+			planned++
 		})
 	}
 	if processed != 29 {
 		t.Fatalf("development plan case count = %d, want 29", processed)
+	}
+	if planned != 27 {
+		t.Fatalf("core plan evaluation count = %d, want 27", planned)
 	}
 }
 

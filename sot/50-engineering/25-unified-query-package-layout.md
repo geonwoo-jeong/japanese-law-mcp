@@ -89,7 +89,9 @@ profile が実装する interface と共通の enum は `application/legalquery`
 
 pack 無効を認識する最小 cue と、入力された `SourceResourceRef` を採用済み provider/source/resource として構造検証する metadata は、core 側の予約済み pack metadata として保持できる。無効な pack の request builder、binding、provider route または result mapper は構成しない。
 
-各 profile directory は `data/profile.json` に profile ID、schema version、profile version、対象 task/resource、weight set、閾値、margin、tie-break および参照する辞書 version を持つ。`data/cues.json` は出典不要の構文 cue と予約語だけを持ち、法概念と法令名の出典付きデータを混在させない。
+各 profile directory は `data/profile.json` に profile ID、schema version、profile version、ranking version、対象 task/resource、weight set、閾値、margin、tie-break および参照する辞書 version を持つ。profile version は固有の規則と辞書を、ranking version は profile set 内で共有する score scale、confidence、閾値、margin および tie-break の校正を識別する。`data/cues.json` は出典不要の構文 cue と予約語だけを持ち、法概念と法令名の出典付きデータを混在させない。
+
+profile は `SOT-MODEL-026` の contribution として候補、信号、selection mode および hedge pair を返す。profile set は異なる profile version を独立に保持できるが、ranking version と実際の校正値が一致する contribution だけを stable に集約し、set 全体の不透明な plan profile version を決定的に作る。
 
 将来 pack は `internal/queryprofile/<packId からハイフンを除いた名前>/` を独立単位とし、同じ `profile.json` schema、固有の data、loader test および評価カテゴリを持つ。他 pack の Go package または data file を import しない。
 
@@ -135,6 +137,7 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ARCH-007: 依存方向](../30-architecture/07-dependency-direction.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
 - [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)

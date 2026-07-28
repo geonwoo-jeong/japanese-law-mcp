@@ -48,10 +48,14 @@ func TestCollectProfileCandidatesはprofile識別子の不一致を拒否する(
 		{
 			ProfileID:      "other",
 			ProfileVersion: metadata.ProfileVersion(),
+			RankingVersion: metadata.RankingVersion(),
+			SelectionMode:  QuerySelectionModeAutomatic,
 		},
 		{
 			ProfileID:      metadata.ProfileID(),
 			ProfileVersion: "core-v2",
+			RankingVersion: metadata.RankingVersion(),
+			SelectionMode:  QuerySelectionModeAutomatic,
 		},
 	}
 	for _, values := range tests {
@@ -102,6 +106,7 @@ func mustCollectionProfileMetadata(t *testing.T) QueryProfileMetadata {
 		SchemaVersion:              1,
 		ProfileID:                  "core",
 		ProfileVersion:             "core-v1",
+		RankingVersion:             "ranking-v1",
 		CueSetVersion:              "core-cues-v1",
 		LawNameLexiconVersion:      "law-name-v1",
 		LegalConceptLexiconVersion: "legal-concept-v1",

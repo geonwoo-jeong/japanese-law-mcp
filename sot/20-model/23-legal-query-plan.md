@@ -22,6 +22,8 @@
 
 `profileVersion` は有効な UTF-8 で 1 byte 以上 128 byte 以下とし、先頭若しくは末尾の Unicode White_Space および位置を問わず Unicode control character を含めない。構造を解釈せず、同じ `profileVersion` の候補間だけで score を比較する。
 
+この値は `SOT-MODEL-026` の active profile set 全体を特定する不透明な版とする。各 query profile は独立した `profileVersion` を持つことができるが、同じ `rankingVersion` と校正値を持つ contribution だけを一つの set へ集約する。plan の `profileVersion` は固定順の全 profile 版、ranking version、辞書版および校正値のいずれかが変われば別の値とし、個別 profile の score を版の異なる set 間で比較しない。
+
 `LegalQueryPlanSelection` は `candidateId`、`availability` および `requiredPacks` を持つ。`requiredPacks` は参照先候補の同名配列と完全に一致し、空配列を許す。`availability` は次のいずれかとする。
 
 - `available`: `requiredPacks` の全 pack が有効
@@ -34,6 +36,8 @@
 `needs_clarification` の `selected` は、利用者へ示す候補を零件以上二件以下の `available` な selection として持つことができる。`capability_unavailable` は一件以上二件以下の `pack_disabled` な selection を持つ。`unsupported` は採用済みの task/resource 候補を `selected` にせず空にし、対象外、言語境界違反または混在要求を `reasonCodes` で表す。混在要求の判定根拠を内部で検査できるように、`unsupported` の `rankedCandidates` は、取得 span から既に生成された採用済み task/resource 候補に限って零件以上十六件以下を保持できる。この内部候補を選択または部分実行してはならない。
 
 一つの照会文に、法的助言、未採用 task/resource または翻訳と、実行可能な取得意図が混在する場合は、実行可能な部分だけを抜き出さず `unsupported` とする。一つの複数 step 候補に無効な pack の step が含まれる場合も、他 step を部分実行せず `capability_unavailable` とする。
+
+法的助言または翻訳だけを求め、採用済みの取得候補を生成できない場合は、採用範囲外の task として `unsupported_task_or_resource` を使用する。`mixed_unsupported_intent` は、採用済みの取得候補を内部順位に保持できる場合だけ使用する。
 
 公開する法令コア route と、有効な pack が必要とする route・binding・materializer は起動時にすべて検証する。欠落または不整合があれば transport を開始せず、正常起動後の候補選択で route 不備を availability として扱わない。
 
@@ -134,6 +138,7 @@ materialization で型、resource、provider または route の不一致を検�
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
+- [SOT-MODEL-026: QueryProfileContribution](26-query-profile-contribution.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](../30-architecture/19-extension-pack-activation-boundary.md)
 - [SOT-IF-026: プロバイダールーティング設定](../40-interfaces/26-provider-routing-configuration.md)

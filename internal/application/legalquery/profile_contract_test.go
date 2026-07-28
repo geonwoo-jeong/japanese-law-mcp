@@ -248,11 +248,13 @@ func TestCandidateGenerationは候補と安全信号を不変に保持する(t *
 	generation, err := NewCandidateGeneration(CandidateGenerationValues{
 		ProfileID:      "core",
 		ProfileVersion: "core-2026-07-28-1",
+		RankingVersion: "ranking-2026-07-28-1",
 		Candidates:     []LegalQueryCandidate{candidate},
 		Signals: []CandidateGenerationSignal{
 			CandidateSignalUnsupportedLegalAdvice,
 			CandidateSignalUnsupportedTaskOrResource,
 		},
+		SelectionMode: QuerySelectionModeAutomatic,
 	})
 	if err != nil {
 		t.Fatalf("SOT-ARCH-023: generation のエラー = %v", err)
@@ -284,8 +286,10 @@ func TestCandidateGenerationは候補と安全信号を不変に保持する(t *
 		values := CandidateGenerationValues{
 			ProfileID:      "core",
 			ProfileVersion: "core-2026-07-28-1",
+			RankingVersion: "ranking-2026-07-28-1",
 			Candidates:     []LegalQueryCandidate{candidate},
 			Signals:        invalid,
+			SelectionMode:  QuerySelectionModeAutomatic,
 		}
 		if _, err := NewCandidateGeneration(values); err == nil {
 			t.Fatalf("不正な signals を受理しました: %#v", invalid)

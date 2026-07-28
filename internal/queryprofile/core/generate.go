@@ -44,20 +44,84 @@ func (p *Profile) Generate(
 		return legalquery.CandidateGeneration{}, err
 	}
 	signals := p.generationSignals(input, cues)
-	if input.Language() == legalquery.QueryLanguageNonJapanese ||
-		hasUnsupportedGenerationSignal(signals) {
-		return p.newGeneration(nil, signals)
+	if input.Language() == legalquery.QueryLanguageNonJapanese {
+		return p.newGeneration(
+			nil,
+			signals,
+			legalquery.QuerySelectionModeAutomatic,
+			nil,
+		)
+	}
+	if hasTooManySeparatedSubjects(input, cues) {
+		return p.newGeneration(
+			nil,
+			signals,
+			legalquery.QuerySelectionModeClarificationRequired,
+			nil,
+		)
 	}
 
 	drafts, err := p.generateDrafts(input, cues)
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
+	drafts = retainGroundedDraftsForUnsupportedResource(drafts, signals)
 	candidates, err := p.materializeCandidates(drafts, scope)
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
-	return p.newGeneration(candidates, signals)
+	mode := p.selectionMode(input, cues, candidates)
+	pairs, err := p.hedgePairs(input, cues, candidates, mode)
+	if err != nil {
+		return legalquery.CandidateGeneration{}, err
+	}
+	return p.newGeneration(candidates, signals, mode, pairs)
+}
+
+func retainGroundedDraftsForUnsupportedResource(
+	drafts []candidateDraft,
+	signals []legalquery.CandidateGenerationSignal,
+) []candidateDraft {
+	if !hasUnsupportedTaskOrResourceSignal(signals) {
+		return drafts
+	}
+	result := make([]candidateDraft, 0, len(drafts))
+	for _, draft := range drafts {
+		if hasGroundedRetrievalEvidence(draft.evidence) {
+			result = append(result, draft)
+		}
+	}
+	return result
+}
+
+func hasUnsupportedTaskOrResourceSignal(
+	signals []legalquery.CandidateGenerationSignal,
+) bool {
+	for _, signal := range signals {
+		if signal ==
+			legalquery.CandidateSignalUnsupportedTaskOrResource {
+			return true
+		}
+	}
+	return false
+}
+
+func hasGroundedRetrievalEvidence(
+	evidence map[legalquery.EvidenceCode]struct{},
+) bool {
+	grounded := [...]legalquery.EvidenceCode{
+		legalquery.EvidenceOfficialIdentifier,
+		legalquery.EvidenceStructuredReference,
+		legalquery.EvidenceExplicitResource,
+		legalquery.EvidenceOfficialAlias,
+		legalquery.EvidenceLegalConcept,
+	}
+	for _, code := range grounded {
+		if _, exists := evidence[code]; exists {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Profile) generateDrafts(
@@ -130,22 +194,6 @@ func (p *Profile) generateDrafts(
 	default:
 		return nil, nil
 	}
-}
-
-func hasUnsupportedGenerationSignal(
-	signals []legalquery.CandidateGenerationSignal,
-) bool {
-	for _, signal := range signals {
-		switch signal {
-		case legalquery.CandidateSignalNonJapaneseQuery,
-			legalquery.CandidateSignalUnsupportedLegalAdvice,
-			legalquery.CandidateSignalUnsupportedTranslation,
-			legalquery.CandidateSignalUnsupportedTaskOrResource,
-			legalquery.CandidateSignalReservedPackRequest:
-			return true
-		}
-	}
-	return false
 }
 
 func reservedPackOnlyRequest(
@@ -462,20 +510,21 @@ func draftMeaningSignature(value candidateDraft) (string, error) {
 func logicalInputSignature(value legalquery.LogicalInput) (string, error) {
 	switch input := value.(type) {
 	case legalquery.LawSearchIntentV1:
-		return "law-search|" + input.Query() + "|" + optionalDateSignature(input.AsOf()), nil
+		return "01-law-search|" + input.Query() + "|" +
+			optionalDateSignature(input.AsOf()), nil
 	case legalquery.LawContentSearchIntentV1:
-		return "law-content|" +
+		return "02-law-content|" +
 			strings.Join(input.AllTerms(), "\x00") + "|" +
 			strings.Join(input.AnyTerms(), "\x00") + "|" +
 			strings.Join(input.ExcludeTerms(), "\x00") + "|" +
 			optionalDateSignature(input.AsOf()), nil
 	case legalquery.LawReadIntentV1:
 		if ref, exists := input.Ref(); exists {
-			return "law-read|ref|" + resourceRefSignature(ref), nil
+			return "03-law-read|ref|" + resourceRefSignature(ref), nil
 		}
 		lawID, _ := input.LawID()
 		revisionID, _ := input.RevisionID()
-		return "law-read|" + lawID + "|" + revisionID + "|" +
+		return "03-law-read|" + lawID + "|" + revisionID + "|" +
 			optionalDateSignature(input.AsOf()), nil
 	case legalquery.LawArticleReadIntentV1:
 		target := ""
@@ -486,13 +535,13 @@ func logicalInputSignature(value legalquery.LogicalInput) (string, error) {
 		}
 		location := input.Location()
 		paragraph, _ := location.ParagraphNumber()
-		return "law-article|" + target + "|" +
+		return "04-law-article|" + target + "|" +
 			string(location.Provision()) + "|" +
 			location.ArticleNumber() + "|" +
 			strconv.Itoa(paragraph) + "|" +
 			optionalDateSignature(input.AsOf()), nil
 	case legalquery.LawUpdateListIntentV1:
-		return "law-updates|" + input.Date().String(), nil
+		return "05-law-updates|" + input.Date().String(), nil
 	default:
 		return "", fmt.Errorf("core profile が未対応の logical input を生成しました")
 	}
@@ -518,11 +567,16 @@ func resourceRefSignature(ref model.SourceResourceRef) string {
 func (p *Profile) newGeneration(
 	candidates []legalquery.LegalQueryCandidate,
 	signals []legalquery.CandidateGenerationSignal,
+	mode legalquery.QuerySelectionMode,
+	pairs []legalquery.CandidateHedgePair,
 ) (legalquery.CandidateGeneration, error) {
 	return legalquery.NewCandidateGeneration(legalquery.CandidateGenerationValues{
 		ProfileID:      p.metadata.ProfileID(),
 		ProfileVersion: p.metadata.ProfileVersion(),
+		RankingVersion: p.metadata.RankingVersion(),
 		Candidates:     candidates,
 		Signals:        signals,
+		SelectionMode:  mode,
+		HedgePairs:     pairs,
 	})
 }

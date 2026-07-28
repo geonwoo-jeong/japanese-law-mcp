@@ -18,7 +18,7 @@ func CollectProfileCandidates(
 	preprocessed PreprocessResult,
 	scope CandidateIDScope,
 ) (CandidateGeneration, error) {
-	if profile == nil {
+	if isNilInterfaceValue(profile) {
 		return CandidateGeneration{}, fmt.Errorf("profile は必須です")
 	}
 	metadata := profile.Metadata()
@@ -47,6 +47,11 @@ func CollectProfileCandidates(
 	if generation.ProfileVersion() != metadata.ProfileVersion() {
 		return CandidateGeneration{}, fmt.Errorf(
 			"profile が metadata と異なる profileVersion を返しました",
+		)
+	}
+	if generation.RankingVersion() != metadata.RankingVersion() {
+		return CandidateGeneration{}, fmt.Errorf(
+			"profile が metadata と異なる rankingVersion を返しました",
 		)
 	}
 	return generation, nil
