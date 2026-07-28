@@ -20,6 +20,8 @@ func TestDependencyDirectionAnalyzer(t *testing.T) {
 		"github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp/mcpgood",
 		"github.com/geonwoo-jeong/japanese-law-mcp/internal/model/modelbad",
 		"github.com/geonwoo-jeong/japanese-law-mcp/internal/model/modelgood",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/queryprofilebad",
+		"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/queryprofilegood",
 		"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/sourcebad",
 		"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/sourcegood",
 		"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/transportbad",

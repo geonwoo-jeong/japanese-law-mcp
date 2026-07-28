@@ -90,6 +90,89 @@ func TestPreprocessDistinguishesFourLawNameMatchKinds(t *testing.T) {
 	}
 }
 
+func TestNewEmbeddedは法令略称の文字幅差を誤記にしない(t *testing.T) {
+	t.Parallel()
+
+	preprocessor, err := querypreprocess.NewEmbedded(nil)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: NewEmbedded() のエラー = %v", err)
+	}
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, "JAS法という法令略称を検索してください。"),
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+	}
+	mentions := result.LawNameMentions()
+	if len(mentions) != 1 ||
+		mentions[0].Canonical() != "日本農林規格等に関する法律" ||
+		mentions[0].MatchKind() !=
+			legalquery.PreprocessMatchComparisonNormalized {
+		t.Fatalf(
+			"SOT-MODEL-025: 文字幅差の lawNameMentions = %#v",
+			mentions,
+		)
+	}
+}
+
+func TestPreprocessDoesNotCorrectPostpositionEndedPhraseToLawName(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	laws := []lawnamelexicon.Entry{
+		{
+			ResourceID: "132AC0000000015",
+			RevisionID: "132AC0000000015_20160401_426AC0000000069",
+			LawNumber:  "明治三十二年法律第十五号",
+			Canonical:  "供託法",
+		},
+		{
+			ResourceID: "132AC0000000046",
+			RevisionID: "132AC0000000046_20250601_504AC0000000068",
+			LawNumber:  "明治三十二年法律第四十六号",
+			Canonical:  "船舶法",
+		},
+	}
+	preprocessor := mustNewPreprocessor(
+		t,
+		laws,
+		nil,
+		[]legalquery.CueVocabularyEntry{
+			{
+				ProfileID: testCueProfileID,
+				CueID:     "task-search",
+				Terms:     []string{"検索"},
+			},
+			{
+				ProfileID: testCueProfileID,
+				CueID:     "resource-provision",
+				Terms:     []string{"条文"},
+			},
+		},
+	)
+	for _, query := range []string{
+		"供託を検索",
+		"船舶を含む条文を検索",
+	} {
+		result, err := preprocessor.Preprocess(
+			context.Background(),
+			mustRequest(t, query),
+		)
+		if err != nil {
+			t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+		}
+		if mentions := result.LawNameMentions(); len(mentions) != 0 {
+			t.Fatalf(
+				"SOT-MODEL-025: 助詞を法令名の誤記として補正しました: query=%q mentions=%#v",
+				query,
+				mentions,
+			)
+		}
+	}
+}
+
 func TestPreprocessAcceptsConceptAndCueOnlyProfile(t *testing.T) {
 	t.Parallel()
 

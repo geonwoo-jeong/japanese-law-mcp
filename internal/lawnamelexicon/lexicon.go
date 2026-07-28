@@ -37,6 +37,7 @@ type Entry struct {
 
 // Lexicon は、検証済みの不変な法令名辞書である。
 type Lexicon struct {
+	version string
 	entries []Entry
 	terms   []string
 }
@@ -97,6 +98,14 @@ func (l *Lexicon) Entries() []Entry {
 		}
 	}
 	return entries
+}
+
+// Version は、公式辞書と補足辞書を一意に識別する合成版を返す。
+func (l *Lexicon) Version() string {
+	if l == nil {
+		return ""
+	}
+	return l.version
 }
 
 // Terms は、Kagome user dictionary に登録する重複のない語を返す。
@@ -165,6 +174,7 @@ func buildLexicon(
 	}
 	slices.Sort(terms)
 	return &Lexicon{
+		version: official.DatasetID + "+" + supplemental.DatasetID,
 		entries: entries,
 		terms:   terms,
 	}

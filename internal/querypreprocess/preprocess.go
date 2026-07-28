@@ -371,9 +371,12 @@ func typoCandidates(
 			if !isLexicalToken(tokens[end].Surface()) {
 				break
 			}
+			if !isTypoCandidateTerminal(tokens[end]) {
+				continue
+			}
 			startByte := tokens[start].StartByte()
 			endByte := tokens[end].EndByte()
-			if strictlyContainsAny(
+			if overlapsAny(
 				startByte,
 				endByte,
 				protectedSpans,
@@ -410,6 +413,14 @@ func typoCandidates(
 	return values, nil
 }
 
+func isTypoCandidateTerminal(token kagome.TokenOccurrence) bool {
+	partOfSpeech := token.PartOfSpeech()
+	if len(partOfSpeech) == 0 {
+		return false
+	}
+	return partOfSpeech[0] != "助詞" && partOfSpeech[0] != "助動詞"
+}
+
 func dictionaryDraftSpans(
 	laws []lawDraft,
 	concepts []conceptDraft,
@@ -428,21 +439,6 @@ func dictionaryDraftSpans(
 		})
 	}
 	return values
-}
-
-func strictlyContainsAny(
-	startByte int,
-	endByte int,
-	values []byteSpan,
-) bool {
-	for _, value := range values {
-		if startByte <= value.startByte &&
-			value.endByte <= endByte &&
-			(startByte != value.startByte || endByte != value.endByte) {
-			return true
-		}
-	}
-	return false
 }
 
 func isLexicalToken(value string) bool {

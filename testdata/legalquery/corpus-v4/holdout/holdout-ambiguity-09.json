@@ -1,0 +1,78 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-09",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "adult-guardianship"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept",
+          "morphological_context"
+        ],
+        "meaningId": "law-provisions",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "成年後見"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+          "adult-guardianship"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept",
+          "morphological_context"
+        ],
+        "meaningId": "court-decisions",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "成年後見"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-provisions",
+      "court-decisions"
+    ]
+  },
+  "leakageGroupId": "holdout-ambiguity-adult-guardianship-concept",
+  "request": {
+    "query": "成年後見について法情報を探してください。"
+  },
+  "schemaVersion": 1
+}

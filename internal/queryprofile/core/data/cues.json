@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "profileId": "core",
+  "cueSetVersion": "core-cues-2026-07-28-3",
+  "cues": [
+    {
+      "cueId": "operator-all",
+      "category": "operator",
+      "value": "all",
+      "terms": ["いずれも", "かつ", "すべて", "すべてを含む", "とも含む", "全部", "全部を含む", "双方", "両方", "両方を含む", "各語を含む", "及び"]
+    },
+    {
+      "cueId": "operator-any",
+      "category": "operator",
+      "value": "any",
+      "terms": ["いずれか", "または", "もしくは", "又は", "若しくは"]
+    },
+    {
+      "cueId": "operator-as-of",
+      "category": "operator",
+      "value": "as_of",
+      "terms": ["時点", "時点の"]
+    },
+    {
+      "cueId": "operator-dual-candidate",
+      "category": "operator",
+      "value": "dual_candidate",
+      "terms": ["2候補", "二候補", "法令名と条文", "法令名と条文の二候補"]
+    },
+    {
+      "cueId": "operator-exclude",
+      "category": "operator",
+      "value": "exclude",
+      "terms": ["以外", "除いて", "除く", "除外"]
+    },
+    {
+      "cueId": "operator-individual",
+      "category": "operator",
+      "value": "individual",
+      "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々"]
+    },
+    {
+      "cueId": "reserved-pack-judicial-cases",
+      "category": "reserved_pack",
+      "value": "judicial-cases",
+      "terms": ["判例", "裁判例", "裁判例本文", "最高裁判例"]
+    },
+    {
+      "cueId": "resource-law",
+      "category": "resource",
+      "value": "law",
+      "terms": ["法律", "法情報", "法令", "法令名", "法令略称", "正式な法令", "正式名称", "略称"]
+    },
+    {
+      "cueId": "resource-law-provision",
+      "category": "resource",
+      "value": "law_provision",
+      "terms": ["本文", "条文", "条文検索", "条項", "法令本文", "法令本文から", "法令本文で", "規定"]
+    },
+    {
+      "cueId": "resource-updates",
+      "category": "resource",
+      "value": "updates",
+      "terms": ["更新された法令", "更新一覧", "更新情報", "更新法令", "法令更新一覧", "法令改正一覧"]
+    },
+    {
+      "cueId": "task-list-updates",
+      "category": "task",
+      "value": "list_updates",
+      "terms": ["列挙して", "列挙する", "更新された", "更新一覧", "改正一覧"]
+    },
+    {
+      "cueId": "task-read",
+      "category": "task",
+      "value": "read",
+      "terms": ["取得して", "取得してください", "取得する", "本文を取得", "本文を取得して", "条文を取得", "確認して", "確認する", "表示して", "表示する", "見せて", "見せてください", "読んで", "読んでください", "読み", "読みたい", "読む"]
+    },
+    {
+      "cueId": "task-search",
+      "category": "task",
+      "value": "search",
+      "terms": ["教えて", "教えてください", "検索", "検索したい", "検索して", "検索してください", "検索する", "探したい", "探して", "探してください", "探す", "見つけて", "見つける", "調べたい", "調べて", "調べてください", "調べる"]
+    },
+    {
+      "cueId": "unsupported-legal-advice",
+      "category": "unsupported",
+      "value": "legal_advice",
+      "terms": ["どちらが有利", "勝てますか", "法的に判断", "署名すべき", "適法ですか", "違法ですか"]
+    },
+    {
+      "cueId": "unsupported-resource",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "terms": ["EDINET", "内部文書", "未公開内部文書", "自治体文書", "都道府県資料"]
+    },
+    {
+      "cueId": "unsupported-translation",
+      "category": "unsupported",
+      "value": "translation",
+      "terms": ["和訳", "翻訳", "英訳"]
+    },
+    {
+      "cueId": "unsupported-unadopted-pack",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "terms": ["労務相談", "国会審議", "立法沿革", "立法経緯", "税務相談"]
+    }
+  ]
+}

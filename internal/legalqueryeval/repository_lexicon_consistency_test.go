@@ -10,15 +10,15 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 )
 
-func Test組込み辞書とCorpusV3の法概念IDは相互に対応する(t *testing.T) {
+func Test組込み辞書とCorpusV4の法概念IDは相互に対応する(t *testing.T) {
 	repositoryRoot := legalConceptRepositoryRoot(t)
 	corpus, err := legalquerycorpus.Load(
 		context.Background(),
 		repositoryRoot,
-		"testdata/legalquery/corpus-v3",
+		"testdata/legalquery/corpus-v4",
 	)
 	if err != nil {
-		t.Fatalf("SOT-ENG-023, SOT-ENG-026: corpus-v3 Load() error = %v", err)
+		t.Fatalf("SOT-ENG-023, SOT-ENG-026: corpus-v4 Load() error = %v", err)
 	}
 	lexicon, err := legalconceptlexicon.LoadEmbedded()
 	if err != nil {
@@ -55,7 +55,7 @@ func Test組込み辞書とCorpusV3の法概念IDは相互に対応する(t *tes
 			continue
 		}
 		t.Errorf(
-			"SOT-ENG-023: 組込み辞書の conceptId %q に corpus-v3 の fixture がありません",
+			"SOT-ENG-023: 組込み辞書の conceptId %q に corpus-v4 の fixture がありません",
 			conceptID,
 		)
 	}

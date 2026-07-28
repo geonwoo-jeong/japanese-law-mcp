@@ -41,11 +41,28 @@ func configuredDependencyRules() []dependencyRule {
 			},
 		},
 		{
+			owner: modulePath + "/internal/queryprofile",
+			denied: []string{
+				"encoding/xml",
+				"net/http",
+				"github.com/modelcontextprotocol/go-sdk",
+				modulePath + "/internal/cli",
+				modulePath + "/internal/config",
+				modulePath + "/internal/mcp",
+				modulePath + "/internal/source",
+				modulePath + "/internal/transport",
+			},
+		},
+		{
 			// SOT-ARCH-002 の transport は MCP トランスポート境界であり、情報源の HTTP クライアント共通層ではない。
 			owner: modulePath + "/internal/source",
 			denied: []string{
 				"github.com/modelcontextprotocol/go-sdk",
+				modulePath + "/internal/application/legalquery",
+				modulePath + "/internal/lawnamelexicon",
+				modulePath + "/internal/legalconceptlexicon",
 				modulePath + "/internal/mcp",
+				modulePath + "/internal/queryprofile",
 				modulePath + "/internal/transport",
 			},
 		},
