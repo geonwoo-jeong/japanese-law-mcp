@@ -11,6 +11,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryplanning"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -73,7 +74,7 @@ func TestLegalQueryPlanningDependenciesLoadCoreAndJudicialCasesInFixedOrder(
 		judicialCandidates[0].CandidateID() != "candidate-2-1" ||
 		!slices.Equal(
 			judicialCandidates[0].RequiredPacks(),
-			[]string{judicialCasesPackID},
+			[]string{legalqueryplanning.JudicialCasesPackID},
 		) {
 		t.Fatalf("judicial-cases profile の候補 = %#v", judicialCandidates)
 	}

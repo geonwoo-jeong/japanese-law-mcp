@@ -7,12 +7,8 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querypreprocess"
-	coreprofile "github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/core"
-	judicialcasesprofile "github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/judicialcases"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryplanning"
 )
-
-const judicialCasesPackID = "judicial-cases"
 
 type legalQueryPlanningDependencies struct {
 	preprocessor legalquery.QueryPreprocessor
@@ -22,37 +18,14 @@ type legalQueryPlanningDependencies struct {
 // 意味認識用の profile と cue は pack 状態より先に固定し、実行 facade だけを pack 有効時に構成する。
 var loadLegalQueryPlanningDependencies = sync.OnceValues(
 	func() (legalQueryPlanningDependencies, error) {
-		core, err := coreprofile.LoadEmbedded()
+		planning, err := legalqueryplanning.LoadEmbedded()
 		if err != nil {
 			return legalQueryPlanningDependencies{},
-				fmt.Errorf("法令コア query profile を初期化できません: %w", err)
-		}
-		judicialCases, err := judicialcasesprofile.LoadEmbedded()
-		if err != nil {
-			return legalQueryPlanningDependencies{},
-				fmt.Errorf("裁判例 query profile を初期化できません: %w", err)
-		}
-		cues := append(
-			core.CueVocabulary(),
-			judicialCases.CueVocabulary()...,
-		)
-		preprocessor, err := querypreprocess.NewEmbedded(
-			cues,
-		)
-		if err != nil {
-			return legalQueryPlanningDependencies{},
-				fmt.Errorf("統合照会の前処理器を初期化できません: %w", err)
-		}
-		profiles, err := legalquery.NewQueryProfileSet(
-			[]legalquery.QueryProfile{core, judicialCases},
-		)
-		if err != nil {
-			return legalQueryPlanningDependencies{},
-				fmt.Errorf("統合照会 query profile set を初期化できません: %w", err)
+				fmt.Errorf("統合照会 planning 依存を初期化できません: %w", err)
 		}
 		return legalQueryPlanningDependencies{
-			preprocessor: preprocessor,
-			profiles:     profiles,
+			preprocessor: planning.Preprocessor(),
+			profiles:     planning.Profiles(),
 		}, nil
 	},
 )
@@ -85,10 +58,10 @@ func newLegalQueryService(
 	}
 	enabledPacks := []string(nil)
 	if cfg.JudicialCasesEnabled() {
-		enabledPacks = []string{judicialCasesPackID}
+		enabledPacks = []string{legalqueryplanning.JudicialCasesPackID}
 	}
 	packState, err := legalquery.NewStaticPackState(
-		[]string{judicialCasesPackID},
+		[]string{legalqueryplanning.JudicialCasesPackID},
 		enabledPacks,
 	)
 	if err != nil {
