@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-3",
+  "cueSetVersion": "core-cues-2026-07-30-4",
   "cues": [
     {
       "cueId": "operator-all",
@@ -74,6 +74,12 @@
       "category": "syntax",
       "value": "content_result_unit",
       "terms": ["箇所"]
+    },
+    {
+      "cueId": "syntax-related-law-scope",
+      "category": "syntax",
+      "value": "related_law_scope",
+      "terms": ["に関する法律"]
     },
     {
       "cueId": "task-list-updates",

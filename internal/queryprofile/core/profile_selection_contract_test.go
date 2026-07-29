@@ -53,6 +53,84 @@ func TestProfileContributionは弱い一般語を明確化必須にする(
 	}
 }
 
+func TestProfileContributionはResource省略の弱い一般語を明確化必須にする(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		query string
+		term  string
+	}{
+		{
+			name:  "Resource語なし",
+			query: "権利について調べてください。",
+			term:  "権利",
+		},
+		{
+			name:  "一般的な法律語",
+			query: "許可に関する法律を見つけてください。",
+			term:  "許可",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			contribution := generateSelectionContribution(t, test.query)
+			if contribution.SelectionMode() !=
+				legalquery.QuerySelectionModeClarificationRequired {
+				t.Fatalf(
+					"SOT-MODEL-026: selection mode = %q, want %q",
+					contribution.SelectionMode(),
+					legalquery.QuerySelectionModeClarificationRequired,
+				)
+			}
+			candidates := contribution.Candidates()
+			if len(candidates) != 2 {
+				t.Fatalf(
+					"SOT-MODEL-026: Resource 省略の弱い一般語の candidates = %#v, want 2 件",
+					candidates,
+				)
+			}
+			assertLawContentSearchCandidate(
+				t,
+				candidates[0],
+				"candidate-1-1",
+				[]string{test.term},
+			)
+			assertLawSearchCandidate(
+				t,
+				candidates[1],
+				"candidate-1-2",
+				test.term,
+			)
+			wantEvidence := []legalquery.EvidenceCode{
+				legalquery.EvidenceExplicitTask,
+				legalquery.EvidenceGeneralTerm,
+			}
+			for index, candidate := range candidates {
+				if slices.Equal(candidate.EvidenceCodes(), wantEvidence) {
+					continue
+				}
+				t.Fatalf(
+					"SOT-MODEL-022: candidates[%d] evidence = %#v, want %#v",
+					index,
+					candidate.EvidenceCodes(),
+					wantEvidence,
+				)
+			}
+			if len(contribution.HedgePairs()) != 0 {
+				t.Fatalf(
+					"SOT-ARCH-023: Resource 省略の弱い一般語の hedge pairs = %#v, want 0 件",
+					contribution.HedgePairs(),
+				)
+			}
+		})
+	}
+}
+
 func TestProfileContributionは衝突する暫定法略称を明確化必須にする(
 	t *testing.T,
 ) {

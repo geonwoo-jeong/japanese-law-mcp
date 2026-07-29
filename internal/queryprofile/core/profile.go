@@ -410,7 +410,8 @@ func validCueMeaning(category string, value string) bool {
 			value == "exclude" ||
 			value == "individual"
 	case "syntax":
-		return value == "content_result_unit"
+		return value == "content_result_unit" ||
+			value == "related_law_scope"
 	case "unsupported":
 		return value == "legal_advice" ||
 			value == "translation" ||

@@ -20,6 +20,7 @@ type candidateDraft struct {
 	steps                        []stepDraft
 	aliasRankings                []lawAliasRankingFact
 	preserveMorphologicalContext bool
+	implicitResourceWeakGeneral  bool
 }
 
 type stepDraft struct {
@@ -311,6 +312,9 @@ func mergeDraft(target *candidateDraft, source candidateDraft) {
 	target.preserveMorphologicalContext =
 		target.preserveMorphologicalContext ||
 			source.preserveMorphologicalContext
+	target.implicitResourceWeakGeneral =
+		target.implicitResourceWeakGeneral ||
+			source.implicitResourceWeakGeneral
 }
 
 func cloneDraft(value candidateDraft) candidateDraft {
@@ -325,6 +329,7 @@ func cloneDraft(value candidateDraft) candidateDraft {
 		steps:                        append([]stepDraft(nil), value.steps...),
 		aliasRankings:                append([]lawAliasRankingFact(nil), value.aliasRankings...),
 		preserveMorphologicalContext: value.preserveMorphologicalContext,
+		implicitResourceWeakGeneral:  value.implicitResourceWeakGeneral,
 	}
 }
 
@@ -391,12 +396,15 @@ func (p *Profile) materializeCandidates(
 			return nil, nil, err
 		}
 		prepared = append(prepared, preparedDraft{
-			draft:            current.draft,
-			evidence:         evidence,
-			score:            score,
-			confidence:       confidence,
-			signature:        current.signature,
-			rankingSignature: current.signature,
+			draft:      current.draft,
+			evidence:   evidence,
+			score:      score,
+			confidence: confidence,
+			signature:  current.signature,
+			rankingSignature: weakGeneralRankingSignature(
+				current.draft,
+				current.signature,
+			),
 		})
 	}
 	prepared = withLawAliasCollisionRankingSignatures(prepared)
@@ -499,6 +507,9 @@ func mergeEquivalentDraft(target *candidateDraft, source candidateDraft) {
 	target.preserveMorphologicalContext =
 		target.preserveMorphologicalContext ||
 			source.preserveMorphologicalContext
+	target.implicitResourceWeakGeneral =
+		target.implicitResourceWeakGeneral ||
+			source.implicitResourceWeakGeneral
 	for index := range target.steps {
 		if source.steps[index].startByte < target.steps[index].startByte {
 			target.steps[index].startByte = source.steps[index].startByte

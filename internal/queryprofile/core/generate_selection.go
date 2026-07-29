@@ -113,6 +113,7 @@ func (p *Profile) hasWeakGeneralAmbiguity(
 		cues,
 		len(buildLawTargets(input)) > 0,
 		p.coreConceptCandidateCount(input.LegalConceptMentions()),
+		len(coreContentQueryTerms(input, cues)),
 	)
 }
 

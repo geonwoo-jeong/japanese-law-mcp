@@ -50,7 +50,12 @@ func (p *Profile) buildContentCandidates(
 		return conceptDrafts, nil
 	}
 
-	if isWeakLawResourceAmbiguity(cues, hasLawTargets, len(conceptDrafts)) {
+	if isWeakLawResourceAmbiguity(
+		cues,
+		hasLawTargets,
+		len(conceptDrafts),
+		len(terms),
+	) {
 		ambiguous, ambiguousErr := buildWeakGeneralDrafts(input, cues, terms)
 		if ambiguousErr != nil {
 			return nil, ambiguousErr
@@ -799,69 +804,6 @@ func addExplicitSearchEvidence(
 	if explicitResource {
 		draft.evidence[legalquery.EvidenceExplicitResource] = struct{}{}
 	}
-}
-
-func isWeakLawResourceAmbiguity(
-	cues resolvedCues,
-	hasLawTargets bool,
-	conceptCandidateCount int,
-) bool {
-	return !hasLawTargets &&
-		conceptCandidateCount == 0 &&
-		cues.has("task", "search") &&
-		cues.has("resource", "law") &&
-		!cues.has("resource", "law_provision")
-}
-
-func buildWeakGeneralDrafts(
-	input legalquery.CandidateGenerationInput,
-	cues resolvedCues,
-	terms []legalquery.QueryTermMention,
-) ([]candidateDraft, error) {
-	if len(terms) != 1 {
-		return nil, nil
-	}
-	term := terms[0]
-	asOf := selectedAsOfDate(input, cues, false)
-	searchInput, err := legalquery.NewLawSearchIntentV1(
-		legalquery.LawSearchIntentV1Values{
-			Query: term.Surface(),
-			AsOf:  asOf,
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"一般検索語から法令名検索条件を構築できません: %w",
-			err,
-		)
-	}
-	contentInput, err := newContentInput(
-		[]string{term.Surface()},
-		nil,
-		nil,
-		asOf,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	lawDraft := newCandidateDraft()
-	lawDraft.evidence[legalquery.EvidenceExplicitTask] = struct{}{}
-	lawDraft.evidence[legalquery.EvidenceExplicitResource] = struct{}{}
-	lawDraft.evidence[legalquery.EvidenceMorphologicalContext] = struct{}{}
-	lawDraft.steps = append(lawDraft.steps, stepDraft{
-		startByte: term.Span().StartByte(),
-		input:     searchInput,
-	})
-
-	contentDraft := newCandidateDraft()
-	contentDraft.evidence[legalquery.EvidenceExplicitTask] = struct{}{}
-	contentDraft.evidence[legalquery.EvidenceGeneralTerm] = struct{}{}
-	contentDraft.steps = append(contentDraft.steps, stepDraft{
-		startByte: term.Span().StartByte(),
-		input:     contentInput,
-	})
-	return []candidateDraft{lawDraft, contentDraft}, nil
 }
 
 func buildDualCandidateDrafts(
