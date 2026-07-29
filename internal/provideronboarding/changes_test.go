@@ -233,6 +233,7 @@ func TestValidateNormalChangesRejectsProviderControlWithoutMatrixTarget(t *testi
 		"internal/model/provider_descriptor.go",
 		"internal/application/provider_routes.go",
 		"internal/application/provider_bindings.go",
+		"internal/application/composition_root.go",
 		"internal/config/provider_schema.go",
 	} {
 		if err := validateNormalChanges([]string{changedPath}, rows); err == nil {
@@ -248,5 +249,14 @@ func TestValidateNormalChangesRejectsProviderControlWithoutMatrixTarget(t *testi
 		rows,
 	); err != nil {
 		t.Fatalf("matrix target と同じ変更の provider 制御変更が拒否されました: %v", err)
+	}
+
+	if err := validateNormalChanges(
+		[]string{
+			"internal/application/legalquery/candidate_composition_member.go",
+		},
+		rows,
+	); err != nil {
+		t.Fatalf("provider と無関係な候補合成が provider 制御変更になりました: %v", err)
 	}
 }

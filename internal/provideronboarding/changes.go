@@ -178,13 +178,13 @@ func providerControlPath(changedPath string) bool {
 		"provider",
 		"route",
 		"binding",
-		"composition",
 	} {
 		if strings.Contains(name, marker) {
 			return true
 		}
 	}
-	return false
+	return strings.Contains(name, "composition") &&
+		path.Dir(changedPath) == "internal/application"
 }
 
 func hasPathPrefix(value, prefix string) bool {
