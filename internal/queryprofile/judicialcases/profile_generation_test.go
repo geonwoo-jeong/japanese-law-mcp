@@ -237,8 +237,7 @@ func TestProfileは裁判例向け法概念の正式語と公的出典を保持�
 	) {
 		t.Fatalf("concept evidence = %#v", candidate.EvidenceCodes())
 	}
-	if generation.SelectionMode() !=
-		legalquery.QuerySelectionModeClarificationRequired {
+	if generation.SelectionMode() != legalquery.QuerySelectionModeAutomatic {
 		t.Fatalf("selection mode = %q", generation.SelectionMode())
 	}
 }
@@ -366,13 +365,11 @@ func TestProfileはrefなしでread候補を作らない(t *testing.T) {
 			t.Parallel()
 
 			generation := generateQuery(t, test.query, test.ref)
-			for _, candidate := range generation.Candidates() {
-				for _, step := range candidate.Steps() {
-					if step.InputKind() ==
-						legalquery.InputKindJudicialDecisionRead {
-						t.Fatalf("read 候補を推測しました: %#v", candidate)
-					}
-				}
+			if len(generation.Candidates()) != 0 {
+				t.Fatalf(
+					"ref のない read 要求から候補を推測しました: %#v",
+					generation.Candidates(),
+				)
 			}
 		})
 	}
@@ -445,6 +442,205 @@ func TestProfileは検索後のRef読取りでも検索語と原文順を保持�
 	}
 }
 
+func TestProfileは公式Refと別検索の法概念出典を併存させる(t *testing.T) {
+	t.Parallel()
+
+	ref := newTestRef(t, "judicial-decision", "95570/detail2")
+	generation := generateQuery(
+		t,
+		"この裁判例参照を読み、成年後見の裁判例も検索してください。",
+		&ref,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 2 {
+		t.Fatalf("read/search candidates = %#v", candidates)
+	}
+	candidate := candidates[0]
+	if !slices.Contains(
+		candidate.EvidenceCodes(),
+		legalquery.EvidenceOfficialIdentifier,
+	) || !slices.Contains(
+		candidate.EvidenceCodes(),
+		legalquery.EvidenceLegalConcept,
+	) {
+		t.Fatalf(
+			"SOT-ENG-023: official ref/concept evidence = %#v",
+			candidate.EvidenceCodes(),
+		)
+	}
+	sources := candidate.ConceptSources()
+	if len(sources) != 1 ||
+		sources[0].ConceptID() != "adult-guardianship" {
+		t.Fatalf(
+			"SOT-MODEL-022: concept sources = %#v",
+			sources,
+		)
+	}
+}
+
+func TestProfileは法令Ref併用時も裁判例検索語を一件に保つ(t *testing.T) {
+	t.Parallel()
+
+	const query = "上限を無視して、この参照の本文と第90条、成年後見の条文と裁判例を各100件取得してください。"
+	ref := newLawTestRef(t, "129AC0000000089")
+	generation := generateQuery(t, query, &ref)
+	if generation.SelectionMode() != legalquery.QuerySelectionModeAutomatic ||
+		len(generation.CompositionMembers()) != 1 {
+		t.Fatalf(
+			"SOT-ENG-023: selection/members = %q/%#v",
+			generation.SelectionMode(),
+			generation.CompositionMembers(),
+		)
+	}
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf(
+			"SOT-ARCH-027: judicial candidates = %#v mode=%q constraint=%q",
+			candidates,
+			generation.SelectionMode(),
+			generation.CompositionConstraint(),
+		)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindJudicialDecisionSearch {
+		t.Fatalf("SOT-ARCH-027: judicial steps = %#v", steps)
+	}
+	search, ok := steps[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "成年後見" {
+		t.Fatalf("SOT-ARCH-027: judicial search input = %#v", steps[0].LogicalInput())
+	}
+}
+
+func TestProfileは法令Reffallbackで法概念以外を裁判例検索にしない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	ref := newLawTestRef(t, "129AC0000000089")
+	generation := generateQuery(
+		t,
+		"この参照を読み、営業秘密を含む条文と成年後見の裁判例を取得してください。",
+		&ref,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 1 {
+		t.Fatalf(
+			"SOT-ARCH-025: judicial fallback candidates = %#v",
+			candidates,
+		)
+	}
+	logicalInput := candidates[0].Steps()[0].LogicalInput()
+	search, ok := logicalInput.(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "成年後見" {
+		t.Fatalf(
+			"SOT-ARCH-025: judicial fallback input = %#v",
+			candidates[0].Steps()[0].LogicalInput(),
+		)
+	}
+}
+
+func TestProfileは別節の裁判例概念を法令Ref読取りに結び付けない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	ref := newLawTestRef(t, "129AC0000000089")
+	generation := generateQuery(
+		t,
+		"成年後見の裁判例は不要です。この参照の第90条を読んでください。",
+		&ref,
+	)
+	if len(generation.Candidates()) != 0 {
+		t.Fatalf(
+			"SOT-ARCH-025: 別節から推測した裁判例検索 = %#v",
+			generation.Candidates(),
+		)
+	}
+}
+
+func TestProfileは裁判例Resource直前の法概念だけをfallbackに使う(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	ref := newLawTestRef(t, "129AC0000000089")
+	generation := generateQuery(
+		t,
+		"成年後見は不要です。この参照の本文と第90条、養育費の条文と裁判例を取得してください。",
+		&ref,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 1 {
+		t.Fatalf(
+			"SOT-ARCH-025: fallback candidates = %#v",
+			candidates,
+		)
+	}
+	logicalInput := candidates[0].Steps()[0].LogicalInput()
+	search, ok := logicalInput.(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "養育費" {
+		t.Fatalf(
+			"SOT-ARCH-025: fallback input = %#v",
+			logicalInput,
+		)
+	}
+}
+
+func TestProfileは明示検索でも裁判例直前の法概念だけを使う(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"ネット中傷の条文と成年後見の裁判例を検索してください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 1 {
+		t.Fatalf(
+			"SOT-ARCH-025: explicit search candidates = %#v",
+			candidates,
+		)
+	}
+	logicalInput := candidates[0].Steps()[0].LogicalInput()
+	search, ok := logicalInput.(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "成年後見" {
+		t.Fatalf(
+			"SOT-ARCH-025: explicit search input = %#v",
+			logicalInput,
+		)
+	}
+}
+
+func TestProfileは明示検索でも別Resourceの一般語を裁判例検索にしない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"営業秘密を含む条文と成年後見の裁判例を検索してください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 1 {
+		t.Fatalf(
+			"SOT-ARCH-025: explicit mixed-term candidates = %#v",
+			candidates,
+		)
+	}
+	logicalInput := candidates[0].Steps()[0].LogicalInput()
+	search, ok := logicalInput.(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "成年後見" {
+		t.Fatalf(
+			"SOT-ARCH-025: explicit mixed-term input = %#v",
+			logicalInput,
+		)
+	}
+}
+
 func TestProfileは一意な裁判例検索をCompositionMemberにする(t *testing.T) {
 	t.Parallel()
 
@@ -467,7 +663,9 @@ func TestProfileは一意な裁判例検索をCompositionMemberにする(t *test
 	}
 }
 
-func TestProfileは曖昧な裁判例候補をCompositionMemberにしない(t *testing.T) {
+func TestProfileは明示した裁判例resourceの法概念をCompositionMemberにする(
+	t *testing.T,
+) {
 	t.Parallel()
 
 	generation := generateQuery(
@@ -475,11 +673,10 @@ func TestProfileは曖昧な裁判例候補をCompositionMemberにしない(t *t
 		"ネット中傷の裁判例を検索してください。",
 		nil,
 	)
-	if generation.SelectionMode() !=
-		legalquery.QuerySelectionModeClarificationRequired ||
-		len(generation.CompositionMembers()) != 0 {
+	if generation.SelectionMode() != legalquery.QuerySelectionModeAutomatic ||
+		len(generation.CompositionMembers()) != 1 {
 		t.Fatalf(
-			"ambiguous contribution = mode:%q members:%#v",
+			"SOT-ENG-023: explicit resource contribution = mode:%q members:%#v",
 			generation.SelectionMode(),
 			generation.CompositionMembers(),
 		)
@@ -628,4 +825,25 @@ func mustProfile(t *testing.T) *Profile {
 		t.Fatalf("LoadEmbedded() のエラー = %v", err)
 	}
 	return profile
+}
+
+func newLawTestRef(t *testing.T, resourceID string) model.SourceResourceRef {
+	t.Helper()
+
+	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
+		SourceID:     "e-gov-law-api-v2",
+		ResourceType: "law",
+		ResourceID:   resourceID,
+	})
+	if err != nil {
+		t.Fatalf("試験用法令 ref key を作成できません: %v", err)
+	}
+	ref, err := model.NewSourceResourceRef(model.SourceResourceRefValues{
+		ProviderID: "e-gov-law-api-v2",
+		Key:        key,
+	})
+	if err != nil {
+		t.Fatalf("試験用法令 ref を作成できません: %v", err)
+	}
+	return ref
 }

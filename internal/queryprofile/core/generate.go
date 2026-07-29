@@ -160,7 +160,7 @@ func (p *Profile) generateDrafts(
 	cues resolvedCues,
 ) ([]candidateDraft, error) {
 	targets := buildLawTargets(input)
-	if reservedPackOnlyRequest(input, cues, targets) {
+	if reservedPackOnlyRequest(input, cues) {
 		return nil, nil
 	}
 	update, err := buildUpdateCandidate(input, cues)
@@ -230,7 +230,6 @@ func (p *Profile) generateDrafts(
 func reservedPackOnlyRequest(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
-	targets []lawTarget,
 ) bool {
 	if !cues.has("reserved_pack", "judicial-cases") {
 		if ref, exists := input.Ref(); !exists ||
@@ -238,15 +237,20 @@ func reservedPackOnlyRequest(
 			return false
 		}
 	}
-	if ref, exists := input.Ref(); exists &&
-		ref.Key().ResourceType() == "law" {
+	if len(input.LawNameMentions()) > 0 ||
+		len(input.IdentifierMentions()) > 0 ||
+		len(input.ArticleMentions()) > 0 ||
+		cues.has("resource", "law") ||
+		cues.has("resource", "law_provision") ||
+		cues.has("resource", "updates") {
 		return false
 	}
-	return len(targets) == 0 &&
-		len(input.ArticleMentions()) == 0 &&
-		!cues.has("resource", "law") &&
-		!cues.has("resource", "law_provision") &&
-		!cues.has("resource", "updates")
+	for _, term := range input.QueryTermMentions() {
+		if term.Surface() == "参照" {
+			return false
+		}
+	}
+	return true
 }
 
 func combineDraftSets(
@@ -351,7 +355,10 @@ func (p *Profile) materializeCandidates(
 
 	prepared := make([]preparedDraft, 0, len(aggregated))
 	for _, current := range aggregated {
-		evidence := normalizeEvidence(current.draft.evidence)
+		evidence := normalizeEvidence(
+			current.draft.evidence,
+			preservesLegalConceptForDistinctStep(current.draft),
+		)
 		score, err := p.metadata.Score().Score(evidence)
 		if err != nil {
 			return nil, nil, err
@@ -458,6 +465,7 @@ func comparePreparedDrafts(left preparedDraft, right preparedDraft) int {
 
 func normalizeEvidence(
 	values map[legalquery.EvidenceCode]struct{},
+	preserveLegalConcept bool,
 ) []legalquery.EvidenceCode {
 	result := make(map[legalquery.EvidenceCode]struct{}, len(values))
 	for code := range values {
@@ -465,7 +473,9 @@ func normalizeEvidence(
 	}
 	if _, exists := result[legalquery.EvidenceOfficialIdentifier]; exists {
 		delete(result, legalquery.EvidenceOfficialAlias)
-		delete(result, legalquery.EvidenceLegalConcept)
+		if !preserveLegalConcept {
+			delete(result, legalquery.EvidenceLegalConcept)
+		}
 		delete(result, legalquery.EvidenceMorphologicalContext)
 		delete(result, legalquery.EvidenceUniqueTypoCorrection)
 		delete(result, legalquery.EvidenceGeneralTerm)
@@ -485,6 +495,19 @@ func normalizeEvidence(
 		}
 	}
 	return ordered
+}
+
+func preservesLegalConceptForDistinctStep(draft candidateDraft) bool {
+	if len(draft.concepts) == 0 || len(draft.steps) < 2 {
+		return false
+	}
+	for _, step := range draft.steps {
+		if step.input.InputKind() ==
+			legalquery.InputKindLawContentSearch {
+			return true
+		}
+	}
+	return false
 }
 
 var evidenceOrder = []legalquery.EvidenceCode{

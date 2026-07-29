@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "judicial-cases",
-  "profileVersion": "judicial-cases-2026-07-29-3",
+  "profileVersion": "judicial-cases-2026-07-30-1",
   "rankingVersion": "legal-query-ranking-2026-07-28-1",
   "cueSetVersion": "judicial-cases-cues-2026-07-29-2",
   "targets": [

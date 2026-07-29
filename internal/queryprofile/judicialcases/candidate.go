@@ -58,8 +58,17 @@ func (p *Profile) materializeCandidateRecords(
 		if err != nil {
 			return nil, err
 		}
-		evidence := normalizeEvidence(original.evidence)
-		concepts := uniqueConceptSources(original.concepts)
+		evidence := normalizeEvidence(
+			original.evidence,
+			preservesLegalConceptForDistinctStep(
+				steps,
+				original.concepts,
+			),
+		)
+		concepts := conceptSourcesForEvidence(
+			evidence,
+			original.concepts,
+		)
 		if index, exists := bySignature[signature]; exists {
 			current := prepared[index]
 			mergedSteps := append([]stepDraft(nil), current.steps...)
@@ -70,19 +79,26 @@ func (p *Profile) materializeCandidateRecords(
 						steps[stepIndex].startByte
 				}
 			}
-			prepared[index] = preparedDraft{
-				evidence: mergeEvidence(
-					current.evidence,
-					evidence,
+			mergedConcepts := append(
+				append(
+					[]legalquery.LegalConceptSource(nil),
+					current.concepts...,
 				),
-				concepts: uniqueConceptSources(
-					append(
-						append(
-							[]legalquery.LegalConceptSource(nil),
-							current.concepts...,
-						),
-						concepts...,
-					),
+				concepts...,
+			)
+			mergedEvidence := mergeEvidence(
+				current.evidence,
+				evidence,
+				preservesLegalConceptForDistinctStep(
+					mergedSteps,
+					mergedConcepts,
+				),
+			)
+			prepared[index] = preparedDraft{
+				evidence: mergedEvidence,
+				concepts: conceptSourcesForEvidence(
+					mergedEvidence,
+					mergedConcepts,
 				),
 				steps:      mergedSteps,
 				score:      current.score,
@@ -168,6 +184,7 @@ func (p *Profile) materializeCandidateRecords(
 
 func normalizeEvidence(
 	values []legalquery.EvidenceCode,
+	preserveLegalConcept bool,
 ) []legalquery.EvidenceCode {
 	present := make(map[legalquery.EvidenceCode]struct{}, len(values))
 	for _, value := range values {
@@ -175,7 +192,9 @@ func normalizeEvidence(
 	}
 	if _, exists := present[legalquery.EvidenceOfficialIdentifier]; exists {
 		delete(present, legalquery.EvidenceOfficialAlias)
-		delete(present, legalquery.EvidenceLegalConcept)
+		if !preserveLegalConcept {
+			delete(present, legalquery.EvidenceLegalConcept)
+		}
 		delete(present, legalquery.EvidenceMorphologicalContext)
 		delete(present, legalquery.EvidenceUniqueTypoCorrection)
 		delete(present, legalquery.EvidenceGeneralTerm)
@@ -208,11 +227,38 @@ func normalizeEvidence(
 func mergeEvidence(
 	left []legalquery.EvidenceCode,
 	right []legalquery.EvidenceCode,
+	preserveLegalConcept bool,
 ) []legalquery.EvidenceCode {
 	return normalizeEvidence(append(
 		append([]legalquery.EvidenceCode(nil), left...),
 		right...,
-	))
+	), preserveLegalConcept)
+}
+
+func preservesLegalConceptForDistinctStep(
+	steps []stepDraft,
+	concepts []legalquery.LegalConceptSource,
+) bool {
+	if len(concepts) == 0 || len(steps) < 2 {
+		return false
+	}
+	for _, step := range steps {
+		if step.input.InputKind() ==
+			legalquery.InputKindJudicialDecisionSearch {
+			return true
+		}
+	}
+	return false
+}
+
+func conceptSourcesForEvidence(
+	evidence []legalquery.EvidenceCode,
+	values []legalquery.LegalConceptSource,
+) []legalquery.LegalConceptSource {
+	if !slices.Contains(evidence, legalquery.EvidenceLegalConcept) {
+		return nil
+	}
+	return uniqueConceptSources(values)
 }
 
 func uniqueConceptSources(

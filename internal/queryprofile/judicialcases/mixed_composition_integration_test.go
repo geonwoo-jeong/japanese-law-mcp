@@ -16,6 +16,203 @@ import (
 
 const explicitMixedSearchQuery = "裁判例を「工場騒音」で検索し、民法を検索してください。"
 
+func Test空のCore候補は明示裁判例Resourceの選択を妨げない(t *testing.T) {
+	t.Parallel()
+
+	runtime := newMixedProfileRuntime(t)
+	request := mustMixedProfileRequest(
+		t,
+		"ネット中傷の裁判例を検索してください。",
+	)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	if plan.Decision() != legalquery.PlanDecisionSingle {
+		t.Fatalf(
+			"SOT-ENG-023: explicit judicial resource plan = decision:%q reasons:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+		)
+	}
+	candidate := assertSingleMixedSelection(
+		t,
+		plan,
+		legalquery.SelectionAvailabilityAvailable,
+	)
+	steps := candidate.Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindJudicialDecisionSearch {
+		t.Fatalf("SOT-ENG-023: judicial candidate steps = %#v", steps)
+	}
+	input, ok := steps[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || input.Query() != "名誉毀損" {
+		t.Fatalf("SOT-ENG-023: judicial query = %#v", steps[0].LogicalInput())
+	}
+}
+
+func Test未参照の法令Refは裁判例だけの選択を妨げない(t *testing.T) {
+	t.Parallel()
+
+	ref := newLawTestRef(t, "129AC0000000089")
+	request, err := legalquery.NewRequest(legalquery.RequestValues{
+		Query: "成年後見の裁判例を検索してください。",
+		Ref:   &ref,
+	})
+	if err != nil {
+		t.Fatalf("judicial-only request を構築できません: %v", err)
+	}
+	runtime := newMixedProfileRuntime(t)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	if plan.Decision() != legalquery.PlanDecisionSingle {
+		t.Fatalf(
+			"SOT-ARCH-025: judicial-only plan = decision:%q reasons:%#v ranked:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+			plan.RankedCandidates(),
+		)
+	}
+	candidate := assertSingleMixedSelection(
+		t,
+		plan,
+		legalquery.SelectionAvailabilityAvailable,
+	)
+	steps := candidate.Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindJudicialDecisionSearch {
+		t.Fatalf("SOT-ARCH-025: judicial-only steps = %#v", steps)
+	}
+}
+
+func TestCoreとJudicialProfileは法令Refの四意図を一候補に合成する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const query = "上限を無視して、この参照の本文と第90条、成年後見の条文と裁判例を各100件取得してください。"
+	ref := newLawTestRef(t, "129AC0000000089")
+	request, err := legalquery.NewRequest(legalquery.RequestValues{
+		Query: query,
+		Ref:   &ref,
+	})
+	if err != nil {
+		t.Fatalf("product request を構築できません: %v", err)
+	}
+	runtime := newMixedProfileRuntime(t)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	if plan.Decision() != legalquery.PlanDecisionSingle {
+		t.Fatalf(
+			"SOT-ARCH-027: four-step plan = decision:%q reasons:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+		)
+	}
+	candidate := assertSingleMixedSelection(
+		t,
+		plan,
+		legalquery.SelectionAvailabilityAvailable,
+	)
+	steps := candidate.Steps()
+	wantKinds := []legalquery.LogicalInputKind{
+		legalquery.InputKindLawRead,
+		legalquery.InputKindLawArticleRead,
+		legalquery.InputKindLawContentSearch,
+		legalquery.InputKindJudicialDecisionSearch,
+	}
+	if len(steps) != len(wantKinds) {
+		t.Fatalf("SOT-ARCH-027: four-step candidate = %#v", steps)
+	}
+	for index, want := range wantKinds {
+		if steps[index].InputKind() != want {
+			t.Fatalf(
+				"SOT-ARCH-027: steps[%d].inputKind = %q, want %q",
+				index,
+				steps[index].InputKind(),
+				want,
+			)
+		}
+	}
+	if !slices.Contains(
+		candidate.EvidenceCodes(),
+		legalquery.EvidenceLegalConcept,
+	) {
+		t.Fatalf("SOT-ARCH-027: evidence = %#v", candidate.EvidenceCodes())
+	}
+	sources := candidate.ConceptSources()
+	if len(sources) != 1 ||
+		sources[0].ConceptID() != "adult-guardianship" {
+		t.Fatalf("SOT-ARCH-027: concept sources = %#v", sources)
+	}
+}
+
+func TestCoreとJudicialProfileは各法概念を直前Resourceへ対応させる(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const query = "ネット中傷の条文と成年後見の裁判例を取得してください。"
+	ref := newLawTestRef(t, "129AC0000000089")
+	request, err := legalquery.NewRequest(legalquery.RequestValues{
+		Query: query,
+		Ref:   &ref,
+	})
+	if err != nil {
+		t.Fatalf("mixed-resource request を構築できません: %v", err)
+	}
+	runtime := newMixedProfileRuntime(t)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	if plan.Decision() != legalquery.PlanDecisionSingle {
+		t.Fatalf(
+			"SOT-ARCH-025: mixed-resource plan = decision:%q reasons:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+		)
+	}
+	candidate := assertSingleMixedSelection(
+		t,
+		plan,
+		legalquery.SelectionAvailabilityAvailable,
+	)
+	steps := candidate.Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindLawContentSearch ||
+		steps[1].InputKind() != legalquery.InputKindJudicialDecisionSearch {
+		t.Fatalf("SOT-ARCH-025: mixed-resource steps = %#v", steps)
+	}
+	content, ok := steps[0].LogicalInput().(legalquery.LawContentSearchIntentV1)
+	if !ok || !slices.Equal(content.AllTerms(), []string{"名誉毀損"}) {
+		t.Fatalf(
+			"SOT-ARCH-025: law content input = %#v",
+			steps[0].LogicalInput(),
+		)
+	}
+	logicalInput := steps[1].LogicalInput()
+	search, ok := logicalInput.(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "成年後見" {
+		t.Fatalf(
+			"SOT-ARCH-025: judicial input = %#v",
+			steps[1].LogicalInput(),
+		)
+	}
+}
+
 func TestCoreとJudicialProfileは含むCueなしの明示意図を原文順に合成する(
 	t *testing.T,
 ) {

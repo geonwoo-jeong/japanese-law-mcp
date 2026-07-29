@@ -19,6 +19,18 @@ func (p *Profile) buildContentCandidates(
 		return nil, err
 	}
 	terms := coreContentQueryTerms(input, cues)
+	operated, handled, err := buildOperatedContentCandidates(
+		input,
+		cues,
+		conceptDrafts,
+		terms,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if handled {
+		return operated, nil
+	}
 	separated, handled, err := buildSeparatedContentCandidates(
 		input,
 		cues,
@@ -60,42 +72,63 @@ func coreContentQueryTerms(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 ) []legalquery.QueryTermMention {
-	terms := input.QueryTermMentions()
+	terms := append(
+		[]legalquery.QueryTermMention(nil),
+		input.QueryTermMentions()...,
+	)
 	ref, exists := input.Ref()
-	if !exists ||
-		ref.Key().ResourceType() != "judicial-decision" ||
-		!cues.has("reserved_pack", "judicial-cases") ||
-		!cues.has("task", "read") {
-		return terms
-	}
-	resourceKey := cueMeaningKey("reserved_pack", "judicial-cases")
-	resourceCues := cues.mentions[resourceKey]
-	readCues := cues.mentions[cueMeaningKey("task", "read")]
-	searchCues := cues.mentions[cueMeaningKey("task", "search")]
-	result := make([]legalquery.QueryTermMention, 0, len(terms))
-	for _, term := range terms {
-		if term.Kind() == legalquery.QueryTermMentionMorphologicalPhrase &&
-			isJudicialRefReadTerm(
-				term,
-				resourceCues,
-				readCues,
-				searchCues,
-			) {
-			continue
+	if exists && cues.has("task", "read") {
+		readCues := cues.mentions[cueMeaningKey("task", "read")]
+		searchCues := cues.mentions[cueMeaningKey("task", "search")]
+		resourceCues := refReadResourceCues(ref, cues)
+		filtered := make([]legalquery.QueryTermMention, 0, len(terms))
+		for _, term := range terms {
+			if term.Kind() ==
+				legalquery.QueryTermMentionMorphologicalPhrase &&
+				isRefReadTerm(
+					term,
+					resourceCues,
+					readCues,
+					searchCues,
+				) {
+				continue
+			}
+			filtered = append(filtered, term)
 		}
-		result = append(result, term)
+		terms = filtered
 	}
-	return result
+	return queryTermsForCoreResources(input, terms, cues)
 }
 
-func isJudicialRefReadTerm(
+func refReadResourceCues(
+	ref model.SourceResourceRef,
+	cues resolvedCues,
+) []legalquery.CueMention {
+	switch ref.Key().ResourceType() {
+	case "law":
+		return nil
+	case "judicial-decision":
+		if !cues.has("reserved_pack", "judicial-cases") {
+			return nil
+		}
+		return cues.mentions[cueMeaningKey("reserved_pack", "judicial-cases")]
+	default:
+		return nil
+	}
+}
+
+func isRefReadTerm(
 	term legalquery.QueryTermMention,
 	resourceCues []legalquery.CueMention,
 	readCues []legalquery.CueMention,
 	searchCues []legalquery.CueMention,
 ) bool {
 	if term.Surface() == "参照" &&
-		termFollowsSearchAndPrecedesRead(term, searchCues, readCues) {
+		termPrecedesReadWithoutSearchBetween(
+			term,
+			readCues,
+			searchCues,
+		) {
 		return true
 	}
 	for _, resourceCue := range resourceCues {
@@ -116,17 +149,19 @@ func isJudicialRefReadTerm(
 	return false
 }
 
-func termFollowsSearchAndPrecedesRead(
+func termPrecedesReadWithoutSearchBetween(
 	term legalquery.QueryTermMention,
-	searchCues []legalquery.CueMention,
 	readCues []legalquery.CueMention,
+	searchCues []legalquery.CueMention,
 ) bool {
-	for _, searchCue := range searchCues {
-		for _, readCue := range readCues {
-			if searchCue.Span().EndByte() <= term.Span().StartByte() &&
-				term.Span().EndByte() <= readCue.Span().StartByte() {
-				return true
-			}
+	for _, readCue := range readCues {
+		if term.Span().EndByte() <= readCue.Span().StartByte() &&
+			!cueStartsBetween(
+				searchCues,
+				term.Span().EndByte(),
+				readCue.Span().StartByte(),
+			) {
+			return true
 		}
 	}
 	return false
@@ -152,7 +187,7 @@ func (p *Profile) buildConceptCandidates(
 ) ([]candidateDraft, error) {
 	result := make([]candidateDraft, 0)
 	asOf := selectedAsOfDate(input, cues, false)
-	for _, mention := range input.LegalConceptMentions() {
+	for _, mention := range coreConceptMentionsForResources(input, cues) {
 		definition, exists := p.concepts[mention.ConceptID()]
 		if !exists {
 			return nil, fmt.Errorf(
@@ -197,8 +232,11 @@ func (p *Profile) buildConceptCandidates(
 			}
 			draft.concepts = append(draft.concepts, definition.source)
 			draft.steps = append(draft.steps, stepDraft{
-				startByte: mention.Span().StartByte(),
-				input:     contentInput,
+				startByte: contentSubjectStartByte(
+					mention.Span(),
+					cues,
+				),
+				input: contentInput,
 			})
 			result = append(result, draft)
 		}
@@ -215,37 +253,14 @@ func buildSeparatedContentCandidates(
 	if !separatesSubjects(cues) {
 		return nil, false, nil
 	}
-	options := make(map[int][]subjectOption)
-	for _, concept := range concepts {
-		if err := addSubjectOption(options, concept); err != nil {
-			return nil, false, err
-		}
-	}
-	asOf := selectedAsOfDate(input, cues, false)
-	for _, term := range terms {
-		contentInput, err := newContentInput(
-			[]string{term.Surface()},
-			nil,
-			nil,
-			asOf,
-		)
-		if err != nil {
-			return nil, false, err
-		}
-		draft := newCandidateDraft()
-		addExplicitSearchEvidence(
-			&draft,
-			cues,
-			hasLegalResourceCue(cues),
-		)
-		draft.evidence[legalquery.EvidenceMorphologicalContext] = struct{}{}
-		draft.steps = append(draft.steps, stepDraft{
-			startByte: term.Span().StartByte(),
-			input:     contentInput,
-		})
-		if err := addSubjectOption(options, draft); err != nil {
-			return nil, false, err
-		}
+	options, err := buildContentSubjectOptions(
+		input,
+		cues,
+		concepts,
+		terms,
+	)
+	if err != nil {
+		return nil, false, err
 	}
 	if len(options) < 2 {
 		return nil, false, nil
@@ -254,11 +269,7 @@ func buildSeparatedContentCandidates(
 		return nil, true, nil
 	}
 
-	positions := make([]int, 0, len(options))
-	for position := range options {
-		positions = append(positions, position)
-	}
-	sort.Ints(positions)
+	positions := sortedSubjectOptionPositions(options)
 	result := []candidateDraft{newCandidateDraft()}
 	for _, position := range positions {
 		next := make([]candidateDraft, 0, len(result)*len(options[position]))
@@ -275,6 +286,189 @@ func buildSeparatedContentCandidates(
 		result = next
 	}
 	return result, true, nil
+}
+
+func buildOperatedContentCandidates(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+	concepts []candidateDraft,
+	terms []legalquery.QueryTermMention,
+) ([]candidateDraft, bool, error) {
+	if !hasExplicitContentOperator(cues) {
+		return nil, false, nil
+	}
+	options, err := buildContentSubjectOptions(
+		input,
+		cues,
+		concepts,
+		terms,
+	)
+	if err != nil {
+		return nil, false, err
+	}
+	if len(options) < 2 {
+		return nil, false, nil
+	}
+	positions := sortedSubjectOptionPositions(options)
+	combinations := []operatedContentCombination{{
+		draft: newCandidateDraft(),
+	}}
+	for _, position := range positions {
+		next := make(
+			[]operatedContentCombination,
+			0,
+			len(combinations)*len(options[position]),
+		)
+		for _, base := range combinations {
+			for _, option := range options[position] {
+				value, valueErr := singleContentSubjectValue(
+					option.draft,
+				)
+				if valueErr != nil {
+					return nil, false, valueErr
+				}
+				current := operatedContentCombination{
+					draft:  cloneDraft(base.draft),
+					values: append([]string(nil), base.values...),
+				}
+				optionMetadata := cloneDraft(option.draft)
+				optionMetadata.steps = nil
+				mergeDraft(&current.draft, optionMetadata)
+				current.values = appendUniqueContentValue(
+					current.values,
+					value,
+				)
+				next = append(next, current)
+				if len(next) > maximumGeneratedCandidates {
+					return nil, true, nil
+				}
+			}
+		}
+		combinations = next
+	}
+	asOf := selectedAsOfDate(input, cues, false)
+	result := make([]candidateDraft, 0, len(combinations))
+	for _, combination := range combinations {
+		allTerms, anyTerms, excludeTerms := partitionSearchValues(
+			combination.values,
+			cues,
+		)
+		contentInput, inputErr := newContentInput(
+			allTerms,
+			anyTerms,
+			excludeTerms,
+			asOf,
+		)
+		if inputErr != nil {
+			return nil, false, inputErr
+		}
+		current := cloneDraft(combination.draft)
+		current.steps = []stepDraft{{
+			startByte: positions[0],
+			input:     contentInput,
+		}}
+		result = append(result, current)
+	}
+	return result, true, nil
+}
+
+type operatedContentCombination struct {
+	draft  candidateDraft
+	values []string
+}
+
+func singleContentSubjectValue(
+	draft candidateDraft,
+) (string, error) {
+	if len(draft.steps) != 1 {
+		return "", fmt.Errorf(
+			"検索演算子の一主題は一つの logical step を必要とします",
+		)
+	}
+	contentInput, ok := draft.steps[0].input.(legalquery.LawContentSearchIntentV1)
+	if !ok {
+		return "", fmt.Errorf(
+			"検索演算子の主題は law_content_search でなければなりません",
+		)
+	}
+	values := append(contentInput.AllTerms(), contentInput.AnyTerms()...)
+	values = append(values, contentInput.ExcludeTerms()...)
+	if len(values) != 1 {
+		return "", fmt.Errorf(
+			"検索演算子の一主題は一つの検索語を必要とします",
+		)
+	}
+	return values[0], nil
+}
+
+func appendUniqueContentValue(
+	values []string,
+	value string,
+) []string {
+	for _, current := range values {
+		if current == value {
+			return values
+		}
+	}
+	return append(values, value)
+}
+
+func hasExplicitContentOperator(cues resolvedCues) bool {
+	return cues.has("operator", "all") ||
+		cues.has("operator", "any") ||
+		cues.has("operator", "exclude")
+}
+
+func buildContentSubjectOptions(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+	concepts []candidateDraft,
+	terms []legalquery.QueryTermMention,
+) (map[int][]subjectOption, error) {
+	options := make(map[int][]subjectOption)
+	for _, concept := range concepts {
+		if err := addSubjectOption(options, concept); err != nil {
+			return nil, err
+		}
+	}
+	asOf := selectedAsOfDate(input, cues, false)
+	for _, term := range terms {
+		contentInput, err := newContentInput(
+			[]string{term.Surface()},
+			nil,
+			nil,
+			asOf,
+		)
+		if err != nil {
+			return nil, err
+		}
+		draft := newCandidateDraft()
+		addExplicitSearchEvidence(
+			&draft,
+			cues,
+			hasLegalResourceCue(cues),
+		)
+		draft.evidence[legalquery.EvidenceMorphologicalContext] = struct{}{}
+		draft.steps = append(draft.steps, stepDraft{
+			startByte: contentSubjectStartByte(term.Span(), cues),
+			input:     contentInput,
+		})
+		if err := addSubjectOption(options, draft); err != nil {
+			return nil, err
+		}
+	}
+	return options, nil
+}
+
+func sortedSubjectOptionPositions(
+	options map[int][]subjectOption,
+) []int {
+	positions := make([]int, 0, len(options))
+	for position := range options {
+		positions = append(positions, position)
+	}
+	sort.Ints(positions)
+	return positions
 }
 
 type subjectOption struct {
@@ -364,8 +558,11 @@ func buildTermContentDraft(
 				return nil, err
 			}
 			draft.steps = append(draft.steps, stepDraft{
-				startByte: term.Span().StartByte(),
-				input:     contentInput,
+				startByte: contentSubjectStartByte(
+					term.Span(),
+					cues,
+				),
+				input: contentInput,
 			})
 		}
 		return &draft, nil
@@ -382,8 +579,11 @@ func buildTermContentDraft(
 		return nil, err
 	}
 	draft.steps = append(draft.steps, stepDraft{
-		startByte: ordered[0].Span().StartByte(),
-		input:     contentInput,
+		startByte: contentSubjectStartByte(
+			ordered[0].Span(),
+			cues,
+		),
+		input: contentInput,
 	})
 	return &draft, nil
 }
@@ -396,6 +596,13 @@ func partitionSearchTerms(
 	for _, term := range terms {
 		values = append(values, term.Surface())
 	}
+	return partitionSearchValues(values, cues)
+}
+
+func partitionSearchValues(
+	values []string,
+	cues resolvedCues,
+) ([]string, []string, []string) {
 	if cues.has("operator", "any") {
 		return nil, values, nil
 	}

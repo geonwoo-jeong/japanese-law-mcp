@@ -97,6 +97,29 @@ func TestProfileは同じ条の複数項を独立stepに保持する(t *testing.
 	}
 }
 
+func TestProfileは本文検索を文書読取りへ混同しない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"労働基準法第32条を読み、法令本文から「休憩」を検索して",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("複合候補 = %#v", candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindLawArticleRead ||
+		steps[1].InputKind() != legalquery.InputKindLawContentSearch {
+		t.Fatalf(
+			"SOT-ARCH-027: 本文検索を文書読取りへ混同しました: %#v",
+			steps,
+		)
+	}
+}
+
 func TestProfileは次の条より後ろの項を前の条へ誤結合しない(t *testing.T) {
 	t.Parallel()
 
@@ -382,7 +405,7 @@ func TestProfileは裁判例refを法令targetとして扱わない(t *testing.T
 	}
 }
 
-func TestProfileは公式参照を優先した候補から法概念出典を除く(t *testing.T) {
+func TestProfileは公式参照と別検索の法概念出典を併存させる(t *testing.T) {
 	t.Parallel()
 
 	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
@@ -419,24 +442,60 @@ func TestProfileは公式参照を優先した候補から法概念出典を除�
 			continue
 		}
 		foundOfficialIdentifier = true
-		if slices.Contains(
+		if !slices.Contains(
 			candidate.EvidenceCodes(),
 			legalquery.EvidenceLegalConcept,
 		) {
 			t.Fatalf(
-				"SOT-ENG-023: 公式参照より弱い法概念根拠が残りました: %#v",
+				"SOT-ENG-023: 別検索の法概念根拠がありません: %#v",
 				candidate.EvidenceCodes(),
 			)
 		}
-		if len(candidate.ConceptSources()) != 0 {
+		sources := candidate.ConceptSources()
+		if len(sources) != 1 ||
+			sources[0].ConceptID() != "adult-guardianship" {
 			t.Fatalf(
-				"SOT-MODEL-022: 法概念根拠のない conceptSources = %#v",
-				candidate.ConceptSources(),
+				"SOT-ENG-023: 別検索の conceptSources = %#v",
+				sources,
 			)
 		}
 	}
 	if !foundOfficialIdentifier {
 		t.Fatal("official_identifier を持つ候補がありません")
+	}
+}
+
+func TestProfileは公式識別子検索と別法概念検索の出典を併存させる(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"法令ID 129AC0000000089 を検索し、成年後見の条文も検索してください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 2 {
+		t.Fatalf("公式識別子と法概念の候補 = %#v", candidates)
+	}
+	candidate := candidates[0]
+	if !slices.Contains(
+		candidate.EvidenceCodes(),
+		legalquery.EvidenceOfficialIdentifier,
+	) || !slices.Contains(
+		candidate.EvidenceCodes(),
+		legalquery.EvidenceLegalConcept,
+	) {
+		t.Fatalf(
+			"SOT-ENG-023: 公式識別子/法概念 evidence = %#v",
+			candidate.EvidenceCodes(),
+		)
+	}
+	sources := candidate.ConceptSources()
+	if len(sources) != 1 ||
+		sources[0].ConceptID() != "adult-guardianship" {
+		t.Fatalf("SOT-ENG-023: concept sources = %#v", sources)
 	}
 }
 

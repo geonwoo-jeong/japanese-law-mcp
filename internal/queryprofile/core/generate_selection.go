@@ -16,7 +16,10 @@ func (p *Profile) selectionMode(
 	switch {
 	case hasCollidingLawAlias(input.LawNameMentions()):
 		return legalquery.QuerySelectionModeClarificationRequired
-	case p.hasNoAutoExecuteConcept(input.LegalConceptMentions()):
+	case len(candidates) > 0 && p.hasUnresolvedNoAutoExecuteConcept(
+		coreConceptMentionsForResources(input, cues),
+		cues,
+	):
 		return legalquery.QuerySelectionModeClarificationRequired
 	case p.hasWeakGeneralAmbiguity(input, cues):
 		return legalquery.QuerySelectionModeClarificationRequired
@@ -74,17 +77,32 @@ func hasCollidingLawAlias(
 	return false
 }
 
-func (p *Profile) hasNoAutoExecuteConcept(
+func (p *Profile) hasUnresolvedNoAutoExecuteConcept(
 	mentions []legalquery.LegalConceptMention,
+	cues resolvedCues,
 ) bool {
 	for _, mention := range mentions {
 		definition, exists := p.concepts[mention.ConceptID()]
 		if exists && definition.entry.SelectionPolicy ==
 			legalconceptlexicon.SelectionPolicyAmbiguousNoAutoExecute {
+			if cues.has("resource", "law_provision") &&
+				coreCandidateCount(definition) == 1 {
+				continue
+			}
 			return true
 		}
 	}
 	return false
+}
+
+func coreCandidateCount(definition conceptDefinition) int {
+	count := 0
+	for _, candidate := range definition.entry.Candidates {
+		if isCoreConceptCandidate(candidate) {
+			count++
+		}
+	}
+	return count
 }
 
 func (p *Profile) hasWeakGeneralAmbiguity(

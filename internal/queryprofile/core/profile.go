@@ -405,6 +405,7 @@ func validCueMeaning(category string, value string) bool {
 		return value == "all" ||
 			value == "any" ||
 			value == "as_of" ||
+			value == "document_article" ||
 			value == "dual_candidate" ||
 			value == "exclude" ||
 			value == "individual"
