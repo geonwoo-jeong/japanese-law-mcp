@@ -415,12 +415,26 @@ func shouldPreferSurfaceLawQuery(surface string, canonical string) bool {
 	if surface == "" || canonical == "" || surface == canonical {
 		return false
 	}
+	if surface == contractedCanonicalLawQuery(canonical) {
+		return true
+	}
 	if strings.HasSuffix(surface, "法") &&
 		strings.HasSuffix(canonical, "法") &&
 		utf8.RuneCountInString(surface) > utf8.RuneCountInString(canonical) {
 		return true
 	}
 	return false
+}
+
+func contractedCanonicalLawQuery(value string) string {
+	contracted := strings.NewReplacer(
+		"に関する", "",
+		"の", "",
+	).Replace(value)
+	if strings.HasSuffix(contracted, "法律") {
+		return strings.TrimSuffix(contracted, "法律") + "法"
+	}
+	return contracted
 }
 
 func evidenceIndex(value legalquery.EvidenceCode) int {
