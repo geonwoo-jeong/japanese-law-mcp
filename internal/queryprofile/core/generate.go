@@ -18,6 +18,7 @@ type candidateDraft struct {
 	concepts      []legalquery.LegalConceptSource
 	requiredPacks []string
 	steps         []stepDraft
+	aliasRankings []lawAliasRankingFact
 }
 
 type stepDraft struct {
@@ -302,6 +303,10 @@ func mergeDraft(target *candidateDraft, source candidateDraft) {
 	}
 	target.concepts = append(target.concepts, source.concepts...)
 	target.requiredPacks = append(target.requiredPacks, source.requiredPacks...)
+	target.aliasRankings = mergeLawAliasRankingFacts(
+		target.aliasRankings,
+		source.aliasRankings,
+	)
 }
 
 func cloneDraft(value candidateDraft) candidateDraft {
@@ -314,6 +319,7 @@ func cloneDraft(value candidateDraft) candidateDraft {
 		concepts:      append([]legalquery.LegalConceptSource(nil), value.concepts...),
 		requiredPacks: append([]string(nil), value.requiredPacks...),
 		steps:         append([]stepDraft(nil), value.steps...),
+		aliasRankings: append([]lawAliasRankingFact(nil), value.aliasRankings...),
 	}
 }
 
@@ -379,13 +385,15 @@ func (p *Profile) materializeCandidates(
 			return nil, nil, err
 		}
 		prepared = append(prepared, preparedDraft{
-			draft:      current.draft,
-			evidence:   evidence,
-			score:      score,
-			confidence: confidence,
-			signature:  current.signature,
+			draft:            current.draft,
+			evidence:         evidence,
+			score:            score,
+			confidence:       confidence,
+			signature:        current.signature,
+			rankingSignature: current.signature,
 		})
 	}
+	prepared = withLawAliasCollisionRankingSignatures(prepared)
 	sort.SliceStable(prepared, func(left, right int) bool {
 		return comparePreparedDrafts(prepared[left], prepared[right]) < 0
 	})
@@ -478,6 +486,10 @@ func mergeEquivalentDraft(target *candidateDraft, source candidateDraft) {
 	}
 	target.concepts = append(target.concepts, source.concepts...)
 	target.requiredPacks = append(target.requiredPacks, source.requiredPacks...)
+	target.aliasRankings = mergeLawAliasRankingFacts(
+		target.aliasRankings,
+		source.aliasRankings,
+	)
 	for index := range target.steps {
 		if source.steps[index].startByte < target.steps[index].startByte {
 			target.steps[index].startByte = source.steps[index].startByte
@@ -486,11 +498,12 @@ func mergeEquivalentDraft(target *candidateDraft, source candidateDraft) {
 }
 
 type preparedDraft struct {
-	draft      candidateDraft
-	evidence   []legalquery.EvidenceCode
-	score      int
-	confidence legalquery.Confidence
-	signature  string
+	draft            candidateDraft
+	evidence         []legalquery.EvidenceCode
+	score            int
+	confidence       legalquery.Confidence
+	signature        string
+	rankingSignature string
 }
 
 func comparePreparedDrafts(left preparedDraft, right preparedDraft) int {
@@ -505,8 +518,8 @@ func comparePreparedDrafts(left preparedDraft, right preparedDraft) int {
 	if len(left.draft.steps) != len(right.draft.steps) {
 		return len(left.draft.steps) - len(right.draft.steps)
 	}
-	if left.signature != right.signature {
-		return strings.Compare(left.signature, right.signature)
+	if left.rankingSignature != right.rankingSignature {
+		return strings.Compare(left.rankingSignature, right.rankingSignature)
 	}
 	return sourcePosition(left.draft) - sourcePosition(right.draft)
 }

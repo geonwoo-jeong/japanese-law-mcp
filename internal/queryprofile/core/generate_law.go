@@ -15,9 +15,12 @@ type lawTarget struct {
 	lawID      string
 	revisionID string
 	searchTerm string
+	surface    string
+	canonical  string
 	viaRef     *model.SourceResourceRef
 	evidence   legalquery.EvidenceCode
 	typo       bool
+	aliasRank  lawAliasRankingFact
 }
 
 func buildLawTargets(
@@ -58,6 +61,8 @@ func buildLawTargets(
 			endByte:    mention.Span().EndByte(),
 			lawID:      mention.LawID(),
 			searchTerm: searchTermForLawMention(mention),
+			surface:    mention.Surface(),
+			canonical:  mention.Canonical(),
 			evidence:   legalquery.EvidenceOfficialAlias,
 			typo:       mention.MatchKind() == legalquery.PreprocessMatchUniqueTypoCorrection,
 		})
@@ -75,7 +80,7 @@ func buildLawTargets(
 		return evidenceIndex(targets[left].evidence) <
 			evidenceIndex(targets[right].evidence)
 	})
-	return dedupeLawTargets(targets)
+	return withLawAliasCollisionRanks(dedupeLawTargets(targets))
 }
 
 func dedupeLawTargets(values []lawTarget) []lawTarget {
@@ -283,6 +288,12 @@ func addTargetEvidence(
 	}
 	if hasAsOf {
 		draft.evidence[legalquery.EvidenceStructuredReference] = struct{}{}
+	}
+	if target.aliasRank.groupKey != "" {
+		draft.aliasRankings = mergeLawAliasRankingFacts(
+			draft.aliasRankings,
+			[]lawAliasRankingFact{target.aliasRank},
+		)
 	}
 }
 

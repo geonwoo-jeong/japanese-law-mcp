@@ -179,6 +179,128 @@ func TestProfileは確認したいを法令本文の読取り意図として扱�
 	}
 }
 
+func TestProfileは略称と直接対応する法令を衝突候補の先頭にする(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"民訴法の本文を読みたいです。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 2 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("generation = %#v", generation)
+	}
+
+	lawIDs := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		steps := candidate.Steps()
+		if len(steps) != 1 {
+			t.Fatalf("steps = %#v", steps)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
+		if !ok {
+			t.Fatalf("logical input = %T", steps[0].LogicalInput())
+		}
+		lawID, exists := input.LawID()
+		if !exists {
+			t.Fatalf("law_read に lawId がありません: %#v", input)
+		}
+		lawIDs = append(lawIDs, lawID)
+	}
+	if !slices.Equal(
+		lawIDs,
+		[]string{"408AC0000000109", "215AC0000000062"},
+	) {
+		t.Fatalf("SOT-ARCH-028: lawIds = %#v", lawIDs)
+	}
+}
+
+func TestProfileは接頭辞関係のない略称衝突の既存順位を保つ(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"「品確法」の本文を読んでください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 2 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("generation = %#v", generation)
+	}
+
+	lawIDs := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		steps := candidate.Steps()
+		if len(steps) != 1 {
+			t.Fatalf("steps = %#v", steps)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
+		if !ok {
+			t.Fatalf("logical input = %T", steps[0].LogicalInput())
+		}
+		lawID, exists := input.LawID()
+		if !exists {
+			t.Fatalf("law_read に lawId がありません: %#v", input)
+		}
+		lawIDs = append(lawIDs, lawID)
+	}
+	if !slices.Equal(
+		lawIDs,
+		[]string{"351AC0000000088", "411AC0000000081"},
+	) {
+		t.Fatalf("SOT-ARCH-028: lawIds = %#v", lawIDs)
+	}
+}
+
+func TestProfileは接頭辞関係のない法令検索候補の意味署名順を保つ(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"「品確法」を検索してください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 2 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("generation = %#v", generation)
+	}
+
+	queries := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		steps := candidate.Steps()
+		if len(steps) != 1 {
+			t.Fatalf("steps = %#v", steps)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.LawSearchIntentV1)
+		if !ok {
+			t.Fatalf("logical input = %T", steps[0].LogicalInput())
+		}
+		queries = append(queries, input.Query())
+	}
+	if !slices.Equal(
+		queries,
+		[]string{
+			"住宅の品質確保の促進等に関する法律",
+			"揮発油等の品質の確保等に関する法律",
+		},
+	) {
+		t.Fatalf("SOT-ARCH-028: queries = %#v", queries)
+	}
+}
+
 func TestProfileは取得意図と対象外意図の混在で強い根拠候補を保持する(
 	t *testing.T,
 ) {

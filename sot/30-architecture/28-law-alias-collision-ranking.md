@@ -1,0 +1,29 @@
+# SOT-ARCH-028: 法令別名衝突の基本法優先順位
+
+- 状態: 有効
+
+## 規定
+
+同じ原文位置と比較正規化後の同じ表記に対して、法令名辞書の公式別名が複数の法令へ対応する場合、query profile は候補を一件へ縮約せず、`SOT-MODEL-023` の固定候補上限の範囲で対応候補を保持し、`SOT-MODEL-026` の `clarification_required` とする。対応候補が固定上限を超える場合は、この規則の完全順序で上限件数までを決定的に保持する。
+
+同じ衝突群の候補が score、根拠集合および step 数で同点の場合は、検証済み法令名辞書の正式名称だけを使い、比較正規化後の正式名称が別候補の正式名称の厳密な接頭辞となる件数が多い候補を先に置く。これにより、基本法の正式名称と、その基本法名に改正、施行その他の限定を加えた正式名称が同じ別名へ対応するときは、基本法を先頭候補とする。
+
+厳密な接頭辞関係がない候補間、および接頭辞となる件数が同じ候補間では、既存の意味署名による決定順を維持する。文字列の長さだけ、編集距離、公布若しくは改正の新しさ、法令検索結果の順位、provider の可用性または外部応答を優先順位の根拠にしない。
+
+この優先順位は衝突群内の比較順だけを変更し、候補の意味署名、法令 ID、根拠、score、confidence、step、候補上限または重複判定を変更しない。`clarification_required` のため selector は外部情報源を呼ばず、利用者または呼出し側へ複数候補を返す。
+
+この規則を変更する場合は core profile version を更新する。複数 profile が共有する tie-break の種類または校正値まで変更する場合は ranking version も更新する。
+
+## 確認
+
+`民訴法` が `民事訴訟法` と `民事訴訟法中改正法律施行法` に対応する場合に前者を先頭へ置き、両候補と明確化要求を保持することを確認する。
+
+正式名称間に厳密な接頭辞関係がない `品確法` その他の衝突例では、既存の意味署名順が変わらないことを確認する。
+
+## 関連
+
+- [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
+- [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
+- [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](23-unified-query-selection-and-hedging.md)
+- [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
+- [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)
