@@ -19,12 +19,13 @@ func (p *Profile) buildSearchDrafts(
 		ambiguous bool
 		err       error
 	)
-	if !cues.has("resource", "judicial_decision") {
+	switch {
+	case !cues.has("resource", "judicial_decision"):
 		drafts, tooMany, ambiguous, err =
 			p.buildBroadLegalInformationSearchDrafts(input, cues)
-	} else if cues.has("task", "search") {
+	case cues.has("task", "search"):
 		drafts, ambiguous, err = p.buildSearchSubjects(input, cues)
-	} else {
+	default:
 		concepts := p.judicialReadFallbackConcepts(input, cues)
 		if len(concepts) == 0 {
 			return nil, false, false, nil
