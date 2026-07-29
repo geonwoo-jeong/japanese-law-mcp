@@ -22,7 +22,7 @@ func (p *Profile) buildSearchDrafts(
 	switch {
 	case !cues.has("resource", "judicial_decision"):
 		drafts, tooMany, ambiguous, err =
-			p.buildBroadLegalInformationSearchDrafts(input, cues)
+			p.buildAmbiguousConceptSearchDrafts(input, cues)
 	case cues.has("task", "search"):
 		drafts, ambiguous, err = p.buildSearchSubjects(input, cues)
 	default:
@@ -54,8 +54,13 @@ func (p *Profile) buildSearchDrafts(
 	combined := candidateDraft{
 		evidence: []legalquery.EvidenceCode{
 			legalquery.EvidenceExplicitTask,
-			legalquery.EvidenceExplicitResource,
 		},
+	}
+	if cues.has("resource", "judicial_decision") {
+		combined.evidence = append(
+			combined.evidence,
+			legalquery.EvidenceExplicitResource,
+		)
 	}
 	for _, draft := range drafts {
 		combined.evidence = append(combined.evidence, draft.evidence...)

@@ -274,6 +274,80 @@ func TestProfileは包括的な法情報語から複数Resource概念の候補�
 	}
 }
 
+func TestProfileはResource省略から複数Resource概念の候補を保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"ネット中傷について調べてください。",
+		nil,
+	)
+	if generation.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("selection mode = %q", generation.SelectionMode())
+	}
+	candidate := findSearchCandidate(t, generation, "名誉毀損")
+	if !slices.Equal(
+		candidate.EvidenceCodes(),
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceLegalConcept,
+			legalquery.EvidenceMorphologicalContext,
+		},
+	) {
+		t.Fatalf("SOT-ENG-023: evidence = %#v", candidate.EvidenceCodes())
+	}
+	sources := candidate.ConceptSources()
+	if len(sources) != 1 ||
+		sources[0].ConceptID() != "online-defamation" {
+		t.Fatalf("SOT-ENG-023: concept sources = %#v", sources)
+	}
+}
+
+func TestProfileはResource省略の単一Resource概念から候補を作らない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"有休について調べてください。",
+		nil,
+	)
+	if len(generation.Candidates()) != 0 {
+		t.Fatalf(
+			"SOT-ENG-023: 単一 resource concept candidates = %#v",
+			generation.Candidates(),
+		)
+	}
+}
+
+func TestProfileはResource省略の複数概念を明示Resourceとして扱わない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"成年後見について調べ、養育費について調べてください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 ||
+		len(candidates[0].Steps()) != 2 ||
+		slices.Contains(
+			candidates[0].EvidenceCodes(),
+			legalquery.EvidenceExplicitResource,
+		) {
+		t.Fatalf(
+			"SOT-ENG-023: resource 省略の複数概念 = %#v",
+			generation,
+		)
+	}
+}
+
 func TestProfileは個別検索を最大四stepまで原文順に保持する(t *testing.T) {
 	t.Parallel()
 
@@ -381,6 +455,33 @@ func TestProfileは包括的な法情報四件とRef読取りを五Stepとして
 			legalquery.QueryCompositionConstraintStepLimitExceeded {
 		t.Fatalf(
 			"SOT-ARCH-027: 包括検索四件と read の五 step = candidates:%#v members:%#v mode:%q constraint:%q",
+			generation.Candidates(),
+			generation.CompositionMembers(),
+			generation.SelectionMode(),
+			generation.CompositionConstraint(),
+		)
+	}
+}
+
+func TestProfileはResource省略四件とRef読取りを五Stepとして拒否する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	ref := newTestRef(t, "judicial-decision", "95570/detail2")
+	generation := generateQuery(
+		t,
+		"成年後見について検索し、養育費について検索し、ネット中傷について検索し、永住権について検索し、この参照を読んでください。",
+		&ref,
+	)
+	if len(generation.Candidates()) != 0 ||
+		len(generation.CompositionMembers()) != 0 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired ||
+		generation.CompositionConstraint() !=
+			legalquery.QueryCompositionConstraintStepLimitExceeded {
+		t.Fatalf(
+			"SOT-ARCH-027: resource 省略検索四件と read の五 step = candidates:%#v members:%#v mode:%q constraint:%q",
 			generation.Candidates(),
 			generation.CompositionMembers(),
 			generation.SelectionMode(),

@@ -7,12 +7,11 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
 )
 
-func (p *Profile) buildBroadLegalInformationSearchDrafts(
+func (p *Profile) buildAmbiguousConceptSearchDrafts(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 ) ([]candidateDraft, bool, bool, error) {
-	if !cues.has("resource_scope", "legal_information") ||
-		!cues.has("task", "search") {
+	if !cues.has("task", "search") {
 		return nil, false, false, nil
 	}
 
@@ -36,7 +35,7 @@ func (p *Profile) ambiguousCrossResourceConceptMentions(
 	for _, mention := range values {
 		definition, exists := p.concepts[mention.ConceptID()]
 		if !exists ||
-			!broadLegalInformationAppliesToConcept(
+			!ambiguousConceptResourceUnresolved(
 				input,
 				cues,
 				mention,
@@ -60,28 +59,17 @@ func judicialConceptResourceCount(definition conceptDefinition) int {
 	return len(resources)
 }
 
-func broadLegalInformationAppliesToConcept(
+func ambiguousConceptResourceUnresolved(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 	mention legalquery.LegalConceptMention,
 ) bool {
 	broadSpans := make(map[[2]int]struct{})
-	broadAssociated := false
 	for _, broad := range cues.mentions[cueMeaningKey(
 		"resource_scope",
 		"legal_information",
 	)] {
 		broadSpans[querySpanKey(broad.Span())] = struct{}{}
-		if broadScopeResourceAssociated(
-			input,
-			mention.Span(),
-			broad.Span(),
-		) {
-			broadAssociated = true
-		}
-	}
-	if !broadAssociated {
-		return false
 	}
 	for _, resource := range input.CueMentions() {
 		if resource.ProfileID() == profileID ||
@@ -91,7 +79,7 @@ func broadLegalInformationAppliesToConcept(
 		if _, broad := broadSpans[querySpanKey(resource.Span())]; broad {
 			continue
 		}
-		if broadScopeResourceAssociated(
+		if conceptScopeResourceAssociated(
 			input,
 			mention.Span(),
 			resource.Span(),
@@ -102,7 +90,7 @@ func broadLegalInformationAppliesToConcept(
 	return true
 }
 
-func broadScopeResourceAssociated(
+func conceptScopeResourceAssociated(
 	input legalquery.CandidateGenerationInput,
 	subject legalquery.QuerySpan,
 	resource legalquery.QuerySpan,
@@ -117,14 +105,14 @@ func broadScopeResourceAssociated(
 		startByte = resource.EndByte()
 		endByte = subject.StartByte()
 	}
-	return !hasInterveningBroadScopeSubject(
+	return !hasInterveningConceptScopeSubject(
 		input,
 		startByte,
 		endByte,
 	)
 }
 
-func hasInterveningBroadScopeSubject(
+func hasInterveningConceptScopeSubject(
 	input legalquery.CandidateGenerationInput,
 	startByte int,
 	endByte int,

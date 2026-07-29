@@ -239,7 +239,7 @@ func (p *Profile) buildConceptCandidates(
 	result := make([]candidateDraft, 0)
 	asOf := selectedAsOfDate(input, cues, false)
 	for _, mention := range p.selectedCoreConceptMentions(input, cues) {
-		broadLegalInformation := p.usesBroadLegalInformationScope(
+		unresolvedConceptResource := usesUnresolvedConceptResourceScope(
 			input,
 			cues,
 			mention,
@@ -280,9 +280,9 @@ func (p *Profile) buildConceptCandidates(
 				&draft,
 				cues,
 				hasLegalResourceCue(cues) &&
-					!broadLegalInformation,
+					!unresolvedConceptResource,
 			)
-			if broadLegalInformation {
+			if unresolvedConceptResource {
 				draft.evidence[legalquery.EvidenceMorphologicalContext] =
 					struct{}{}
 				draft.preserveMorphologicalContext = true

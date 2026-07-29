@@ -335,6 +335,40 @@ func TestProfileは法情報を複数Resource概念の一意化根拠にしな�
 	}
 }
 
+func TestProfileはResource省略を複数Resource概念の一意化根拠にしない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"ネット中傷について調べてください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("generation = %#v", generation)
+	}
+	candidate := candidates[0]
+	if !slices.Equal(
+		candidate.EvidenceCodes(),
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceLegalConcept,
+			legalquery.EvidenceMorphologicalContext,
+		},
+	) {
+		t.Fatalf("SOT-ENG-023: evidence = %#v", candidate.EvidenceCodes())
+	}
+	sources := candidate.ConceptSources()
+	if len(sources) != 1 ||
+		sources[0].ConceptID() != "online-defamation" {
+		t.Fatalf("SOT-ENG-023: concept sources = %#v", sources)
+	}
+}
+
 func TestProfileは取得意図と対象外意図の混在で強い根拠候補を保持する(
 	t *testing.T,
 ) {

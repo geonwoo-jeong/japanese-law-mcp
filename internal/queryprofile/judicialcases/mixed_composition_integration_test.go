@@ -115,6 +115,68 @@ func Test包括的な法情報語は法令条文と裁判例の明確化を要�
 	}
 }
 
+func TestResource省略の複数Resource概念は法令条文と裁判例の明確化を要求する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	runtime := newMixedProfileRuntime(t)
+	request := mustMixedProfileRequest(
+		t,
+		"ネット中傷について調べてください。",
+	)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	ranked := plan.RankedCandidates()
+	selected := plan.Selected()
+	if plan.Decision() != legalquery.PlanDecisionNeedsClarification ||
+		!slices.Equal(
+			plan.ReasonCodes(),
+			[]legalquery.ReasonCode{
+				legalquery.ReasonCodeAmbiguousCandidates,
+			},
+		) ||
+		len(ranked) != 2 ||
+		len(selected) != 2 {
+		t.Fatalf(
+			"SOT-ENG-023: plan = decision:%q reasons:%#v ranked:%#v selected:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+			ranked,
+			selected,
+		)
+	}
+	for index, inputKind := range []legalquery.LogicalInputKind{
+		legalquery.InputKindLawContentSearch,
+		legalquery.InputKindJudicialDecisionSearch,
+	} {
+		candidate := ranked[index]
+		if len(candidate.Steps()) != 1 ||
+			candidate.Steps()[0].InputKind() != inputKind ||
+			!slices.Equal(
+				candidate.EvidenceCodes(),
+				[]legalquery.EvidenceCode{
+					legalquery.EvidenceExplicitTask,
+					legalquery.EvidenceLegalConcept,
+					legalquery.EvidenceMorphologicalContext,
+				},
+			) ||
+			len(candidate.ConceptSources()) != 1 ||
+			candidate.ConceptSources()[0].ConceptID() !=
+				"online-defamation" {
+			t.Fatalf(
+				"SOT-ENG-023: ranked[%d] = %#v",
+				index,
+				candidate,
+			)
+		}
+	}
+}
+
 func Test包括的な法情報語と明示条文では裁判例候補を作らない(
 	t *testing.T,
 ) {
@@ -177,6 +239,47 @@ func Test別の主題の条文指定は包括的な法情報概念を絞り込�
 		}
 		input := steps[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
 		if input.Query() == "永住許可" {
+			return
+		}
+	}
+	t.Fatalf(
+		"SOT-ARCH-027: 別句の条文指定で裁判例候補を失いました: %#v",
+		plan.RankedCandidates(),
+	)
+}
+
+func Test別の主題の条文指定はResource省略概念を絞り込まない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	runtime := newMixedProfileRuntime(t)
+	request := mustMixedProfileRequest(
+		t,
+		"ネット中傷について調べて、別件として民法の条文も検索してください。",
+	)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	if plan.Decision() != legalquery.PlanDecisionNeedsClarification {
+		t.Fatalf(
+			"SOT-ENG-023: decision = %q, ranked = %#v",
+			plan.Decision(),
+			plan.RankedCandidates(),
+		)
+	}
+	for _, candidate := range plan.RankedCandidates() {
+		steps := candidate.Steps()
+		if len(steps) != 1 ||
+			steps[0].InputKind() !=
+				legalquery.InputKindJudicialDecisionSearch {
+			continue
+		}
+		input := steps[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+		if input.Query() == "名誉毀損" {
 			return
 		}
 	}

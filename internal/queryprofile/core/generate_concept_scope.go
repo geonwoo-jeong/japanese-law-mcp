@@ -7,8 +7,6 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
 )
 
-const broadLegalInformationSurface = "法情報"
-
 // selectedCoreConceptMentions は、SOT-ENG-023 の resource 範囲に従って
 // 同じ表記の法概念候補を選ぶ。
 func (p *Profile) selectedCoreConceptMentions(
@@ -16,14 +14,11 @@ func (p *Profile) selectedCoreConceptMentions(
 	cues resolvedCues,
 ) []legalquery.LegalConceptMention {
 	values := coreConceptMentionsForResources(input, cues)
-	if !hasBroadLegalInformationCue(cues) {
-		return values
-	}
 
 	ambiguousGroups := make(map[string]struct{})
 	for _, mention := range values {
 		definition, exists := p.concepts[mention.ConceptID()]
-		if !p.usesBroadLegalInformationScope(input, cues, mention) ||
+		if !usesUnresolvedConceptResourceScope(input, cues, mention) ||
 			!exists ||
 			definition.entry.ConflictGroupID == "" ||
 			definition.entry.SelectionPolicy !=
@@ -58,27 +53,11 @@ func (p *Profile) selectedCoreConceptMentions(
 	return result
 }
 
-func (p *Profile) usesBroadLegalInformationScope(
+func usesUnresolvedConceptResourceScope(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 	mention legalquery.LegalConceptMention,
 ) bool {
-	broad := false
-	for _, resource := range cues.mentions[cueMeaningKey("resource", "law")] {
-		if resource.Surface() == broadLegalInformationSurface &&
-			conceptResourceAssociated(
-				input,
-				cues,
-				mention.Span(),
-				resource.Span(),
-			) {
-			broad = true
-			break
-		}
-	}
-	if !broad {
-		return false
-	}
 	for _, resource := range contentCoreResources(cues) {
 		if conceptResourceAssociated(
 			input,
@@ -100,15 +79,6 @@ func (p *Profile) usesBroadLegalInformationScope(
 		}
 	}
 	return true
-}
-
-func hasBroadLegalInformationCue(cues resolvedCues) bool {
-	for _, mention := range cues.mentions[cueMeaningKey("resource", "law")] {
-		if mention.Surface() == broadLegalInformationSurface {
-			return true
-		}
-	}
-	return false
 }
 
 func conceptResourceAssociated(
