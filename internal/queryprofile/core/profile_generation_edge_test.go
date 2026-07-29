@@ -127,6 +127,58 @@ func TestProfileは本文検索の完全日付を構造化根拠にする(t *tes
 	}
 }
 
+func TestProfileは確認したいを法令本文の読取り意図として扱う(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"「情報公開法」の本文を確認したいです。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 2 {
+		t.Fatalf("candidates = %#v", candidates)
+	}
+	if generation.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("selection mode = %q", generation.SelectionMode())
+	}
+
+	lawIDs := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		if !slices.Equal(
+			candidate.EvidenceCodes(),
+			[]legalquery.EvidenceCode{
+				legalquery.EvidenceExplicitTask,
+				legalquery.EvidenceExplicitResource,
+				legalquery.EvidenceOfficialAlias,
+			},
+		) {
+			t.Fatalf("evidence = %#v", candidate.EvidenceCodes())
+		}
+		steps := candidate.Steps()
+		if len(steps) != 1 {
+			t.Fatalf("steps = %#v", steps)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
+		if !ok {
+			t.Fatalf("logical input = %T", steps[0].LogicalInput())
+		}
+		lawID, exists := input.LawID()
+		if !exists {
+			t.Fatalf("law_read に lawId がありません: %#v", input)
+		}
+		lawIDs = append(lawIDs, lawID)
+	}
+	slices.Sort(lawIDs)
+	if !slices.Equal(
+		lawIDs,
+		[]string{"411AC0000000042", "413AC0000000140"},
+	) {
+		t.Fatalf("lawIds = %#v", lawIDs)
+	}
+}
+
 func TestProfileは取得意図と対象外意図の混在で強い根拠候補を保持する(
 	t *testing.T,
 ) {
