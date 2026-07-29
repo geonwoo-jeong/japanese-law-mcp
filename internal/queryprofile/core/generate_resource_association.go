@@ -21,7 +21,8 @@ func queryTermsForCoreResources(
 	selected := make(map[[2]int]struct{})
 	assigned := make(map[[2]int]struct{})
 	for _, term := range terms {
-		resourceKey, core, unique := nearestContentResource(
+		resourceKey, core, unique := nearestUninterruptedContentResource(
+			input,
 			term.Span(),
 			cues,
 		)
@@ -32,6 +33,7 @@ func queryTermsForCoreResources(
 		assigned[resourceKey] = struct{}{}
 	}
 	for key := range coreResourceKeysForConcepts(
+		input,
 		input.LegalConceptMentions(),
 		cues,
 	) {
@@ -43,6 +45,7 @@ func queryTermsForCoreResources(
 			continue
 		}
 		if span, found := nearestSharedQueryTerm(
+			input,
 			terms,
 			resource.Span(),
 			cues,
@@ -74,7 +77,8 @@ func coreConceptMentionsForResources(
 	selected := make(map[[2]int]struct{})
 	assigned := make(map[[2]int]struct{})
 	for _, mention := range mentions {
-		resourceKey, core, unique := nearestContentResource(
+		resourceKey, core, unique := nearestUninterruptedContentResource(
+			input,
 			mention.Span(),
 			cues,
 		)
@@ -85,6 +89,7 @@ func coreConceptMentionsForResources(
 		assigned[resourceKey] = struct{}{}
 	}
 	for key := range coreResourceKeysForTerms(
+		input,
 		input.QueryTermMentions(),
 		cues,
 	) {
@@ -96,6 +101,7 @@ func coreConceptMentionsForResources(
 			continue
 		}
 		if span, found := nearestSharedLegalConcept(
+			input,
 			mentions,
 			resource.Span(),
 			cues,
@@ -113,12 +119,14 @@ func coreConceptMentionsForResources(
 }
 
 func coreResourceKeysForConcepts(
+	input legalquery.CandidateGenerationInput,
 	mentions []legalquery.LegalConceptMention,
 	cues resolvedCues,
 ) map[[2]int]struct{} {
 	result := make(map[[2]int]struct{})
 	for _, mention := range mentions {
-		resourceKey, core, unique := nearestContentResource(
+		resourceKey, core, unique := nearestUninterruptedContentResource(
+			input,
 			mention.Span(),
 			cues,
 		)
@@ -130,12 +138,14 @@ func coreResourceKeysForConcepts(
 }
 
 func coreResourceKeysForTerms(
+	input legalquery.CandidateGenerationInput,
 	terms []legalquery.QueryTermMention,
 	cues resolvedCues,
 ) map[[2]int]struct{} {
 	result := make(map[[2]int]struct{})
 	for _, term := range terms {
-		resourceKey, core, unique := nearestContentResource(
+		resourceKey, core, unique := nearestUninterruptedContentResource(
+			input,
 			term.Span(),
 			cues,
 		)
@@ -147,6 +157,7 @@ func coreResourceKeysForTerms(
 }
 
 func nearestSharedQueryTerm(
+	input legalquery.CandidateGenerationInput,
 	terms []legalquery.QueryTermMention,
 	resource legalquery.QuerySpan,
 	cues resolvedCues,
@@ -155,8 +166,19 @@ func nearestSharedQueryTerm(
 	bestSpan := [2]int{}
 	tied := false
 	for _, term := range terms {
-		_, core, unique := nearestContentResource(term.Span(), cues)
+		_, core, unique := nearestUninterruptedContentResource(
+			input,
+			term.Span(),
+			cues,
+		)
 		if !unique || core {
+			continue
+		}
+		if hasInterveningContentSubject(
+			input,
+			term.Span(),
+			contentSpanKey(resource),
+		) && !groupsContentSubjects(cues) {
 			continue
 		}
 		distance, associated := contentSubjectResourceDistance(
@@ -180,6 +202,7 @@ func nearestSharedQueryTerm(
 }
 
 func nearestSharedLegalConcept(
+	input legalquery.CandidateGenerationInput,
 	mentions []legalquery.LegalConceptMention,
 	resource legalquery.QuerySpan,
 	cues resolvedCues,
@@ -188,8 +211,19 @@ func nearestSharedLegalConcept(
 	bestSpan := [2]int{}
 	tied := false
 	for _, mention := range mentions {
-		_, core, unique := nearestContentResource(mention.Span(), cues)
+		_, core, unique := nearestUninterruptedContentResource(
+			input,
+			mention.Span(),
+			cues,
+		)
 		if !unique || core {
+			continue
+		}
+		if hasInterveningContentSubject(
+			input,
+			mention.Span(),
+			contentSpanKey(resource),
+		) && !groupsContentSubjects(cues) {
 			continue
 		}
 		distance, associated := contentSubjectResourceDistance(
@@ -210,6 +244,112 @@ func nearestSharedLegalConcept(
 		}
 	}
 	return bestSpan, bestDistance >= 0 && !tied
+}
+
+func nearestUninterruptedContentResource(
+	input legalquery.CandidateGenerationInput,
+	subject legalquery.QuerySpan,
+	cues resolvedCues,
+) ([2]int, bool, bool) {
+	resourceKey, core, unique := nearestContentResource(subject, cues)
+	println(
+		"nearest-resource",
+		subject.StartByte(),
+		subject.EndByte(),
+		resourceKey[0],
+		resourceKey[1],
+		core,
+		unique,
+	)
+	if !unique ||
+		precedesLeadingRefContentCluster(input, subject, resourceKey, cues) ||
+		hasInterveningContentSubject(input, subject, resourceKey) &&
+			!groupsContentSubjects(cues) {
+		return [2]int{}, false, false
+	}
+	return resourceKey, core, true
+}
+
+func groupsContentSubjects(cues resolvedCues) bool {
+	return cues.has("operator", "all") ||
+		cues.has("operator", "any") ||
+		cues.has("operator", "exclude")
+}
+
+func precedesLeadingRefContentCluster(
+	input legalquery.CandidateGenerationInput,
+	subject legalquery.QuerySpan,
+	resourceKey [2]int,
+	cues resolvedCues,
+) bool {
+	ref, exists := input.Ref()
+	if !exists || ref.Key().ResourceType() != "law" {
+		return false
+	}
+	resources := contentCoreResources(cues)
+	if len(resources) == 0 {
+		return false
+	}
+	leading := resources[0].Span()
+	if contentSpanKey(leading) != resourceKey {
+		return false
+	}
+	return subject.EndByte() <= leading.StartByte()
+}
+
+func hasInterveningContentSubject(
+	input legalquery.CandidateGenerationInput,
+	subject legalquery.QuerySpan,
+	resource [2]int,
+) bool {
+	for _, term := range input.QueryTermMentions() {
+		if contentSpanIntervenes(subject, resource, term.Span()) {
+			println(
+				"intervening-term",
+				subject.StartByte(),
+				subject.EndByte(),
+				resource[0],
+				resource[1],
+				term.Surface(),
+				term.Span().StartByte(),
+				term.Span().EndByte(),
+			)
+			return true
+		}
+	}
+	for _, concept := range input.LegalConceptMentions() {
+		if contentSpanIntervenes(subject, resource, concept.Span()) {
+			println(
+				"intervening-concept",
+				subject.StartByte(),
+				subject.EndByte(),
+				resource[0],
+				resource[1],
+				concept.Surface(),
+				concept.Span().StartByte(),
+				concept.Span().EndByte(),
+			)
+			return true
+		}
+	}
+	return false
+}
+
+func contentSpanIntervenes(
+	subject legalquery.QuerySpan,
+	resource [2]int,
+	other legalquery.QuerySpan,
+) bool {
+	switch {
+	case subject.EndByte() <= resource[0]:
+		return subject.EndByte() <= other.StartByte() &&
+			other.EndByte() <= resource[0]
+	case resource[1] <= subject.StartByte():
+		return resource[1] <= other.StartByte() &&
+			other.EndByte() <= subject.StartByte()
+	default:
+		return false
+	}
 }
 
 func nearestContentResource(

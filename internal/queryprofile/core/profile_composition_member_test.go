@@ -551,6 +551,7 @@ func TestProfileは介在一般語より前の法概念を条文に結び付け�
 		"成年後見は不要です。この参照の本文と第90条、医療過誤の条文と裁判例をそれぞれ取得してください。",
 		&ref,
 	)
+	foundMedicalMalpractice := false
 	for _, candidate := range generation.Candidates() {
 		for _, source := range candidate.ConceptSources() {
 			if source.ConceptID() == "adult-guardianship" {
@@ -569,7 +570,16 @@ func TestProfileは介在一般語より前の法概念を条文に結び付け�
 					step,
 				)
 			}
+			if ok && slices.Contains(content.AllTerms(), "医療過誤") {
+				foundMedicalMalpractice = true
+			}
 		}
+	}
+	if !foundMedicalMalpractice {
+		t.Fatalf(
+			"SOT-ARCH-025: 直近の法概念による条文検索が失われました: %#v",
+			generation.Candidates(),
+		)
 	}
 }
 
