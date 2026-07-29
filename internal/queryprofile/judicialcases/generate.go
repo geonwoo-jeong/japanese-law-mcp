@@ -10,9 +10,10 @@ import (
 const maximumGeneratedCandidates = 16
 
 type candidateDraft struct {
-	evidence []legalquery.EvidenceCode
-	concepts []legalquery.LegalConceptSource
-	steps    []stepDraft
+	evidence                     []legalquery.EvidenceCode
+	concepts                     []legalquery.LegalConceptSource
+	steps                        []stepDraft
+	preserveMorphologicalContext bool
 }
 
 type stepDraft struct {
@@ -220,6 +221,8 @@ func combineJudicialReadAndSearch(
 				append([]stepDraft(nil), read.steps...),
 				current.steps...,
 			),
+			preserveMorphologicalContext: read.preserveMorphologicalContext ||
+				current.preserveMorphologicalContext,
 		}
 		sort.SliceStable(combined.steps, func(left int, right int) bool {
 			return combined.steps[left].startByte <

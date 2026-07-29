@@ -10,12 +10,13 @@ import (
 )
 
 type preparedDraft struct {
-	evidence   []legalquery.EvidenceCode
-	concepts   []legalquery.LegalConceptSource
-	steps      []stepDraft
-	score      int
-	confidence legalquery.Confidence
-	signature  string
+	evidence                     []legalquery.EvidenceCode
+	concepts                     []legalquery.LegalConceptSource
+	steps                        []stepDraft
+	score                        int
+	confidence                   legalquery.Confidence
+	signature                    string
+	preserveMorphologicalContext bool
 }
 
 type materializedCandidate struct {
@@ -64,6 +65,7 @@ func (p *Profile) materializeCandidateRecords(
 				steps,
 				original.concepts,
 			),
+			original.preserveMorphologicalContext,
 		)
 		concepts := conceptSourcesForEvidence(
 			evidence,
@@ -93,6 +95,8 @@ func (p *Profile) materializeCandidateRecords(
 					mergedSteps,
 					mergedConcepts,
 				),
+				current.preserveMorphologicalContext ||
+					original.preserveMorphologicalContext,
 			)
 			prepared[index] = preparedDraft{
 				evidence: mergedEvidence,
@@ -104,6 +108,8 @@ func (p *Profile) materializeCandidateRecords(
 				score:      current.score,
 				confidence: current.confidence,
 				signature:  current.signature,
+				preserveMorphologicalContext: current.preserveMorphologicalContext ||
+					original.preserveMorphologicalContext,
 			}
 			continue
 		}
@@ -117,12 +123,13 @@ func (p *Profile) materializeCandidateRecords(
 		}
 		bySignature[signature] = len(prepared)
 		prepared = append(prepared, preparedDraft{
-			evidence:   evidence,
-			concepts:   concepts,
-			steps:      steps,
-			score:      score,
-			confidence: confidence,
-			signature:  signature,
+			evidence:                     evidence,
+			concepts:                     concepts,
+			steps:                        steps,
+			score:                        score,
+			confidence:                   confidence,
+			signature:                    signature,
+			preserveMorphologicalContext: original.preserveMorphologicalContext,
 		})
 	}
 	if len(prepared) > maximumGeneratedCandidates {
@@ -185,6 +192,7 @@ func (p *Profile) materializeCandidateRecords(
 func normalizeEvidence(
 	values []legalquery.EvidenceCode,
 	preserveLegalConcept bool,
+	preserveMorphologicalContext bool,
 ) []legalquery.EvidenceCode {
 	present := make(map[legalquery.EvidenceCode]struct{}, len(values))
 	for _, value := range values {
@@ -199,7 +207,9 @@ func normalizeEvidence(
 		delete(present, legalquery.EvidenceUniqueTypoCorrection)
 		delete(present, legalquery.EvidenceGeneralTerm)
 	} else if _, exists := present[legalquery.EvidenceLegalConcept]; exists {
-		delete(present, legalquery.EvidenceMorphologicalContext)
+		if !preserveMorphologicalContext {
+			delete(present, legalquery.EvidenceMorphologicalContext)
+		}
 		delete(present, legalquery.EvidenceGeneralTerm)
 	} else if _, exists := present[legalquery.EvidenceMorphologicalContext]; exists {
 		delete(present, legalquery.EvidenceGeneralTerm)
@@ -228,11 +238,12 @@ func mergeEvidence(
 	left []legalquery.EvidenceCode,
 	right []legalquery.EvidenceCode,
 	preserveLegalConcept bool,
+	preserveMorphologicalContext bool,
 ) []legalquery.EvidenceCode {
 	return normalizeEvidence(append(
 		append([]legalquery.EvidenceCode(nil), left...),
 		right...,
-	), preserveLegalConcept)
+	), preserveLegalConcept, preserveMorphologicalContext)
 }
 
 func preservesLegalConceptForDistinctStep(

@@ -120,6 +120,7 @@ func buildCues(
 	requiredMeanings := []string{
 		cueMeaningKey("operator", "individual"),
 		cueMeaningKey("resource", "judicial_decision"),
+		cueMeaningKey("resource_scope", "legal_information"),
 		cueMeaningKey("task", "read"),
 		cueMeaningKey("task", "search"),
 	}
@@ -139,6 +140,8 @@ func validCueMeaning(category string, value string) bool {
 		return value == "search" || value == "read"
 	case "resource":
 		return value == "judicial_decision"
+	case "resource_scope":
+		return value == "legal_information"
 	case "operator":
 		return value == "individual"
 	default:

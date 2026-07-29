@@ -17,7 +17,7 @@ func (p *Profile) selectionMode(
 	case hasCollidingLawAlias(input.LawNameMentions()):
 		return legalquery.QuerySelectionModeClarificationRequired
 	case len(candidates) > 0 && p.hasUnresolvedNoAutoExecuteConcept(
-		coreConceptMentionsForResources(input, cues),
+		p.selectedCoreConceptMentions(input, cues),
 		cues,
 	):
 		return legalquery.QuerySelectionModeClarificationRequired

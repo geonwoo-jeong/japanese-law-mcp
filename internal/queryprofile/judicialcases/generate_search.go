@@ -13,25 +13,32 @@ func (p *Profile) buildSearchDrafts(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 ) ([]candidateDraft, bool, bool, error) {
-	if !cues.has("resource", "judicial_decision") {
-		return nil, false, false, nil
-	}
 	var (
 		drafts    []candidateDraft
+		tooMany   bool
 		ambiguous bool
 		err       error
 	)
-	if cues.has("task", "search") {
+	if !cues.has("resource", "judicial_decision") {
+		drafts, tooMany, ambiguous, err =
+			p.buildBroadLegalInformationSearchDrafts(input, cues)
+	} else if cues.has("task", "search") {
 		drafts, ambiguous, err = p.buildSearchSubjects(input, cues)
 	} else {
 		concepts := p.judicialReadFallbackConcepts(input, cues)
 		if len(concepts) == 0 {
 			return nil, false, false, nil
 		}
-		drafts, ambiguous, err = p.buildConceptSearchSubjects(concepts)
+		drafts, ambiguous, err = p.buildConceptSearchSubjects(
+			concepts,
+			true,
+		)
 	}
 	if err != nil {
 		return nil, false, false, err
+	}
+	if tooMany {
+		return nil, true, ambiguous, nil
 	}
 	if !cues.has("operator", "individual") || len(drafts) < 2 {
 		return drafts, false, ambiguous, nil
@@ -53,6 +60,9 @@ func (p *Profile) buildSearchDrafts(
 		combined.evidence = append(combined.evidence, draft.evidence...)
 		combined.concepts = append(combined.concepts, draft.concepts...)
 		combined.steps = append(combined.steps, draft.steps...)
+		combined.preserveMorphologicalContext =
+			combined.preserveMorphologicalContext ||
+				draft.preserveMorphologicalContext
 	}
 	return []candidateDraft{combined}, false, ambiguous, nil
 }
@@ -587,6 +597,7 @@ func (p *Profile) buildSearchSubjects(
 			input.LegalConceptMentions(),
 			selectedSubjects,
 		),
+		true,
 	)
 	if err != nil {
 		return nil, false, err
@@ -601,6 +612,7 @@ func (p *Profile) buildSearchSubjects(
 
 func (p *Profile) buildConceptSearchSubjects(
 	mentions []legalquery.LegalConceptMention,
+	explicitResource bool,
 ) ([]candidateDraft, bool, error) {
 	result := make([]candidateDraft, 0, len(mentions))
 	ambiguous := false
@@ -636,8 +648,18 @@ func (p *Profile) buildConceptSearchSubjects(
 			}
 			evidence := []legalquery.EvidenceCode{
 				legalquery.EvidenceExplicitTask,
-				legalquery.EvidenceExplicitResource,
 				legalquery.EvidenceLegalConcept,
+			}
+			if explicitResource {
+				evidence = append(
+					evidence,
+					legalquery.EvidenceExplicitResource,
+				)
+			} else {
+				evidence = append(
+					evidence,
+					legalquery.EvidenceMorphologicalContext,
+				)
 			}
 			if mention.MatchKind() ==
 				legalquery.PreprocessMatchUniqueTypoCorrection {
@@ -651,6 +673,7 @@ func (p *Profile) buildConceptSearchSubjects(
 				concepts: []legalquery.LegalConceptSource{
 					definition.source,
 				},
+				preserveMorphologicalContext: !explicitResource,
 				steps: []stepDraft{{
 					startByte: mention.Span().StartByte(),
 					input:     searchInput,

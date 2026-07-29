@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "judicial-cases",
-  "cueSetVersion": "judicial-cases-cues-2026-07-29-2",
+  "cueSetVersion": "judicial-cases-cues-2026-07-30-1",
   "cues": [
     {
       "cueId": "operator-individual",
@@ -14,6 +14,12 @@
       "category": "resource",
       "value": "judicial_decision",
       "terms": ["判例", "司法パック", "裁判例", "裁判例本文", "最高裁判例"]
+    },
+    {
+      "cueId": "resource-legal-information",
+      "category": "resource_scope",
+      "value": "legal_information",
+      "terms": ["法情報"]
     },
     {
       "cueId": "task-read",

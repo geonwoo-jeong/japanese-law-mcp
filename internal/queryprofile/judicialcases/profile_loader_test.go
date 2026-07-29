@@ -17,9 +17,9 @@ func TestLoadEmbeddedは裁判例二能力と共有校正を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "judicial-cases" ||
-		metadata.ProfileVersion() != "judicial-cases-2026-07-30-1" ||
+		metadata.ProfileVersion() != "judicial-cases-2026-07-30-2" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
-		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-29-2" {
+		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-30-1" {
 		t.Fatalf("metadata = %#v", metadata)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
@@ -124,7 +124,7 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 			profile: embeddedProfile,
 			cues: bytes.Replace(
 				embeddedCues,
-				[]byte(`judicial-cases-cues-2026-07-29-2`),
+				[]byte(`judicial-cases-cues-2026-07-30-1`),
 				[]byte(`judicial-cases-cues-2026-07-29-9`),
 				1,
 			),
@@ -191,7 +191,7 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 	}
 }
 
-func TestBuildCuesは必要な四意味の欠落と語の横断重複を拒否する(
+func TestBuildCuesは必要な五意味の欠落と語の横断重複を拒否する(
 	t *testing.T,
 ) {
 	t.Parallel()
@@ -221,6 +221,12 @@ func TestBuildCuesは必要な四意味の欠落と語の横断重複を拒否�
 			Category: "resource",
 			Value:    "judicial_decision",
 			Terms:    []string{"裁判例"},
+		},
+		cueDocument{
+			CueID:    "resource-legal-information",
+			Category: "resource_scope",
+			Value:    "legal_information",
+			Terms:    []string{"法情報"},
 		},
 		cueDocument{
 			CueID:    "task-read",

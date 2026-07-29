@@ -18,7 +18,7 @@ func TestLoadEmbeddedは法令コア五能力と辞書版を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "core" ||
-		metadata.ProfileVersion() != "core-2026-07-30-7" ||
+		metadata.ProfileVersion() != "core-2026-07-30-8" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "core-cues-2026-07-30-3" {
 		t.Fatalf("metadata = %#v", metadata)

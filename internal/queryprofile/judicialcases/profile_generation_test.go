@@ -242,6 +242,38 @@ func TestProfileは裁判例向け法概念の正式語と公的出典を保持�
 	}
 }
 
+func TestProfileは包括的な法情報語から複数Resource概念の候補を保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"永住権について法情報を調べてください。",
+		nil,
+	)
+	if generation.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf("selection mode = %q", generation.SelectionMode())
+	}
+	candidate := findSearchCandidate(t, generation, "永住許可")
+	if !slices.Equal(
+		candidate.EvidenceCodes(),
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceLegalConcept,
+			legalquery.EvidenceMorphologicalContext,
+		},
+	) {
+		t.Fatalf("SOT-ENG-023: evidence = %#v", candidate.EvidenceCodes())
+	}
+	sources := candidate.ConceptSources()
+	if len(sources) != 1 ||
+		sources[0].ConceptID() != "permanent-residence" {
+		t.Fatalf("SOT-ENG-023: concept sources = %#v", sources)
+	}
+}
+
 func TestProfileは個別検索を最大四stepまで原文順に保持する(t *testing.T) {
 	t.Parallel()
 
@@ -322,6 +354,33 @@ func TestProfileはRef読取りとの混在でも五件の検索を部分候補�
 			legalquery.QueryCompositionConstraintStepLimitExceeded {
 		t.Fatalf(
 			"SOT-MODEL-026: 五件検索と read の混在 generation = candidates:%#v members:%#v mode:%q constraint:%q",
+			generation.Candidates(),
+			generation.CompositionMembers(),
+			generation.SelectionMode(),
+			generation.CompositionConstraint(),
+		)
+	}
+}
+
+func TestProfileは包括的な法情報四件とRef読取りを五Stepとして拒否する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	ref := newTestRef(t, "judicial-decision", "95570/detail2")
+	generation := generateQuery(
+		t,
+		"成年後見について法情報を検索し、養育費について法情報を検索し、ネット中傷について法情報を検索し、永住権について法情報を検索し、この参照を読んでください。",
+		&ref,
+	)
+	if len(generation.Candidates()) != 0 ||
+		len(generation.CompositionMembers()) != 0 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired ||
+		generation.CompositionConstraint() !=
+			legalquery.QueryCompositionConstraintStepLimitExceeded {
+		t.Fatalf(
+			"SOT-ARCH-027: 包括検索四件と read の五 step = candidates:%#v members:%#v mode:%q constraint:%q",
 			generation.Candidates(),
 			generation.CompositionMembers(),
 			generation.SelectionMode(),

@@ -238,7 +238,12 @@ func (p *Profile) buildConceptCandidates(
 ) ([]candidateDraft, error) {
 	result := make([]candidateDraft, 0)
 	asOf := selectedAsOfDate(input, cues, false)
-	for _, mention := range coreConceptMentionsForResources(input, cues) {
+	for _, mention := range p.selectedCoreConceptMentions(input, cues) {
+		broadLegalInformation := p.usesBroadLegalInformationScope(
+			input,
+			cues,
+			mention,
+		)
 		definition, exists := p.concepts[mention.ConceptID()]
 		if !exists {
 			return nil, fmt.Errorf(
@@ -274,8 +279,14 @@ func (p *Profile) buildConceptCandidates(
 			addExplicitSearchEvidence(
 				&draft,
 				cues,
-				hasLegalResourceCue(cues),
+				hasLegalResourceCue(cues) &&
+					!broadLegalInformation,
 			)
+			if broadLegalInformation {
+				draft.evidence[legalquery.EvidenceMorphologicalContext] =
+					struct{}{}
+				draft.preserveMorphologicalContext = true
+			}
 			if mention.MatchKind() ==
 				legalquery.PreprocessMatchUniqueTypoCorrection {
 				draft.evidence[legalquery.EvidenceUniqueTypoCorrection] =

@@ -14,11 +14,12 @@ import (
 const maximumGeneratedCandidates = 16
 
 type candidateDraft struct {
-	evidence      map[legalquery.EvidenceCode]struct{}
-	concepts      []legalquery.LegalConceptSource
-	requiredPacks []string
-	steps         []stepDraft
-	aliasRankings []lawAliasRankingFact
+	evidence                     map[legalquery.EvidenceCode]struct{}
+	concepts                     []legalquery.LegalConceptSource
+	requiredPacks                []string
+	steps                        []stepDraft
+	aliasRankings                []lawAliasRankingFact
+	preserveMorphologicalContext bool
 }
 
 type stepDraft struct {
@@ -307,6 +308,9 @@ func mergeDraft(target *candidateDraft, source candidateDraft) {
 		target.aliasRankings,
 		source.aliasRankings,
 	)
+	target.preserveMorphologicalContext =
+		target.preserveMorphologicalContext ||
+			source.preserveMorphologicalContext
 }
 
 func cloneDraft(value candidateDraft) candidateDraft {
@@ -315,11 +319,12 @@ func cloneDraft(value candidateDraft) candidateDraft {
 		evidence[code] = struct{}{}
 	}
 	return candidateDraft{
-		evidence:      evidence,
-		concepts:      append([]legalquery.LegalConceptSource(nil), value.concepts...),
-		requiredPacks: append([]string(nil), value.requiredPacks...),
-		steps:         append([]stepDraft(nil), value.steps...),
-		aliasRankings: append([]lawAliasRankingFact(nil), value.aliasRankings...),
+		evidence:                     evidence,
+		concepts:                     append([]legalquery.LegalConceptSource(nil), value.concepts...),
+		requiredPacks:                append([]string(nil), value.requiredPacks...),
+		steps:                        append([]stepDraft(nil), value.steps...),
+		aliasRankings:                append([]lawAliasRankingFact(nil), value.aliasRankings...),
+		preserveMorphologicalContext: value.preserveMorphologicalContext,
 	}
 }
 
@@ -375,6 +380,7 @@ func (p *Profile) materializeCandidates(
 		evidence := normalizeEvidence(
 			current.draft.evidence,
 			preservesLegalConceptForDistinctStep(current.draft),
+			current.draft.preserveMorphologicalContext,
 		)
 		score, err := p.metadata.Score().Score(evidence)
 		if err != nil {
@@ -490,6 +496,9 @@ func mergeEquivalentDraft(target *candidateDraft, source candidateDraft) {
 		target.aliasRankings,
 		source.aliasRankings,
 	)
+	target.preserveMorphologicalContext =
+		target.preserveMorphologicalContext ||
+			source.preserveMorphologicalContext
 	for index := range target.steps {
 		if source.steps[index].startByte < target.steps[index].startByte {
 			target.steps[index].startByte = source.steps[index].startByte
@@ -527,6 +536,7 @@ func comparePreparedDrafts(left preparedDraft, right preparedDraft) int {
 func normalizeEvidence(
 	values map[legalquery.EvidenceCode]struct{},
 	preserveLegalConcept bool,
+	preserveMorphologicalContext bool,
 ) []legalquery.EvidenceCode {
 	result := make(map[legalquery.EvidenceCode]struct{}, len(values))
 	for code := range values {
@@ -544,7 +554,9 @@ func normalizeEvidence(
 		delete(result, legalquery.EvidenceMorphologicalContext)
 		delete(result, legalquery.EvidenceGeneralTerm)
 	} else if _, exists := result[legalquery.EvidenceLegalConcept]; exists {
-		delete(result, legalquery.EvidenceMorphologicalContext)
+		if !preserveMorphologicalContext {
+			delete(result, legalquery.EvidenceMorphologicalContext)
+		}
 		delete(result, legalquery.EvidenceGeneralTerm)
 	} else if _, exists := result[legalquery.EvidenceMorphologicalContext]; exists {
 		delete(result, legalquery.EvidenceGeneralTerm)
