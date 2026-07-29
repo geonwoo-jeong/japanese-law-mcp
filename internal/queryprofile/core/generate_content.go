@@ -97,7 +97,58 @@ func coreContentQueryTerms(
 		}
 		terms = filtered
 	}
+	if cues.has("task", "read") {
+		terms = excludeLawTargetReadTerms(
+			input,
+			terms,
+			cues.mentions[cueMeaningKey("task", "read")],
+			cues.mentions[cueMeaningKey("task", "search")],
+		)
+	}
 	return queryTermsForCoreResources(input, terms, cues)
+}
+
+func excludeLawTargetReadTerms(
+	input legalquery.CandidateGenerationInput,
+	terms []legalquery.QueryTermMention,
+	readCues []legalquery.CueMention,
+	searchCues []legalquery.CueMention,
+) []legalquery.QueryTermMention {
+	filtered := make([]legalquery.QueryTermMention, 0, len(terms))
+	for _, term := range terms {
+		if isLawTargetSpan(input, term.Span()) &&
+			termPrecedesReadWithoutSearchBetween(
+				term,
+				readCues,
+				searchCues,
+			) {
+			continue
+		}
+		filtered = append(filtered, term)
+	}
+	return filtered
+}
+
+func isLawTargetSpan(
+	input legalquery.CandidateGenerationInput,
+	span legalquery.QuerySpan,
+) bool {
+	for _, mention := range input.LawNameMentions() {
+		if sameQuerySpan(span, mention.Span()) {
+			return true
+		}
+	}
+	for _, mention := range input.IdentifierMentions() {
+		if sameQuerySpan(span, mention.Span()) {
+			return true
+		}
+	}
+	return false
+}
+
+func sameQuerySpan(left legalquery.QuerySpan, right legalquery.QuerySpan) bool {
+	return left.StartByte() == right.StartByte() &&
+		left.EndByte() == right.EndByte()
 }
 
 func refReadResourceCues(

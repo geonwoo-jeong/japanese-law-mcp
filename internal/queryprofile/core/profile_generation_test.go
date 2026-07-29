@@ -120,6 +120,57 @@ func TestProfileは本文検索を文書読取りへ混同しない(t *testing.T
 	}
 }
 
+func TestProfileは混合要求でも法令名を本文検索語へ重複させない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"「労働基準法」の本文を読み、法令本文から「休憩」を検索して",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("複合候補 = %#v", candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindLawRead ||
+		steps[1].InputKind() != legalquery.InputKindLawContentSearch {
+		t.Fatalf("SOT-ARCH-027: 複合候補の steps = %#v", steps)
+	}
+	content, ok := steps[1].LogicalInput().(legalquery.LawContentSearchIntentV1)
+	if !ok || !slices.Equal(content.AllTerms(), []string{"休憩"}) {
+		t.Fatalf(
+			"SOT-ARCH-027: 本文検索語 = %#v",
+			content.AllTerms(),
+		)
+	}
+}
+
+func TestProfileは法令略称の本文読取りを本文検索へ拡張しない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"「品確法」の本文を読んでください。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 2 {
+		t.Fatalf("候補数 = %d, want 2", len(candidates))
+	}
+	for _, candidate := range candidates {
+		steps := candidate.Steps()
+		if len(steps) != 1 ||
+			steps[0].InputKind() != legalquery.InputKindLawRead {
+			t.Fatalf(
+				"SOT-ARCH-027: 法令略称の本文読取りを本文検索へ拡張しました: %#v",
+				steps,
+			)
+		}
+	}
+}
+
 func TestProfileは次の条より後ろの項を前の条へ誤結合しない(t *testing.T) {
 	t.Parallel()
 
