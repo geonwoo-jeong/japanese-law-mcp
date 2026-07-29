@@ -11,7 +11,9 @@
 
 ## 未実装の SOT 差分
 
-- なし
+- [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md) と
+  [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) が定める、
+  統一評価 command、baseline および中央品質ゲートへの評価接続は未実装。
 
 ## 互換性のない変更
 
