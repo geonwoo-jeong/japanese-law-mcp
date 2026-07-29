@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-7",
+  "cueSetVersion": "core-cues-2026-07-30-8",
   "cues": [
     {
       "cueId": "operator-all",
@@ -43,7 +43,7 @@
       "cueId": "operator-individual",
       "category": "operator",
       "value": "individual",
-      "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々"]
+      "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々", "各一ページ確認してください"]
     },
     {
       "cueId": "operator-resource-choice",
@@ -79,7 +79,7 @@
       "cueId": "resource-updates",
       "category": "resource",
       "value": "updates",
-      "terms": ["更新された法令", "更新一覧", "更新情報", "更新法令", "法令更新一覧", "法令改正一覧"]
+      "terms": ["の更新", "更新された法令", "更新一覧", "更新情報", "更新法令", "法令更新一覧", "法令改正一覧"]
     },
     {
       "cueId": "syntax-content-result-unit",
@@ -97,7 +97,7 @@
       "cueId": "task-list-updates",
       "category": "task",
       "value": "list_updates",
-      "terms": ["列挙して", "列挙する", "更新された", "更新一覧", "改正一覧"]
+      "terms": ["の更新", "列挙して", "列挙する", "更新された", "更新一覧", "改正一覧"]
     },
     {
       "cueId": "task-read",

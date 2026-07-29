@@ -108,7 +108,10 @@ func selectedAsOfDate(
 	if len(dates) == 0 {
 		return nil
 	}
-	if updatePresent && !cues.has("operator", "as_of") {
+	if (updatePresent ||
+		cues.has("task", "list_updates") ||
+		cues.has("resource", "updates")) &&
+		!cues.has("operator", "as_of") {
 		return nil
 	}
 	date := dates[0].Date()

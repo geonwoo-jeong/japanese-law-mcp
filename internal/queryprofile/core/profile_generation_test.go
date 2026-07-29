@@ -64,6 +64,28 @@ func TestProfileは法令コア五能力の型付き候補を生成する(t *tes
 	}
 }
 
+func TestProfileは一般的な更新操作を法令更新一覧へ変換しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"設定を2026年7月1日に更新してください。",
+		nil,
+	)
+	for _, candidate := range generation.Candidates() {
+		for _, step := range candidate.Steps() {
+			if step.InputKind() == legalquery.InputKindLawUpdates {
+				t.Fatalf(
+					"SOT-ARCH-028: 一般的な更新操作を法令更新一覧へ変換しました: %#v",
+					candidate,
+				)
+			}
+		}
+	}
+}
+
 func TestProfileは同じ条の複数項を独立stepに保持する(t *testing.T) {
 	t.Parallel()
 

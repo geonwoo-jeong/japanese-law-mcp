@@ -34,6 +34,7 @@ func (p *Profile) buildSearchDrafts(
 		drafts, ambiguous, err = p.buildConceptSearchSubjects(
 			concepts,
 			true,
+			nil,
 		)
 	}
 	if err != nil {
@@ -176,20 +177,21 @@ func hasInterveningFallbackSubject(
 func explicitJudicialSubjectSelection(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
-) map[[2]int]struct{} {
+) map[[2]int]int {
 	if cues.has("operator", "individual") {
 		foreignResources := foreignResourceSpans(input, cues)
 		if len(foreignResources) == 0 {
 			return nil
 		}
 		return individualJudicialSubjectSelection(
+			input,
 			judicialSubjectSpans(input),
 			judicialResourceMentions(cues),
 			foreignResources,
 		)
 	}
 	subjects := judicialSubjectSpans(input)
-	selected := make(map[[2]int]struct{})
+	selected := make(map[[2]int]int)
 	for _, resource := range judicialResourceMentions(cues) {
 		selectNearestJudicialSubject(
 			selected,
@@ -299,11 +301,12 @@ func overlapsJudicialResource(
 }
 
 func individualJudicialSubjectSelection(
+	input legalquery.CandidateGenerationInput,
 	subjects []legalquery.QuerySpan,
 	resources []legalquery.CueMention,
 	foreignResources []legalquery.QuerySpan,
-) map[[2]int]struct{} {
-	selected := make(map[[2]int]struct{})
+) map[[2]int]int {
+	selected := make(map[[2]int]int)
 	assignedResources := make(map[[2]int]struct{})
 	for _, subject := range subjects {
 		resourceKey, judicial, unique := nearestResourceForSubject(
@@ -317,7 +320,7 @@ func individualJudicialSubjectSelection(
 		selected[[2]int{
 			subject.StartByte(),
 			subject.EndByte(),
-		}] = struct{}{}
+		}] = resourceKey[0]
 		assignedResources[resourceKey] = struct{}{}
 	}
 	for _, resource := range resources {
@@ -326,6 +329,7 @@ func individualJudicialSubjectSelection(
 			continue
 		}
 		selectNearestSharedSubject(
+			input,
 			selected,
 			subjects,
 			resource.Span(),
@@ -337,12 +341,14 @@ func individualJudicialSubjectSelection(
 }
 
 func selectNearestSharedSubject(
-	selected map[[2]int]struct{},
+	input legalquery.CandidateGenerationInput,
+	selected map[[2]int]int,
 	subjects []legalquery.QuerySpan,
 	resource legalquery.QuerySpan,
 	judicialResources []legalquery.CueMention,
 	foreignResources []legalquery.QuerySpan,
 ) {
+	bestPriority := -1
 	bestDistance := -1
 	bestKey := [2]int{}
 	tied := false
@@ -360,18 +366,79 @@ func selectNearestSharedSubject(
 			continue
 		}
 		key := querySpanKey(subject)
+		priority := sharedSubjectPriority(input, subject)
 		switch {
-		case bestDistance < 0 || distance < bestDistance:
+		case bestPriority < 0 || priority > bestPriority:
+			bestPriority = priority
 			bestDistance = distance
 			bestKey = key
 			tied = false
-		case distance == bestDistance && key != bestKey:
+		case priority == bestPriority &&
+			(bestDistance < 0 || distance < bestDistance):
+			bestDistance = distance
+			bestKey = key
+			tied = false
+		case priority == bestPriority &&
+			distance == bestDistance &&
+			key != bestKey:
 			tied = true
 		}
 	}
 	if bestDistance >= 0 && !tied {
-		selected[bestKey] = struct{}{}
+		selected[bestKey] = resource.StartByte()
 	}
+}
+
+func sharedSubjectPriority(
+	input legalquery.CandidateGenerationInput,
+	span legalquery.QuerySpan,
+) int {
+	if hasMatchingConceptSpan(input.LegalConceptMentions(), span) {
+		return 3
+	}
+	if hasMatchingQueryTermSpan(input.QueryTermMentions(), span) {
+		return 2
+	}
+	if hasMatchingDateSpan(input.DateMentions(), span) {
+		return 1
+	}
+	return 0
+}
+
+func hasMatchingConceptSpan(
+	mentions []legalquery.LegalConceptMention,
+	span legalquery.QuerySpan,
+) bool {
+	for _, mention := range mentions {
+		if mention.Span() == span {
+			return true
+		}
+	}
+	return false
+}
+
+func hasMatchingQueryTermSpan(
+	mentions []legalquery.QueryTermMention,
+	span legalquery.QuerySpan,
+) bool {
+	for _, mention := range mentions {
+		if mention.Span() == span {
+			return true
+		}
+	}
+	return false
+}
+
+func hasMatchingDateSpan(
+	mentions []legalquery.DateMention,
+	span legalquery.QuerySpan,
+) bool {
+	for _, mention := range mentions {
+		if mention.Span() == span {
+			return true
+		}
+	}
+	return false
 }
 
 func nearestResourceForSubject(
@@ -427,7 +494,7 @@ func querySpanKey(span legalquery.QuerySpan) [2]int {
 }
 
 func selectNearestJudicialSubject(
-	selected map[[2]int]struct{},
+	selected map[[2]int]int,
 	subjects []legalquery.QuerySpan,
 	resource legalquery.QuerySpan,
 ) {
@@ -453,7 +520,7 @@ func selectNearestJudicialSubject(
 		}
 	}
 	if bestDistance >= 0 && !tied {
-		selected[bestKey] = struct{}{}
+		selected[bestKey] = resource.StartByte()
 	}
 }
 
@@ -492,7 +559,7 @@ func subjectResourceDistance(
 
 func judicialSubjectSelected(
 	span legalquery.QuerySpan,
-	selected map[[2]int]struct{},
+	selected map[[2]int]int,
 ) bool {
 	if selected == nil {
 		return true
@@ -504,9 +571,26 @@ func judicialSubjectSelected(
 	return exists
 }
 
+func selectedJudicialStepStartByte(
+	span legalquery.QuerySpan,
+	selected map[[2]int]int,
+) int {
+	if selected == nil {
+		return span.StartByte()
+	}
+	start, exists := selected[[2]int{
+		span.StartByte(),
+		span.EndByte(),
+	}]
+	if !exists {
+		return span.StartByte()
+	}
+	return start
+}
+
 func selectedJudicialConceptMentions(
 	mentions []legalquery.LegalConceptMention,
-	selected map[[2]int]struct{},
+	selected map[[2]int]int,
 ) []legalquery.LegalConceptMention {
 	result := make([]legalquery.LegalConceptMention, 0, len(mentions))
 	for _, mention := range mentions {
@@ -550,8 +634,11 @@ func (p *Profile) buildSearchSubjects(
 				legalquery.EvidenceExplicitResource,
 			},
 			steps: []stepDraft{{
-				startByte: caseNumber.Span().StartByte(),
-				input:     searchInput,
+				startByte: selectedJudicialStepStartByte(
+					caseNumber.Span(),
+					selectedSubjects,
+				),
+				input: searchInput,
 			}},
 		})
 	}
@@ -576,8 +663,11 @@ func (p *Profile) buildSearchSubjects(
 				termEvidence,
 			},
 			steps: []stepDraft{{
-				startByte: term.Span().StartByte(),
-				input:     searchInput,
+				startByte: selectedJudicialStepStartByte(
+					term.Span(),
+					selectedSubjects,
+				),
+				input: searchInput,
 			}},
 		})
 	}
@@ -600,8 +690,11 @@ func (p *Profile) buildSearchSubjects(
 				legalquery.EvidenceExplicitResource,
 			},
 			steps: []stepDraft{{
-				startByte: date.Span().StartByte(),
-				input:     searchInput,
+				startByte: selectedJudicialStepStartByte(
+					date.Span(),
+					selectedSubjects,
+				),
+				input: searchInput,
 			}},
 		})
 	}
@@ -612,6 +705,7 @@ func (p *Profile) buildSearchSubjects(
 			selectedSubjects,
 		),
 		true,
+		selectedSubjects,
 	)
 	if err != nil {
 		return nil, false, err
@@ -627,6 +721,7 @@ func (p *Profile) buildSearchSubjects(
 func (p *Profile) buildConceptSearchSubjects(
 	mentions []legalquery.LegalConceptMention,
 	explicitResource bool,
+	selected map[[2]int]int,
 ) ([]candidateDraft, bool, error) {
 	result := make([]candidateDraft, 0, len(mentions))
 	ambiguous := false
@@ -689,8 +784,11 @@ func (p *Profile) buildConceptSearchSubjects(
 				},
 				preserveMorphologicalContext: !explicitResource,
 				steps: []stepDraft{{
-					startByte: mention.Span().StartByte(),
-					input:     searchInput,
+					startByte: selectedJudicialStepStartByte(
+						mention.Span(),
+						selected,
+					),
+					input: searchInput,
 				}},
 			})
 			if definition.entry.SelectionPolicy ==

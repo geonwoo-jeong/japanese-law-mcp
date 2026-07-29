@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "profileId": "judicial-cases",
-  "cueSetVersion": "judicial-cases-cues-2026-07-30-2",
+  "cueSetVersion": "judicial-cases-cues-2026-07-30-3",
   "cues": [
     {
       "cueId": "operator-individual",
       "category": "operator",
       "value": "individual",
-      "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々"]
+      "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々", "各一ページ確認してください"]
     },
     {
       "cueId": "operator-resource-choice",

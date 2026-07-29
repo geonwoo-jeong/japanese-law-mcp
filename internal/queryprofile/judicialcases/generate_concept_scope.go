@@ -19,7 +19,7 @@ func (p *Profile) buildAmbiguousConceptSearchDrafts(
 		input,
 		cues,
 	)
-	drafts, _, err := p.buildConceptSearchSubjects(mentions, false)
+	drafts, _, err := p.buildConceptSearchSubjects(mentions, false, nil)
 	if err != nil {
 		return nil, false, false, err
 	}
