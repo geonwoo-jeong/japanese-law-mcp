@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-1",
+  "cueSetVersion": "core-cues-2026-07-30-2",
   "cues": [
     {
       "cueId": "operator-all",
@@ -68,6 +68,12 @@
       "category": "resource",
       "value": "updates",
       "terms": ["更新された法令", "更新一覧", "更新情報", "更新法令", "法令更新一覧", "法令改正一覧"]
+    },
+    {
+      "cueId": "syntax-content-result-unit",
+      "category": "syntax",
+      "value": "content_result_unit",
+      "terms": ["箇所"]
     },
     {
       "cueId": "task-list-updates",

@@ -50,6 +50,24 @@ func TestProfileは一般検索語の論理演算子を型付き条件へ変換�
 			allTerms:    []string{"営業秘密", "個人情報"},
 			excludeTerm: []string{"営業上の秘密"},
 		},
+		{
+			name:        "除外対象の位置",
+			query:       "法令本文から「匿名加工情報」を除いて「委託契約」を検索してください。",
+			allTerms:    []string{"委託契約"},
+			excludeTerm: []string{"匿名加工情報"},
+		},
+		{
+			name:        "いずれかと除外",
+			query:       "法令本文から「営業秘密」または「個人情報」を含み「公開情報」を除く条文を検索してください。",
+			anyTerms:    []string{"営業秘密", "個人情報"},
+			excludeTerm: []string{"公開情報"},
+		},
+		{
+			name:        "検索結果単位",
+			query:       "法令本文から「個人データ」と「第三者提供」の両方を含み「匿名加工情報」を除く箇所を検索する",
+			allTerms:    []string{"個人データ", "第三者提供"},
+			excludeTerm: []string{"匿名加工情報"},
+		},
 	}
 	for _, test := range tests {
 		test := test

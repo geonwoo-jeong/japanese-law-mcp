@@ -379,15 +379,21 @@ func buildOperatedContentCandidates(
 					return nil, false, valueErr
 				}
 				current := operatedContentCombination{
-					draft:  cloneDraft(base.draft),
-					values: append([]string(nil), base.values...),
+					draft: cloneDraft(base.draft),
+					values: append(
+						[]operatedContentValue(nil),
+						base.values...,
+					),
 				}
 				optionMetadata := cloneDraft(option.draft)
 				optionMetadata.steps = nil
 				mergeDraft(&current.draft, optionMetadata)
 				current.values = appendUniqueContentValue(
 					current.values,
-					value,
+					operatedContentValue{
+						value:     value,
+						startByte: position,
+					},
 				)
 				next = append(next, current)
 				if len(next) > maximumGeneratedCandidates {
@@ -425,7 +431,12 @@ func buildOperatedContentCandidates(
 
 type operatedContentCombination struct {
 	draft  candidateDraft
-	values []string
+	values []operatedContentValue
+}
+
+type operatedContentValue struct {
+	value     string
+	startByte int
 }
 
 func singleContentSubjectValue(
@@ -453,11 +464,12 @@ func singleContentSubjectValue(
 }
 
 func appendUniqueContentValue(
-	values []string,
-	value string,
-) []string {
+	values []operatedContentValue,
+	value operatedContentValue,
+) []operatedContentValue {
 	for _, current := range values {
-		if current == value {
+		if current.value == value.value &&
+			current.startByte == value.startByte {
 			return values
 		}
 	}
@@ -643,24 +655,91 @@ func partitionSearchTerms(
 	terms []legalquery.QueryTermMention,
 	cues resolvedCues,
 ) ([]string, []string, []string) {
-	values := make([]string, 0, len(terms))
+	values := make([]operatedContentValue, 0, len(terms))
 	for _, term := range terms {
-		values = append(values, term.Surface())
+		values = append(values, operatedContentValue{
+			value:     term.Surface(),
+			startByte: term.Span().StartByte(),
+		})
 	}
 	return partitionSearchValues(values, cues)
 }
 
 func partitionSearchValues(
-	values []string,
+	values []operatedContentValue,
 	cues resolvedCues,
 ) ([]string, []string, []string) {
+	surfaces := contentValueSurfaces(values)
+	if !cues.has("operator", "exclude") || len(values) <= 1 {
+		if cues.has("operator", "any") {
+			return nil, surfaces, nil
+		}
+		return surfaces, nil, nil
+	}
+
+	excluded := excludeContentValueIndexes(values, cues)
+	positiveTerms := make([]string, 0, len(values)-len(excluded))
+	excludeTerms := make([]string, 0, len(excluded))
+	for index, value := range values {
+		if _, exists := excluded[index]; exists {
+			excludeTerms = appendUniqueContentSurface(
+				excludeTerms,
+				value.value,
+			)
+			continue
+		}
+		positiveTerms = appendUniqueContentSurface(
+			positiveTerms,
+			value.value,
+		)
+	}
 	if cues.has("operator", "any") {
-		return nil, values, nil
+		return nil, positiveTerms, excludeTerms
 	}
-	if cues.has("operator", "exclude") && len(values) > 1 {
-		return values[:len(values)-1], nil, values[len(values)-1:]
+	return positiveTerms, nil, excludeTerms
+}
+
+func contentValueSurfaces(values []operatedContentValue) []string {
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		result = appendUniqueContentSurface(result, value.value)
 	}
-	return values, nil, nil
+	return result
+}
+
+func appendUniqueContentSurface(values []string, value string) []string {
+	for _, current := range values {
+		if current == value {
+			return values
+		}
+	}
+	return append(values, value)
+}
+
+func excludeContentValueIndexes(
+	values []operatedContentValue,
+	cues resolvedCues,
+) map[int]struct{} {
+	result := make(map[int]struct{})
+	for _, cue := range cues.mentions[cueMeaningKey("operator", "exclude")] {
+		best := -1
+		for index, value := range values {
+			if value.startByte >= cue.Span().StartByte() {
+				continue
+			}
+			if best < 0 ||
+				values[best].startByte < value.startByte {
+				best = index
+			}
+		}
+		if best >= 0 {
+			result[best] = struct{}{}
+		}
+	}
+	if len(result) == 0 {
+		result[len(values)-1] = struct{}{}
+	}
+	return result
 }
 
 func separatesSubjects(cues resolvedCues) bool {
