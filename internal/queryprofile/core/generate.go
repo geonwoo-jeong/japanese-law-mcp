@@ -82,7 +82,11 @@ func (p *Profile) Generate(
 		return legalquery.CandidateGeneration{}, err
 	}
 	drafts = retainGroundedDraftsForUnsupportedResource(drafts, signals)
-	candidates, stepStartBytes, err := p.materializeCandidates(drafts, scope)
+	candidates, stepStartBytes, err := p.materializeCandidates(
+		input,
+		drafts,
+		scope,
+	)
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
@@ -313,6 +317,7 @@ func cloneDraft(value candidateDraft) candidateDraft {
 }
 
 func (p *Profile) materializeCandidates(
+	input legalquery.CandidateGenerationInput,
 	drafts []candidateDraft,
 	scope legalquery.CandidateIDScope,
 ) (
@@ -346,7 +351,12 @@ func (p *Profile) materializeCandidates(
 			signature: signature,
 		})
 	}
-	if len(aggregated) > maximumGeneratedCandidates {
+	rankAliasCollisionOverflow := canRankAliasCollisionOverflow(
+		input,
+		aggregated,
+	)
+	if len(aggregated) > maximumGeneratedCandidates &&
+		!rankAliasCollisionOverflow {
 		return nil, nil, fmt.Errorf(
 			"core profile の候補は %d 件以下でなければなりません",
 			maximumGeneratedCandidates,
@@ -378,6 +388,9 @@ func (p *Profile) materializeCandidates(
 	sort.SliceStable(prepared, func(left, right int) bool {
 		return comparePreparedDrafts(prepared[left], prepared[right]) < 0
 	})
+	if rankAliasCollisionOverflow {
+		prepared = prepared[:maximumGeneratedCandidates]
+	}
 
 	candidates := make([]legalquery.LegalQueryCandidate, 0, len(prepared))
 	stepStartBytes := make([][]int, 0, len(prepared))
@@ -417,6 +430,40 @@ func (p *Profile) materializeCandidates(
 		stepStartBytes = append(stepStartBytes, startBytes)
 	}
 	return candidates, stepStartBytes, nil
+}
+
+func canRankAliasCollisionOverflow(
+	input legalquery.CandidateGenerationInput,
+	drafts []aggregatedDraft,
+) bool {
+	if len(drafts) <= maximumGeneratedCandidates {
+		return false
+	}
+	targets := buildLawTargets(input)
+	groups := groupLawTargets(targets)
+	if len(groups) == 0 ||
+		len(groups) > 4 ||
+		len(drafts) != len(targets) {
+		return false
+	}
+	hasCollision := false
+	for _, group := range groups {
+		if len(group) > 1 {
+			hasCollision = true
+		}
+	}
+	if !hasCollision {
+		return false
+	}
+	for _, current := range drafts {
+		if len(current.draft.steps) != 1 {
+			return false
+		}
+		if _, exists := current.draft.evidence[legalquery.EvidenceOfficialAlias]; !exists {
+			return false
+		}
+	}
+	return true
 }
 
 type aggregatedDraft struct {

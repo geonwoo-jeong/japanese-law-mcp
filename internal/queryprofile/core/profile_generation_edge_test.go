@@ -278,3 +278,148 @@ func TestProfileは候補上限を黙って切り捨てない(t *testing.T) {
 		t.Fatalf("candidate 上限エラー = %v", err)
 	}
 }
+
+func TestProfileは衝突する公式略称を固定候補上限まで順位付けする(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"中央省庁等改革関連法か財源確保法と呼ばれる法令の本文を一つ読みたいです。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != maximumGeneratedCandidates {
+		t.Fatalf(
+			"公式略称衝突の candidates = %d, want %d",
+			len(candidates),
+			maximumGeneratedCandidates,
+		)
+	}
+	if generation.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf(
+			"公式略称衝突の selection mode = %q",
+			generation.SelectionMode(),
+		)
+	}
+
+	lawIDs := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		steps := candidate.Steps()
+		if len(steps) != 1 {
+			t.Fatalf("公式略称衝突の steps = %#v", steps)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
+		if !ok {
+			t.Fatalf(
+				"公式略称衝突の logical input = %T",
+				steps[0].LogicalInput(),
+			)
+		}
+		lawID, exists := input.LawID()
+		if !exists {
+			t.Fatal("公式略称衝突の lawId がありません")
+		}
+		lawIDs = append(lawIDs, lawID)
+	}
+	for _, expected := range []string{
+		"356AC0000000039",
+		"358AC0000000045",
+		"411AC0000000089",
+		"411AC0000000091",
+	} {
+		if !slices.Contains(lawIDs, expected) {
+			t.Fatalf(
+				"公式略称衝突の candidates に lawId %q がありません: %#v",
+				expected,
+				lawIDs,
+			)
+		}
+	}
+}
+
+func TestProfileは公式略称衝突の順位付け前処理量を制限する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const (
+		query          = "通称法を取得して"
+		aliasEnd       = len("通称法")
+		candidateCount = 64
+	)
+	aliasSpan, err := legalquery.NewQuerySpan(legalquery.QuerySpanValues{
+		StartByte: 0,
+		EndByte:   aliasEnd,
+	})
+	if err != nil {
+		t.Fatalf("alias span を作成できません: %v", err)
+	}
+	mentions := make([]legalquery.LawNameMention, 0, candidateCount)
+	for index := 0; index < candidateCount; index++ {
+		mention, mentionErr := legalquery.NewLawNameMention(
+			legalquery.LawNameMentionValues{
+				Span:       aliasSpan,
+				Surface:    "通称法",
+				LawID:      fmt.Sprintf("test-law-%02d", index),
+				RevisionID: fmt.Sprintf("test-revision-%02d", index),
+				LawNumber:  fmt.Sprintf("試験法律第%d号", index+1),
+				Canonical:  fmt.Sprintf("試験法%02d", index),
+				MatchKind:  legalquery.PreprocessMatchRegisteredTerm,
+			},
+		)
+		if mentionErr != nil {
+			t.Fatalf("law mention を作成できません: %v", mentionErr)
+		}
+		mentions = append(mentions, mention)
+	}
+	cueSpan, err := legalquery.NewQuerySpan(legalquery.QuerySpanValues{
+		StartByte: aliasEnd + len("を"),
+		EndByte:   len(query),
+	})
+	if err != nil {
+		t.Fatalf("cue span を作成できません: %v", err)
+	}
+	cue, err := legalquery.NewCueMention(legalquery.CueMentionValues{
+		Span:      cueSpan,
+		Surface:   "取得して",
+		ProfileID: "core",
+		CueID:     "task-read",
+		MatchKind: legalquery.PreprocessMatchRegisteredTerm,
+	})
+	if err != nil {
+		t.Fatalf("cue mention を作成できません: %v", err)
+	}
+	result, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:           query,
+			ComparisonKey:   string(querynormalization.ComparisonKey(query)),
+			LawNameMentions: mentions,
+			CueMentions:     []legalquery.CueMention{cue},
+		},
+	)
+	if err != nil {
+		t.Fatalf("preprocess result を作成できません: %v", err)
+	}
+	input, err := legalquery.NewCandidateGenerationInput(result)
+	if err != nil {
+		t.Fatalf("generation input を作成できません: %v", err)
+	}
+	scope, err := legalquery.NewCandidateIDScope(1)
+	if err != nil {
+		t.Fatalf("ID scope を作成できません: %v", err)
+	}
+	generation, err := mustProfile(t).Generate(input, scope)
+	if err != nil {
+		t.Fatalf("公式略称衝突の入力上限を順位付けできません: %v", err)
+	}
+	if len(generation.Candidates()) != maximumGeneratedCandidates {
+		t.Fatalf(
+			"公式略称衝突の入力上限 = %d, want %d",
+			len(generation.Candidates()),
+			maximumGeneratedCandidates,
+		)
+	}
+}
