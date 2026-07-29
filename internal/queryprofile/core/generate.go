@@ -381,7 +381,13 @@ func (p *Profile) materializeCandidates(
 			inputs = append(inputs, step.input)
 			startBytes = append(startBytes, step.startByte)
 		}
-		concepts := uniqueConceptSources(current.draft.concepts)
+		var concepts []legalquery.LegalConceptSource
+		if slices.Contains(
+			current.evidence,
+			legalquery.EvidenceLegalConcept,
+		) {
+			concepts = uniqueConceptSources(current.draft.concepts)
+		}
 		packs := append([]string(nil), current.draft.requiredPacks...)
 		slices.Sort(packs)
 		packs = slices.Compact(packs)

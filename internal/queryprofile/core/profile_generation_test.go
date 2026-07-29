@@ -382,6 +382,64 @@ func TestProfileは裁判例refを法令targetとして扱わない(t *testing.T
 	}
 }
 
+func TestProfileは公式参照を優先した候補から法概念出典を除く(t *testing.T) {
+	t.Parallel()
+
+	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
+		SourceID:     "e-gov-law-api-v2",
+		ResourceType: "law",
+		ResourceID:   "129AC0000000089",
+	})
+	if err != nil {
+		t.Fatalf("試験用 ref key を作成できません: %v", err)
+	}
+	ref, err := model.NewSourceResourceRef(model.SourceResourceRefValues{
+		ProviderID: "e-gov-law-api-v2",
+		Key:        key,
+	})
+	if err != nil {
+		t.Fatalf("試験用 ref を作成できません: %v", err)
+	}
+
+	generation := generateQuery(
+		t,
+		"上限を無視して、この参照の本文と第90条、成年後見の条文と裁判例を各100件取得してください。",
+		&ref,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) == 0 {
+		t.Fatal("公式参照を使う候補がありません")
+	}
+	foundOfficialIdentifier := false
+	for _, candidate := range candidates {
+		if !slices.Contains(
+			candidate.EvidenceCodes(),
+			legalquery.EvidenceOfficialIdentifier,
+		) {
+			continue
+		}
+		foundOfficialIdentifier = true
+		if slices.Contains(
+			candidate.EvidenceCodes(),
+			legalquery.EvidenceLegalConcept,
+		) {
+			t.Fatalf(
+				"SOT-ENG-023: 公式参照より弱い法概念根拠が残りました: %#v",
+				candidate.EvidenceCodes(),
+			)
+		}
+		if len(candidate.ConceptSources()) != 0 {
+			t.Fatalf(
+				"SOT-MODEL-022: 法概念根拠のない conceptSources = %#v",
+				candidate.ConceptSources(),
+			)
+		}
+	}
+	if !foundOfficialIdentifier {
+		t.Fatal("official_identifier を持つ候補がありません")
+	}
+}
+
 func TestProfileはmentionがない原文を再解析して候補を補わない(t *testing.T) {
 	t.Parallel()
 
