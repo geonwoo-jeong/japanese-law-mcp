@@ -99,6 +99,34 @@ func TestProfileは一般検索語の論理演算子を型付き条件へ変換�
 	}
 }
 
+func TestProfileは本文検索の完全日付を構造化根拠にする(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"2023年12月1日時点の法令本文で「行政指導」を含む箇所を探す",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("candidates = %#v", candidates)
+	}
+	if !slices.Equal(
+		candidates[0].EvidenceCodes(),
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceStructuredReference,
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+			legalquery.EvidenceMorphologicalContext,
+		},
+	) {
+		t.Fatalf(
+			"SOT-MODEL-022: evidence = %#v",
+			candidates[0].EvidenceCodes(),
+		)
+	}
+}
+
 func TestProfileは取得意図と対象外意図の混在で強い根拠候補を保持する(
 	t *testing.T,
 ) {

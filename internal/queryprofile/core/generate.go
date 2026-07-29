@@ -81,6 +81,7 @@ func (p *Profile) Generate(
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
+	drafts = withAsOfEvidence(drafts)
 	drafts = retainGroundedDraftsForUnsupportedResource(drafts, signals)
 	candidates, stepStartBytes, err := p.materializeCandidates(
 		input,

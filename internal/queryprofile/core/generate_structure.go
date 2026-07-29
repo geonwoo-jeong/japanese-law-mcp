@@ -115,6 +115,43 @@ func selectedAsOfDate(
 	return &date
 }
 
+func withAsOfEvidence(values []candidateDraft) []candidateDraft {
+	result := make([]candidateDraft, 0, len(values))
+	for _, value := range values {
+		current := cloneDraft(value)
+		if draftUsesAsOf(current) {
+			current.evidence[legalquery.EvidenceStructuredReference] =
+				struct{}{}
+		}
+		result = append(result, current)
+	}
+	return result
+}
+
+func draftUsesAsOf(value candidateDraft) bool {
+	for _, step := range value.steps {
+		switch input := step.input.(type) {
+		case legalquery.LawSearchIntentV1:
+			if _, exists := input.AsOf(); exists {
+				return true
+			}
+		case legalquery.LawContentSearchIntentV1:
+			if _, exists := input.AsOf(); exists {
+				return true
+			}
+		case legalquery.LawReadIntentV1:
+			if _, exists := input.AsOf(); exists {
+				return true
+			}
+		case legalquery.LawArticleReadIntentV1:
+			if _, exists := input.AsOf(); exists {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func shouldReadDocument(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
