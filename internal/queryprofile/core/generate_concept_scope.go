@@ -7,6 +7,8 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
 )
 
+const broadLegalInformationSurface = "法情報"
+
 // selectedCoreConceptMentions は、SOT-ENG-023 の resource 範囲に従って
 // 同じ表記の法概念候補を選ぶ。
 func (p *Profile) selectedCoreConceptMentions(
@@ -18,7 +20,7 @@ func (p *Profile) selectedCoreConceptMentions(
 	ambiguousGroups := make(map[string]struct{})
 	for _, mention := range values {
 		definition, exists := p.concepts[mention.ConceptID()]
-		if !usesUnresolvedConceptResourceScope(input, cues, mention) ||
+		if !usesBroadLegalInformationScope(input, cues, mention) ||
 			!exists ||
 			definition.entry.ConflictGroupID == "" ||
 			definition.entry.SelectionPolicy !=
@@ -51,6 +53,25 @@ func (p *Profile) selectedCoreConceptMentions(
 		result = append(result, mention)
 	}
 	return result
+}
+
+func usesBroadLegalInformationScope(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+	mention legalquery.LegalConceptMention,
+) bool {
+	for _, resource := range cues.mentions[cueMeaningKey("resource", "law")] {
+		if resource.Surface() == broadLegalInformationSurface &&
+			conceptResourceAssociated(
+				input,
+				cues,
+				mention.Span(),
+				resource.Span(),
+			) {
+			return usesUnresolvedConceptResourceScope(input, cues, mention)
+		}
+	}
+	return false
 }
 
 func usesUnresolvedConceptResourceScope(
