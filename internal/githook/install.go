@@ -161,7 +161,7 @@ func (app *application) checkHookFiles() error {
 		if hasPOSIXPermissionBits() && info.Mode().Perm()&0o111 == 0 {
 			return fmt.Errorf("%s に実行権限がありません", target)
 		}
-		//nolint:gosec // SOT-ENG-021: target は包含確認済みの固定 hook 名だけから構築する。
+		//nolint:gosec // SOT-ENG-027: target は包含確認済みの固定 hook 名だけから構築する。
 		content, err := os.ReadFile(target)
 		if err != nil {
 			return fmt.Errorf("%s の本文を確認できませんでした: %w", target, err)
@@ -176,7 +176,7 @@ func (app *application) checkHookFiles() error {
 func expectedHookSHA256(name string) string {
 	switch name {
 	case "manage":
-		return "06d2ddbb5e865c15123608ffa2d05c5830c5d7b9c1ae694ebfa29761c11cb3f0"
+		return "40e7f2266074d1f5150bc478d865353beaabb1fb36f964d08fe131624f4bf57b"
 	case "pre-commit":
 		return "05034f60bc3dd71e3031f4b5144b9e42a747b1b05f3489daa344977a54a6365e"
 	case "pre-push":
@@ -232,7 +232,7 @@ func warmUpTools(ctx context.Context, repository string) (result error) {
 		}
 	}
 	for _, download := range downloads {
-		//nolint:gosec // SOT-ENG-021: 実行ファイルと download 対象は固定済み一覧だけから構築する。
+		//nolint:gosec // SOT-ENG-027: 実行ファイルと download 対象は固定済み一覧だけから構築する。
 		command := exec.CommandContext(ctx, "go", download.arguments...)
 		command.Dir = repository
 		command.Env = environment
@@ -242,7 +242,7 @@ func warmUpTools(ctx context.Context, repository string) (result error) {
 	}
 
 	for _, build := range toolBuilds(directory) {
-		//nolint:gosec // SOT-ENG-021: 実行ファイルと build 対象は固定済み一覧だけから構築する。
+		//nolint:gosec // SOT-ENG-027: 実行ファイルと build 対象は固定済み一覧だけから構築する。
 		command := exec.CommandContext(ctx, "go", build.arguments...)
 		command.Dir = repository
 		command.Env = environment
@@ -299,7 +299,7 @@ func copyModuleFiles(download moduleDownload) error {
 		if err != nil {
 			return fmt.Errorf("%s を読み取れませんでした: %w", file.source, err)
 		}
-		//nolint:gosec // SOT-ENG-021: 書込先は private な一時領域内の固定 module ファイル名に限定する。
+		//nolint:gosec // SOT-ENG-027: 書込先は private な一時領域内の固定 module ファイル名に限定する。
 		if err := os.WriteFile(file.target, content, 0o600); err != nil {
 			return fmt.Errorf("%s を書き込めませんでした: %w", file.target, err)
 		}

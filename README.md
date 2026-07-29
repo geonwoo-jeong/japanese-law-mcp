@@ -157,14 +157,16 @@ japanese-law-mcp \
 .githooks/manage check
 ```
 
-通常の開発時は次を実行できます。
+通常の開発時は、変更した package だけを並列度一で確認します。
 
 ```sh
-go test -count=1 ./...
+go test -p=1 -count=1 ./path/to/changed/package
 go run ./cmd/japanese-law-mcp --help
 ```
 
-変更完了を判定する権威ある品質ゲートは、clean checkout したリポジトリで実行します。
+全 package の test、coverage、lint および脆弱性検査はローカルで重複実行せず、
+GitHub Actions の clean checkout に集約します。次の権威ある品質ゲートは
+CI が実行するコマンドであり、通常のローカル開発では実行する必要がありません。
 
 ```sh
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.

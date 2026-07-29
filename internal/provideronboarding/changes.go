@@ -52,9 +52,17 @@ func bootstrapPathAllowed(changedPath string) bool {
 }
 
 func validateNormalChanges(paths []string, rows []matrixRow) error {
+	_, err := evaluateNormalChanges(paths, rows)
+	return err
+}
+
+func evaluateNormalChanges(
+	paths []string,
+	rows []matrixRow,
+) (bool, error) {
 	packages, err := collectProviderPackages(rows)
 	if err != nil {
-		return err
+		return false, err
 	}
 	matrixTargets := make(map[string]struct{})
 	sourceTargets := make(map[string]struct{})
@@ -80,27 +88,30 @@ func validateNormalChanges(paths []string, rows []matrixRow) error {
 	if len(targets) == 0 {
 		for _, changedPath := range paths {
 			if providerControlPath(changedPath) {
-				return fmt.Errorf(
+				return false, fmt.Errorf(
 					"provider 制御変更には対象 provider の matrix 変更が必要です: %s",
 					changedPath,
 				)
 			}
 		}
-		return nil
+		return false, nil
 	}
 	if len(targets) != 1 {
-		return fmt.Errorf(
+		return false, fmt.Errorf(
 			"一つの provider 変更に複数の provider が含まれます: %s",
 			strings.Join(sortedSet(targets), ", "),
 		)
 	}
 	target := sortedSet(targets)[0]
 	if !providerKnown(target, packages) {
-		return fmt.Errorf("matrix の providerId に対応する provider package がありません: %s", target)
+		return false, fmt.Errorf(
+			"matrix の providerId に対応する provider package がありません: %s",
+			target,
+		)
 	}
 	if len(unknownSourcePaths) != 0 {
 		sort.Strings(unknownSourcePaths)
-		return fmt.Errorf(
+		return false, fmt.Errorf(
 			"provider-neutral または未登録の source package を同時に変更できません: %s",
 			unknownSourcePaths[0],
 		)
@@ -108,14 +119,20 @@ func validateNormalChanges(paths []string, rows []matrixRow) error {
 
 	for _, changedPath := range paths {
 		if commonContractPath(changedPath) {
-			return fmt.Errorf("共通 model または capability の変更を分離してください: %s", changedPath)
+			return false, fmt.Errorf(
+				"共通 model または capability の変更を分離してください: %s",
+				changedPath,
+			)
 		}
 		owner, found := providerPackageOwner(changedPath, packages)
 		if found && owner.providerID != target {
-			return fmt.Errorf("対象外 provider package の変更です: %s", changedPath)
+			return false, fmt.Errorf(
+				"対象外 provider package の変更です: %s",
+				changedPath,
+			)
 		}
 	}
-	return nil
+	return true, nil
 }
 
 func matrixProviderID(changedPath string) (string, bool) {

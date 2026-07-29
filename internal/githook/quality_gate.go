@@ -28,7 +28,7 @@ func runQualityGate(
 	for _, gitRange := range gitRanges {
 		arguments = append(arguments, "--git-range="+gitRange)
 	}
-	//nolint:gosec // SOT-ENG-021: 実行ファイルとサブコマンドを固定し、検証済み値を argv として渡す。
+	//nolint:gosec // SOT-ENG-027: 実行ファイルとサブコマンドを固定し、検証済み値を argv として渡す。
 	command := exec.CommandContext(ctx, "go", arguments...)
 	command.Dir = repository
 	command.Env = environmentWithHookCaches(

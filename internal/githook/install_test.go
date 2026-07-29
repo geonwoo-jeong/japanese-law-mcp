@@ -231,7 +231,7 @@ func TestWarmUpToolsDownloadsModuleGraphsBeforeBuilding(t *testing.T) {
 		"GOENV=off",
 		"GOTOOLCHAIN=local",
 		"GOWORK=off",
-		"GOFLAGS=-mod=readonly",
+		"GOFLAGS=-mod=readonly -p=1",
 		"GOPROXY=https://proxy.golang.org",
 		"GOSUMDB=sum.golang.org",
 	}
@@ -465,7 +465,7 @@ func TestPrepareHookCachePathsRejectsGroupWritableCache(t *testing.T) {
 	if err := os.Mkdir(cacheRoot, 0o750); err != nil {
 		t.Fatalf("cache root を作成できませんでした: %v", err)
 	}
-	//nolint:gosec // SOT-ENG-021: 安全でない cache 権限を拒否するテスト fixture に限定する。
+	//nolint:gosec // SOT-ENG-027: 安全でない cache 権限を拒否するテスト fixture に限定する。
 	if err := os.Chmod(cacheRoot, 0o770); err != nil {
 		t.Fatalf("cache root の権限を変更できませんでした: %v", err)
 	}
@@ -677,7 +677,7 @@ func TestCheckRejectsTamperedHookContents(t *testing.T) {
 		t.Fatalf("共有 cache を準備できませんでした: %v", err)
 	}
 	writeFile(t, repository, ".githooks/manage", "#!/bin/sh\nexit 0\n")
-	//nolint:gosec // SOT-ENG-021: 変造済み hook の検出用 fixture にだけ実行権限を付ける。
+	//nolint:gosec // SOT-ENG-027: 変造済み hook の検出用 fixture にだけ実行権限を付ける。
 	if err := os.Chmod(filepath.Join(repository, ".githooks", "manage"), 0o700); err != nil {
 		t.Fatalf("変造済み hook を実行可能にできませんでした: %v", err)
 	}
@@ -700,7 +700,7 @@ func TestCheckRejectsOneByteHookChange(t *testing.T) {
 	target := filepath.Join(repository, ".githooks", "pre-push")
 	content := readTestFile(t, target)
 	content[len(content)-1] ^= 1
-	//nolint:gosec // SOT-ENG-021: 一 byte の hook 変造を検出する private test fixture に限定する。
+	//nolint:gosec // SOT-ENG-027: 一 byte の hook 変造を検出する private test fixture に限定する。
 	if err := os.WriteFile(target, content, 0o700); err != nil {
 		t.Fatalf("一 byte を変更できませんでした: %v", err)
 	}
@@ -720,7 +720,7 @@ func makeHookFiles(t *testing.T, repository string) {
 	for _, name := range []string{"manage", "pre-commit", "pre-push"} {
 		content := readTestFile(t, filepath.Join(sourceRoot, ".githooks", name))
 		writeFile(t, repository, filepath.Join(".githooks", name), string(content))
-		//nolint:gosec // SOT-ENG-021: Git hook の実行可能性を検証するテスト fixture だけに実行権限を付ける。
+		//nolint:gosec // SOT-ENG-027: Git hook の実行可能性を検証するテスト fixture だけに実行権限を付ける。
 		if err := os.Chmod(filepath.Join(repository, ".githooks", name), 0o700); err != nil {
 			t.Fatalf("フックへ実行権限を設定できませんでした: %v", err)
 		}

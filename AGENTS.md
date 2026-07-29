@@ -78,7 +78,7 @@ Go コードのスタイル、リンター、静的解析および抑制方法�
 
 ## 8. Git フックと CI
 
-clone 後に `.githooks/manage install` を実行し、`.githooks/manage check` で当該リポジトリの `pre-commit` と `pre-push` が有効であることを確認する。ambient の Go build cache に依存する `go run ./cmd/git-hook` を管理操作の直接の入口にしない。Go module cache の扱いを含む段階ごとの検査対象と CI の責任は [`SOT-ENG-021`](sot/50-engineering/21-git-hook-staged-verification.md) に従う。
+clone 後に `.githooks/manage install` を実行し、`.githooks/manage check` で当該リポジトリの `pre-commit` と `pre-push` が有効であることを確認する。ambient の Go build cache に依存する `go run ./cmd/git-hook` を管理操作の直接の入口にしない。Go module cache の扱い、利用者端末の資源上限を含む段階ごとの検査対象、および CI の責任は [`SOT-ENG-027`](sot/50-engineering/27-resource-aware-verification-stages.md) に従う。
 
 Git の `--no-verify` でローカルフックを迂回しても、検証が免除されたとは扱わない。CI は clean checkout に対して [`SOT-ENG-020`](sot/50-engineering/20-verification-gate.md) の全ゲートを再実行し、その成功を変更完了の条件とする。
 

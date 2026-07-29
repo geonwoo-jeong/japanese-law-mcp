@@ -155,7 +155,7 @@ func TestBuildPlanPreCommitChecksReadmeLinks(t *testing.T) {
 	}
 }
 
-func TestBuildPlanPrePushIsDeterministicAndExcludesVulnerabilityDB(t *testing.T) {
+func TestBuildPlanPrePushIsMinimalAndDeterministic(t *testing.T) {
 	t.Parallel()
 
 	snapshot := writeValidPrinciples(t)
@@ -175,21 +175,6 @@ func TestBuildPlanPrePushIsDeterministicAndExcludesVulnerabilityDB(t *testing.T)
 	want := []string{
 		"checksum|SOT-ENG-020|internal",
 		"snapshot-cache-policy|SOT-ENG-019|internal",
-		"lint-config|SOT-ENG-019|" + snapshot + "|go|tool|-modfile=tools/go.mod|golangci-lint|config|verify",
-		"format|SOT-ENG-019|" + snapshot + "|go|tool|-modfile=tools/go.mod|golangci-lint|fmt|--diff",
-		"vet|SOT-ENG-020|" + snapshot + "|go|vet|./...",
-		"sot-analysis|SOT-ENG-019|" + snapshot + "|go|run|./cmd/sotvet|--|./...",
-		"lint|SOT-ENG-019|" + snapshot + "|go|tool|-modfile=tools/go.mod|golangci-lint|run|./...",
-		"test|SOT-ENG-020|" + snapshot + "|go|test|-count=1|-covermode=atomic|-coverpkg=./...|-coverprofile=coverage.out|./...",
-		"coverage|SOT-ENG-020|internal",
-		"root-tidy|SOT-ENG-020|" + snapshot + "|go|mod|tidy|-diff",
-		"root-verify|SOT-ENG-020|" + snapshot + "|go|mod|verify",
-		"tools-tidy|SOT-ENG-020|" + filepath.Join(snapshot, "tools") + "|go|mod|tidy|-diff",
-		"tools-verify|SOT-ENG-020|" + filepath.Join(snapshot, "tools") + "|go|mod|verify",
-		"gitleaks-tools-tidy|SOT-ENG-020|" + filepath.Join(snapshot, "tools", "gitleaks") + "|go|mod|tidy|-diff",
-		"gitleaks-tools-verify|SOT-ENG-020|" + filepath.Join(snapshot, "tools", "gitleaks") + "|go|mod|verify",
-		"actions-lint|SOT-ENG-019|" + snapshot + "|go|tool|-modfile=tools/go.mod|actionlint|-shellcheck=|-pyflakes=|.github/workflows/quality.yml",
-		"snapshot-secrets|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/gitleaks/go.mod|gitleaks|dir|--config=.gitleaks.toml|--gitleaks-ignore-path=" + os.DevNull + "|--ignore-gitleaks-allow|--redact|--no-banner|.",
 		"range-secrets-1|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/gitleaks/go.mod|gitleaks|git|--config=.gitleaks.toml|--gitleaks-ignore-path=" + os.DevNull + "|--ignore-gitleaks-allow|--redact|--no-banner|--log-opts=--full-history -m --diff-filter=ACMRT --no-textconv --no-ext-diff origin/main..HEAD|/repo",
 		"range-secrets-2|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/gitleaks/go.mod|gitleaks|git|--config=.gitleaks.toml|--gitleaks-ignore-path=" + os.DevNull + "|--ignore-gitleaks-allow|--redact|--no-banner|--log-opts=--full-history -m --diff-filter=ACMRT --no-textconv --no-ext-diff abc123..def456|/repo",
 	}
@@ -197,9 +182,11 @@ func TestBuildPlanPrePushIsDeterministicAndExcludesVulnerabilityDB(t *testing.T)
 		t.Fatalf("pre-push 計画が一致しません:\n got: %q\nwant: %q", got, want)
 	}
 
-	for _, signature := range got {
-		if strings.Contains(signature, "govulncheck") {
-			t.Fatalf("pre-push に外部脆弱性 DB の検査が含まれています: %s", signature)
+	for _, forbidden := range []string{"|go|test|", "|go|vet|", "golangci-lint"} {
+		if slices.ContainsFunc(got, func(signature string) bool {
+			return strings.Contains(signature, forbidden)
+		}) {
+			t.Fatalf("pre-push に高負荷検査が含まれています: %s", forbidden)
 		}
 	}
 	for _, current := range steps[len(steps)-2:] {
@@ -268,11 +255,17 @@ func TestBuildPlanCIAddsAllVulnerabilityAndHistoryChecks(t *testing.T) {
 	if len(got) < len(wantPrefix) || !reflect.DeepEqual(got[:len(wantPrefix)], wantPrefix) {
 		t.Fatalf("CI の cache policy が一致しません:\n got: %q\nwant: %q", got, wantPrefix)
 	}
+	if !slices.Contains(
+		got,
+		"test|SOT-ENG-020|"+snapshot+"|go|test|-p=1|-count=1|-covermode=set|-coverprofile=coverage.out|./...",
+	) {
+		t.Fatalf("CI の省資源テスト設定がありません: %q", got)
+	}
 	wantSuffix := []string{
 		"product-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/go.mod|govulncheck|-test|./...",
 		"tool-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|govulncheck|github.com/golangci/golangci-lint/v2/cmd/golangci-lint|github.com/rhysd/actionlint/cmd/actionlint|golang.org/x/vuln/cmd/govulncheck",
 		"gitleaks-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|govulncheck|github.com/zricethezav/gitleaks/v8",
-		"history-completeness|SOT-ENG-021|/repo|git|rev-parse|--is-shallow-repository",
+		"history-completeness|SOT-ENG-027|/repo|git|rev-parse|--is-shallow-repository",
 		"history-secrets|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/gitleaks/go.mod|gitleaks|git|--config=.gitleaks.toml|--gitleaks-ignore-path=" + os.DevNull + "|--ignore-gitleaks-allow|--redact|--no-banner|--log-opts=--full-history -m --diff-filter=ACMRT --no-textconv --no-ext-diff --all HEAD|/repo",
 	}
 	if len(got) < len(wantSuffix) {

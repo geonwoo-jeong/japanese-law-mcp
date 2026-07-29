@@ -13,7 +13,7 @@
 - [SOT-DEL-013](../sot/60-delivery/13-local-streamable-http.md) と [SOT-DEL-008](../sot/60-delivery/08-http-resource-limits.md) に従う、`127.0.0.0/8` または `::1` の IP literal だけで待ち受ける無状態の Streamable HTTP、`/mcp` の単一 endpoint、Origin 許可リスト、1 MiB の本文上限、接続元 IP ごとの同時 tool 呼出し上限 4、および session ID を発行しない公開ツール
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
 - [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
-- [SOT-ENG-021](../sot/50-engineering/21-git-hook-staged-verification.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
+- [SOT-ENG-027](../sot/50-engineering/27-resource-aware-verification-stages.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲に限定した省資源の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
 - [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) に従う、プロバイダー適合性 matrix の schema・共通 loader、`provider-onboarding-fit`、ならびに `pre-push` と GitHub Actions への先行 gate 接続
 - [SOT-MODEL-009](../sot/20-model/09-json-serialization.md)、[SOT-MODEL-010](../sot/20-model/10-information-source.md)、[SOT-MODEL-013](../sot/20-model/13-provider-capability.md) および [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) に従う、不変なプロバイダーメタデータ型、検証および JSON 表現
 - [SOT-MODEL-001](../sot/20-model/01-law-summary.md) と [SOT-MODEL-003](../sot/20-model/03-legal-source.md) に従う、`InformationSource` から決定的に投影する `LegalSource` と、不変な `LawSummary`

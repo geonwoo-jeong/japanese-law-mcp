@@ -101,7 +101,7 @@ func materializeBatchBlob(
 	if expected.executable {
 		mode = 0o750
 	}
-	//nolint:gosec // SOT-ENG-021: filename は Git tree 由来かつ snapshot 内への包含を検証済みである。
+	//nolint:gosec // SOT-ENG-027: filename は Git tree 由来かつ snapshot 内への包含を検証済みである。
 	file, err := os.OpenFile(target, os.O_CREATE|os.O_EXCL|os.O_WRONLY, mode)
 	if err != nil {
 		return fmt.Errorf("snapshot file を作成できませんでした: %s: %w", filename, err)

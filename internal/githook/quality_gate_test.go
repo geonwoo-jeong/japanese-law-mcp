@@ -26,7 +26,7 @@ func TestRunQualityGateUsesSnapshotRunnerAndPreservesGitRepositoryAndExit(t *tes
 	if err := os.WriteFile(fakeGo, []byte(script), 0o600); err != nil {
 		t.Fatalf("偽の go を作成できませんでした: %v", err)
 	}
-	//nolint:gosec // SOT-ENG-021: quality gate 起動テストの private fixture にだけ実行権限を付ける。
+	//nolint:gosec // SOT-ENG-027: quality gate 起動テストの private fixture にだけ実行権限を付ける。
 	if err := os.Chmod(fakeGo, 0o700); err != nil {
 		t.Fatalf("偽の go を実行可能にできませんでした: %v", err)
 	}
@@ -96,7 +96,7 @@ func TestRunQualityGateRejectsUnsafeCacheBeforeStartingGo(t *testing.T) {
 		t.Fatalf("共有 cache を準備できませんでした: %v", err)
 	}
 	cacheRoot := filepath.Dir(caches.goBuild)
-	//nolint:gosec // SOT-ENG-021: runtime が安全でない cache を拒否する test fixture に限定する。
+	//nolint:gosec // SOT-ENG-027: runtime が安全でない cache を拒否する test fixture に限定する。
 	if err := os.Chmod(cacheRoot, 0o770); err != nil {
 		t.Fatalf("cache root の権限を変更できませんでした: %v", err)
 	}

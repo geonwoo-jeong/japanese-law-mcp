@@ -67,11 +67,10 @@ func buildPreCommitPlan(input planInput) ([]step, error) {
 }
 
 func buildPrePushPlan(input planInput) []step {
-	steps := buildSnapshotPlan(
-		input.snapshot,
-		[]step{snapshotCachePolicyStep(input.snapshot)},
-		false,
-	)
+	steps := []step{
+		checksumStep(input.snapshot),
+		snapshotCachePolicyStep(input.snapshot),
+	}
 	for index, gitRange := range input.gitRanges {
 		steps = append(steps, gitSecretsStep(
 			fmt.Sprintf("range-secrets-%d", index+1),
@@ -343,9 +342,9 @@ func testStep(snapshot string, network bool) step {
 			snapshot,
 			network,
 			"test",
+			"-p=1",
 			"-count=1",
-			"-covermode=atomic",
-			"-coverpkg=./...",
+			"-covermode=set",
 			"-coverprofile=coverage.out",
 			"./...",
 		),
@@ -417,7 +416,7 @@ func historyCompletenessStep(repository string) step {
 	return commandStep(
 		"history-completeness",
 		"Git 全履歴の取得状態",
-		"SOT-ENG-021",
+		"SOT-ENG-027",
 		commandSpec{
 			path:             "git",
 			args:             []string{"rev-parse", "--is-shallow-repository"},

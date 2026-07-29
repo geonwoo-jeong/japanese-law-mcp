@@ -22,7 +22,7 @@
 
 ## 実行
 
-検証ツールはリポジトリ内で固定したバージョンを使用し、中央の品質ゲート実行処理から同じ設定と引数で呼び出す。段階ごとの実行時点、検査スナップショットおよび外部状態の扱いは `SOT-ENG-021` に従う。
+検証ツールはリポジトリ内で固定したバージョンを使用し、中央の品質ゲート実行処理から同じ設定と引数で呼び出す。段階ごとの実行時点、検査スナップショット、利用者端末の資源上限および外部状態の扱いは `SOT-ENG-027` に従う。
 
 変更完了を判定する中央の標準コマンドは、clean checkout したリポジトリのルートから次のとおり実行する。
 
@@ -52,6 +52,6 @@ go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
-- [SOT-ENG-021: Git フックによる段階的検証](21-git-hook-staged-verification.md)
+- [SOT-ENG-027: 省資源の段階的検証](27-resource-aware-verification-stages.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-DEL-004: リリース整合性](../60-delivery/04-release-consistency.md)

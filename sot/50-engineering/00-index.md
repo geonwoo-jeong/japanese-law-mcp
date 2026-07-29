@@ -26,3 +26,4 @@
 - [24-unified-query-evaluation-gate.md](24-unified-query-evaluation-gate.md)
 - [25-unified-query-package-layout.md](25-unified-query-package-layout.md)
 - [26-legal-query-corpus-artifact-contract.md](26-legal-query-corpus-artifact-contract.md)
+- [27-resource-aware-verification-stages.md](27-resource-aware-verification-stages.md)

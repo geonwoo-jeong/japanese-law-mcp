@@ -158,6 +158,90 @@ func TestRunPropagatesLoaderAndTestFailures(t *testing.T) {
 	}
 }
 
+func TestRunNormalChangeSkipsConformanceTestOutsideProviderScope(t *testing.T) {
+	t.Parallel()
+
+	repository := newTestGitRepository(t, map[string]string{
+		"go.mod":                 "module github.com/example/project\n\ngo 1.25.0\n",
+		canonicalSchemaPath:      "{}\n",
+		canonicalLoaderPath:      "package providerconformance\n",
+		canonicalCommandPath:     "package main\n",
+		"README.md":              "変更前\n",
+		"internal/source/a/a.go": "package a\n",
+	})
+	base := gitOutput(t, repository, "rev-parse", "HEAD")
+	writeTestFile(t, repository, "README.md", "変更後\n")
+
+	loadCalled := false
+	testCalled := false
+	err := runWithDependencies(
+		context.Background(),
+		testOptions(repository, base),
+		dependencies{
+			load: func(string) ([]matrixRow, error) {
+				loadCalled = true
+				return []matrixRow{{
+					providerID:    "provider-a",
+					implementedBy: "internal/source/a",
+					status:        "implemented",
+				}}, nil
+			},
+			test: func(context.Context, string, io.Writer, io.Writer) error {
+				testCalled = true
+				return nil
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("provider 対象外の通常変更が失敗しました: %v", err)
+	}
+	if !loadCalled {
+		t.Fatal("適用範囲の判定前に matrix が読み込まれていません")
+	}
+	if testCalled {
+		t.Fatal("provider 対象外の通常変更で conformance test が実行されました")
+	}
+}
+
+func TestRunNormalProviderChangeRunsConformanceTest(t *testing.T) {
+	t.Parallel()
+
+	repository := newTestGitRepository(t, map[string]string{
+		"go.mod":                 "module github.com/example/project\n\ngo 1.25.0\n",
+		canonicalSchemaPath:      "{}\n",
+		canonicalLoaderPath:      "package providerconformance\n",
+		canonicalCommandPath:     "package main\n",
+		"internal/source/a/a.go": "package a\n",
+	})
+	base := gitOutput(t, repository, "rev-parse", "HEAD")
+	writeTestFile(t, repository, "internal/source/a/a.go", "package a\n\nconst changed = true\n")
+
+	testCalled := false
+	err := runWithDependencies(
+		context.Background(),
+		testOptions(repository, base),
+		dependencies{
+			load: func(string) ([]matrixRow, error) {
+				return []matrixRow{{
+					providerID:    "provider-a",
+					implementedBy: "internal/source/a",
+					status:        "implemented",
+				}}, nil
+			},
+			test: func(context.Context, string, io.Writer, io.Writer) error {
+				testCalled = true
+				return nil
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("provider 通常変更が失敗しました: %v", err)
+	}
+	if !testCalled {
+		t.Fatal("provider 通常変更で conformance test が実行されませんでした")
+	}
+}
+
 func TestRunTreatsInvalidBaseRefAsUsageError(t *testing.T) {
 	t.Parallel()
 

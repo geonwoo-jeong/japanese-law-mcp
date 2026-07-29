@@ -84,7 +84,7 @@ func commitAll(t *testing.T, repository, message string) string {
 func runGit(t *testing.T, repository string, args ...string) string {
 	t.Helper()
 
-	//nolint:gosec // SOT-ENG-021: テストが組み立てる固定 Git argv だけを一時リポジトリへ渡す。
+	//nolint:gosec // SOT-ENG-027: テストが組み立てる固定 Git argv だけを一時リポジトリへ渡す。
 	command := exec.CommandContext(t.Context(), "git", append([]string{"-C", repository}, args...)...)
 	command.Env = append(os.Environ(),
 		"GIT_CONFIG_NOSYSTEM=1",
@@ -106,7 +106,7 @@ func runGitWithEnvironment(
 ) string {
 	t.Helper()
 
-	//nolint:gosec // SOT-ENG-021: テストが組み立てる固定 Git argv だけを一時リポジトリへ渡す。
+	//nolint:gosec // SOT-ENG-027: テストが組み立てる固定 Git argv だけを一時リポジトリへ渡す。
 	command := exec.CommandContext(t.Context(), "git", append([]string{"-C", repository}, args...)...)
 	command.Env = append(os.Environ(), environment...)
 	output, err := command.CombinedOutput()
@@ -127,7 +127,7 @@ func assertNotExists(t *testing.T, path string) {
 func readTestFile(t *testing.T, path string) []byte {
 	t.Helper()
 
-	//nolint:gosec // SOT-ENG-021: テストが作成した private 一時パスだけを読み取る。
+	//nolint:gosec // SOT-ENG-027: テストが作成した private 一時パスだけを読み取る。
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("テストファイルを読み取れませんでした: %v", err)

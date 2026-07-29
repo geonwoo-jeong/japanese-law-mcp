@@ -12,7 +12,7 @@ type Profile string
 const (
 	// ProfilePreCommit は、ステージ済み内容に対する高速かつオフラインの検査である。
 	ProfilePreCommit Profile = "pre-commit"
-	// ProfilePrePush は、外部の脆弱性 DB を除く全検査である。
+	// ProfilePrePush は、送信範囲に対する最小のローカル安全検査である。
 	ProfilePrePush Profile = "pre-push"
 	// ProfileCI は、外部の脆弱性 DB と Git 全履歴を含む全検査である。
 	ProfileCI Profile = "ci"

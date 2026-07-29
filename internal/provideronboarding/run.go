@@ -71,13 +71,17 @@ func runWithDependencies(
 	if err != nil {
 		return fmt.Errorf("canonical conformance matrix を読み込めませんでした: %w", err)
 	}
+	applicable := bootstrap
 	if bootstrap {
 		err = validateBootstrapChanges(paths, rows)
 	} else {
-		err = validateNormalChanges(paths, rows)
+		applicable, err = evaluateNormalChanges(paths, rows)
 	}
 	if err != nil {
 		return err
+	}
+	if !applicable {
+		return nil
 	}
 	if err := validateProviderImports(repository, rows); err != nil {
 		return err

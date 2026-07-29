@@ -26,4 +26,4 @@ CLI 実装は Cobra によるコマンドの解釈、Viper による起動時設
 - [SOT-IF-019: コマンドラインインターフェース](../40-interfaces/19-command-line-interface.md)
 - [SOT-IF-021: プロセス終了コード](../40-interfaces/21-process-exit-codes.md)
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
-- [SOT-ENG-021: Git フックによる段階的検証](21-git-hook-staged-verification.md)
+- [SOT-ENG-027: 省資源の段階的検証](27-resource-aware-verification-stages.md)

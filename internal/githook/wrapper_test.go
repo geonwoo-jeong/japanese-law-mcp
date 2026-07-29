@@ -72,14 +72,14 @@ func TestHookWrappersPreserveArgumentsStdinAndExitCode(t *testing.T) {
 					"printf '%s\\n' \"$@\" > "+shellQuote(argumentsPath)+"\n"+
 					"printf '%s\\n' \"$GIT_INDEX_FILE\" \"$GIT_OBJECT_DIRECTORY\" \"$GIT_NO_REPLACE_OBJECTS\" > "+
 					shellQuote(gitEnvironmentPath)+"\n"+
-					"printf '%s\\n' \"$GOENV|$GOTOOLCHAIN|$GOWORK|$GOFLAGS|$GOPROXY|$GOVCS|$LC_ALL|$GOCACHE|$GOLANGCI_LINT_CACHE\" > "+
+					"printf '%s\\n' \"$GOENV|$GOTOOLCHAIN|$GOWORK|$GOFLAGS|$GOMAXPROCS|$GOPROXY|$GOVCS|$LC_ALL|$GOCACHE|$GOLANGCI_LINT_CACHE\" > "+
 					shellQuote(goEnvironmentPath)+"\n"+
 					"printf '%s\\n' \"$GOOS|$GOARCH|$GOEXPERIMENT|$GO111MODULE|$CGO_ENABLED\" >> "+
 					shellQuote(goEnvironmentPath)+"\n"+
 					"cat > "+shellQuote(stdinPath)+"\n"+
 					"exit 29\n",
 			)
-			//nolint:gosec // SOT-ENG-021: リポジトリ内の固定 hook とテスト定義の argv だけを実行する。
+			//nolint:gosec // SOT-ENG-027: リポジトリ内の固定 hook とテスト定義の argv だけを実行する。
 			command := exec.CommandContext(
 				t.Context(),
 				filepath.Join(repository, ".githooks", test.name),
@@ -125,7 +125,7 @@ func TestHookWrappersPreserveArgumentsStdinAndExitCode(t *testing.T) {
 			}
 			goEnvironment := readTestFile(t, goEnvironmentPath)
 			if got, want := string(goEnvironment),
-				"off|local|off|-mod=readonly|off|public:git,private:off|C|"+
+				"off|local|off|-mod=readonly -p=1|2|off|public:git,private:off|C|"+
 					caches.goBuild+"|"+caches.golangci+"\n||||\n"; got != want {
 				t.Fatalf("Go 環境 = %q, want %q", got, want)
 			}
@@ -164,7 +164,7 @@ func TestManageBootstrapCreatesVerifiedCacheBeforeInstallGoRun(t *testing.T) {
 	ambientCache := filepath.Join(t.TempDir(), "書込不能 cache")
 	writeFile(t, filepath.Dir(ambientCache), filepath.Base(ambientCache), "directory ではない\n")
 
-	//nolint:gosec // SOT-ENG-021: リポジトリ内の固定管理 entrypoint を一時 Git fixture から実行する。
+	//nolint:gosec // SOT-ENG-027: リポジトリ内の固定管理 entrypoint を一時 Git fixture から実行する。
 	command := exec.CommandContext(
 		t.Context(),
 		filepath.Join(sourceRepository, ".githooks", "manage"),
@@ -216,7 +216,7 @@ func TestManageBootstrapRejectsUnsafeCacheBeforeInstallGoRun(t *testing.T) {
 		"#!/bin/sh\n: > "+shellQuote(invokedPath)+"\n",
 	)
 
-	//nolint:gosec // SOT-ENG-021: unsafe cache を持つ一時 fixture で管理 entrypoint を実行する。
+	//nolint:gosec // SOT-ENG-027: unsafe cache を持つ一時 fixture で管理 entrypoint を実行する。
 	command := exec.CommandContext(
 		t.Context(),
 		filepath.Join(sourceRepository, ".githooks", "manage"),
@@ -299,7 +299,7 @@ func TestHookWrappersBootstrapWithVerifiedCommonDirectoryCache(t *testing.T) {
 			ambientCache := filepath.Join(t.TempDir(), "書込不能 cache")
 			writeFile(t, filepath.Dir(ambientCache), filepath.Base(ambientCache), "directory ではない\n")
 
-			//nolint:gosec // SOT-ENG-021: リポジトリ内の固定 hook を一時 Git fixture から実行する。
+			//nolint:gosec // SOT-ENG-027: リポジトリ内の固定 hook を一時 Git fixture から実行する。
 			command := exec.CommandContext(
 				t.Context(),
 				filepath.Join(sourceRepository, ".githooks", test.name),
@@ -354,7 +354,7 @@ func TestHookWrappersRejectUnsafeCommonDirectoryCacheBeforeGoRun(t *testing.T) {
 			name: "group-writable",
 			damage: func(t *testing.T, caches hookCachePaths) {
 				t.Helper()
-				//nolint:gosec // SOT-ENG-021: unsafe cache を再現する private fixture に限定する。
+				//nolint:gosec // SOT-ENG-027: unsafe cache を再現する private fixture に限定する。
 				if err := os.Chmod(filepath.Dir(caches.goBuild), 0o770); err != nil {
 					t.Fatalf("cache root の権限を変更できませんでした: %v", err)
 				}
@@ -365,7 +365,7 @@ func TestHookWrappersRejectUnsafeCommonDirectoryCacheBeforeGoRun(t *testing.T) {
 			damage: func(t *testing.T, caches hookCachePaths) {
 				t.Helper()
 				commonDirectory := filepath.Dir(filepath.Dir(caches.goBuild))
-				//nolint:gosec // SOT-ENG-021: unsafe Git common directory を再現する private fixture に限定する。
+				//nolint:gosec // SOT-ENG-027: unsafe Git common directory を再現する private fixture に限定する。
 				if err := os.Chmod(commonDirectory, 0o770); err != nil {
 					t.Fatalf("Git common directory の権限を変更できませんでした: %v", err)
 				}
@@ -387,7 +387,7 @@ func TestHookWrappersRejectUnsafeCommonDirectoryCacheBeforeGoRun(t *testing.T) {
 				filepath.Join(fakeDirectory, "go"),
 				"#!/bin/sh\n: > "+shellQuote(invokedPath)+"\n",
 			)
-			//nolint:gosec // SOT-ENG-021: リポジトリ内の固定 hook を一時 Git fixture から実行する。
+			//nolint:gosec // SOT-ENG-027: リポジトリ内の固定 hook を一時 Git fixture から実行する。
 			command := exec.CommandContext(
 				t.Context(),
 				filepath.Join(sourceRepository, ".githooks", "pre-commit"),
@@ -443,6 +443,8 @@ func TestControlledGoEnvironmentRemovesHostBuildOverrides(t *testing.T) {
 		"GOCACHE=/shared/go",
 		"GOLANGCI_LINT_CACHE=/shared/lint",
 		"GOPROXY=off",
+		"GOFLAGS=-mod=readonly -p=1",
+		"GOMAXPROCS=2",
 	} {
 		if !strings.Contains(joined, expected) {
 			t.Fatalf("固定環境がありません: %s", expected)
@@ -477,7 +479,7 @@ func writeExecutable(t *testing.T, target, contents string) {
 	if err := os.WriteFile(target, []byte(contents), 0o600); err != nil {
 		t.Fatalf("実行ファイルを作成できませんでした: %v", err)
 	}
-	//nolint:gosec // SOT-ENG-021: wrapper テストの private fixture にだけ実行権限を付ける。
+	//nolint:gosec // SOT-ENG-027: wrapper テストの private fixture にだけ実行権限を付ける。
 	if err := os.Chmod(target, 0o700); err != nil {
 		t.Fatalf("テスト fixture を実行可能にできませんでした: %v", err)
 	}

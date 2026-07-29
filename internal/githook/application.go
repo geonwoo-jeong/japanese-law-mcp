@@ -147,7 +147,7 @@ func gitCommand(
 	if repository != "" {
 		commandArgs = append([]string{"-C", repository}, args...)
 	}
-	//nolint:gosec // SOT-ENG-021: 実行ファイルは git に固定し、引数は argv として渡して shell 解釈を行わない。
+	//nolint:gosec // SOT-ENG-027: 実行ファイルは git に固定し、引数は argv として渡して shell 解釈を行わない。
 	command := exec.CommandContext(ctx, "git", commandArgs...)
 	command.Env = environmentWithValue(os.Environ(), "GIT_NO_REPLACE_OBJECTS", "1")
 	command.Stdin = stdin
@@ -179,7 +179,8 @@ func controlledGoEnvironment(environment []string, network bool) []string {
 		"GOENV":       "off",
 		"GOTOOLCHAIN": "local",
 		"GOWORK":      "off",
-		"GOFLAGS":     "-mod=readonly",
+		"GOFLAGS":     "-mod=readonly -p=1",
+		"GOMAXPROCS":  "2",
 		"GOPROXY":     "off",
 		"GOSUMDB":     "sum.golang.org",
 		"GOPRIVATE":   "",
