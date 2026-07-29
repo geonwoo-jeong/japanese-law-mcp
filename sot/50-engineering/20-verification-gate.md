@@ -17,7 +17,7 @@
 - GitHub Actions の定義がある場合は、その静的解析が成功する。
 - Go の依存関係を変更した場合、または Go コードがある場合は、テスト用パッケージを含む製品コード、および固定済み検証ツールから到達可能な既知の脆弱性検査が、現在の脆弱性データベースに対して成功する。
 - 検査対象のソース状態と取得した Git 全履歴に対する秘密情報検査が成功する。
-- `SOT-ENG-018` が定義する適用変更または初回導入を含む場合は、ローカルと CI の両方で `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` と中央の品質ゲートが順に成功する。
+- `SOT-ENG-018` が定義する適用変更または初回導入を含む場合は、CI で `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` と中央の品質ゲートが順に成功する。
 - 統合照会の application、profile、辞書、planner model、公開 interface、評価 corpus、baseline または evaluator を変更した場合は、`SOT-ENG-024` の固定 corpus、最小件数、baseline および全受入基準を標準 command で検証する。
 
 ## 実行
@@ -32,20 +32,35 @@ go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 
 統合照会の標準評価 command を導入した clean checkout では、中央の品質ゲートが `SOT-ENG-024` の固定引数で定義された command を同じ検査スナップショット内で呼び出す。利用者の実照会または外部ネットワークを評価入力にしない。初回導入までは command が存在するものとして成功扱いせず、初回導入では command、baseline、中央品質ゲートへの接続および全受入基準の成功を同じ変更で完了する。
 
-`SOT-ENG-018` の適用変更または初回導入では、検査対象のソース状態に対して provider 固有の比較を行う command と中央の標準コマンドを次の順に実行し、両方の成功を変更完了の条件とする。ローカルでは現在の working tree と index を含むソース状態を対象に `provider-onboarding-fit` を実行し、その後に clean checkout した同じ変更内容に対して中央の品質ゲートを実行する。CI では checkout した対象 commit に対して両方の command を順に実行する。
+`SOT-ENG-018` の適用変更または初回導入では、CI の clean checkout した対象
+commit に対して provider 固有の比較を行う command と中央の標準コマンドを
+次の順に実行し、両方の成功を変更完了の条件とする。ローカルの Git hook では
+この provider 固有 command と、それが起動する conformance test を
+繰り返さない。
 
 ```text
 go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 ```
 
-通常の pull request の CI は信頼できる event metadata が示す target commit を、push の CI は同じ metadata が示す変更前 commit を `<git-revision>` に渡し、変更側が指定した値で上書きしない。ローカル検証は統合先として意図する commit を明示する。初回導入では、schema、loader および command を追加する変更の直前に review 済みの commit を渡す。任意の古い commit、固定 branch、暗黙の既定 ref または一方の command だけの成功を完了判定に使用しない。
+通常の pull request の CI は信頼できる event metadata が示す target commit を、
+push の CI は同じ metadata が示す変更前 commit を `<git-revision>` に渡し、
+変更側が指定した値で上書きしない。新規 ref の push で変更前 commit が
+all-zero の場合は、同じ event metadata が示す repository の既定 branch を
+完全履歴の remote-tracking ref として検証し、その commit を比較元にする。
+既定 branch を検証または取得できない場合は失敗し、`HEAD` の第一親だけを
+比較元にしない。初回導入では、schema、loader および command を追加する変更の
+直前に review 済みの commit を渡す。任意の古い commit、固定 branch、暗黙の
+既定 ref または一方の command だけの成功を完了判定に使用しない。
 
 品質ゲートは最初の失敗で非ゼロ終了し、脆弱性データベース、Git 全履歴または検査ツールへ到達できない状態を成功として扱わない。一つでも失敗した検査を警告へ緩和せず、原因を解消してすべての適用可能なゲートを再実行する。
 
 ## 確認
 
-同じソース状態に対する決定的な検査がローカルと CI で一致し、現在の外部データを用いる検査を含む CI の全ゲートが成功することを確認する。各検査の結果からこの SOT または検査対象の SOT ID へ到達できることを確認する。
+ローカルで任意に実行した限定的な決定的検査は、同じソース状態に対する CI の
+対応する検査と結果が一致することを確認する。現在の外部データを用いる検査を
+含む CI の全ゲートが成功し、各検査の結果からこの SOT または検査対象の
+SOT ID へ到達できることを確認する。
 
 ## 関連
 

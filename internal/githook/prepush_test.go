@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/provideronboarding"
 )
 
 func TestPrePushChecksUniqueCommitsForMultipleRefsAndSkipsDeletion(t *testing.T) {
@@ -66,89 +64,10 @@ func TestPrePushChecksUniqueCommitsForMultipleRefsAndSkipsDeletion(t *testing.T)
 	}
 }
 
-func TestPrePushRunsProviderGateForUniqueTipBasePairsBeforeQualityGate(t *testing.T) {
-	repository := newGitRepository(t)
-	writeFile(t, repository, "順序.txt", "A\n")
-	commitA := commitAll(t, repository, "A")
-	writeFile(t, repository, "順序.txt", "B\n")
-	commitB := commitAll(t, repository, "B")
-	writeFile(t, repository, "順序.txt", "C\n")
-	tip := commitAll(t, repository, "C")
-	writeFile(t, repository, "順序.txt", "作業ツリーのみ\n")
-	app := newTestApplication(repository)
-	app.stdin = strings.NewReader(
-		oidLine("refs/heads/first", tip, "refs/heads/first", commitA) +
-			oidLine("refs/heads/first-copy", tip, "refs/heads/first-copy", commitA) +
-			oidLine("refs/heads/second", tip, "refs/heads/second", commitB),
-	)
-
-	var calls []string
-	var snapshots []string
-	app.providerOnboarding = func(
-		_ context.Context,
-		options provideronboarding.Options,
-	) error {
-		calls = append(calls, "provider:"+options.BaseRef)
-		snapshots = append(snapshots, options.Repository)
-		if options.GitRepository != repository {
-			return fmt.Errorf(
-				"Git repository = %q, want %q",
-				options.GitRepository,
-				repository,
-			)
-		}
-		if options.HeadRef != tip {
-			return fmt.Errorf("head commit = %q, want %q", options.HeadRef, tip)
-		}
-		if options.IncludeIndex ||
-			options.IncludeWorkingTree ||
-			options.IncludeUntracked {
-			return errors.New(
-				"commit snapshot に index、working tree または未追跡 file が含まれています",
-			)
-		}
-		if options.Stdout != app.stdout || options.Stderr != app.stderr {
-			return errors.New("provider gate の出力先が hook と一致しません")
-		}
-		content := readTestFile(t, filepath.Join(options.Repository, "順序.txt"))
-		if got, want := string(content), "C\n"; got != want {
-			return fmt.Errorf("provider gate の source snapshot = %q, want %q", got, want)
-		}
-		return nil
-	}
-	app.qualityGate = func(
-		_ context.Context,
-		_, snapshot, _ string,
-		_ string,
-		_ []string,
-		_, _ io.Writer,
-	) error {
-		calls = append(calls, "quality")
-		snapshots = append(snapshots, snapshot)
-		return nil
-	}
-
-	code, _, stderr := executeForTest(t, app, []string{"pre-push"})
-
-	if code != 0 {
-		t.Fatalf("pre-push が失敗しました: %s", stderr)
-	}
-	wantCalls := []string{"provider:" + commitA, "provider:" + commitB, "quality"}
-	if got, want := strings.Join(calls, ","), strings.Join(wantCalls, ","); got != want {
-		t.Fatalf("gate 実行順 = %q, want %q", got, want)
-	}
-	for _, snapshot := range snapshots {
-		assertNotExists(t, snapshot)
-	}
-	if got := string(readTestFile(t, filepath.Join(repository, "順序.txt"))); got != "作業ツリーのみ\n" {
-		t.Fatalf("作業ツリーが変更されました: %q", got)
-	}
-}
-
 func TestPrePushUsesFullHistoryForNewRef(t *testing.T) {
 	repository := newGitRepository(t)
 	writeFile(t, repository, "順序.txt", "A\n")
-	parent := commitAll(t, repository, "A")
+	commitAll(t, repository, "A")
 	writeFile(t, repository, "順序.txt", "B\n")
 	tip := commitAll(t, repository, "B")
 	app := newTestApplication(repository)
@@ -156,17 +75,6 @@ func TestPrePushUsesFullHistoryForNewRef(t *testing.T) {
 		oidLine("refs/heads/main", tip, "refs/heads/main", zeroOID(len(tip))),
 	)
 	var contents []string
-	var bases []string
-	app.providerOnboarding = func(
-		_ context.Context,
-		options provideronboarding.Options,
-	) error {
-		if options.HeadRef != tip {
-			return fmt.Errorf("head commit = %q, want %q", options.HeadRef, tip)
-		}
-		bases = append(bases, options.BaseRef)
-		return nil
-	}
 	app.qualityGate = func(
 		_ context.Context,
 		_, snapshot, _ string,
@@ -190,8 +98,35 @@ func TestPrePushUsesFullHistoryForNewRef(t *testing.T) {
 	if got, want := strings.Join(contents, ""), "B\n"; got != want {
 		t.Fatalf("検査した履歴 = %q, want %q", got, want)
 	}
-	if got, want := strings.Join(bases, ","), parent; got != want {
-		t.Fatalf("provider gate の base commit = %q, want %q", got, want)
+}
+
+func TestPrePushAcceptsNewRootRefWithoutLocalProviderGate(t *testing.T) {
+	repository := newGitRepository(t)
+	writeFile(t, repository, "対象.txt", "root\n")
+	root := commitAll(t, repository, "root")
+	app := newTestApplication(repository)
+	app.stdin = strings.NewReader(
+		oidLine("refs/heads/main", root, "refs/heads/main", zeroOID(len(root))),
+	)
+	var ranges []string
+	app.qualityGate = func(
+		_ context.Context,
+		_, _, _ string,
+		_ string,
+		gotRanges []string,
+		_, _ io.Writer,
+	) error {
+		ranges = append(ranges, gotRanges...)
+		return nil
+	}
+
+	code, _, stderr := executeForTest(t, app, []string{"pre-push"})
+
+	if code != 0 {
+		t.Fatalf("root commit の new ref 検査が失敗しました: %s", stderr)
+	}
+	if got, want := strings.Join(ranges, ","), root; got != want {
+		t.Fatalf("root commit の検査 range = %q, want %q", got, want)
 	}
 }
 
@@ -344,7 +279,7 @@ func TestPrePushRejectsMalformedMissingAndNonCommitOIDs(t *testing.T) {
 func TestPrePushFallsBackToTipHistoryWhenRemoteOIDIsMissing(t *testing.T) {
 	repository := newGitRepository(t)
 	writeFile(t, repository, "対象.txt", "parent\n")
-	parent := commitAll(t, repository, "parent")
+	commitAll(t, repository, "parent")
 	writeFile(t, repository, "対象.txt", "commit\n")
 	commit := commitAll(t, repository, "commit")
 	missing := strings.Repeat("a", len(commit))
@@ -353,14 +288,6 @@ func TestPrePushFallsBackToTipHistoryWhenRemoteOIDIsMissing(t *testing.T) {
 		oidLine("refs/heads/main", commit, "refs/heads/main", missing),
 	)
 	var ranges []string
-	var bases []string
-	app.providerOnboarding = func(
-		_ context.Context,
-		options provideronboarding.Options,
-	) error {
-		bases = append(bases, options.BaseRef)
-		return nil
-	}
 	app.qualityGate = func(
 		_ context.Context,
 		_, _, _ string,
@@ -379,53 +306,6 @@ func TestPrePushFallsBackToTipHistoryWhenRemoteOIDIsMissing(t *testing.T) {
 	}
 	if got, want := strings.Join(ranges, ","), commit; got != want {
 		t.Fatalf("fallback range = %q, want %q", got, want)
-	}
-	if got, want := strings.Join(bases, ","), parent; got != want {
-		t.Fatalf("provider gate の fallback base = %q, want %q", got, want)
-	}
-}
-
-func TestPrePushRejectsRootCommitWithoutProviderComparisonBase(t *testing.T) {
-	repository := newGitRepository(t)
-	writeFile(t, repository, "対象.txt", "root\n")
-	root := commitAll(t, repository, "root")
-	app := newTestApplication(repository)
-	app.stdin = strings.NewReader(
-		oidLine("refs/heads/main", root, "refs/heads/main", zeroOID(len(root))),
-	)
-	providerCalled := false
-	qualityCalled := false
-	app.providerOnboarding = func(
-		context.Context,
-		provideronboarding.Options,
-	) error {
-		providerCalled = true
-		return nil
-	}
-	app.qualityGate = func(
-		context.Context,
-		string,
-		string,
-		string,
-		string,
-		[]string,
-		io.Writer,
-		io.Writer,
-	) error {
-		qualityCalled = true
-		return nil
-	}
-
-	code, _, stderr := executeForTest(t, app, []string{"pre-push"})
-
-	if code == 0 {
-		t.Fatal("比較元のない root commit push が成功しました")
-	}
-	if !strings.Contains(stderr, "第一親") || !strings.Contains(stderr, "比較元") {
-		t.Fatalf("root commit を拒否した理由が不明確です: %s", stderr)
-	}
-	if providerCalled || qualityCalled {
-		t.Fatal("比較元の検証失敗後に gate が実行されました")
 	}
 }
 
@@ -532,51 +412,4 @@ func TestPrePushFailsFastAndCleansSnapshot(t *testing.T) {
 		t.Fatalf("fail-fast ではありません: %d 回実行", len(snapshots))
 	}
 	assertNotExists(t, snapshots[0])
-}
-
-func TestPrePushStopsBeforeQualityGateWhenProviderGateFails(t *testing.T) {
-	repository := newGitRepository(t)
-	writeFile(t, repository, "順序.txt", "A\n")
-	commitA := commitAll(t, repository, "A")
-	writeFile(t, repository, "順序.txt", "B\n")
-	commitB := commitAll(t, repository, "B")
-	app := newTestApplication(repository)
-	app.stdin = strings.NewReader(
-		oidLine("refs/heads/main", commitB, "refs/heads/main", commitA),
-	)
-	var snapshot string
-	app.providerOnboarding = func(
-		_ context.Context,
-		options provideronboarding.Options,
-	) error {
-		snapshot = options.Repository
-		return errors.New("意図した provider gate の失敗")
-	}
-	qualityCalled := false
-	app.qualityGate = func(
-		context.Context,
-		string,
-		string,
-		string,
-		string,
-		[]string,
-		io.Writer,
-		io.Writer,
-	) error {
-		qualityCalled = true
-		return nil
-	}
-
-	code, _, stderr := executeForTest(t, app, []string{"pre-push"})
-
-	if code == 0 {
-		t.Fatal("provider gate 失敗時に pre-push が成功しました")
-	}
-	if !strings.Contains(stderr, "意図した provider gate の失敗") {
-		t.Fatalf("provider gate の失敗理由が保持されませんでした: %s", stderr)
-	}
-	if qualityCalled {
-		t.Fatal("provider gate 失敗後に quality gate が実行されました")
-	}
-	assertNotExists(t, snapshot)
 }

@@ -108,7 +108,8 @@ planned row の採用を取り消す場合は、その row と未到達の成果
 
 ## 検証ゲート
 
-ローカルと CI は次を確認する。
+CI の権威ある品質ゲートは次を確認する。ローカルでは対象を一つに限定した
+回帰テストを任意に実行できるが、この一覧の全検査を繰り返さない。
 
 - schema、file 名、row の順序、重複および必須列
 - `planned` と `retired` の operation が runtime の binding または route から到達できないこと

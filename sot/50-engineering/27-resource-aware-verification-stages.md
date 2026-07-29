@@ -49,14 +49,14 @@ database またはネットワークを要求しない。失敗した場合は c
 `pre-push` は削除以外の ref 更新が指す重複のない commit tip ごとに snapshot
 を作り、次だけを行う。
 
-- `SOT-ENG-018` の適用変更に対する provider onboarding fitness
 - 開発原則 checksum と snapshot cache policy
 - remote tip を取得できる場合はその tip から local tip まで、取得できない
   新規 ref では local tip から到達可能な履歴に対する秘密情報検査
 
-全 package の test、coverage、`go vet`、汎用 lint、module 整合性、
-workflow 解析、snapshot 全体の秘密情報検査および脆弱性検査を
-`pre-push` で繰り返さない。これらは CI が同じ commit に対して行う。
+provider onboarding fitness、全 package の test、coverage、`go vet`、汎用
+lint、module 整合性、workflow 解析、snapshot 全体の秘密情報検査および
+脆弱性検査を `pre-push` で繰り返さない。これらは CI が同じ commit に
+対して行う。
 削除だけを含む更新は検査対象の tip を持たないため snapshot 検査を行わない。
 
 ## CI
@@ -80,25 +80,27 @@ CI が外部 database、全履歴または固定 tool へ到達できない場�
 
 ## ローカル開発中の確認
 
-Git hook 以外のローカル確認は、変更した package と直接結び付く契約だけを
-選ぶ。
+Git hook 以外のローカル確認は、新しく追加または修正した回帰テスト一つを
+既定とし、変更した動作と直接結び付く契約だけを選ぶ。
 
-- `go test -p=1 -count=1 ./path/to/changed/package`
-- 必要な場合は一つの `-run` pattern で新しい regression を先に確認する。
+- `GOMAXPROCS=1 go test -p=1 ./path/to/changed/package -run '^TestTarget$'`
+- package 全体の test は、対象が十分に小さく単一 test では相互作用を確認できない
+  場合に限る。全 package へ広げない。
 - 公開動作を変更した場合は最終 binary を一回 build し、該当する MCP request
   を一回以上 smoke test する。
 
 ローカル完了のために `quality-gate --profile=ci`、全 package race、
-全 package coverage または同じ test の反復実行を要求しない。
+全 package coverage、provider onboarding fitness または同じ test の反復実行を
+要求しない。
 CI 結果が出る前に `SOT-ENG-020` の変更完了を主張しない。
 
 ## 確認
 
-quality gate の plan test で `pre-push` に全 package test、vet または lint が
-なく、checksum、cache policy および push 範囲の秘密情報検査だけがあることを
-確認する。Git hook の pre-push test では、適用する provider onboarding
-fitness が quality gate より前に成功し、失敗時は送信を中止することを
-別に確認する。
+quality gate の plan test で `pre-push` に provider onboarding fitness、
+全 package test、vet または lint がなく、checksum、cache policy および
+push 範囲の秘密情報検査だけがあることを確認する。Git hook の pre-push test
+では、provider onboarding fitness を起動せず、新規 ref と root commit を
+含む送信 tip の snapshot を最小品質ゲートへ渡すことを確認する。
 
 CI plan test で test command が `-p=1`、`-covermode=set` および package 自身の
 coverage を使用し、全検証と外部検査に欠落がないことを確認する。Git hook

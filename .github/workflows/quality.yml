@@ -112,12 +112,18 @@ jobs:
         if: github.event_name == 'push'
         env:
           PROVIDER_BASE_REF: ${{ github.event.before }}
+          PROVIDER_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ "$PROVIDER_BASE_REF" =~ ^0+$ ]]; then
-            if ! PROVIDER_BASE_REF="$(git rev-parse --verify 'HEAD^1^{commit}')"; then
-              echo "新規 push の HEAD は root commit で、プロバイダー変更の比較元となる第一親がありません。" >&2
+            if ! git check-ref-format --branch "$PROVIDER_DEFAULT_BRANCH" >/dev/null; then
+              echo "新規 ref の比較元となる既定ブランチ名が不正です。" >&2
+              exit 1
+            fi
+            PROVIDER_BASE_REF="refs/remotes/origin/${PROVIDER_DEFAULT_BRANCH}"
+            if ! git rev-parse --verify "${PROVIDER_BASE_REF}^{commit}" >/dev/null; then
+              echo "新規 ref の比較元となる既定ブランチを取得できませんでした。" >&2
               exit 1
             fi
           fi

@@ -28,7 +28,11 @@ go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 
 `--base-ref` は一回だけ必須とし、commit として解決できる値を受け付ける。command は解決した commit と `HEAD` の merge base を比較開始点とし、commit 差分、index、working tree および未追跡の provider 関連 file を検査する。VCS 情報または比較開始点を取得できない場合は成功として扱わない。
 
-ローカルと CI は同じ command を使用し、`SOT-ENG-017` の canonical matrix loader と通常の Go test を再利用する。
+CI はこの command を品質ゲートの前に実行し、`SOT-ENG-017` の canonical
+matrix loader と通常の Go test を再利用する。ローカルの Git hook はこの
+command または provider conformance test を実行しない。開発者が問題を
+切り分ける場合に限り、対象を限定して command または回帰テストを任意に
+実行できる。
 
 ## 検証
 
@@ -71,7 +75,7 @@ repository に canonical schema、matrix loader または `provider-onboarding-f
 - 全 row が `status: planned` である最初の provider matrix
 - matrix loader と test
 - `provider-onboarding-fit` command と test
-- local hook と CI から command を呼ぶ接続
+- CI から command を呼ぶ接続
 - loader と command に必要な最小の module dependency
 - 実装状況 Wiki の更新
 

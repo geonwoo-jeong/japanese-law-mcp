@@ -14,7 +14,7 @@
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
 - [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
 - [SOT-ENG-027](../sot/50-engineering/27-resource-aware-verification-stages.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲に限定した省資源の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
-- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) に従う、プロバイダー適合性 matrix の schema・共通 loader、`provider-onboarding-fit`、ならびに `pre-push` と GitHub Actions への先行 gate 接続
+- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) に従う、プロバイダー適合性 matrix の schema・共通 loader、`provider-onboarding-fit`、ならびに GitHub Actions への先行 gate 接続
 - [SOT-MODEL-009](../sot/20-model/09-json-serialization.md)、[SOT-MODEL-010](../sot/20-model/10-information-source.md)、[SOT-MODEL-013](../sot/20-model/13-provider-capability.md) および [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) に従う、不変なプロバイダーメタデータ型、検証および JSON 表現
 - [SOT-MODEL-001](../sot/20-model/01-law-summary.md) と [SOT-MODEL-003](../sot/20-model/03-legal-source.md) に従う、`InformationSource` から決定的に投影する `LegalSource` と、不変な `LawSummary`
 - [SOT-MODEL-011](../sot/20-model/11-source-resource-key.md) および [SOT-MODEL-016](../sot/20-model/16-source-resource-ref.md) に従う、不変な情報源資源キーとプロバイダー参照の構造検証および JSON 表現

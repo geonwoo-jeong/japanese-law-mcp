@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/provideronboarding"
 )
 
 const hooksPath = ".githooks"
@@ -26,20 +24,14 @@ type qualityGateRunner func(
 	io.Writer,
 ) error
 
-type providerOnboardingRunner func(
-	context.Context,
-	provideronboarding.Options,
-) error
-
 type application struct {
-	repository         string
-	stdin              io.Reader
-	stdout             io.Writer
-	stderr             io.Writer
-	warmUp             func(context.Context, string) error
-	qualityGate        qualityGateRunner
-	providerOnboarding providerOnboardingRunner
-	indexPinned        func(string)
+	repository  string
+	stdin       io.Reader
+	stdout      io.Writer
+	stderr      io.Writer
+	warmUp      func(context.Context, string) error
+	qualityGate qualityGateRunner
+	indexPinned func(string)
 }
 
 // Execute は、リポジトリ用 Git hook の操作を実行して終了コードを返す。
@@ -57,13 +49,12 @@ func Execute(
 	}
 
 	app := &application{
-		repository:         repository,
-		stdin:              stdin,
-		stdout:             stdout,
-		stderr:             stderr,
-		warmUp:             warmUpTools,
-		qualityGate:        runQualityGate,
-		providerOnboarding: provideronboarding.Run,
+		repository:  repository,
+		stdin:       stdin,
+		stdout:      stdout,
+		stderr:      stderr,
+		warmUp:      warmUpTools,
+		qualityGate: runQualityGate,
 	}
 	return app.run(ctx, args)
 }
