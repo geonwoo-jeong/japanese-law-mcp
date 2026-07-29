@@ -252,17 +252,7 @@ func nearestUninterruptedContentResource(
 	cues resolvedCues,
 ) ([2]int, bool, bool) {
 	resourceKey, core, unique := nearestContentResource(subject, cues)
-	println(
-		"nearest-resource",
-		subject.StartByte(),
-		subject.EndByte(),
-		resourceKey[0],
-		resourceKey[1],
-		core,
-		unique,
-	)
 	if !unique ||
-		precedesLeadingRefContentCluster(input, subject, resourceKey, cues) ||
 		hasInterveningContentSubject(input, subject, resourceKey) &&
 			!groupsContentSubjects(cues) {
 		return [2]int{}, false, false
@@ -276,27 +266,6 @@ func groupsContentSubjects(cues resolvedCues) bool {
 		cues.has("operator", "exclude")
 }
 
-func precedesLeadingRefContentCluster(
-	input legalquery.CandidateGenerationInput,
-	subject legalquery.QuerySpan,
-	resourceKey [2]int,
-	cues resolvedCues,
-) bool {
-	ref, exists := input.Ref()
-	if !exists || ref.Key().ResourceType() != "law" {
-		return false
-	}
-	resources := contentCoreResources(cues)
-	if len(resources) == 0 {
-		return false
-	}
-	leading := resources[0].Span()
-	if contentSpanKey(leading) != resourceKey {
-		return false
-	}
-	return subject.EndByte() <= leading.StartByte()
-}
-
 func hasInterveningContentSubject(
 	input legalquery.CandidateGenerationInput,
 	subject legalquery.QuerySpan,
@@ -304,31 +273,11 @@ func hasInterveningContentSubject(
 ) bool {
 	for _, term := range input.QueryTermMentions() {
 		if contentSpanIntervenes(subject, resource, term.Span()) {
-			println(
-				"intervening-term",
-				subject.StartByte(),
-				subject.EndByte(),
-				resource[0],
-				resource[1],
-				term.Surface(),
-				term.Span().StartByte(),
-				term.Span().EndByte(),
-			)
 			return true
 		}
 	}
 	for _, concept := range input.LegalConceptMentions() {
 		if contentSpanIntervenes(subject, resource, concept.Span()) {
-			println(
-				"intervening-concept",
-				subject.StartByte(),
-				subject.EndByte(),
-				resource[0],
-				resource[1],
-				concept.Surface(),
-				concept.Span().StartByte(),
-				concept.Span().EndByte(),
-			)
 			return true
 		}
 	}
