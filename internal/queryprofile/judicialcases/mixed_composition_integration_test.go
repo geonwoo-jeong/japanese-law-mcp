@@ -504,6 +504,66 @@ func TestCoreとJudicialProfileは含むCueなしの明示意図を原文順に�
 	}
 }
 
+func Test未確定のResource選択は三候補を合成せず明確化する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	runtime := newMixedProfileRuntime(t)
+	request := mustMixedProfileRequest(
+		t,
+		"「取消し」を法令名・条文・裁判例のどれで探すか決められません。",
+	)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	ranked := plan.RankedCandidates()
+	if plan.Decision() != legalquery.PlanDecisionNeedsClarification ||
+		!slices.Equal(
+			plan.ReasonCodes(),
+			[]legalquery.ReasonCode{
+				legalquery.ReasonCodeAmbiguousCandidates,
+			},
+		) ||
+		len(ranked) != 3 ||
+		len(plan.Selected()) != 2 {
+		t.Fatalf(
+			"SOT-ARCH-023/SOT-ARCH-027: resource choice plan = decision:%q reasons:%#v ranked:%#v selected:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+			ranked,
+			plan.Selected(),
+		)
+	}
+	wantKinds := []legalquery.LogicalInputKind{
+		legalquery.InputKindLawSearch,
+		legalquery.InputKindLawContentSearch,
+		legalquery.InputKindJudicialDecisionSearch,
+	}
+	for index, candidate := range ranked {
+		if len(candidate.Steps()) != 1 ||
+			candidate.Steps()[0].InputKind() != wantKinds[index] ||
+			!slices.Equal(
+				candidate.EvidenceCodes(),
+				[]legalquery.EvidenceCode{
+					legalquery.EvidenceExplicitTask,
+					legalquery.EvidenceExplicitResource,
+					legalquery.EvidenceGeneralTerm,
+				},
+			) {
+			t.Fatalf(
+				"SOT-MODEL-022: resource choice ranked[%d] = %#v",
+				index,
+				candidate,
+			)
+		}
+	}
+	assertNoExecutionBudget(t, plan)
+}
+
 func TestMixedCompositionはJudicialCases無効時も同じ意味を部分実行しない(
 	t *testing.T,
 ) {

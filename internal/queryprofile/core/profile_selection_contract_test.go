@@ -268,6 +268,68 @@ func TestProfileContributionは明示した二候補だけをhedgePairにする(
 	)
 }
 
+func TestProfileContributionは未確定のResource選択を明確化必須にする(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	contribution := generateSelectionContribution(
+		t,
+		"「取消し」を法令名・条文・裁判例のどれで探すか決められません。",
+	)
+	if contribution.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf(
+			"SOT-MODEL-026: selection mode = %q, want %q",
+			contribution.SelectionMode(),
+			legalquery.QuerySelectionModeClarificationRequired,
+		)
+	}
+	candidates := contribution.Candidates()
+	if len(candidates) != 2 {
+		t.Fatalf(
+			"SOT-MODEL-026: 未確定 Resource 選択の candidates = %#v, want 2 件",
+			candidates,
+		)
+	}
+	assertLawSearchCandidate(
+		t,
+		candidates[0],
+		"candidate-1-1",
+		"取消し",
+	)
+	assertLawContentSearchCandidate(
+		t,
+		candidates[1],
+		"candidate-1-2",
+		[]string{"取消し"},
+	)
+	wantEvidence := []legalquery.EvidenceCode{
+		legalquery.EvidenceExplicitTask,
+		legalquery.EvidenceExplicitResource,
+		legalquery.EvidenceGeneralTerm,
+	}
+	for index, candidate := range candidates {
+		if slices.Equal(candidate.EvidenceCodes(), wantEvidence) {
+			continue
+		}
+		t.Fatalf(
+			"SOT-MODEL-022: candidates[%d] evidence = %#v, want %#v",
+			index,
+			candidate.EvidenceCodes(),
+			wantEvidence,
+		)
+	}
+	if len(contribution.HedgePairs()) != 0 ||
+		len(contribution.CompositionMembers()) != 0 {
+		t.Fatalf(
+			"SOT-MODEL-026: 未確定 Resource 選択の選択関係 = hedge:%#v composition:%#v",
+			contribution.HedgePairs(),
+			contribution.CompositionMembers(),
+		)
+	}
+}
+
 func TestProfileContributionは異なる単独候補法概念をhedgePairにする(
 	t *testing.T,
 ) {

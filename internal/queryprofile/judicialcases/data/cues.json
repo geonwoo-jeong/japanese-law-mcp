@@ -1,13 +1,19 @@
 {
   "schemaVersion": 1,
   "profileId": "judicial-cases",
-  "cueSetVersion": "judicial-cases-cues-2026-07-30-1",
+  "cueSetVersion": "judicial-cases-cues-2026-07-30-2",
   "cues": [
     {
       "cueId": "operator-individual",
       "category": "operator",
       "value": "individual",
       "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々"]
+    },
+    {
+      "cueId": "operator-resource-choice",
+      "category": "operator",
+      "value": "resource_choice",
+      "terms": ["どれで探すか決められません"]
     },
     {
       "cueId": "resource-judicial-decision",

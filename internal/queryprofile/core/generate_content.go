@@ -806,7 +806,7 @@ func addExplicitSearchEvidence(
 	}
 }
 
-func buildDualCandidateDrafts(
+func buildLawResourceAlternativeDrafts(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 ) ([]candidateDraft, error) {

@@ -23,7 +23,8 @@ func (p *Profile) buildSearchDrafts(
 	case !cues.has("resource", "judicial_decision"):
 		drafts, tooMany, ambiguous, err =
 			p.buildAmbiguousConceptSearchDrafts(input, cues)
-	case cues.has("task", "search"):
+	case cues.has("task", "search") ||
+		isJudicialResourceChoice(input, cues):
 		drafts, ambiguous, err = p.buildSearchSubjects(input, cues)
 	default:
 		concepts := p.judicialReadFallbackConcepts(input, cues)
@@ -37,6 +38,9 @@ func (p *Profile) buildSearchDrafts(
 	}
 	if err != nil {
 		return nil, false, false, err
+	}
+	if len(drafts) > 0 && isJudicialResourceChoice(input, cues) {
+		ambiguous = true
 	}
 	if tooMany {
 		return nil, true, ambiguous, nil
@@ -519,6 +523,10 @@ func (p *Profile) buildSearchSubjects(
 ) ([]candidateDraft, bool, error) {
 	result := make([]candidateDraft, 0)
 	selectedSubjects := explicitJudicialSubjectSelection(input, cues)
+	termEvidence := legalquery.EvidenceMorphologicalContext
+	if isJudicialResourceChoice(input, cues) {
+		termEvidence = legalquery.EvidenceGeneralTerm
+	}
 	caseNumbers := input.CaseNumberMentions()
 	for _, caseNumber := range caseNumbers {
 		if !judicialSubjectSelected(
@@ -565,7 +573,7 @@ func (p *Profile) buildSearchSubjects(
 			evidence: []legalquery.EvidenceCode{
 				legalquery.EvidenceExplicitTask,
 				legalquery.EvidenceExplicitResource,
-				legalquery.EvidenceMorphologicalContext,
+				termEvidence,
 			},
 			steps: []stepDraft{{
 				startByte: term.Span().StartByte(),

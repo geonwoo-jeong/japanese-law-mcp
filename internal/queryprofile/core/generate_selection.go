@@ -23,6 +23,8 @@ func (p *Profile) selectionMode(
 		return legalquery.QuerySelectionModeClarificationRequired
 	case p.hasWeakGeneralAmbiguity(input, cues):
 		return legalquery.QuerySelectionModeClarificationRequired
+	case isCoreResourceChoice(input, cues):
+		return legalquery.QuerySelectionModeClarificationRequired
 	case hasTooManySeparatedSubjects(input, cues):
 		return legalquery.QuerySelectionModeClarificationRequired
 	case len(candidates) == 0 && hasSeparatedSubjectEvidence(input, cues):

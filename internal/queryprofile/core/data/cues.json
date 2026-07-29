@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-5",
+  "cueSetVersion": "core-cues-2026-07-30-6",
   "cues": [
     {
       "cueId": "operator-all",
@@ -44,6 +44,12 @@
       "category": "operator",
       "value": "individual",
       "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々"]
+    },
+    {
+      "cueId": "operator-resource-choice",
+      "category": "operator",
+      "value": "resource_choice",
+      "terms": ["どれで探すか決められません"]
     },
     {
       "cueId": "reserved-pack-judicial-cases",

@@ -179,14 +179,16 @@ func (p *Profile) generateDrafts(
 	if err != nil {
 		return nil, err
 	}
-	if cues.has("operator", "dual_candidate") &&
+	if (cues.has("operator", "dual_candidate") ||
+		isCoreResourceChoice(input, cues)) &&
 		len(targets) == 0 {
-		dual, dualErr := buildDualCandidateDrafts(input, cues)
-		if dualErr != nil {
-			return nil, dualErr
+		alternatives, alternativesErr :=
+			buildLawResourceAlternativeDrafts(input, cues)
+		if alternativesErr != nil {
+			return nil, alternativesErr
 		}
-		if len(dual) > 0 {
-			return mergeUpdateIntoDrafts(dual, update), nil
+		if len(alternatives) > 0 {
+			return mergeUpdateIntoDrafts(alternatives, update), nil
 		}
 	}
 

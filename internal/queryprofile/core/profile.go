@@ -408,7 +408,8 @@ func validCueMeaning(category string, value string) bool {
 			value == "document_article" ||
 			value == "dual_candidate" ||
 			value == "exclude" ||
-			value == "individual"
+			value == "individual" ||
+			value == "resource_choice"
 	case "syntax":
 		return value == "content_result_unit" ||
 			value == "related_law_scope"
