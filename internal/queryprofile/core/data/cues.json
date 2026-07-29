@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-6",
+  "cueSetVersion": "core-cues-2026-07-30-7",
   "cues": [
     {
       "cueId": "operator-all",
@@ -50,6 +50,12 @@
       "category": "operator",
       "value": "resource_choice",
       "terms": ["どれで探すか決められません"]
+    },
+    {
+      "cueId": "operator-single-choice",
+      "category": "operator",
+      "value": "single_choice",
+      "terms": ["一つの"]
     },
     {
       "cueId": "reserved-pack-judicial-cases",
