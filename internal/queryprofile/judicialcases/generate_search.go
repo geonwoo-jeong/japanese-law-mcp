@@ -320,7 +320,7 @@ func individualJudicialSubjectSelection(
 		selected[[2]int{
 			subject.StartByte(),
 			subject.EndByte(),
-		}] = resourceKey[0]
+		}] = subject.StartByte()
 		assignedResources[resourceKey] = struct{}{}
 	}
 	for _, resource := range resources {
@@ -520,7 +520,7 @@ func selectNearestJudicialSubject(
 		}
 	}
 	if bestDistance >= 0 && !tied {
-		selected[bestKey] = resource.StartByte()
+		selected[bestKey] = bestKey[0]
 	}
 }
 

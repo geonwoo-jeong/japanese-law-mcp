@@ -40,6 +40,7 @@ func TestCoreとJudicialProfileは更新日付き複合要求を四Stepに分離
 			legalquery.EvidenceExplicitTask,
 			legalquery.EvidenceExplicitResource,
 			legalquery.EvidenceOfficialAlias,
+			legalquery.EvidenceLegalConcept,
 		},
 	) {
 		t.Fatalf(
