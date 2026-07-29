@@ -19,12 +19,21 @@ func isWeakLawResourceAmbiguity(
 		return false
 	}
 	if cues.has("resource", "law") {
-		return true
+		if !weakGeneralResourceIsImplicit(cues) {
+			return true
+		}
 	}
 	return termCount == 1 &&
+		!hasUnsupportedWeakGeneralExpansion(cues) &&
 		!cues.has("operator", "dual_candidate") &&
 		!cues.has("resource", "updates") &&
 		!cues.has("reserved_pack", "judicial-cases")
+}
+
+func hasUnsupportedWeakGeneralExpansion(cues resolvedCues) bool {
+	return cues.has("unsupported", "legal_advice") ||
+		cues.has("unsupported", "translation") ||
+		cues.has("unsupported", "task_or_resource")
 }
 
 func buildWeakGeneralDrafts(
