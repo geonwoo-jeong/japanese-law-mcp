@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-4",
+  "cueSetVersion": "core-cues-2026-07-30-5",
   "cues": [
     {
       "cueId": "operator-all",
@@ -13,7 +13,7 @@
       "cueId": "operator-any",
       "category": "operator",
       "value": "any",
-      "terms": ["いずれか", "または", "もしくは", "又は", "若しくは"]
+      "terms": ["いずれか", "どれか一つ", "または", "もしくは", "又は", "若しくは"]
     },
     {
       "cueId": "operator-as-of",

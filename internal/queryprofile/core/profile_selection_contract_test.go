@@ -175,6 +175,67 @@ func TestProfileContributionは衝突する暫定法略称を明確化必須に�
 	}
 }
 
+func TestProfileContributionは選択数量詞を公式略称候補へ結合しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	contribution := generateSelectionContribution(
+		t,
+		"「保安四法」と呼ばれる法令のうち、どれか一つの本文を読みたいです。",
+	)
+	if contribution.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf(
+			"SOT-MODEL-026: selection mode = %q, want %q",
+			contribution.SelectionMode(),
+			legalquery.QuerySelectionModeClarificationRequired,
+		)
+	}
+	candidates := contribution.Candidates()
+	if len(candidates) != 4 {
+		t.Fatalf(
+			"SOT-ARCH-028: 保安四法の candidates = %#v, want 4 件",
+			candidates,
+		)
+	}
+	wantLawIDs := []string{
+		"323AC1000000186",
+		"326AC0000000204",
+		"347AC0000000057",
+		"350AC0000000084",
+	}
+	for index, candidate := range candidates {
+		steps := candidate.Steps()
+		if len(steps) != 1 ||
+			steps[0].InputKind() != legalquery.InputKindLawRead {
+			t.Fatalf(
+				"SOT-MODEL-022: candidates[%d] steps = %#v, want law_read 1 件",
+				index,
+				steps,
+			)
+		}
+		input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
+		if !ok {
+			t.Fatalf(
+				"SOT-MODEL-022: candidates[%d] input = %T, want LawReadIntentV1",
+				index,
+				steps[0].LogicalInput(),
+			)
+		}
+		lawID, exists := input.LawID()
+		if !exists || lawID != wantLawIDs[index] {
+			t.Fatalf(
+				"SOT-ARCH-028: candidates[%d] lawId = %q, %t, want %q",
+				index,
+				lawID,
+				exists,
+				wantLawIDs[index],
+			)
+		}
+	}
+}
+
 func TestProfileContributionは明示した二候補だけをhedgePairにする(
 	t *testing.T,
 ) {

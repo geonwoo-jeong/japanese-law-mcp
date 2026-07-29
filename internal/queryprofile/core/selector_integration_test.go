@@ -73,6 +73,15 @@ func Test製品前処理からCoreProfileとSelectorまで一貫した計画を�
 			wantFirstMeaningSteps: 1,
 		},
 		{
+			name:                  "選択数量詞は公式略称候補へ検索stepを追加しない",
+			query:                 "「保安四法」と呼ばれる法令のうち、どれか一つの本文を読みたいです。",
+			wantDecision:          legalquery.PlanDecisionNeedsClarification,
+			wantReasons:           []legalquery.ReasonCode{legalquery.ReasonCodeAmbiguousCandidates},
+			wantRanked:            4,
+			wantSelected:          2,
+			wantFirstMeaningSteps: 1,
+		},
+		{
 			name:                  "明示した独立二候補だけをhedgeする",
 			query:                 "実行検証用に保証を法令名と条文の二候補で検索してください。",
 			wantDecision:          legalquery.PlanDecisionHedged,
