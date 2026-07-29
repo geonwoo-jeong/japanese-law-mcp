@@ -47,6 +47,8 @@ func (p *Profile) Generate(
 			},
 			legalquery.QuerySelectionModeAutomatic,
 			nil,
+			nil,
+			legalquery.QueryCompositionConstraintNone,
 		)
 	}
 	cues, err := p.resolveCues(input.CueMentions())
@@ -60,6 +62,8 @@ func (p *Profile) Generate(
 			signals,
 			legalquery.QuerySelectionModeAutomatic,
 			nil,
+			nil,
+			legalquery.QueryCompositionConstraintNone,
 		)
 	}
 	if hasTooManySeparatedSubjects(input, cues) {
@@ -68,6 +72,8 @@ func (p *Profile) Generate(
 			signals,
 			legalquery.QuerySelectionModeClarificationRequired,
 			nil,
+			nil,
+			legalquery.QueryCompositionConstraintStepLimitExceeded,
 		)
 	}
 
@@ -76,7 +82,7 @@ func (p *Profile) Generate(
 		return legalquery.CandidateGeneration{}, err
 	}
 	drafts = retainGroundedDraftsForUnsupportedResource(drafts, signals)
-	candidates, err := p.materializeCandidates(drafts, scope)
+	candidates, stepStartBytes, err := p.materializeCandidates(drafts, scope)
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
@@ -85,7 +91,22 @@ func (p *Profile) Generate(
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
-	return p.newGeneration(candidates, signals, mode, pairs)
+	members, err := buildCompositionMembers(
+		candidates,
+		stepStartBytes,
+		mode,
+	)
+	if err != nil {
+		return legalquery.CandidateGeneration{}, err
+	}
+	return p.newGeneration(
+		candidates,
+		signals,
+		mode,
+		pairs,
+		members,
+		legalquery.QueryCompositionConstraintNone,
+	)
 }
 
 func retainGroundedDraftsForUnsupportedResource(
@@ -290,7 +311,11 @@ func cloneDraft(value candidateDraft) candidateDraft {
 func (p *Profile) materializeCandidates(
 	drafts []candidateDraft,
 	scope legalquery.CandidateIDScope,
-) ([]legalquery.LegalQueryCandidate, error) {
+) (
+	[]legalquery.LegalQueryCandidate,
+	[][]int,
+	error,
+) {
 	aggregated := make([]aggregatedDraft, 0, len(drafts))
 	meaningIndexes := make(map[string]int, len(drafts))
 	for _, original := range drafts {
@@ -299,11 +324,13 @@ func (p *Profile) materializeCandidates(
 			return draft.steps[left].startByte < draft.steps[right].startByte
 		})
 		if len(draft.steps) == 0 || len(draft.steps) > 4 {
-			return nil, fmt.Errorf("一候補の logical step は一件以上四件以下でなければなりません")
+			return nil, nil, fmt.Errorf(
+				"一候補の logical step は一件以上四件以下でなければなりません",
+			)
 		}
 		signature, err := draftMeaningSignature(draft)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if index, exists := meaningIndexes[signature]; exists {
 			mergeEquivalentDraft(&aggregated[index].draft, draft)
@@ -316,7 +343,7 @@ func (p *Profile) materializeCandidates(
 		})
 	}
 	if len(aggregated) > maximumGeneratedCandidates {
-		return nil, fmt.Errorf(
+		return nil, nil, fmt.Errorf(
 			"core profile の候補は %d 件以下でなければなりません",
 			maximumGeneratedCandidates,
 		)
@@ -327,11 +354,11 @@ func (p *Profile) materializeCandidates(
 		evidence := normalizeEvidence(current.draft.evidence)
 		score, err := p.metadata.Score().Score(evidence)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		confidence, err := p.metadata.Score().ConfidenceFor(score)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		prepared = append(prepared, preparedDraft{
 			draft:      current.draft,
@@ -346,10 +373,13 @@ func (p *Profile) materializeCandidates(
 	})
 
 	candidates := make([]legalquery.LegalQueryCandidate, 0, len(prepared))
+	stepStartBytes := make([][]int, 0, len(prepared))
 	for index, current := range prepared {
 		inputs := make([]legalquery.LogicalInput, 0, len(current.draft.steps))
+		startBytes := make([]int, 0, len(current.draft.steps))
 		for _, step := range current.draft.steps {
 			inputs = append(inputs, step.input)
+			startBytes = append(startBytes, step.startByte)
 		}
 		concepts := uniqueConceptSources(current.draft.concepts)
 		packs := append([]string(nil), current.draft.requiredPacks...)
@@ -368,11 +398,12 @@ func (p *Profile) materializeCandidates(
 			},
 		)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		candidates = append(candidates, candidate)
+		stepStartBytes = append(stepStartBytes, startBytes)
 	}
-	return candidates, nil
+	return candidates, stepStartBytes, nil
 }
 
 type aggregatedDraft struct {
@@ -579,14 +610,18 @@ func (p *Profile) newGeneration(
 	signals []legalquery.CandidateGenerationSignal,
 	mode legalquery.QuerySelectionMode,
 	pairs []legalquery.CandidateHedgePair,
+	members []legalquery.QueryCandidateCompositionMember,
+	constraint legalquery.QueryCompositionConstraint,
 ) (legalquery.CandidateGeneration, error) {
 	return legalquery.NewCandidateGeneration(legalquery.CandidateGenerationValues{
-		ProfileID:      p.metadata.ProfileID(),
-		ProfileVersion: p.metadata.ProfileVersion(),
-		RankingVersion: p.metadata.RankingVersion(),
-		Candidates:     candidates,
-		Signals:        signals,
-		SelectionMode:  mode,
-		HedgePairs:     pairs,
+		ProfileID:             p.metadata.ProfileID(),
+		ProfileVersion:        p.metadata.ProfileVersion(),
+		RankingVersion:        p.metadata.RankingVersion(),
+		Candidates:            candidates,
+		Signals:               signals,
+		SelectionMode:         mode,
+		HedgePairs:            pairs,
+		CompositionMembers:    members,
+		CompositionConstraint: constraint,
 	})
 }

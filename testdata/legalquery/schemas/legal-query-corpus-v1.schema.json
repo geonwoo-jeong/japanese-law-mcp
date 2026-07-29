@@ -15,6 +15,29 @@
     "providerId": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
     "stringList": { "type": "array", "maxItems": 64, "uniqueItems": true, "items": { "$ref": "#/$defs/identifier" } },
     "conceptIdList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/opaqueNonemptyString" } },
+    "legacyRequiredExecutionScenarioIds": {
+      "const": [
+        "execution-all-failed",
+        "execution-empty",
+        "execution-item-budget",
+        "execution-nonempty",
+        "execution-partial-failure",
+        "execution-reversed-completion",
+        "execution-timeout"
+      ]
+    },
+    "currentRequiredExecutionScenarioIds": {
+      "const": [
+        "execution-all-failed",
+        "execution-empty",
+        "execution-item-budget",
+        "execution-mixed-composition",
+        "execution-nonempty",
+        "execution-partial-failure",
+        "execution-reversed-completion",
+        "execution-timeout"
+      ]
+    },
     "manifestEntryDevelopment": {
       "type": "object",
       "required": ["caseId", "sha256"],
@@ -115,18 +138,39 @@
           ]
         },
         "requiredExecutionScenarioIds": {
-          "const": [
-            "execution-all-failed",
-            "execution-empty",
-            "execution-item-budget",
-            "execution-nonempty",
-            "execution-partial-failure",
-            "execution-reversed-completion",
-            "execution-timeout"
+          "oneOf": [
+            { "$ref": "#/$defs/legacyRequiredExecutionScenarioIds" },
+            { "$ref": "#/$defs/currentRequiredExecutionScenarioIds" }
           ]
         },
         "sets": { "$ref": "#/$defs/manifestSets" }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "corpusVersion": {
+                "enum": ["corpus-v1", "corpus-v2", "corpus-v3"]
+              }
+            },
+            "required": ["corpusVersion"]
+          },
+          "then": {
+            "properties": {
+              "requiredExecutionScenarioIds": {
+                "$ref": "#/$defs/legacyRequiredExecutionScenarioIds"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "requiredExecutionScenarioIds": {
+                "$ref": "#/$defs/currentRequiredExecutionScenarioIds"
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false
     },
     "rawResourceKey": {
@@ -627,6 +671,7 @@
         "execution-all-failed",
         "execution-empty",
         "execution-item-budget",
+        "execution-mixed-composition",
         "execution-nonempty",
         "execution-partial-failure",
         "execution-reversed-completion",

@@ -38,7 +38,15 @@ func SelectLegalQueryPlan(input SelectorInput) (LegalQueryPlan, error) {
 		input.ProfileSetResult.Signals(),
 	)
 	if semantic == nil {
-		value := selectSemanticCandidates(input.ProfileSetResult)
+		value := selectCompositionConstraint(
+			input.ProfileSetResult.CompositionConstraint(),
+		)
+		semantic = value
+	}
+	if semantic == nil {
+		value := selectSemanticCandidates(
+			input.ProfileSetResult,
+		)
 		semantic = &value
 	}
 	decision, selections, reasons, err := applyPackAvailability(
@@ -56,6 +64,31 @@ func SelectLegalQueryPlan(input SelectorInput) (LegalQueryPlan, error) {
 		ReasonCodes:      reasons,
 		LimitPerAttempt:  input.LimitPerAttempt,
 	})
+}
+
+func selectCompositionConstraint(
+	constraint QueryCompositionConstraint,
+) *semanticSelection {
+	switch constraint {
+	case QueryCompositionConstraintNone:
+		return nil
+	case QueryCompositionConstraintIneligible:
+		return &semanticSelection{
+			decision: PlanDecisionNeedsClarification,
+			reasons: []ReasonCode{
+				ReasonCodeAmbiguousCandidates,
+			},
+		}
+	case QueryCompositionConstraintStepLimitExceeded:
+		return &semanticSelection{
+			decision: PlanDecisionNeedsClarification,
+			reasons: []ReasonCode{
+				ReasonCodeStepLimitExceeded,
+			},
+		}
+	default:
+		return nil
+	}
 }
 
 func selectUnsupported(

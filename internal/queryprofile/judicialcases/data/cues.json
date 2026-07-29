@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "judicial-cases",
-  "cueSetVersion": "judicial-cases-cues-2026-07-29-1",
+  "cueSetVersion": "judicial-cases-cues-2026-07-29-2",
   "cues": [
     {
       "cueId": "operator-individual",
@@ -19,7 +19,7 @@
       "cueId": "task-read",
       "category": "task",
       "value": "read",
-      "terms": ["取得して", "取得してください", "取得する", "本文を取得", "本文を取得して", "確認して", "確認する", "表示して", "表示する", "見せて", "見せてください", "読んで", "読んでください", "読みたい", "読む"]
+      "terms": ["取得して", "取得してください", "取得する", "本文を取得", "本文を取得して", "確認して", "確認する", "表示して", "表示する", "見せて", "見せてください", "読んで", "読んでください", "読み", "読みたい", "読む"]
     },
     {
       "cueId": "task-search",

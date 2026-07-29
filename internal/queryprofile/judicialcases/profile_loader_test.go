@@ -17,9 +17,9 @@ func TestLoadEmbeddedは裁判例二能力と共有校正を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "judicial-cases" ||
-		metadata.ProfileVersion() != "judicial-cases-2026-07-29-2" ||
+		metadata.ProfileVersion() != "judicial-cases-2026-07-29-3" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
-		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-29-1" {
+		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-29-2" {
 		t.Fatalf("metadata = %#v", metadata)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
@@ -124,7 +124,7 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 			profile: embeddedProfile,
 			cues: bytes.Replace(
 				embeddedCues,
-				[]byte(`judicial-cases-cues-2026-07-29-1`),
+				[]byte(`judicial-cases-cues-2026-07-29-2`),
 				[]byte(`judicial-cases-cues-2026-07-29-9`),
 				1,
 			),

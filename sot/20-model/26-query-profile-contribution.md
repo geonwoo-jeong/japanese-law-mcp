@@ -17,6 +17,8 @@
 | `signals` | `QueryProfileSignal[]` | はい | 候補とは分離して selector が扱う入力境界または対象外の信号 |
 | `selectionMode` | string | はい | `automatic` または `clarification_required` |
 | `hedgePairs` | `CandidateHedgePair[]` | はい | profile が独立実行しても意味を変えないと確認した候補対 |
+| `compositionMembers` | `QueryCandidateCompositionMember[]` | はい | 別 profile の明示意図と結合できる必須候補の位置付き sidecar |
+| `compositionConstraint` | string | はい | `none` または、保持すべき明示意図が四 step 上限を超えたことを表す `step_limit_exceeded` |
 
 `profileId`、`profileVersion` および `rankingVersion` は、profile の起動時検証済み metadata と完全に一致しなければならない。profile 固有の版は独立して変更できるが、異なる `rankingVersion` の contribution 間で `semanticScore` を比較してはならない。
 
@@ -35,11 +37,35 @@
 - 弱い一般語から候補 resource を一意化できない
 - 一候補の四 step 上限を超える複数主題を検出し、候補を切り捨てず非実行にする
 
+四 step 上限を超えた場合は `compositionConstraint=step_limit_exceeded`、
+`selectionMode=clarification_required` とし、`candidates`、
+`hedgePairs` および `compositionMembers` を空にする。上限内の一部候補を
+保持または実行してはならない。それ以外は
+`compositionConstraint=none` とする。`SOT-ARCH-027` の
+`composition_ineligible` は profile set 内部の制約であり、
+`QueryProfileContribution` が出力してはならない。
+
 `CandidateHedgePair` は `firstCandidateId` と `secondCandidateId` を持つ。両 ID は同じ contribution 内の相異なる候補を profile 順で参照し、逆順を含めて重複させない。二候補の step 合計は四件以下とする。
 
 profile は、照会文が二つの代替検索を明示した場合、または独立した二つの出典付き概念候補を同時に取得しても意味を変えないと確認した場合だけ hedge pair を作る。略称衝突、自動実行しない辞書候補、同じ候補内の複数主題または検索結果に依存する候補を hedge pair にしない。
 
 selector は上位二候補が一つの hedge pair と完全に一致する場合だけ `hedged` を検討する。異なる profile の候補を実行時に即席の hedge pair として組み合わせない。
+
+`compositionMembers` は `SOT-MODEL-028` に従い、同じ contribution の候補と
+step だけを参照する。member 候補と hedge pair の重複は構造として受理するが、
+合成適格とはみなさず `SOT-ARCH-027` の composer が
+`composition_ineligible` へ変換する。
+`selectionMode=clarification_required` の contribution は member を持たない。
+profile は候補を別 profile の候補と直接結合せず、構成可能性と原文位置だけを
+sidecar として返す。複数候補または hedge と併存する sidecar は、
+composer が合成不適格を判定するための位置付き入力であり、単独では
+合成可能性を保証しない。
+
+一つの contribution が複数の member を持つ場合、または member 以外の
+代替候補を持つ場合も、構造自体は有効とする。ただし composer はその
+contribution を使って合成せず、元候補を通常の意味順位へ保持する。
+ほかの二つ以上の profile に一意な member がある場合、その合成まで
+中止しない。部分実行の禁止は `SOT-ARCH-027` に従う。
 
 ## 信号と候補の保存
 
@@ -68,17 +94,37 @@ selector は保持された候補を内部順位として保存するが選択�
 
 ## profile set への集約
 
-profile set は contribution を composition root の固定順で集約する。すべての contribution は同じ `rankingVersion`、score policy、selection policy および tie-break を持たなければならず、不一致は起動または plan 作成を失敗させる。
+profile set は contribution を composition root の固定順で回収する。すべての contribution は同じ `rankingVersion`、score policy、selection policy および tie-break を持たなければならず、不一致は起動または plan 作成を失敗させる。
 
-候補は profile 順と profile 内順を保持して stable に score の非増加順へ統合する。同点ではその stable 順を完全順序とする。全 profile の候補が十六件を超える場合は切り捨てず失敗する。
+全 contribution の検証後、`SOT-ARCH-027` の composer が
+`compositionMembers` を消費し、必要な場合だけ新しい合成候補へ置き換える。
+その後、候補は profile 順と profile 内順を保持して stable に score の
+非増加順へ統合する。同点ではその stable 順を完全順序とする。合成後の全
+候補が十六件を超える場合は切り捨てず失敗する。
 
-profile set は、固定順の profile ID、各 profile version、ranking version、辞書版および実際の校正値を含む決定的な入力から、`SOT-MODEL-023` の不透明な `profileVersion` を作る。同じ set では常に同じ値とし、いずれかが変われば別の値とする。
+profile set は、固定順の profile ID、各 profile version、ranking version、
+辞書版、実際の校正値および `compositionVersion` を含む決定的な入力から、
+`SOT-MODEL-023` の不透明な `profileVersion` を作る。同じ set では常に
+同じ値とし、いずれかが変われば別の値とする。
 
 一つでも `clarification_required` の contribution がある場合、集約結果も自動実行しない。signals は本規定の順序で和集合にする。候補 ID、step ID または意味署名が profile 間で衝突した場合は黙って統合せず失敗する。
 
+一つでも `compositionConstraint=step_limit_exceeded` の contribution が
+ある場合、または composer が合成対象の五 step 以上を検出した場合、
+profile set result も同じ constraint を保持する。selector は通常の score
+選択と pack 可否より前にこれを適用し、`SOT-MODEL-023` の
+`step_limit_exceeded` だけを持つ非実行 plan を作る。
+
+composer が automatic contribution の合成不適格を検出した場合は、
+profile set result だけに内部値 `composition_ineligible` を保持できる。
+profile はこの値を `QueryProfileContribution` に出してはならない。
+`step_limit_exceeded` は `composition_ineligible` より優先する。
+selector の非実行変換と公開境界は `SOT-ARCH-027` に従う。
+
 ## 不変条件
 
-- getter は候補、信号および hedge pair の深い複製を返す。
+- getter は候補、信号、hedge pair および composition member の深い複製と、
+  検証済み `compositionConstraint` を返す。
 - profile、contribution および集約結果は照会中に変更しない。
 - pack の有効状態、provider route、外部件数、応答速度または実行結果を contribution に持たない。
 - selector、executor または adapter が profile の代わりに hedge pair を補わない。
@@ -87,14 +133,24 @@ profile set は、固定順の profile ID、各 profile version、ranking versio
 
 自動選択、明確化必須、明示二候補、略称衝突、独立した概念候補、二主題、四主題、五主題、非日本語入力、決定的な構造だけの入力、対象外との混在および予約済み pack を profile test で確認する。
 
-存在しない候補を参照する hedge pair、自己参照、逆順重複、五 step 以上、異なる ranking version、score policy 不一致、十七候補、profile 間 ID・意味衝突および同点順の変更を拒否することを model test で確認する。
+存在しない候補を参照する hedge pair、自己参照、逆順重複、不正な
+composition member、`step_limit_exceeded` と候補または自動選択の併存、
+異なる ranking version、score policy
+不一致、十七候補、profile 間 ID・意味衝突および同点順の変更を拒否することを
+model test で確認する。
+
+member と hedge pair の構造的な併存、および複数候補の位置 sidecar を
+保持できることは model test で確認し、その合成不適格化は
+`SOT-ARCH-027` の composer test で確認する。
 
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](23-legal-query-plan.md)
+- [SOT-MODEL-028: QueryCandidateCompositionMember](28-query-candidate-composition-member.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
+- [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)
 - [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

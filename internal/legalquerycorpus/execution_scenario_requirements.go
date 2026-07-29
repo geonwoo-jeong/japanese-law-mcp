@@ -29,6 +29,7 @@ func validateExecutionScenarioRequirements(
 	if err := manifest.Validate(); err != nil {
 		return fmt.Errorf("execution scenario の manifest が有効ではありません")
 	}
+	allowed := indexExecutionScenarioIDs(manifest.RequiredExecutionScenarioIDs())
 	developmentByID, err := indexExecutionScenarioDevelopment(development)
 	if err != nil {
 		return err
@@ -54,11 +55,19 @@ func validateExecutionScenarioRequirements(
 		}
 		if err := validateExecutionScenarioCrossConditions(
 			executionCase,
+			semanticCase,
 			plan,
 		); err != nil {
 			return err
 		}
 		for _, scenarioID := range executionCase.ScenarioIDs() {
+			if _, exists := allowed[scenarioID]; !exists {
+				return fmt.Errorf(
+					"execution scenario %q は %s で許可されていません",
+					scenarioID,
+					manifest.CorpusVersion(),
+				)
+			}
 			seen[scenarioID] = struct{}{}
 		}
 	}
@@ -85,6 +94,7 @@ func indexExecutionScenarioDevelopment(
 
 func validateExecutionScenarioCrossConditions(
 	executionCase ExecutionCase,
+	semanticCase SemanticCase,
 	plan executionReferencePlan,
 ) error {
 	for _, scenarioID := range executionCase.ScenarioIDs() {
@@ -97,9 +107,82 @@ func validateExecutionScenarioCrossConditions(
 			if !hasExecutionSourceBeyondEffectiveLimit(executionCase, plan) {
 				return executionScenarioCrossConditionError(scenarioID)
 			}
+		case ExecutionScenarioIDMixedComposition:
+			if !hasMixedCompositionScenario(semanticCase) {
+				return executionScenarioCrossConditionError(scenarioID)
+			}
 		}
 	}
 	return nil
+}
+
+func hasMixedCompositionScenario(semanticCase SemanticCase) bool {
+	if !containsCorpusString(
+		semanticCase.EnabledPacks(),
+		"judicial-cases",
+	) {
+		return false
+	}
+	expected, ok := semanticCase.Expected().(ExpectedPlan)
+	if !ok {
+		return false
+	}
+	meanings := make(map[string]ExpectedMeaning, len(expected.Meanings()))
+	for _, meaning := range expected.Meanings() {
+		meanings[meaning.MeaningID()] = meaning
+	}
+	for _, meaningID := range expected.SelectedMeaningIDs() {
+		meaning, exists := meanings[meaningID]
+		if exists && isMixedCompositionMeaning(meaning) {
+			return true
+		}
+	}
+	return false
+}
+
+func isMixedCompositionMeaning(meaning ExpectedMeaning) bool {
+	if !containsCorpusString(
+		meaning.RequiredPacks(),
+		"judicial-cases",
+	) {
+		return false
+	}
+	hasCore := false
+	hasJudicial := false
+	hasRead := false
+	hasCollection := false
+	for _, step := range meaning.Steps() {
+		switch step.Resource() {
+		case legalquery.ResourceLaw, legalquery.ResourceLawProvision:
+			hasCore = true
+		case legalquery.ResourceJudicialDecision:
+			hasJudicial = true
+		}
+		switch step.Task() {
+		case legalquery.TaskRead:
+			hasRead = true
+		case legalquery.TaskSearch, legalquery.TaskListUpdates:
+			hasCollection = true
+		}
+	}
+	return hasCore && hasJudicial && hasRead && hasCollection
+}
+
+func containsCorpusString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
+}
+
+func indexExecutionScenarioIDs(values []string) map[string]struct{} {
+	result := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		result[value] = struct{}{}
+	}
+	return result
 }
 
 func hasExecutionSourceBeyondEffectiveLimit(

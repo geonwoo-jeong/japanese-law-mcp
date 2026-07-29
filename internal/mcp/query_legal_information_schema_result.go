@@ -72,7 +72,7 @@ func queryLegalInformationExecutionResultSchema(
 }
 
 func queryLegalInformationNeedsClarificationResultSchema() *jsonschema.Schema {
-	return queryLegalInformationObjectSchema(
+	schema := queryLegalInformationObjectSchema(
 		map[string]*jsonschema.Schema{
 			"status": queryLegalInformationConstString(
 				string(
@@ -106,6 +106,29 @@ func queryLegalInformationNeedsClarificationResultSchema() *jsonschema.Schema {
 		"notices",
 		"clarification",
 	)
+	schema.AllOf = []*jsonschema.Schema{
+		{
+			If:   queryLegalInformationStepLimitClarificationCondition(),
+			Then: queryLegalInformationInterpretationCountSchema(0),
+		},
+	}
+	return schema
+}
+
+func queryLegalInformationStepLimitClarificationCondition() *jsonschema.Schema {
+	return &jsonschema.Schema{
+		Properties: map[string]*jsonschema.Schema{
+			"clarification": {
+				Properties: map[string]*jsonschema.Schema{
+					"reasonCodes": queryLegalInformationArrayEnum([]any{
+						string(legalquery.ReasonCodeStepLimitExceeded),
+					}),
+				},
+				Required: []string{"reasonCodes"},
+			},
+		},
+		Required: []string{"clarification"},
+	}
 }
 
 func queryLegalInformationCapabilityUnavailableResultSchema() *jsonschema.Schema {

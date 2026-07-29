@@ -22,9 +22,21 @@
 
 明示されていない演算子を補うために、照会文全体を広い一検索として情報源へ渡したり、`any`へ読み替えたりしない。呼出し側の LLM は取得済み結果の説明と追加照会の判断を担えるが、固定上限のために返らなかった項目を判定できないため、取得意味の確定を後段へ委ねない。
 
+本規定の `all`、`any` および `exclude` は、一つの
+`law_content_search` 内の検索語関係を表す。法令名、条文、更新一覧および
+裁判例のように異なる task/resource をそれぞれ明示した照会は、検索語演算へ
+平坦化せず、`SOT-ARCH-027` に従って能力別 step を一つの意味候補へ合成する。
+`含む` がなくても各 task/resource と取得対象が明示されていれば複数 step に
+できるが、resource との対応が不明な単純列挙を無条件に fan-out しない。
+
 ## 上限と結果
 
-一つの意味候補に保持できる独立 step は `SOT-MODEL-022` に従い四件以下とする。五つ以上の主題を黙って切り捨てず、外部情報源を呼ばない明確化へ渡す。
+一つの意味候補に保持できる独立 step は `SOT-MODEL-022` に従い四件以下とする。
+五つ以上の主題を黙って切り捨てず、
+`compositionConstraint=step_limit_exceeded` を持つ
+`QueryProfileContribution` として外部情報源を呼ばない明確化へ渡す。
+selector は通常の候補不足または曖昧性へ読み替えず、
+`SOT-MODEL-023` の同名 reason 一件だけを返す。
 
 一つの `law_content_search` に保持する各演算子の検索語数は `SOT-IF-023` の上限に従う。上限を超えた語を切り捨てたり、広い一検索へ置き換えたりせず、外部情報源を呼ばず失敗させる。
 
@@ -34,7 +46,7 @@ selector は、同じ照会文で明示された複数主題を、近接する�
 
 二主題、四主題、法令名、法概念、一般検索語およびそれらの組合せについて、独立 step の原文順、四 step 上限、結果の分離および固定予算を確認する。
 
-`について`による個別主題、明示的な`個別に`、`all`、`any`および`exclude`を fixture にし、明示演算子が個別分離より優先すること、五主題を切り詰めないこと、および executor が完了順で結果順を変えないことを確認する。
+`について`による個別主題、明示的な`個別に`、`all`、`any`および`exclude`を fixture にし、明示演算子が個別分離より優先すること、五主題を切り詰めず `step_limit_exceeded` にすること、および executor が完了順で結果順を変えないことを確認する。
 
 `二つとも含む`と`三つとも含む`が同じ `all` 規則になること、演算子の検索語上限を超えた場合に切捨てまたは広い検索へ変換しないことも確認する。
 
@@ -46,4 +58,5 @@ selector は、同じ照会文で明示された複数主題を、近接する�
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](23-unified-query-selection-and-hedging.md)
+- [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-IF-023: `law.content.search` capability v1](../40-interfaces/23-law-content-search-capability.md)

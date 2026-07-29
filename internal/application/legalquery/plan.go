@@ -49,6 +49,8 @@ const (
 	ReasonCodeBelowExecutionThreshold ReasonCode = "below_execution_threshold"
 	// ReasonCodeAmbiguousCandidates は、安全に候補を絞れないことを表す。
 	ReasonCodeAmbiguousCandidates ReasonCode = "ambiguous_candidates"
+	// ReasonCodeStepLimitExceeded は、明示された必須 step が四件上限を超えたことを表す。
+	ReasonCodeStepLimitExceeded ReasonCode = "step_limit_exceeded"
 	// ReasonCodeRequiredPackDisabled は、必要な採用済み pack が無効であることを表す。
 	ReasonCodeRequiredPackDisabled ReasonCode = "required_pack_disabled"
 	// ReasonCodeNonJapaneseQuery は、日本語入力境界を満たさないことを表す。

@@ -297,6 +297,9 @@ func manifestIntegrityTestBuildManifest(
 
 	source := validManifest()
 	source["corpusVersion"] = corpusVersion
+	source["requiredExecutionScenarioIds"] = stringValues(
+		manifestRequiredExecutionScenarioIDsForVersion(corpusVersion)...,
+	)
 	sets := make(map[string]any, 3)
 	for _, set := range []ManifestSetKind{
 		ManifestSetDevelopment,

@@ -18,10 +18,30 @@ type preparedDraft struct {
 	signature  string
 }
 
+type materializedCandidate struct {
+	candidate    legalquery.LegalQueryCandidate
+	sourceStarts []int
+}
+
 func (p *Profile) materializeCandidates(
 	drafts []candidateDraft,
 	scope legalquery.CandidateIDScope,
 ) ([]legalquery.LegalQueryCandidate, error) {
+	materialized, err := p.materializeCandidateRecords(drafts, scope)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]legalquery.LegalQueryCandidate, 0, len(materialized))
+	for _, current := range materialized {
+		result = append(result, current.candidate)
+	}
+	return result, nil
+}
+
+func (p *Profile) materializeCandidateRecords(
+	drafts []candidateDraft,
+	scope legalquery.CandidateIDScope,
+) ([]materializedCandidate, error) {
 	prepared := make([]preparedDraft, 0, len(drafts))
 	bySignature := make(map[string]int, len(drafts))
 	for _, original := range drafts {
@@ -41,13 +61,34 @@ func (p *Profile) materializeCandidates(
 		evidence := normalizeEvidence(original.evidence)
 		concepts := uniqueConceptSources(original.concepts)
 		if index, exists := bySignature[signature]; exists {
-			prepared[index].evidence = mergeEvidence(
-				prepared[index].evidence,
-				evidence,
-			)
-			prepared[index].concepts = uniqueConceptSources(
-				append(prepared[index].concepts, concepts...),
-			)
+			current := prepared[index]
+			mergedSteps := append([]stepDraft(nil), current.steps...)
+			for stepIndex := range mergedSteps {
+				if steps[stepIndex].startByte <
+					mergedSteps[stepIndex].startByte {
+					mergedSteps[stepIndex].startByte =
+						steps[stepIndex].startByte
+				}
+			}
+			prepared[index] = preparedDraft{
+				evidence: mergeEvidence(
+					current.evidence,
+					evidence,
+				),
+				concepts: uniqueConceptSources(
+					append(
+						append(
+							[]legalquery.LegalConceptSource(nil),
+							current.concepts...,
+						),
+						concepts...,
+					),
+				),
+				steps:      mergedSteps,
+				score:      current.score,
+				confidence: current.confidence,
+				signature:  current.signature,
+			}
 			continue
 		}
 		score, err := p.metadata.Score().Score(evidence)
@@ -94,11 +135,13 @@ func (p *Profile) materializeCandidates(
 		) < 0
 	})
 
-	result := make([]legalquery.LegalQueryCandidate, 0, len(prepared))
+	result := make([]materializedCandidate, 0, len(prepared))
 	for index, current := range prepared {
 		inputs := make([]legalquery.LogicalInput, 0, len(current.steps))
+		sourceStarts := make([]int, 0, len(current.steps))
 		for _, step := range current.steps {
 			inputs = append(inputs, step.input)
+			sourceStarts = append(sourceStarts, step.startByte)
 		}
 		candidate, err := legalquery.AssembleLegalQueryCandidate(
 			legalquery.CandidateAssemblyValues{
@@ -115,7 +158,10 @@ func (p *Profile) materializeCandidates(
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, candidate)
+		result = append(result, materializedCandidate{
+			candidate:    candidate,
+			sourceStarts: sourceStarts,
+		})
 	}
 	return result, nil
 }

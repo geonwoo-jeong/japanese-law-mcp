@@ -43,9 +43,13 @@ func Test候補materializeは同点規則と重複意味の根拠統合を固定
 			steps: []stepDraft{{startByte: 5, input: inputA}},
 		},
 	}
-	candidates, err := profile.materializeCandidates(drafts, scope)
+	records, err := profile.materializeCandidateRecords(drafts, scope)
 	if err != nil {
-		t.Fatalf("materializeCandidates() のエラー = %v", err)
+		t.Fatalf("materializeCandidateRecords() のエラー = %v", err)
+	}
+	candidates := make([]legalquery.LegalQueryCandidate, 0, len(records))
+	for _, record := range records {
+		candidates = append(candidates, record.candidate)
 	}
 	if len(candidates) != 2 {
 		t.Fatalf("candidates = %#v", candidates)
@@ -61,6 +65,26 @@ func Test候補materializeは同点規則と重複意味の根拠統合を固定
 		legalquery.EvidenceMorphologicalContext,
 	}) {
 		t.Fatalf("統合 evidence = %#v", candidates[0].EvidenceCodes())
+	}
+	if len(records[0].sourceStarts) != 1 ||
+		records[0].sourceStarts[0] != 5 {
+		t.Fatalf(
+			"SOT-MODEL-028: 重複意味の最小原文位置 = %#v",
+			records[0].sourceStarts,
+		)
+	}
+	members, err := judicialCompositionMembers(
+		records,
+		legalquery.QuerySelectionModeAutomatic,
+	)
+	if err != nil {
+		t.Fatalf("複数候補の composition members = %v", err)
+	}
+	if len(members) != len(records) {
+		t.Fatalf(
+			"SOT-ARCH-027: 複数候補の sidecar = %#v",
+			members,
+		)
 	}
 	for _, candidate := range candidates {
 		if !slices.Equal(

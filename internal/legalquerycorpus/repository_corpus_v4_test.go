@@ -11,11 +11,11 @@ import (
 
 const (
 	repositoryCorpusV4Seed           = 20260727
-	repositoryCorpusV4Development    = 31
+	repositoryCorpusV4Development    = 32
 	repositoryCorpusV4Holdout        = 240
-	repositoryCorpusV4Execution      = 7
+	repositoryCorpusV4Execution      = 8
 	repositoryCorpusV4HoldoutDigest  = "25b06db5e29ada2922e970a8c569ee9d2e73ce22fae4ffe3ce5880043d3543b8"
-	repositoryCorpusV4ManifestSHA256 = "183a4f33c8cef09251d9c1cf4f3e29e789884d97dc5c3705c982ee703ef6df36"
+	repositoryCorpusV4ManifestSHA256 = "d50c1774799c6b626fd3e58fc0b9f5ecb26450ba56c0f999da4d6e86f7529621"
 )
 
 func TestRepositoryCorpusV4は製品辞書にない前提を除く(t *testing.T) {

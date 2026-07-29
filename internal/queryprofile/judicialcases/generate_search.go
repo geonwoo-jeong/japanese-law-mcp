@@ -16,7 +16,7 @@ func (p *Profile) buildSearchDrafts(
 		!cues.has("resource", "judicial_decision") {
 		return nil, false, false, nil
 	}
-	drafts, ambiguous, err := p.buildSearchSubjects(input)
+	drafts, ambiguous, err := p.buildSearchSubjects(input, cues)
 	if err != nil {
 		return nil, false, false, err
 	}
@@ -46,6 +46,7 @@ func (p *Profile) buildSearchDrafts(
 
 func (p *Profile) buildSearchSubjects(
 	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
 ) ([]candidateDraft, bool, error) {
 	result := make([]candidateDraft, 0)
 	caseNumbers := input.CaseNumberMentions()
@@ -71,7 +72,8 @@ func (p *Profile) buildSearchSubjects(
 		})
 	}
 	for _, term := range input.QueryTermMentions() {
-		if queryTermDuplicatesCaseNumber(term, caseNumbers) {
+		if queryTermDuplicatesCaseNumber(term, caseNumbers) ||
+			queryTermBelongsToReadReference(term, input, cues) {
 			continue
 		}
 		searchInput, err := legalquery.NewJudicialDecisionSearchIntentV1(
@@ -180,6 +182,73 @@ func (p *Profile) buildSearchSubjects(
 			result[right].steps[0].startByte
 	})
 	return result, ambiguous, nil
+}
+
+func queryTermBelongsToReadReference(
+	term legalquery.QueryTermMention,
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) bool {
+	ref, hasRef := input.Ref()
+	if !hasRef ||
+		ref.Key().ResourceType() != "judicial-decision" ||
+		term.Kind() != legalquery.QueryTermMentionMorphologicalPhrase ||
+		!cues.has("task", "read") {
+		return false
+	}
+	if term.Surface() == "参照" &&
+		judicialTermFollowsSearchAndPrecedesRead(
+			term,
+			cues.mentions[cueMeaningKey("task", "search")],
+			cues.mentions[cueMeaningKey("task", "read")],
+		) {
+		return true
+	}
+	span := term.Span()
+	for _, resource := range cues.mentions[cueMeaningKey("resource", "judicial_decision")] {
+		for _, read := range cues.mentions[cueMeaningKey("task", "read")] {
+			if resource.Span().EndByte() <= span.StartByte() &&
+				span.EndByte() <= read.Span().StartByte() &&
+				!judicialCueStartsBetween(
+					cues.mentions[cueMeaningKey("task", "search")],
+					span.EndByte(),
+					read.Span().StartByte(),
+				) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func judicialTermFollowsSearchAndPrecedesRead(
+	term legalquery.QueryTermMention,
+	searchCues []legalquery.CueMention,
+	readCues []legalquery.CueMention,
+) bool {
+	for _, searchCue := range searchCues {
+		for _, readCue := range readCues {
+			if searchCue.Span().EndByte() <= term.Span().StartByte() &&
+				term.Span().EndByte() <= readCue.Span().StartByte() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func judicialCueStartsBetween(
+	cues []legalquery.CueMention,
+	startByte int,
+	endByte int,
+) bool {
+	for _, cue := range cues {
+		start := cue.Span().StartByte()
+		if startByte <= start && start < endByte {
+			return true
+		}
+	}
+	return false
 }
 
 func queryTermDuplicatesCaseNumber(

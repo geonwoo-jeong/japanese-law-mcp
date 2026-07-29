@@ -25,7 +25,7 @@ func TestCorpusはmanifest順の三集合を保持する(t *testing.T) {
 	if err := corpus.Validate(); err != nil {
 		t.Fatalf("SOT-ENG-026: Corpus.Validate() error = %v", err)
 	}
-	if corpus.Manifest().CorpusVersion() != "corpus-v1" {
+	if corpus.Manifest().CorpusVersion() != "corpus-v4" {
 		t.Fatalf("SOT-ENG-026: manifest = %#v", corpus.Manifest())
 	}
 	if got := corpus.Development(); len(got) != 1 ||
@@ -441,7 +441,7 @@ func mustCorpusManifest(
 	manifest, err := NewManifest(ManifestValues{
 		ArtifactKind:                 ArtifactKindCorpusManifest,
 		SchemaVersion:                1,
-		CorpusVersion:                "corpus-v1",
+		CorpusVersion:                "corpus-v4",
 		Seed:                         1,
 		HoldoutDigest:                strings.Repeat("f", 64),
 		RequiredCategoryIDs:          requiredCategoryIDs(),

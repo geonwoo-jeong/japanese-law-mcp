@@ -10,6 +10,8 @@ type executionScenarioSummary struct {
 	terminal            ExecutionExpectedTerminal
 	status              legalquery.LegalQueryResultStatus
 	successCount        int
+	readSuccessCount    int
+	collectionCount     int
 	failureCount        int
 	timeoutCount        int
 	publishedItemCount  int
@@ -36,6 +38,11 @@ func validateExecutionScenarios(
 				summary.status == legalquery.LegalQueryResultStatusEmpty
 		case ExecutionScenarioIDItemBudget:
 			valid = summary.truncatedCollection
+		case ExecutionScenarioIDMixedComposition:
+			valid = summary.readSuccessCount > 0 &&
+				summary.collectionCount > 0 &&
+				summary.failureCount == 0 &&
+				summary.terminal == ExecutionExpectedTerminalResult
 		case ExecutionScenarioIDNonempty:
 			valid = summary.publishedItemCount > 0 &&
 				summary.terminal == ExecutionExpectedTerminalResult
@@ -87,12 +94,14 @@ func summarizeExecutionScenarioAction(
 	switch typed := outcome.(type) {
 	case CollectionSuccessOutcome:
 		summary.successCount++
+		summary.collectionCount++
 		if typed.SourceItemCount() != 0 {
 			summary.allZeroCollections = false
 		}
 		summarizeCollectionScenario(summary, typed, attempt)
 	case ReadSuccessOutcome:
 		summary.successCount++
+		summary.readSuccessCount++
 		summary.publishedItemCount++
 		summary.allZeroCollections = false
 	case FailureOutcome:

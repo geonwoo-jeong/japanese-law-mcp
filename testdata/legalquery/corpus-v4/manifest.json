@@ -22,6 +22,7 @@
     "execution-all-failed",
     "execution-empty",
     "execution-item-budget",
+    "execution-mixed-composition",
     "execution-nonempty",
     "execution-partial-failure",
     "execution-reversed-completion",
@@ -29,7 +30,7 @@
   ],
   "sets": {
     "development": {
-      "caseCount": 31,
+      "caseCount": 32,
       "cases": [
         {
           "caseId": "development-ambiguity-general",
@@ -58,6 +59,10 @@
         {
           "caseId": "development-execution-item-budget",
           "sha256": "af2b0a87e102ce9cfa38e502b8d360e142d6a20eda2af5e408bb49a2f58a180f"
+        },
+        {
+          "caseId": "development-execution-mixed-composition",
+          "sha256": "4dde66b93bef2796974815f4bbb57f508ce3240480620aad7ead57a889376ef2"
         },
         {
           "caseId": "development-execution-nonempty",
@@ -158,7 +163,7 @@
       ]
     },
     "execution": {
-      "caseCount": 7,
+      "caseCount": 8,
       "cases": [
         {
           "caseId": "execution-all-failed",
@@ -171,6 +176,10 @@
         {
           "caseId": "execution-item-budget",
           "sha256": "849c75b9e5db78bf292085f4e45d820d1a633cc81a6e4da0f46789a6bcb6c159"
+        },
+        {
+          "caseId": "execution-mixed-composition",
+          "sha256": "5b7aa11d2d9918bac93d2208c5c0ce767f7b64d3442074fe7735f057b4c2698f"
         },
         {
           "caseId": "execution-nonempty",

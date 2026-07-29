@@ -596,11 +596,13 @@ type executionReferenceTestSemanticCaseValues struct {
 	meanings           []executionReferenceTestMeaningValues
 	selectedMeaningIDs []string
 	reasonCodes        []string
+	enabledPacks       []string
 }
 
 type executionReferenceTestMeaningValues struct {
-	id    string
-	steps []map[string]any
+	id            string
+	steps         []map[string]any
+	requiredPacks []string
 }
 
 type executionReferenceTestExecutionCaseValues struct {
@@ -619,6 +621,7 @@ func executionReferenceTestSemanticCase(
 	source := validSemanticCase(validLawSearchStep())
 	source["caseId"] = values.caseID
 	source["leakageGroupId"] = "group-" + values.caseID
+	source["enabledPacks"] = stringValues(values.enabledPacks...)
 	request := source["request"].(map[string]any)
 	if values.query != "" {
 		request["query"] = values.query
@@ -655,7 +658,7 @@ func executionReferenceTestSemanticCase(
 				"meaningId":     meaning.id,
 				"evidenceCodes": []any{"explicit_task", "explicit_resource"},
 				"conceptIds":    []any{},
-				"requiredPacks": []any{},
+				"requiredPacks": stringValues(meaning.requiredPacks...),
 				"steps":         executionReferenceTestSteps(meaning.steps),
 			})
 		}

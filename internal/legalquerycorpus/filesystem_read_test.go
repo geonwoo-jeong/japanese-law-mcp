@@ -580,9 +580,17 @@ func TestCorpusFilesystemのerrorはfile内容を含まない(t *testing.T) {
 
 func filesystemReadTestNewLayout(t *testing.T) filesystemReadTestLayout {
 	t.Helper()
+	return filesystemReadTestNewLayoutForVersion(t, "corpus-v1")
+}
+
+func filesystemReadTestNewLayoutForVersion(
+	t *testing.T,
+	corpusVersion string,
+) filesystemReadTestLayout {
+	t.Helper()
 
 	repositoryRoot := t.TempDir()
-	corpusPath := filepath.Join("testdata", "legalquery", "corpus-v1")
+	corpusPath := filepath.Join("testdata", "legalquery", corpusVersion)
 	corpusRoot := filepath.Join(repositoryRoot, corpusPath)
 	schemaPath := filepath.Join(
 		repositoryRoot,

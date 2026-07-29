@@ -22,7 +22,13 @@
 
 `profileVersion` は有効な UTF-8 で 1 byte 以上 128 byte 以下とし、先頭若しくは末尾の Unicode White_Space および位置を問わず Unicode control character を含めない。構造を解釈せず、同じ `profileVersion` の候補間だけで score を比較する。
 
-この値は `SOT-MODEL-026` の active profile set 全体を特定する不透明な版とする。各 query profile は独立した `profileVersion` を持つことができるが、同じ `rankingVersion` と校正値を持つ contribution だけを一つの set へ集約する。plan の `profileVersion` は固定順の全 profile 版、ranking version、辞書版および校正値のいずれかが変われば別の値とし、個別 profile の score を版の異なる set 間で比較しない。
+この値は `SOT-MODEL-026` の active profile set と
+`SOT-ARCH-027` の composer 全体を特定する不透明な版とする。各 query
+profile は独立した `profileVersion` を持つことができるが、同じ
+`rankingVersion` と校正値を持つ contribution だけを一つの set へ集約する。
+plan の `profileVersion` は固定順の全 profile 版、ranking version、辞書版、
+校正値および composition version のいずれかが変われば別の値とし、個別
+profile の score を版の異なる set 間で比較しない。
 
 `LegalQueryPlanSelection` は `candidateId`、`availability` および `requiredPacks` を持つ。`requiredPacks` は参照先候補の同名配列と完全に一致し、空配列を許す。`availability` は次のいずれかとする。
 
@@ -51,19 +57,25 @@
 | 2 | `hedged_close_candidates` | 実行可能な上位二候補が hedge 条件を満たした |
 | 3 | `below_execution_threshold` | 候補が最低実行閾値を満たさない |
 | 4 | `ambiguous_candidates` | 安全に一意化または二候補化できない |
-| 5 | `required_pack_disabled` | 必要な採用済み拡張パックが無効 |
-| 6 | `non_japanese_query` | 日本語入力境界を満たさない |
-| 7 | `standalone_structured_query` | 決定的な識別子、事件番号または日付だけで日本語の取得要求がない |
-| 8 | `mixed_unsupported_intent` | 取得意図と対象外意図が混在する |
-| 9 | `unsupported_task_or_resource` | task または resource が採用範囲外である |
+| 5 | `step_limit_exceeded` | 一候補に保持すべき明示意図が四 step 上限を超えた |
+| 6 | `required_pack_disabled` | 必要な採用済み拡張パックが無効 |
+| 7 | `non_japanese_query` | 日本語入力境界を満たさない |
+| 8 | `standalone_structured_query` | 決定的な識別子、事件番号または日付だけで日本語の取得要求がない |
+| 9 | `mixed_unsupported_intent` | 取得意図と対象外意図が混在する |
+| 10 | `unsupported_task_or_resource` | task または resource が採用範囲外である |
 
 decision ごとの組合せは次に限定する。
 
 - `single`: `single_clear_candidate` 一件
 - `hedged`: `hedged_close_candidates` 一件
-- `needs_clarification`: `below_execution_threshold` または `ambiguous_candidates` を一件以上二件以下
+- `needs_clarification`: `below_execution_threshold` と
+  `ambiguous_candidates` の一件以上二件以下、または
+  `step_limit_exceeded` 一件だけ
 - `capability_unavailable`: `required_pack_disabled` 一件
 - `unsupported`: `standalone_structured_query` 一件だけ、または `non_japanese_query`、`mixed_unsupported_intent` 若しくは `unsupported_task_or_resource` を一件以上三件以下
+
+`step_limit_exceeded` の `selected` は空とし、上限内の構成元候補を部分実行の
+候補として公開しない。
 
 ## 固定予算
 
@@ -130,12 +142,13 @@ retry、adapter 内の通信および provider ごとの同時実行制御は、
 
 ## 確認
 
-一候補、二候補、明確化、pack 無効、対象外との混在、十六候補上限、四 step 上限、選択 step と materialization へ渡す予算の対応、item 予算の各 `R/C` 組合せ、同点の決定性および計画確定後の追加・再配分禁止をモデルテストで確認する。`available` で空でない `requiredPacks`、複数の unsupported 理由、混在要求で保持した内部候補の非選択、および同点候補を profile の順序のまま保持することも確認する。
+一候補、二候補、明確化、pack 無効、対象外との混在、十六候補上限、四 step 上限、`step_limit_exceeded`、選択 step と materialization へ渡す予算の対応、item 予算の各 `R/C` 組合せ、同点の決定性および計画確定後の追加・再配分禁止をモデルテストで確認する。`available` で空でない `requiredPacks`、複数の unsupported 理由、混在要求で保持した内部候補の非選択、および同点候補を profile の順序のまま保持することも確認する。
 
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-026: QueryProfileContribution](26-query-profile-contribution.md)
+- [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-026: 統合照会の request materialization](../30-architecture/26-unified-query-request-materialization.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](../30-architecture/19-extension-pack-activation-boundary.md)

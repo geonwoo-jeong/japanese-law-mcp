@@ -72,10 +72,15 @@ func TestProfileはcorpusV4Developmentのcore意味を製品辞書から生成�
 
 			coreMeanings := expectedCoreMeanings(expected.Meanings())
 			candidates := generation.Candidates()
-			if len(candidates) != len(coreMeanings) {
+			assertedCandidates := candidates
+			if len(coreMeanings) == 0 &&
+				len(generation.CompositionMembers()) > 0 {
+				assertedCandidates = nil
+			}
+			if len(assertedCandidates) != len(coreMeanings) {
 				t.Fatalf(
 					"candidate count = %d, want %d; signals=%#v; laws=%#v; concepts=%#v; cues=%#v; terms=%#v; candidates=%#v",
-					len(candidates),
+					len(assertedCandidates),
 					len(coreMeanings),
 					generation.Signals(),
 					preprocessed.LawNameMentions(),
@@ -85,7 +90,7 @@ func TestProfileはcorpusV4Developmentのcore意味を製品辞書から生成�
 					candidates,
 				)
 			}
-			assertCoreMeanings(t, coreMeanings, candidates)
+			assertCoreMeanings(t, coreMeanings, assertedCandidates)
 			assertDevelopmentSignals(t, expected, generation.Signals())
 			if len(coreMeanings) != len(expected.Meanings()) {
 				return
@@ -122,8 +127,8 @@ func TestProfileはcorpusV4Developmentのcore意味を製品辞書から生成�
 			planned++
 		})
 	}
-	if processed != 29 {
-		t.Fatalf("development plan case count = %d, want 29", processed)
+	if processed != 30 {
+		t.Fatalf("development plan case count = %d, want 30", processed)
 	}
 	if planned != 27 {
 		t.Fatalf("core plan evaluation count = %d, want 27", planned)

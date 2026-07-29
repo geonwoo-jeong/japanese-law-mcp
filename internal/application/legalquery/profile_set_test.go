@@ -219,6 +219,18 @@ func TestQueryProfileSetは集合全体の不透明な版を決定的に作る(
 	if changedResult.ProfileVersion() == firstResult.ProfileVersion() {
 		t.Fatal("SOT-MODEL-026: profile 固有版の変更が set version に反映されません")
 	}
+
+	firstComposition := queryProfileSetVersion(
+		[]QueryProfileMetadata{core.metadata, judicial.metadata},
+		"composition-test-v1",
+	)
+	secondComposition := queryProfileSetVersion(
+		[]QueryProfileMetadata{core.metadata, judicial.metadata},
+		"composition-test-v2",
+	)
+	if firstComposition == secondComposition {
+		t.Fatal("SOT-ARCH-027: compositionVersion の変更が set version に反映されません")
+	}
 }
 
 func TestQueryProfileSetは構築後のmetadata変更を拒否する(t *testing.T) {

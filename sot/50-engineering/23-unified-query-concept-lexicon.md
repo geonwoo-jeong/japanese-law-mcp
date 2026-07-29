@@ -14,6 +14,16 @@
 
 一つの概念が複数候補へ対応する事実を保持し、planner へ曖昧性として渡す。法概念辞書は、法令名辞書の alias、provider 固有 synonym または法律判断の定義元にならない。
 
+複数候補の自動実行禁止は、照会文が候補 resource を特定しない場合の既定と
+する。利用者が `条文` または `裁判例` のように一つの候補 resource を
+具体的に明示した場合は、その resource の候補だけを一意な取得意図として
+扱える。複数の候補 resource をそれぞれ明示した場合は、各候補を代替解釈
+ではなく必須意図として `SOT-ARCH-027` の合成対象にできる。`法情報` の
+ように複数 resource を包含する語だけでは、この曖昧性を解消しない。
+resource を明示した場合でも、公開結果へ投影する `conceptSources` は
+辞書の active version に含まれる完全な source tuple
+`{conceptId,title,url,confirmedOn}` と一致しなければならない。
+
 法概念一致を実行根拠に使用した場合は、利用者が解釈根拠を確認できるよう、`SOT-MODEL-022` の `LegalConceptSource` だけを公開結果へ投影する。内部 weight、候補 template、衝突表、入力断片または辞書全体は公開しない。
 
 ## データ
@@ -64,5 +74,6 @@ entry の追加、削除、対応先変更または根拠 URL 変更では辞書
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
+- [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)
 - [SOT-ENG-022: 法令名検索辞書](22-law-name-search-lexicon.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)

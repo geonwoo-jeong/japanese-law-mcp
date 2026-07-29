@@ -533,7 +533,7 @@ func validManifest() map[string]any {
 	return map[string]any{
 		"artifactKind":                 "corpus_manifest",
 		"schemaVersion":                float64(1),
-		"corpusVersion":                "corpus-v1",
+		"corpusVersion":                "corpus-v4",
 		"seed":                         float64(20260728),
 		"holdoutDigest":                digest,
 		"requiredCategoryIds":          stringValues(requiredCategoryIDs()...),
@@ -748,6 +748,7 @@ func requiredExecutionScenarioIDs() []string {
 		"execution-all-failed",
 		"execution-empty",
 		"execution-item-budget",
+		"execution-mixed-composition",
 		"execution-nonempty",
 		"execution-partial-failure",
 		"execution-reversed-completion",

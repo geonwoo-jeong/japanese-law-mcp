@@ -2,7 +2,7 @@ package legalquerycorpus
 
 import "fmt"
 
-const maximumExecutionScenarioIDs = 7
+const maximumExecutionScenarioIDs = 8
 
 // ExecutionScenarioID は、execution fixture が再現する実行条件を表す。
 type ExecutionScenarioID string
@@ -14,6 +14,8 @@ const (
 	ExecutionScenarioIDEmpty ExecutionScenarioID = "execution-empty"
 	// ExecutionScenarioIDItemBudget は、collection の item 上限を表す。
 	ExecutionScenarioIDItemBudget ExecutionScenarioID = "execution-item-budget"
+	// ExecutionScenarioIDMixedComposition は、core と pack の混合意味の実行を表す。
+	ExecutionScenarioIDMixedComposition ExecutionScenarioID = "execution-mixed-composition"
 	// ExecutionScenarioIDNonempty は、一件以上を公開する成功を表す。
 	ExecutionScenarioIDNonempty ExecutionScenarioID = "execution-nonempty"
 	// ExecutionScenarioIDPartialFailure は、成功と失敗の混在を表す。
@@ -26,7 +28,7 @@ const (
 
 func validateExecutionScenarioIDs(values []string) error {
 	if len(values) < 1 || len(values) > maximumExecutionScenarioIDs {
-		return fmt.Errorf("scenarioIds は一件以上七件以下でなければなりません")
+		return fmt.Errorf("scenarioIds は一件以上八件以下でなければなりません")
 	}
 	previous := ""
 	for index, value := range values {
@@ -55,6 +57,7 @@ func executionScenarioIDs() []ExecutionScenarioID {
 		ExecutionScenarioIDAllFailed,
 		ExecutionScenarioIDEmpty,
 		ExecutionScenarioIDItemBudget,
+		ExecutionScenarioIDMixedComposition,
 		ExecutionScenarioIDNonempty,
 		ExecutionScenarioIDPartialFailure,
 		ExecutionScenarioIDReversedCompletion,

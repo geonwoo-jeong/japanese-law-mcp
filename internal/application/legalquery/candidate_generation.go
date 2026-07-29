@@ -25,24 +25,28 @@ const (
 
 // CandidateGenerationValues は、一 profile の候補生成結果を構築する値である。
 type CandidateGenerationValues struct {
-	ProfileID      string
-	ProfileVersion string
-	RankingVersion string
-	Candidates     []LegalQueryCandidate
-	Signals        []CandidateGenerationSignal
-	SelectionMode  QuerySelectionMode
-	HedgePairs     []CandidateHedgePair
+	ProfileID             string
+	ProfileVersion        string
+	RankingVersion        string
+	Candidates            []LegalQueryCandidate
+	Signals               []CandidateGenerationSignal
+	SelectionMode         QuerySelectionMode
+	HedgePairs            []CandidateHedgePair
+	CompositionMembers    []QueryCandidateCompositionMember
+	CompositionConstraint QueryCompositionConstraint
 }
 
 // CandidateGeneration は、一 profile の候補と安全信号を不変に保持する。
 type CandidateGeneration struct {
-	profileID      string
-	profileVersion string
-	rankingVersion string
-	candidates     []LegalQueryCandidate
-	signals        []CandidateGenerationSignal
-	selectionMode  QuerySelectionMode
-	hedgePairs     []CandidateHedgePair
+	profileID             string
+	profileVersion        string
+	rankingVersion        string
+	candidates            []LegalQueryCandidate
+	signals               []CandidateGenerationSignal
+	selectionMode         QuerySelectionMode
+	hedgePairs            []CandidateHedgePair
+	compositionMembers    []QueryCandidateCompositionMember
+	compositionConstraint QueryCompositionConstraint
 }
 
 // NewCandidateGeneration は、候補、ID および信号を複製して検証する。
@@ -53,14 +57,20 @@ func NewCandidateGeneration(
 	if err != nil {
 		return CandidateGeneration{}, err
 	}
+	constraint := values.CompositionConstraint
+	if constraint == "" {
+		constraint = QueryCompositionConstraintNone
+	}
 	generation := CandidateGeneration{
-		profileID:      values.ProfileID,
-		profileVersion: values.ProfileVersion,
-		rankingVersion: values.RankingVersion,
-		candidates:     candidates,
-		signals:        append([]CandidateGenerationSignal(nil), values.Signals...),
-		selectionMode:  values.SelectionMode,
-		hedgePairs:     append([]CandidateHedgePair(nil), values.HedgePairs...),
+		profileID:             values.ProfileID,
+		profileVersion:        values.ProfileVersion,
+		rankingVersion:        values.RankingVersion,
+		candidates:            candidates,
+		signals:               append([]CandidateGenerationSignal(nil), values.Signals...),
+		selectionMode:         values.SelectionMode,
+		hedgePairs:            append([]CandidateHedgePair(nil), values.HedgePairs...),
+		compositionMembers:    cloneQueryCandidateCompositionMembers(values.CompositionMembers),
+		compositionConstraint: constraint,
 	}
 	if err := generation.Validate(); err != nil {
 		return CandidateGeneration{}, err
@@ -107,6 +117,16 @@ func (g CandidateGeneration) HedgePairs() []CandidateHedgePair {
 	return append([]CandidateHedgePair(nil), g.hedgePairs...)
 }
 
+// CompositionMembers は、候補合成の位置付き sidecar の深い複製を返す。
+func (g CandidateGeneration) CompositionMembers() []QueryCandidateCompositionMember {
+	return cloneQueryCandidateCompositionMembers(g.compositionMembers)
+}
+
+// CompositionConstraint は、profile が検出した非実行制約を返す。
+func (g CandidateGeneration) CompositionConstraint() QueryCompositionConstraint {
+	return g.compositionConstraint
+}
+
 // Validate は、profile、候補 ID、step ID および信号順を確認する。
 func (g CandidateGeneration) Validate() error {
 	if err := validateQueryPlanID("profileId", g.profileID); err != nil {
@@ -120,6 +140,14 @@ func (g CandidateGeneration) Validate() error {
 	}
 	if !isQuerySelectionMode(g.selectionMode) {
 		return fmt.Errorf("selectionMode が定義されていません")
+	}
+	if err := g.compositionConstraint.Validate(); err != nil {
+		return err
+	}
+	if g.compositionConstraint == QueryCompositionConstraintIneligible {
+		return fmt.Errorf(
+			"composition_ineligible は profile set 内部だけで使用できます",
+		)
 	}
 	if len(g.candidates) > maximumCandidateOrdinal {
 		return fmt.Errorf(
@@ -179,6 +207,86 @@ func (g CandidateGeneration) Validate() error {
 		candidateIDs,
 	); err != nil {
 		return err
+	}
+	if g.compositionConstraint ==
+		QueryCompositionConstraintStepLimitExceeded {
+		if g.selectionMode != QuerySelectionModeClarificationRequired {
+			return fmt.Errorf(
+				"step_limit_exceeded には clarification_required が必要です",
+			)
+		}
+		if len(g.candidates) != 0 ||
+			len(g.hedgePairs) != 0 ||
+			len(g.compositionMembers) != 0 {
+			return fmt.Errorf(
+				"step_limit_exceeded は候補、hedge pair または composition member を持てません",
+			)
+		}
+	}
+	return validateCandidateCompositionMembers(
+		g.selectionMode,
+		g.candidates,
+		g.compositionMembers,
+	)
+}
+
+func validateCandidateCompositionMembers(
+	mode QuerySelectionMode,
+	candidates []LegalQueryCandidate,
+	members []QueryCandidateCompositionMember,
+) error {
+	if len(members) == 0 {
+		return nil
+	}
+	if mode != QuerySelectionModeAutomatic {
+		return fmt.Errorf(
+			"composition member には automatic selection mode が必要です",
+		)
+	}
+	if len(members) > len(candidates) {
+		return fmt.Errorf(
+			"compositionMembers は candidates の件数以下でなければなりません",
+		)
+	}
+	candidatesByID := make(map[string]LegalQueryCandidate, len(candidates))
+	for _, candidate := range candidates {
+		candidatesByID[candidate.CandidateID()] = candidate
+	}
+	memberCandidateIDs := make(map[string]struct{}, len(members))
+	for memberIndex, member := range members {
+		if err := member.Validate(); err != nil {
+			return fmt.Errorf(
+				"compositionMembers[%d] が有効ではありません: %w",
+				memberIndex,
+				err,
+			)
+		}
+		if _, exists := memberCandidateIDs[member.CandidateID()]; exists {
+			return fmt.Errorf(
+				"composition member の candidateId を重複させることはできません",
+			)
+		}
+		memberCandidateIDs[member.CandidateID()] = struct{}{}
+		candidate, exists := candidatesByID[member.CandidateID()]
+		if !exists {
+			return fmt.Errorf(
+				"composition member は同じ contribution の候補を参照しなければなりません",
+			)
+		}
+		origins := member.StepOrigins()
+		steps := candidate.Steps()
+		if len(origins) != len(steps) {
+			return fmt.Errorf(
+				"stepOrigins は構成元候補の全 step と一対一でなければなりません",
+			)
+		}
+		for index := range steps {
+			if origins[index].StepID() != steps[index].StepID() {
+				return fmt.Errorf(
+					"stepOrigins は構成元候補の step 順と一致しなければなりません",
+				)
+			}
+		}
 	}
 	return nil
 }

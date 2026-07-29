@@ -30,9 +30,9 @@ func TestLoadは実在成果物を検証してmanifest順のCorpusを返す(t *t
 			if err := got.Validate(); err != nil {
 				t.Fatalf("SOT-ENG-026: Corpus.Validate() error = %v", err)
 			}
-			if len(got.Development()) != 7 ||
+			if len(got.Development()) != 8 ||
 				len(got.Holdout()) != 240 ||
-				len(got.Execution()) != 7 {
+				len(got.Execution()) != 8 {
 				t.Fatalf(
 					"SOT-ENG-026: collection size = (%d, %d, %d)",
 					len(got.Development()),

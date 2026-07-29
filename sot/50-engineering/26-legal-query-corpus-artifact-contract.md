@@ -116,6 +116,11 @@ requiredPacks
 
 `evidenceCodes` と `conceptIds` は、意味署名と一致した候補に対する別の正確な assertion とし、意味候補の top-1、top-2 または high-confidence の正解判定へ混在させない。
 
+`conceptIds` は active な法概念辞書の source tuple
+`{conceptId,title,url,confirmedOn}` と整合する entry だけを評価対象にできる。
+corpus 自体は tuple 全体を重複記録せず `conceptId` だけを持ち、評価器が実際の
+候補に含まれる公開 `conceptSources` の完全 tuple と辞書版を照合する。
+
 `unsupported` 以外は `meanings` を一件以上持つ。`meanings` の先頭を ranking 指標の主正解とし、残りは正しい代替解釈とする。各 expected meaning は実際の ranked candidate に同じ意味署名で一件以上存在しなければならない。`selectedMeaningIds` は `meanings` の要素だけを重複なく参照し、実際の selection と順序を含め完全に一致する。decision ごとの件数と理由は `SOT-MODEL-023` に従う。
 
 評価器は `enabledPacks` と各 meaning の `requiredPacks` から availability を導出する。`single` と `hedged` の選択はすべて `available`、`capability_unavailable` の選択は一件以上の `pack_disabled`、`needs_clarification` の選択は `available` とし、`unsupported` と `request_error` は外部呼出し対象を持たない。fixture に availability を重複記録しない。
@@ -224,15 +229,21 @@ manifest の `requiredCategoryIds` は次の十二件を昇順で持つ。これ
 | `actions` | `ExecutionAction[]` | はい | fake capability の宣言的結果 |
 | `expected` | object | はい | 実行結果の期待投影 |
 
-manifest の `requiredExecutionScenarioIds` は次の七件を昇順で持つ。これらは `SOT-ENG-024` が定める実行 fixture を成果物で識別する機械 ID であり、必要な再現範囲は同 SOT を定義元とする。
+manifest の `requiredExecutionScenarioIds` は次の八件を昇順で持つ。これらは `SOT-ENG-024` が定める実行 fixture を成果物で識別する機械 ID であり、必要な再現範囲は同 SOT を定義元とする。
 
 - `execution-all-failed`
 - `execution-empty`
 - `execution-item-budget`
+- `execution-mixed-composition`
 - `execution-nonempty`
 - `execution-partial-failure`
 - `execution-reversed-completion`
 - `execution-timeout`
+
+`execution-mixed-composition` の採用前に固定した `corpus-v1` から
+`corpus-v3` は、同 ID を除く従来の七件を履歴上の必須一覧として保持できる。
+`corpus-v4` 以降は上記八件を必須とする。schema v1 は両配列だけを受理し、
+loader は `corpusVersion` と対応しない配列を拒否する。
 
 参照先 semantic case は `kind=plan` で、decision が `single` または `hedged` でなければならない。`actions` は `selectedMeaningIds` の順と各 meaning の step 順からなる plan 順で保持し、選択した全 step を正確に一回ずつ参照する。
 
@@ -279,6 +290,28 @@ scenario ID は次の構造条件を満たす。
 - `execution-timeout`: 一件以上の timeout が `failed/source_timeout` へ投影される
 - `execution-reversed-completion`: `hedged` の異なる meaning 間で release 順と plan 順が異なるが、期待 attempt は plan 順を保つ
 - `execution-item-budget`: 一件以上の collection が `effectiveLimit` を超える source item を返し、attempt 上限、四十 item 上限、一 page および `hasMore` を保つ
+- `execution-mixed-composition`: core と pack の混合 meaning について、plan 順、
+  required pack、read と collection の混在、および pack 有効時だけの実行
+  attempt を再現する
+
+## 評価器の派生観測
+
+評価器は holdout fixture の `coverageIds` を増やさず、既存の期待値から次の派生
+観測を決定的に計算できる。
+
+- `composition-core-pack`: `selectedMeaningIds` が core と pack の step を同じ
+  meaning に持つ
+- `composition-pack-disabled`: 同じ meaning が `requiredPacks` 非空かつ
+  `decision=capability_unavailable` を持つ
+- `composition-ref-read-search`: 同じ meaning が `judicial_decision` read と
+  検索 step を併せ持つ
+- `composition-four-step-budget`: 同じ meaning が四 step を持ち
+  `decision=single` または `hedged` である
+
+これらは fixture file に新しい coverage ID として保存せず、評価器と baseline
+が既存の期待 meaning から導出して確認する。`same-position-tiebreak` および
+`invalid-member-origin` のように holdout の意味署名へ現れない性質は
+派生観測に含めず、model test または architecture test の責務とする。
 
 ## 実装境界
 

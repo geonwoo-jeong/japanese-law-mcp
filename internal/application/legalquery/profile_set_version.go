@@ -11,9 +11,11 @@ const profileSetVersionPrefix = "profile-set-sha256-"
 
 func queryProfileSetVersion(
 	metadata []QueryProfileMetadata,
+	compositionVersion string,
 ) string {
 	var canonical strings.Builder
-	appendCanonicalPart(&canonical, "schema-v1")
+	appendCanonicalPart(&canonical, "schema-v2")
+	appendCanonicalPart(&canonical, compositionVersion)
 	for _, value := range metadata {
 		appendMetadataCanonicalParts(&canonical, value)
 	}

@@ -408,7 +408,7 @@ func TestExecutionCaseはactionとattemptの不整合を拒否する(t *testing.
 	}
 }
 
-func TestExecutionCaseは七Scenarioの局所必要条件を検証する(t *testing.T) {
+func TestExecutionCaseは八Scenarioの局所必要条件を検証する(t *testing.T) {
 	t.Parallel()
 
 	for name, values := range validExecutionScenarioCases(t) {
@@ -600,6 +600,10 @@ func validExecutionScenarioCases(
 		mustCaseAction(t, "meaning-two", 1, 1, read),
 	}
 	budgetAction := mustCaseAction(t, "meaning-one", 1, 1, collectionLarge)
+	mixedActions := []ExecutionAction{
+		mustCaseAction(t, "meaning-one", 1, 1, read),
+		mustCaseAction(t, "meaning-one", 2, 2, collectionLarge),
+	}
 
 	return map[string]ExecutionCaseValues{
 		"execution-nonempty": executionCaseValuesForActions(
@@ -673,6 +677,26 @@ func validExecutionScenarioCases(
 				20,
 				[]ExpectedAttempt{
 					mustCompletedCollectionAttempt(t, "meaning-one", 1, 20, true),
+				},
+			),
+		),
+		"execution-mixed-composition": executionCaseValuesForActions(
+			t,
+			[]string{"execution-mixed-composition"},
+			mixedActions,
+			mustCaseExpectedResult(
+				t,
+				legalquery.LegalQueryResultStatusCompleted,
+				11,
+				[]ExpectedAttempt{
+					mustCompletedReadAttempt(t, "meaning-one", 1),
+					mustCompletedCollectionAttempt(
+						t,
+						"meaning-one",
+						2,
+						10,
+						true,
+					),
 				},
 			),
 		),
@@ -761,6 +785,11 @@ func invalidExecutionScenarioCases(
 					},
 				),
 			)
+		}(),
+		"mixed-compositionにcollectionなし": func() ExecutionCaseValues {
+			values := valid["execution-nonempty"]
+			values.ScenarioIDs = []string{"execution-mixed-composition"}
+			return values
 		}(),
 	}
 }

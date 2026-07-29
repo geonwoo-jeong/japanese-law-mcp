@@ -4,7 +4,7 @@
 
 ## 規定
 
-統合法情報照会は、公開 MCP 境界から情報源へ直接分岐せず、入力検証、共通前処理、意味候補生成、候補選択、既存ユースケース実行および公開結果組立てを順に進める単方向パイプラインとして構成する。
+統合法情報照会は、公開 MCP 境界から情報源へ直接分岐せず、入力検証、共通前処理、意味候補生成、明示意図の候補合成、候補選択、既存ユースケース実行および公開結果組立てを順に進める単方向パイプラインとして構成する。
 
 ## 構造
 
@@ -15,7 +15,8 @@ flowchart LR
     Service["legalquery application service"]
     Preprocess["共通前処理"]
     Profiles["core / pack query profiles"]
-    Planner["候補生成と選択"]
+    Composer["明示意図の候補合成"]
+    Planner["候補選択"]
     Executor["legalquery executor"]
     Facade["能力別 application facade"]
     Registry["capability route / registry"]
@@ -27,9 +28,9 @@ flowchart LR
     Client --> Tool
     Tool --> Service
     Service --> Preprocess
-    Profiles --> Preprocess
-    Preprocess --> Planner
-    Profiles --> Planner
+    Preprocess --> Profiles
+    Profiles --> Composer
+    Composer --> Planner
     Planner --> Executor
     Executor --> Facade
     Facade --> Registry
@@ -48,6 +49,7 @@ flowchart LR
 | `application/legalquery` | request 全体の予算、候補計画、選択、logical step の実行、部分失敗と結果順序 | MCP JSON、外部 API、HTML selector |
 | 共通前処理 | Unicode 比較用正規化、Kagome、辞書照合、構造化参照、誤記候補の一意性 | capability の採否、provider ID |
 | query profile | 採用済み task/resource、根拠、重み、閾値、辞書と plan 生成規則 | transport、ネットワーク状態、利用者ごとの学習状態 |
+| candidate composer | 異なる profile が明示した必須意図の検証、原文順の合成、根拠・pack の和集合 | provider、pack 有効状態、外部結果、代替解釈の推測 |
 | 能力別 application facade | logical input、route、item 予算および任意の `ref` から既存ユースケースを呼ぶ | 意味 score、公開 MCP schema |
 | registry | `(providerId, capabilityId, majorVersion)` binding と primary route | 意味分類、pack の製品判断 |
 | request materializer | 選択済み binding に対する既存 capability request の決定的な組立て | 候補順位、fallback、外部呼出し |
@@ -62,6 +64,10 @@ MCP handler は `SOT-ARCH-006` に従い薄く保つ。統合照会の planner �
 `application/legalquery` と query profile は `internal/source/...` を import しない。provider package は `application/legalquery`、query profile、Kagome または辞書 package を import しない。provider の選択は既存ユースケースの先にある registry だけが行う。
 
 planner は `SourceResourceRef` を生成しない。入力で受け取った `ref` は共通モデルの不透明な exact target として保持する。binding の選択、採用済み provider と source の照合、および法令 ID からの read request 組立ては `SOT-ARCH-026` に従う。
+
+profile 横断の合成は `SOT-ARCH-027` に従う。profile は別 profile の package
+または候補を参照せず、composer は profile が明示していない member を score
+または近接だけから補わない。
 
 transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公開入力で許可する `law` または `judicial-decision` resource type までを検証する。request 単体で決めない実行時の対応関係は `SOT-ARCH-026` の境界で検証し、前段の構造検証だけで `ref` の実行を許可しない。
 
@@ -99,5 +105,6 @@ transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公
 - [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-026: 統合照会の request materialization](26-unified-query-request-materialization.md)
+- [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](../50-engineering/25-unified-query-package-layout.md)

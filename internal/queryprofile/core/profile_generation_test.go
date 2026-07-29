@@ -325,6 +325,13 @@ func TestProfileは五つ以上の主題を黙って切り捨てない(t *testin
 			generation.Candidates(),
 		)
 	}
+	if generation.CompositionConstraint() !=
+		legalquery.QueryCompositionConstraintStepLimitExceeded {
+		t.Fatalf(
+			"SOT-ARCH-025: compositionConstraint = %q",
+			generation.CompositionConstraint(),
+		)
+	}
 }
 
 func TestProfileは五つの法令名も外部実行候補にしない(t *testing.T) {

@@ -217,6 +217,14 @@ func deriveLegalQueryClarificationQuestions(
 	if plan.Decision() != PlanDecisionNeedsClarification {
 		return nil, fmt.Errorf("明確化質問には needs_clarification plan が必要です")
 	}
+	if reflect.DeepEqual(
+		plan.ReasonCodes(),
+		[]ReasonCode{ReasonCodeStepLimitExceeded},
+	) {
+		return []LegalQueryQuestion{
+			LegalQueryQuestionStepLimitExceeded,
+		}, nil
+	}
 	pool, err := legalQueryClarificationCandidatePool(plan)
 	if err != nil {
 		return nil, err

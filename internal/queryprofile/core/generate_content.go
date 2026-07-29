@@ -18,7 +18,7 @@ func (p *Profile) buildContentCandidates(
 	if err != nil {
 		return nil, err
 	}
-	terms := input.QueryTermMentions()
+	terms := coreContentQueryTerms(input, cues)
 	separated, handled, err := buildSeparatedContentCandidates(
 		input,
 		cues,
@@ -54,6 +54,96 @@ func (p *Profile) buildContentCandidates(
 		return conceptDrafts, nil
 	}
 	return append(conceptDrafts, *termDraft), nil
+}
+
+func coreContentQueryTerms(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) []legalquery.QueryTermMention {
+	terms := input.QueryTermMentions()
+	ref, exists := input.Ref()
+	if !exists ||
+		ref.Key().ResourceType() != "judicial-decision" ||
+		!cues.has("reserved_pack", "judicial-cases") ||
+		!cues.has("task", "read") {
+		return terms
+	}
+	resourceKey := cueMeaningKey("reserved_pack", "judicial-cases")
+	resourceCues := cues.mentions[resourceKey]
+	readCues := cues.mentions[cueMeaningKey("task", "read")]
+	searchCues := cues.mentions[cueMeaningKey("task", "search")]
+	result := make([]legalquery.QueryTermMention, 0, len(terms))
+	for _, term := range terms {
+		if term.Kind() == legalquery.QueryTermMentionMorphologicalPhrase &&
+			isJudicialRefReadTerm(
+				term,
+				resourceCues,
+				readCues,
+				searchCues,
+			) {
+			continue
+		}
+		result = append(result, term)
+	}
+	return result
+}
+
+func isJudicialRefReadTerm(
+	term legalquery.QueryTermMention,
+	resourceCues []legalquery.CueMention,
+	readCues []legalquery.CueMention,
+	searchCues []legalquery.CueMention,
+) bool {
+	if term.Surface() == "参照" &&
+		termFollowsSearchAndPrecedesRead(term, searchCues, readCues) {
+		return true
+	}
+	for _, resourceCue := range resourceCues {
+		for _, readCue := range readCues {
+			if resourceCue.Span().EndByte() <=
+				term.Span().StartByte() &&
+				term.Span().EndByte() <=
+					readCue.Span().StartByte() &&
+				!cueStartsBetween(
+					searchCues,
+					term.Span().EndByte(),
+					readCue.Span().StartByte(),
+				) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func termFollowsSearchAndPrecedesRead(
+	term legalquery.QueryTermMention,
+	searchCues []legalquery.CueMention,
+	readCues []legalquery.CueMention,
+) bool {
+	for _, searchCue := range searchCues {
+		for _, readCue := range readCues {
+			if searchCue.Span().EndByte() <= term.Span().StartByte() &&
+				term.Span().EndByte() <= readCue.Span().StartByte() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func cueStartsBetween(
+	cues []legalquery.CueMention,
+	startByte int,
+	endByte int,
+) bool {
+	for _, cue := range cues {
+		start := cue.Span().StartByte()
+		if startByte <= start && start < endByte {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Profile) buildConceptCandidates(

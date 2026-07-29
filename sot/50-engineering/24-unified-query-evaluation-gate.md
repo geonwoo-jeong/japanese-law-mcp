@@ -32,6 +32,20 @@ holdout は合計二百四十件以上とし、上記の必須カテゴリごと
 
 `execution` は fake provider の結果、空結果、部分失敗、全失敗、timeout、順序逆転および item 予算を再現する。外部ネットワークへ接続する fixture を置かない。
 
+profile 横断合成の受入では、既存 holdout fixture の期待 decision、
+reasonCodes、selected meaning、step 順および requiredPacks から観測できる
+性質だけを使って次を評価する。
+
+- core と pack の混合意味が pack 有効時に実行候補となること
+- 同じ意味が pack 無効時に `capability_unavailable` となること
+- `ref` read と検索の混合が一つの meaning として観測できること
+- 四 step の混合候補が budget 内で保持されること
+
+同じ位置 tie-break または不正 member origin のように holdout 期待値へ直接
+投影しない性質は、ranking 指標へ混ぜず model test または architecture test で
+検証する。holdout digest を変えずに観測できる受入条件だけを baseline の対象と
+する。
+
 ## 測定
 
 holdout 集合で少なくとも次を測定する。

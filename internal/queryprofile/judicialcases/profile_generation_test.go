@@ -295,6 +295,40 @@ func TestProfileは五件の個別検索を切り捨てず明確化する(t *tes
 			generation.SelectionMode(),
 		)
 	}
+	if generation.CompositionConstraint() !=
+		legalquery.QueryCompositionConstraintStepLimitExceeded {
+		t.Fatalf(
+			"SOT-ARCH-025: compositionConstraint = %q",
+			generation.CompositionConstraint(),
+		)
+	}
+}
+
+func TestProfileはRef読取りとの混在でも五件の検索を部分候補にしない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	ref := newTestRef(t, "judicial-decision", "95570/detail2")
+	generation := generateQuery(
+		t,
+		"「医療過誤」、「損害賠償」、「養育費」、「成年後見」、「名誉毀損」を個別に裁判例検索し、この参照を読んでください。",
+		&ref,
+	)
+	if len(generation.Candidates()) != 0 ||
+		len(generation.CompositionMembers()) != 0 ||
+		generation.SelectionMode() !=
+			legalquery.QuerySelectionModeClarificationRequired ||
+		generation.CompositionConstraint() !=
+			legalquery.QueryCompositionConstraintStepLimitExceeded {
+		t.Fatalf(
+			"SOT-MODEL-026: 五件検索と read の混在 generation = candidates:%#v members:%#v mode:%q constraint:%q",
+			generation.Candidates(),
+			generation.CompositionMembers(),
+			generation.SelectionMode(),
+			generation.CompositionConstraint(),
+		)
+	}
 }
 
 func TestProfileはrefなしでread候補を作らない(t *testing.T) {
@@ -341,6 +375,114 @@ func TestProfileはrefなしでread候補を作らない(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestProfileはRef読取りと検索を一候補のMemberへ原文順に保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const query = "この裁判例参照を読み、「駅構内転倒」の裁判例も検索してください。"
+	ref := newTestRef(t, "judicial-decision", "95570/detail2")
+	generation := generateQuery(t, query, &ref)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("read/search candidates = %#v", candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindJudicialDecisionRead ||
+		steps[1].InputKind() != legalquery.InputKindJudicialDecisionSearch {
+		t.Fatalf("read/search steps = %#v", steps)
+	}
+	search, ok := steps[1].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "駅構内転倒" {
+		t.Fatalf("search input = %#v", steps[1].LogicalInput())
+	}
+	members := generation.CompositionMembers()
+	if len(members) != 1 ||
+		members[0].CandidateID() != candidates[0].CandidateID() {
+		t.Fatalf("composition members = %#v", members)
+	}
+	origins := members[0].StepOrigins()
+	if len(origins) != 2 ||
+		origins[0].StepID() != steps[0].StepID() ||
+		origins[0].SourceStartByte() != len("この") ||
+		origins[1].StepID() != steps[1].StepID() ||
+		origins[1].SourceStartByte() != len("この裁判例参照を読み、「") {
+		t.Fatalf("step origins = %#v", origins)
+	}
+}
+
+func TestProfileは検索後のRef読取りでも検索語と原文順を保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const query = "裁判例を「駅構内転倒」で検索し、この参照を読んでください。"
+	ref := newTestRef(t, "judicial-decision", "95570/detail2")
+	generation := generateQuery(t, query, &ref)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("search/read candidates = %#v", candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindJudicialDecisionSearch ||
+		steps[1].InputKind() != legalquery.InputKindJudicialDecisionRead {
+		t.Fatalf("search/read steps = %#v", steps)
+	}
+	search, ok := steps[0].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || search.Query() != "駅構内転倒" {
+		t.Fatalf("search input = %#v", steps[0].LogicalInput())
+	}
+	origins := generation.CompositionMembers()[0].StepOrigins()
+	if len(origins) != 2 ||
+		origins[0].SourceStartByte() != len("裁判例を「") ||
+		origins[1].SourceStartByte() != len("裁判例を「駅構内転倒」で検索し、この") {
+		t.Fatalf("search/read origins = %#v", origins)
+	}
+}
+
+func TestProfileは一意な裁判例検索をCompositionMemberにする(t *testing.T) {
+	t.Parallel()
+
+	const query = "裁判例を「工場騒音」で検索してください。"
+	generation := generateQuery(t, query, nil)
+	candidates := generation.Candidates()
+	members := generation.CompositionMembers()
+	if len(candidates) != 1 || len(members) != 1 {
+		t.Fatalf(
+			"search contribution = candidates:%#v members:%#v",
+			candidates,
+			members,
+		)
+	}
+	origins := members[0].StepOrigins()
+	if len(origins) != 1 ||
+		origins[0].StepID() != candidates[0].Steps()[0].StepID() ||
+		origins[0].SourceStartByte() != len("裁判例を「") {
+		t.Fatalf("search origin = %#v", origins)
+	}
+}
+
+func TestProfileは曖昧な裁判例候補をCompositionMemberにしない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"ネット中傷の裁判例を検索してください。",
+		nil,
+	)
+	if generation.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired ||
+		len(generation.CompositionMembers()) != 0 {
+		t.Fatalf(
+			"ambiguous contribution = mode:%q members:%#v",
+			generation.SelectionMode(),
+			generation.CompositionMembers(),
+		)
 	}
 }
 

@@ -416,32 +416,52 @@ func queryLegalInformationInterpretationSchema(
 }
 
 func queryLegalInformationClarificationSchema() *jsonschema.Schema {
-	reasonCodes := queryLegalInformationOrderedSubsetArraySchema(
-		[]string{
-			string(legalquery.ReasonCodeBelowExecutionThreshold),
-			string(legalquery.ReasonCodeAmbiguousCandidates),
-		},
-		1,
-		2,
-	)
-	questions := queryLegalInformationOrderedSubsetArraySchema(
-		[]string{
-			string(legalquery.LegalQueryQuestionTask),
-			string(legalquery.LegalQueryQuestionResource),
-			string(legalquery.LegalQueryQuestionLaw),
-			string(legalquery.LegalQueryQuestionJudicialDecision),
-		},
-		1,
-		2,
-	)
-	return queryLegalInformationObjectSchema(
+	ordinary := queryLegalInformationObjectSchema(
 		map[string]*jsonschema.Schema{
-			"reasonCodes": reasonCodes,
-			"questions":   questions,
+			"reasonCodes": queryLegalInformationOrderedSubsetArraySchema(
+				[]string{
+					string(legalquery.ReasonCodeBelowExecutionThreshold),
+					string(legalquery.ReasonCodeAmbiguousCandidates),
+				},
+				1,
+				2,
+			),
+			"questions": queryLegalInformationOrderedSubsetArraySchema(
+				[]string{
+					string(legalquery.LegalQueryQuestionTask),
+					string(legalquery.LegalQueryQuestionResource),
+					string(legalquery.LegalQueryQuestionLaw),
+					string(
+						legalquery.LegalQueryQuestionJudicialDecision,
+					),
+				},
+				1,
+				2,
+			),
 		},
 		"reasonCodes",
 		"questions",
 	)
+	stepLimitExceeded := queryLegalInformationObjectSchema(
+		map[string]*jsonschema.Schema{
+			"reasonCodes": queryLegalInformationArrayEnum([]any{
+				string(legalquery.ReasonCodeStepLimitExceeded),
+			}),
+			"questions": queryLegalInformationArrayEnum([]any{
+				string(
+					legalquery.LegalQueryQuestionStepLimitExceeded,
+				),
+			}),
+		},
+		"reasonCodes",
+		"questions",
+	)
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
+			ordinary,
+			stepLimitExceeded,
+		},
+	}
 }
 
 func queryLegalInformationPagePreviewSchema() *jsonschema.Schema {

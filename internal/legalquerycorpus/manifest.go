@@ -290,9 +290,11 @@ func (m Manifest) Validate() error {
 	}
 	if !equalStringSequence(
 		m.requiredExecutionScenarioIDs,
-		manifestRequiredExecutionScenarioIDs(),
+		manifestRequiredExecutionScenarioIDsForVersion(m.corpusVersion),
 	) {
-		return fmt.Errorf("requiredExecutionScenarioIds は定義された七件を正しい順序で保持しなければなりません")
+		return fmt.Errorf(
+			"requiredExecutionScenarioIds は corpus version の定義件数を正しい順序で保持しなければなりません",
+		)
 	}
 	return m.validateSets()
 }
@@ -407,4 +409,22 @@ func manifestRequiredExecutionScenarioIDs() []string {
 		values = append(values, string(scenarioID))
 	}
 	return values
+}
+
+func manifestLegacyRequiredExecutionScenarioIDs() []string {
+	values := manifestRequiredExecutionScenarioIDs()
+	result := make([]string, 0, len(values)-1)
+	result = append(result, values[:3]...)
+	return append(result, values[4:]...)
+}
+
+func manifestRequiredExecutionScenarioIDsForVersion(
+	corpusVersion string,
+) []string {
+	switch corpusVersion {
+	case "corpus-v1", "corpus-v2", "corpus-v3":
+		return manifestLegacyRequiredExecutionScenarioIDs()
+	default:
+		return manifestRequiredExecutionScenarioIDs()
+	}
 }

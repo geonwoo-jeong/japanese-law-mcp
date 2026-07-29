@@ -26,3 +26,4 @@
 - [24-unified-query-internal-public-boundary.md](24-unified-query-internal-public-boundary.md)
 - [25-unified-query-multi-topic-separation.md](25-unified-query-multi-topic-separation.md)
 - [26-unified-query-request-materialization.md](26-unified-query-request-materialization.md)
+- [27-unified-query-cross-profile-composition.md](27-unified-query-cross-profile-composition.md)

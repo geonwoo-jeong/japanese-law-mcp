@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestValidateExecutionScenarioRequirementsは七Scenarioの網羅を受理する(t *testing.T) {
+func TestValidateExecutionScenarioRequirementsは八Scenarioの網羅を受理する(t *testing.T) {
 	t.Parallel()
 
 	fixture := executionScenarioRequirementsValidFixture(t)
@@ -15,7 +15,7 @@ func TestValidateExecutionScenarioRequirementsは七Scenarioの網羅を受理�
 		fixture.development,
 		fixture.execution,
 	); err != nil {
-		t.Fatalf("SOT-ENG-026: 七 scenario の網羅 error = %v", err)
+		t.Fatalf("SOT-ENG-026: 八 scenario の網羅 error = %v", err)
 	}
 	if err := validateExecutionReferences(
 		fixture.development,
@@ -25,13 +25,14 @@ func TestValidateExecutionScenarioRequirementsは七Scenarioの網羅を受理�
 	}
 }
 
-func TestExecutionScenarioRequirementsは固定七Scenarioを独立に確認する(t *testing.T) {
+func TestExecutionScenarioRequirementsは固定八Scenarioを独立に確認する(t *testing.T) {
 	t.Parallel()
 
 	want := []string{
 		"execution-all-failed",
 		"execution-empty",
 		"execution-item-budget",
+		"execution-mixed-composition",
 		"execution-nonempty",
 		"execution-partial-failure",
 		"execution-reversed-completion",
@@ -156,6 +157,71 @@ func TestValidateExecutionScenarioRequirementsはReversedCompletionにHedgedを�
 		string(ExecutionScenarioIDReversedCompletion),
 	) {
 		t.Fatalf("SOT-ENG-026: reversed-completion error の分類 = %v", err)
+	}
+}
+
+func TestValidateExecutionScenarioRequirementsはMixedCompositionにCoreとPackを要求する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	fixture := executionScenarioRequirementsValidFixture(t)
+	mixedIndex := 3
+	fixture.development[mixedIndex] = executionReferenceTestSemanticCase(
+		t,
+		executionReferenceTestSemanticCaseValues{
+			caseID: "development-mixed-composition",
+			meanings: []executionReferenceTestMeaningValues{{
+				id: "meaning-one",
+				steps: []map[string]any{
+					validLawReadStep(),
+					validLawSearchStep(),
+				},
+			}},
+			selectedMeaningIDs: []string{"meaning-one"},
+			enabledPacks:       []string{"judicial-cases"},
+		},
+	)
+	err := validateExecutionScenarioRequirements(
+		fixture.manifest,
+		fixture.development,
+		fixture.execution,
+	)
+	if err == nil {
+		t.Fatal("SOT-ENG-026: pack step のない mixed-composition を受理した")
+	}
+	if !strings.Contains(
+		err.Error(),
+		string(ExecutionScenarioIDMixedComposition),
+	) {
+		t.Fatalf("SOT-ENG-026: mixed-composition error の分類 = %v", err)
+	}
+}
+
+func TestValidateExecutionScenarioRequirementsは旧CorpusVersionで新Scenarioを拒否する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	fixture := executionScenarioRequirementsValidFixture(t)
+	legacyManifest := executionScenarioRequirementsManifestForVersion(
+		t,
+		"corpus-v1",
+		semanticCaseIDsForScenarioTest(fixture.development),
+		[]string{"holdout-placeholder"},
+		executionCaseIDsForScenarioTest(fixture.execution),
+	)
+
+	err := validateExecutionScenarioRequirements(
+		legacyManifest,
+		fixture.development,
+		fixture.execution,
+	)
+	if err == nil {
+		t.Fatal("SOT-ENG-026: 旧 corpus version に mixed-composition を混入させても受理した")
+	}
+	if !strings.Contains(err.Error(), string(ExecutionScenarioIDMixedComposition)) {
+		t.Fatalf("SOT-ENG-026: version 境界 error の分類 = %v", err)
 	}
 }
 
@@ -374,6 +440,13 @@ func executionScenarioRequirementsSemanticCase(
 	case ExecutionScenarioIDItemBudget:
 		values.limit = intPointer(20)
 		values.meanings[0].steps = []map[string]any{validLawSearchStep()}
+	case ExecutionScenarioIDMixedComposition:
+		values.meanings[0].steps = []map[string]any{
+			validLawReadStep(),
+			validJudicialSearchStep(),
+		}
+		values.meanings[0].requiredPacks = []string{"judicial-cases"}
+		values.enabledPacks = []string{"judicial-cases"}
 	default:
 		values.meanings[0].steps = []map[string]any{validLawSearchStep()}
 	}
@@ -523,15 +596,34 @@ func executionScenarioRequirementsManifest(
 	executionIDs []string,
 ) Manifest {
 	t.Helper()
+	return executionScenarioRequirementsManifestForVersion(
+		t,
+		"corpus-v4",
+		developmentIDs,
+		holdoutIDs,
+		executionIDs,
+	)
+}
+
+func executionScenarioRequirementsManifestForVersion(
+	t *testing.T,
+	corpusVersion string,
+	developmentIDs []string,
+	holdoutIDs []string,
+	executionIDs []string,
+) Manifest {
+	t.Helper()
 
 	manifest, err := NewManifest(ManifestValues{
-		ArtifactKind:                 ArtifactKindCorpusManifest,
-		SchemaVersion:                1,
-		CorpusVersion:                "corpus-v1",
-		Seed:                         1,
-		HoldoutDigest:                strings.Repeat("f", 64),
-		RequiredCategoryIDs:          requiredCategoryIDs(),
-		RequiredExecutionScenarioIDs: requiredExecutionScenarioIDs(),
+		ArtifactKind:        ArtifactKindCorpusManifest,
+		SchemaVersion:       1,
+		CorpusVersion:       corpusVersion,
+		Seed:                1,
+		HoldoutDigest:       strings.Repeat("f", 64),
+		RequiredCategoryIDs: requiredCategoryIDs(),
+		RequiredExecutionScenarioIDs: manifestRequiredExecutionScenarioIDsForVersion(
+			corpusVersion,
+		),
 		Development: mustCorpusManifestSetForTest(
 			t,
 			ManifestSetDevelopment,

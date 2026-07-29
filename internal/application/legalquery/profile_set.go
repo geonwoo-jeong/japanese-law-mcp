@@ -10,6 +10,7 @@ import (
 type QueryProfileSet struct {
 	profiles       []QueryProfile
 	metadata       []QueryProfileMetadata
+	composer       CandidateComposer
 	profileVersion string
 	rankingVersion string
 	selection      QuerySelectionPolicy
@@ -17,13 +18,14 @@ type QueryProfileSet struct {
 
 // QueryProfileSetResult は、全 profile の contribution を安定集計した結果である。
 type QueryProfileSetResult struct {
-	profileVersion   string
-	rankingVersion   string
-	rankedCandidates []LegalQueryCandidate
-	signals          []CandidateGenerationSignal
-	selectionMode    QuerySelectionMode
-	hedgePairs       []CandidateHedgePair
-	selection        QuerySelectionPolicy
+	profileVersion        string
+	rankingVersion        string
+	rankedCandidates      []LegalQueryCandidate
+	signals               []CandidateGenerationSignal
+	selectionMode         QuerySelectionMode
+	hedgePairs            []CandidateHedgePair
+	compositionConstraint QueryCompositionConstraint
+	selection             QuerySelectionPolicy
 }
 
 // NewQueryProfileSet は、同じ ranking 校正を持つ profile を固定順で保持する。
@@ -57,10 +59,23 @@ func NewQueryProfileSet(profiles []QueryProfile) (QueryProfileSet, error) {
 		}
 		metadata = append(metadata, value)
 	}
+	composer, err := NewCandidateComposer(
+		defaultCandidateCompositionVersion,
+	)
+	if err != nil {
+		return QueryProfileSet{}, fmt.Errorf(
+			"candidate composer を初期化できません: %w",
+			err,
+		)
+	}
 	return QueryProfileSet{
-		profiles:       append([]QueryProfile(nil), profiles...),
-		metadata:       append([]QueryProfileMetadata(nil), metadata...),
-		profileVersion: queryProfileSetVersion(metadata),
+		profiles: append([]QueryProfile(nil), profiles...),
+		metadata: append([]QueryProfileMetadata(nil), metadata...),
+		composer: composer,
+		profileVersion: queryProfileSetVersion(
+			metadata,
+			composer.Version(),
+		),
 		rankingVersion: metadata[0].RankingVersion(),
 		selection:      metadata[0].Selection(),
 	}, nil
@@ -86,6 +101,12 @@ func (s QueryProfileSet) Validate() error {
 	}
 	if s.profileVersion != rebuilt.profileVersion {
 		return fmt.Errorf("profile set version が構築時の metadata と一致しません")
+	}
+	if err := s.composer.Validate(); err != nil {
+		return fmt.Errorf("candidate composer が有効ではありません: %w", err)
+	}
+	if s.composer.Version() != rebuilt.composer.Version() {
+		return fmt.Errorf("compositionVersion が構築時と一致しません")
 	}
 	if s.rankingVersion != rebuilt.rankingVersion {
 		return fmt.Errorf("rankingVersion が構築時の metadata と一致しません")
@@ -149,6 +170,7 @@ func (s QueryProfileSet) Collect(
 		if err := aggregate.add(
 			contribution,
 			currentMetadata.Score(),
+			index+1,
 		); err != nil {
 			return QueryProfileSetResult{}, fmt.Errorf(
 				"profiles[%d] の contribution を集約できません: %w",
@@ -156,6 +178,21 @@ func (s QueryProfileSet) Collect(
 				err,
 			)
 		}
+	}
+	composerScope, err := NewCandidateIDScope(len(s.profiles) + 1)
+	if err != nil {
+		return QueryProfileSetResult{}, err
+	}
+	if err := aggregate.compose(
+		preprocessed.Query(),
+		s.composer,
+		s.metadata[0].Score(),
+		composerScope,
+	); err != nil {
+		return QueryProfileSetResult{}, fmt.Errorf(
+			"profile contributions を合成できません: %w",
+			err,
+		)
 	}
 	return aggregate.result(
 		s.profileVersion,
@@ -198,6 +235,11 @@ func (r QueryProfileSetResult) HedgePairs() []CandidateHedgePair {
 	return append([]CandidateHedgePair(nil), r.hedgePairs...)
 }
 
+// CompositionConstraint は、profile または候補合成で検出した非実行制約を返す。
+func (r QueryProfileSetResult) CompositionConstraint() QueryCompositionConstraint {
+	return r.compositionConstraint
+}
+
 func (r QueryProfileSetResult) selectionPolicy() QuerySelectionPolicy {
 	return r.selection
 }
@@ -229,36 +271,34 @@ func validateProfileSetMember(
 }
 
 type profileSetAggregate struct {
-	candidates    []LegalQueryCandidate
-	signals       map[CandidateGenerationSignal]struct{}
-	selectionMode QuerySelectionMode
-	hedgePairs    []CandidateHedgePair
-	candidateIDs  map[string]struct{}
-	stepIDs       map[string]struct{}
-	meanings      map[string]struct{}
+	candidates            []LegalQueryCandidate
+	signals               map[CandidateGenerationSignal]struct{}
+	selectionMode         QuerySelectionMode
+	hedgePairs            []CandidateHedgePair
+	contributions         []candidateCompositionContribution
+	compositionConstraint QueryCompositionConstraint
+	candidateIDs          map[string]struct{}
+	stepIDs               map[string]struct{}
+	meanings              map[string]struct{}
 }
 
 func newProfileSetAggregate() profileSetAggregate {
 	return profileSetAggregate{
-		signals:       make(map[CandidateGenerationSignal]struct{}),
-		selectionMode: QuerySelectionModeAutomatic,
-		candidateIDs:  make(map[string]struct{}),
-		stepIDs:       make(map[string]struct{}),
-		meanings:      make(map[string]struct{}),
+		signals:               make(map[CandidateGenerationSignal]struct{}),
+		selectionMode:         QuerySelectionModeAutomatic,
+		compositionConstraint: QueryCompositionConstraintNone,
+		candidateIDs:          make(map[string]struct{}),
+		stepIDs:               make(map[string]struct{}),
+		meanings:              make(map[string]struct{}),
 	}
 }
 
 func (a *profileSetAggregate) add(
 	contribution QueryProfileContribution,
 	score QueryScorePolicy,
+	profileOrdinal int,
 ) error {
 	candidates := contribution.Candidates()
-	if len(a.candidates)+len(candidates) > MaxRankedCandidates {
-		return fmt.Errorf(
-			"全 profile の candidates は %d 件以下でなければなりません",
-			MaxRankedCandidates,
-		)
-	}
 	if err := validateContributionCandidateOrder(candidates, score); err != nil {
 		return err
 	}
@@ -274,7 +314,67 @@ func (a *profileSetAggregate) add(
 		QuerySelectionModeClarificationRequired {
 		a.selectionMode = QuerySelectionModeClarificationRequired
 	}
+	if contribution.CompositionConstraint() ==
+		QueryCompositionConstraintStepLimitExceeded {
+		a.compositionConstraint =
+			QueryCompositionConstraintStepLimitExceeded
+	}
 	a.hedgePairs = append(a.hedgePairs, contribution.HedgePairs()...)
+	a.contributions = append(
+		a.contributions,
+		candidateCompositionContribution{
+			profileOrdinal: profileOrdinal,
+			candidates:     candidates,
+			members:        contribution.CompositionMembers(),
+			hedgePairs:     contribution.HedgePairs(),
+			selectionMode:  contribution.SelectionMode(),
+		},
+	)
+	return nil
+}
+
+func (a *profileSetAggregate) compose(
+	query string,
+	composer CandidateComposer,
+	score QueryScorePolicy,
+	scope CandidateIDScope,
+) error {
+	composed, err := composer.compose(
+		query,
+		a.contributions,
+		a.candidates,
+		a.hedgePairs,
+		score,
+		scope,
+	)
+	if err != nil {
+		return err
+	}
+	a.candidates = composed.candidates
+	a.hedgePairs = composed.hedgePairs
+	switch {
+	case composed.constraint ==
+		QueryCompositionConstraintStepLimitExceeded:
+		a.compositionConstraint =
+			QueryCompositionConstraintStepLimitExceeded
+	case composed.constraint == QueryCompositionConstraintIneligible &&
+		a.compositionConstraint == QueryCompositionConstraintNone:
+		a.compositionConstraint = QueryCompositionConstraintIneligible
+	}
+	return a.rebuildCandidateIndexes()
+}
+
+func (a *profileSetAggregate) rebuildCandidateIndexes() error {
+	a.candidateIDs = make(map[string]struct{}, len(a.candidates))
+	a.stepIDs = make(map[string]struct{})
+	a.meanings = make(map[string]struct{}, len(a.candidates))
+	candidates := append([]LegalQueryCandidate(nil), a.candidates...)
+	a.candidates = nil
+	for _, candidate := range candidates {
+		if err := a.addCandidate(candidate); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -319,13 +419,14 @@ func (a profileSetAggregate) result(
 		return QueryProfileSetResult{}, err
 	}
 	result := QueryProfileSetResult{
-		profileVersion:   profileVersion,
-		rankingVersion:   rankingVersion,
-		rankedCandidates: candidates,
-		signals:          orderedGenerationSignals(a.signals),
-		selectionMode:    a.selectionMode,
-		hedgePairs:       append([]CandidateHedgePair(nil), a.hedgePairs...),
-		selection:        selection,
+		profileVersion:        profileVersion,
+		rankingVersion:        rankingVersion,
+		rankedCandidates:      candidates,
+		signals:               orderedGenerationSignals(a.signals),
+		selectionMode:         a.selectionMode,
+		hedgePairs:            append([]CandidateHedgePair(nil), a.hedgePairs...),
+		compositionConstraint: a.compositionConstraint,
+		selection:             selection,
 	}
 	if err := result.validate(); err != nil {
 		return QueryProfileSetResult{}, err
@@ -388,6 +489,9 @@ func (r QueryProfileSetResult) validate() error {
 	}
 	if !isQuerySelectionMode(r.selectionMode) {
 		return fmt.Errorf("selectionMode が定義されていません")
+	}
+	if err := r.compositionConstraint.Validate(); err != nil {
+		return fmt.Errorf("compositionConstraint が有効ではありません: %w", err)
 	}
 	if err := r.selection.Validate(); err != nil {
 		return fmt.Errorf("selection policy が有効ではありません: %w", err)

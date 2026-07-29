@@ -6,18 +6,29 @@ import (
 	"testing"
 )
 
+const loadTestCorpusVersion = "corpus-v4"
+
 func loadTestWriteValidCorpus(t *testing.T) filesystemReadTestLayout {
 	t.Helper()
 
+	layout := filesystemReadTestNewLayoutForVersion(t, loadTestCorpusVersion)
 	fixtures := make([]manifestIntegrityTestFixture, 0, 254)
 	fixtures = append(fixtures, loadTestDevelopmentFixtures(t)...)
 	fixtures = append(fixtures, loadTestHoldoutFixtures(t)...)
 	fixtures = append(fixtures, loadTestExecutionFixtures(t)...)
-	layout, _, _ := manifestIntegrityTestPrepare(
+	for _, fixture := range fixtures {
+		filesystemReadTestWriteFixture(
+			t,
+			layout,
+			fixture.set,
+			fixture.caseID,
+			fixture.data,
+		)
+	}
+	filesystemReadTestWriteFile(
 		t,
-		fixtures,
-		"corpus-v1",
-		"",
+		layout.manifestPath,
+		mustLoadTestManifestData(t, fixtures, loadTestCorpusVersion),
 	)
 	filesystemReadTestWriteFile(
 		t,
@@ -27,13 +38,31 @@ func loadTestWriteValidCorpus(t *testing.T) filesystemReadTestLayout {
 	return layout
 }
 
+func mustLoadTestManifestData(
+	t *testing.T,
+	fixtures []manifestIntegrityTestFixture,
+	corpusVersion string,
+) []byte {
+	t.Helper()
+	manifestData, _ := manifestIntegrityTestBuildManifest(
+		t,
+		fixtures,
+		corpusVersion,
+		"",
+	)
+	return manifestData
+}
+
 func loadTestDevelopmentFixtures(
 	t *testing.T,
 ) []manifestIntegrityTestFixture {
 	t.Helper()
 
-	fixtures := make([]manifestIntegrityTestFixture, 0, 7)
-	for _, scenarioID := range manifestRequiredExecutionScenarioIDs() {
+	scenarioIDs := manifestRequiredExecutionScenarioIDsForVersion(
+		loadTestCorpusVersion,
+	)
+	fixtures := make([]manifestIntegrityTestFixture, 0, len(scenarioIDs))
+	for _, scenarioID := range scenarioIDs {
 		caseID := "development-" + strings.TrimPrefix(scenarioID, "execution-")
 		fixtures = append(fixtures, manifestIntegrityTestFixture{
 			set:    ManifestSetDevelopment,
@@ -73,6 +102,13 @@ func loadTestDevelopmentSource(
 		expected["meanings"] = []any{
 			loadTestMeaning("meaning-one", []any{validLawReadStep()}),
 			loadTestMeaning("meaning-two", []any{validLawReadStep()}),
+		}
+	case string(ExecutionScenarioIDMixedComposition):
+		source["enabledPacks"] = []any{"judicial-cases"}
+		meaningOne["requiredPacks"] = []any{"judicial-cases"}
+		meaningOne["steps"] = []any{
+			validLawReadStep(),
+			validJudicialSearchStep(),
 		}
 	}
 	return source
@@ -127,8 +163,11 @@ func loadTestExecutionFixtures(
 ) []manifestIntegrityTestFixture {
 	t.Helper()
 
-	fixtures := make([]manifestIntegrityTestFixture, 0, 7)
-	for _, scenarioID := range manifestRequiredExecutionScenarioIDs() {
+	scenarioIDs := manifestRequiredExecutionScenarioIDsForVersion(
+		loadTestCorpusVersion,
+	)
+	fixtures := make([]manifestIntegrityTestFixture, 0, len(scenarioIDs))
+	for _, scenarioID := range scenarioIDs {
 		fixtures = append(fixtures, manifestIntegrityTestFixture{
 			set:    ManifestSetExecution,
 			caseID: scenarioID,
@@ -203,6 +242,38 @@ func loadTestExecutionSource(scenarioID string) map[string]any {
 			"completed",
 			20,
 			[]any{loadTestCollectionAttempt("meaning-one", 1, 20, true, "completed")},
+		)
+	case string(ExecutionScenarioIDMixedComposition):
+		source["actions"] = []any{
+			loadTestAction(
+				"meaning-one",
+				1,
+				1,
+				map[string]any{"kind": "read_success"},
+			),
+			loadTestAction(
+				"meaning-one",
+				2,
+				2,
+				map[string]any{
+					"kind":            "collection_success",
+					"sourceItemCount": float64(3),
+				},
+			),
+		}
+		source["expected"] = loadTestResultExpected(
+			"completed",
+			4,
+			[]any{
+				loadTestReadAttempt("meaning-one", 1),
+				loadTestCollectionAttempt(
+					"meaning-one",
+					2,
+					3,
+					false,
+					"completed",
+				),
+			},
 		)
 	case string(ExecutionScenarioIDNonempty):
 		source["actions"] = []any{

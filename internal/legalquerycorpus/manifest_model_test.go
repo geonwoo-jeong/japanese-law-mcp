@@ -21,7 +21,7 @@ func TestManifestV1Decodeと不変getter(t *testing.T) {
 	}
 	if manifest.ArtifactKind() != ArtifactKindCorpusManifest ||
 		manifest.SchemaVersion() != 1 ||
-		manifest.CorpusVersion() != "corpus-v1" ||
+		manifest.CorpusVersion() != "corpus-v4" ||
 		manifest.Seed() != 20260728 ||
 		manifest.HoldoutDigest() != strings.Repeat("a", 64) {
 		t.Fatalf("SOT-ENG-026: manifest header = %#v", manifest)
@@ -65,7 +65,7 @@ func TestManifestConstructorは入力sliceを複製する(t *testing.T) {
 	manifest, err := NewManifest(ManifestValues{
 		ArtifactKind:                 ArtifactKindCorpusManifest,
 		SchemaVersion:                1,
-		CorpusVersion:                "corpus-v1",
+		CorpusVersion:                "corpus-v4",
 		Seed:                         1,
 		HoldoutDigest:                strings.Repeat("d", 64),
 		RequiredCategoryIDs:          categories,
@@ -135,6 +135,14 @@ func TestManifestはzero値と不正値を拒否する(t *testing.T) {
 			value := validManifest()
 			value["requiredExecutionScenarioIds"] = stringValues(
 				requiredExecutionScenarioIDs()[:6]...,
+			)
+			return value
+		},
+		"legacy versionに新scenario一覧": func() map[string]any {
+			value := validManifest()
+			value["corpusVersion"] = "corpus-v1"
+			value["requiredExecutionScenarioIds"] = stringValues(
+				requiredExecutionScenarioIDs()...,
 			)
 			return value
 		},

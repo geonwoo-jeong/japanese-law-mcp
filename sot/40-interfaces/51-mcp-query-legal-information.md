@@ -65,7 +65,7 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 | `completed` | あり | 一つ以上の非空 result が成功し、失敗がない |
 | `empty` | あり | 選択した全 collection step が成功し、結果が空 |
 | `partial` | あり | 実行した step に成功と失敗が一つ以上ずつある |
-| `needs_clarification` | なし | 安全に選べる候補がない |
+| `needs_clarification` | なし | 安全に選べる候補がない、または一度に取得すべき明示意図が四 step 上限を超える |
 | `capability_unavailable` | なし | 採用済みだが必要な拡張パックが無効 |
 | `unsupported` | なし | 対象外、非日本語境界違反または未採用 task/resource |
 
@@ -113,7 +113,7 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 
 ## 確認
 
-入力の全境界、公開供給元ごとの `ref` の往復と不一致、法令専門ツールが `ref` を公開しない互換性、未知項目、非日本語、識別子だけの入力、構造化識別子を含む日本語、混在言語、対象外意図との混在、単一候補、二候補、明確化、pack 無効、空結果、部分失敗、全失敗、全 `R/C` item 配分、四呼出し上限、四十 item 上限、一ページ制約、起動時 route 不備および transport 間の schema 一致を MCP 契約テストで確認する。
+入力の全境界、公開供給元ごとの `ref` の往復と不一致、法令専門ツールが `ref` を公開しない互換性、未知項目、非日本語、識別子だけの入力、構造化識別子を含む日本語、混在言語、対象外意図との混在、単一候補、二候補、明確化、五 step 明確化、pack 無効、空結果、部分失敗、全失敗、全 `R/C` item 配分、四呼出し上限、四十 item 上限、一ページ制約、起動時 route 不備および transport 間の schema 一致を MCP 契約テストで確認する。
 
 `民法第709条を見せて。私の場合は違法ですか` のような混在要求で外部呼出しを行わないこと、内部 score と trace が公開されないこと、法概念の公的資料、裁判例 notice と全 item の provenance が保持されること、および既存専門ツールの契約 fixture が変わらないことを確認する。
 

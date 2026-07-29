@@ -17,6 +17,8 @@ const (
 	LegalQueryQuestionLaw LegalQueryQuestion = "対象の法令名、法令 ID または条番号を指定してください。"
 	// LegalQueryQuestionJudicialDecision は、裁判例の検索語または参照を求める。
 	LegalQueryQuestionJudicialDecision LegalQueryQuestion = "対象の裁判例を検索する語または裁判例の ref を指定してください。"
+	// LegalQueryQuestionStepLimitExceeded は、明示する取得項目を四件以下へ分割するよう求める。
+	LegalQueryQuestionStepLimitExceeded LegalQueryQuestion = "一度に取得する項目を4件以下に分けて指定してください。"
 )
 
 // LegalQueryStepSummary は、logical input を除いた公開用 step を表す。
@@ -362,6 +364,19 @@ func (c LegalQueryClarification) Validate() error {
 	); err != nil {
 		return err
 	}
+	if len(c.reasonCodes) == 1 &&
+		c.reasonCodes[0] == ReasonCodeStepLimitExceeded {
+		if len(c.questions) != 1 ||
+			c.questions[0] != LegalQueryQuestionStepLimitExceeded {
+			return fmt.Errorf("step_limit_exceeded には専用の質問が一件必要です")
+		}
+		return nil
+	}
+	for _, question := range c.questions {
+		if question == LegalQueryQuestionStepLimitExceeded {
+			return fmt.Errorf("step 上限の専用質問には step_limit_exceeded が必要です")
+		}
+	}
 	if len(c.questions) < 1 || len(c.questions) > 2 {
 		return fmt.Errorf("questions は一件以上二件以下でなければなりません")
 	}
@@ -410,6 +425,8 @@ func legalQueryQuestionRank(value LegalQueryQuestion) (int, bool) {
 		return 2, true
 	case LegalQueryQuestionJudicialDecision:
 		return 3, true
+	case LegalQueryQuestionStepLimitExceeded:
+		return 4, true
 	default:
 		return 0, false
 	}

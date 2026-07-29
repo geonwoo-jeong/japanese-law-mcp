@@ -35,6 +35,12 @@ func validatePlanDefinition(plan LegalQueryPlan) error {
 	}
 	if slices.Equal(
 		plan.reasonCodes,
+		[]ReasonCode{ReasonCodeStepLimitExceeded},
+	) && len(plan.selected) != 0 {
+		return fmt.Errorf("step_limit_exceeded の selected は空でなければなりません")
+	}
+	if slices.Equal(
+		plan.reasonCodes,
 		[]ReasonCode{ReasonCodeStandaloneStructuredQuery},
 	) && len(plan.rankedCandidates) != 0 {
 		return fmt.Errorf("standalone structured query は rankedCandidates を持てません")
@@ -205,6 +211,10 @@ func validateReasonCodes(
 	case PlanDecisionHedged:
 		return requireExactReason(values, ReasonCodeHedgedCloseCandidates)
 	case PlanDecisionNeedsClarification:
+		if len(values) == 1 &&
+			values[0] == ReasonCodeStepLimitExceeded {
+			return nil
+		}
 		return requireReasonsFrom(
 			values,
 			1,
@@ -266,16 +276,18 @@ func reasonCodeRank(value ReasonCode) (int, bool) {
 		return 2, true
 	case ReasonCodeAmbiguousCandidates:
 		return 3, true
-	case ReasonCodeRequiredPackDisabled:
+	case ReasonCodeStepLimitExceeded:
 		return 4, true
-	case ReasonCodeNonJapaneseQuery:
+	case ReasonCodeRequiredPackDisabled:
 		return 5, true
-	case ReasonCodeStandaloneStructuredQuery:
+	case ReasonCodeNonJapaneseQuery:
 		return 6, true
-	case ReasonCodeMixedUnsupportedIntent:
+	case ReasonCodeStandaloneStructuredQuery:
 		return 7, true
-	case ReasonCodeUnsupportedTaskOrResource:
+	case ReasonCodeMixedUnsupportedIntent:
 		return 8, true
+	case ReasonCodeUnsupportedTaskOrResource:
+		return 9, true
 	default:
 		return 0, false
 	}
