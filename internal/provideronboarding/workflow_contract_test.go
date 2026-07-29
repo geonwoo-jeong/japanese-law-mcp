@@ -21,6 +21,7 @@ func TestQualityWorkflowUsesDefaultBranchForNewRefProviderBase(t *testing.T) {
 		"workflows",
 		"quality.yml",
 	)
+	//nolint:gosec // SOT-ENG-018/020: テストの作業ディレクトリから固定した repository 内 workflow だけを読み取る。
 	content, err := os.ReadFile(workflowPath)
 	if err != nil {
 		t.Fatalf("品質 workflow を読み取れませんでした: %v", err)
