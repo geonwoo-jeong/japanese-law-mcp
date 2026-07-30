@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-01",
+  "coverageIds": [
+    "intent-law-updates",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2024-04-01"
+            },
+            "resource": "law",
+            "task": "list_updates"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-updates-date-20240401",
+  "request": {
+    "query": "2024年4月1日の法令更新一覧を取得して"
+  },
+  "schemaVersion": 1
+}

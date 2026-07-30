@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-02",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2025-01-01",
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-minpo-law-search-date",
+  "request": {
+    "query": "2025年1月1日時点で「民法」という法令を検索して"
+  },
+  "schemaVersion": 1
+}

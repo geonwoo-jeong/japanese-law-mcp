@@ -1,0 +1,106 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-18",
+  "coverageIds": [
+    "budget-ranked-candidate-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "cabinet-office",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "411AC0000000089"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "internal-affairs",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "411AC0000000091"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "finance-1950",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "356AC0000000039"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "finance-1983",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "358AC0000000045"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "cabinet-office",
+      "internal-affairs"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-ranked-reform-finance",
+  "request": {
+    "query": "中央省庁等改革関連法か財源確保法と呼ばれる法令の本文を一つ読みたいです。"
+  },
+  "schemaVersion": 1
+}
