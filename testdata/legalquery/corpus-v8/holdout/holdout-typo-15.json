@@ -1,0 +1,71 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-typo-15",
+  "coverageIds": [
+    "ambiguity-alias-collision",
+    "intent-law-search",
+    "name-official-abbreviation",
+    "typo-substitution"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "meaningId": "current-act",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民事訴訟法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "meaningId": "amendment-enforcement-act",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民事訴訟法中改正法律施行法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "current-act",
+      "amendment-enforcement-act"
+    ]
+  },
+  "leakageGroupId": "holdout-typo-minso-alias-search",
+  "request": {
+    "query": "民訴去っていう法令を検索してもらえますか。"
+  },
+  "schemaVersion": 1
+}

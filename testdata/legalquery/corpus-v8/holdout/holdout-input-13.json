@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-13",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-limit-negative",
+  "request": {
+    "limitPerAttempt": -1,
+    "query": "行政手続法を検索してください"
+  },
+  "schemaVersion": 1
+}

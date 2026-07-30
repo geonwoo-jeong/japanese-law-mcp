@@ -1,0 +1,50 @@
+{
+  "actions": [
+    {
+      "meaningId": "primary",
+      "outcome": {
+        "kind": "collection_success",
+        "sourceItemCount": 1000
+      },
+      "releaseOrder": 1,
+      "stepOrdinal": 1
+    },
+    {
+      "meaningId": "primary",
+      "outcome": {
+        "kind": "collection_success",
+        "sourceItemCount": 1000
+      },
+      "releaseOrder": 2,
+      "stepOrdinal": 2
+    }
+  ],
+  "artifactKind": "execution_case",
+  "caseId": "execution-item-budget",
+  "expected": {
+    "attempts": [
+      {
+        "hasMore": true,
+        "meaningId": "primary",
+        "outcome": "completed",
+        "publishedItemCount": 20,
+        "stepOrdinal": 1
+      },
+      {
+        "hasMore": true,
+        "meaningId": "primary",
+        "outcome": "completed",
+        "publishedItemCount": 20,
+        "stepOrdinal": 2
+      }
+    ],
+    "returnedItemCount": 40,
+    "status": "completed",
+    "terminal": "result"
+  },
+  "scenarioIds": [
+    "execution-item-budget"
+  ],
+  "schemaVersion": 1,
+  "semanticCaseId": "development-execution-item-budget"
+}

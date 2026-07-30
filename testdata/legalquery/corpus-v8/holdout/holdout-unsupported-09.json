@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-unsupported-09",
+  "coverageIds": [
+    "boundary-mixed-unsupported",
+    "intent-law-search",
+    "structure-multiple-explicit-intents",
+    "unsupported-translation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "recognized-core",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "mixed_unsupported_intent",
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-unsupported-translation-mixed-civil",
+  "request": {
+    "query": "民法を検索し、検索結果を英語に翻訳してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 1
+}

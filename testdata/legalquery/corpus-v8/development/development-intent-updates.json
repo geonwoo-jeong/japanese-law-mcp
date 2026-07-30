@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-intent-updates",
+  "coverageIds": [
+    "intent-law-updates"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "updates",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2026-05-15"
+            },
+            "resource": "law",
+            "task": "list_updates"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "updates"
+    ]
+  },
+  "leakageGroupId": "development-intent-updates",
+  "request": {
+    "query": "2026年5月15日の法令更新一覧を取得してください。"
+  },
+  "schemaVersion": 1
+}
