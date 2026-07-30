@@ -111,6 +111,28 @@ func TestProfileは更新された法令一覧を本文検索語へ分割しな�
 	}
 }
 
+func TestProfileは法令更新一覧で一覧語補完を適用しない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"2025年4月1日に更新された法令一覧を検索する",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1: %#v", len(candidates), candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawUpdates {
+		t.Fatalf("SOT-MODEL-025: 更新一覧の step = %#v", steps)
+	}
+	if _, ok := steps[0].LogicalInput().(legalquery.LawUpdateListIntentV1); !ok {
+		t.Fatalf("更新一覧入力 = %#v", steps[0].LogicalInput())
+	}
+}
+
 func TestProfileは引用した一覧を本文検索語として維持する(t *testing.T) {
 	t.Parallel()
 
