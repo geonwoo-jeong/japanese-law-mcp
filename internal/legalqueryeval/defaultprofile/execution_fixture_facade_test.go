@@ -81,6 +81,39 @@ func TestExecutionFixtureFacadeは全Core能力Variantを再生する(t *testing
 	}
 }
 
+func TestExecutionFixtureFacadeは重複StepActionを拒否する(t *testing.T) {
+	articleInput, _ := executionFixtureUnusedCoreInputs(t)
+	plan := executionFixtureCorePlan(t, articleInput)
+	step := plan.RankedCandidates()[0].Steps()[0]
+	budget := plan.Budget().StepBudgets()[0]
+	readSuccess, err := legalquerycorpus.NewReadSuccessOutcome()
+	if err != nil {
+		t.Fatalf("read_success を作成できません: %v", err)
+	}
+	actions := []resolvedExecutionAction{
+		{
+			releaseOrder: 1,
+			step:         step,
+			budget:       budget,
+			outcome:      readSuccess,
+		},
+		{
+			releaseOrder: 2,
+			step:         step,
+			budget:       budget,
+			outcome:      readSuccess,
+		},
+	}
+	if _, err := newExecutionFixtureFacade(resolvedExecutionFixture{
+		actions: actions,
+		actionByStepID: map[string]resolvedExecutionAction{
+			step.StepID(): actions[1],
+		},
+	}); err == nil {
+		t.Fatal("SOT-ENG-026: 同じ step の action 重複を受理しました")
+	}
+}
+
 func executionFixtureUnusedCoreInputs(
 	t *testing.T,
 ) (legalquery.LawArticleReadIntentV1, legalquery.LawUpdateListIntentV1) {

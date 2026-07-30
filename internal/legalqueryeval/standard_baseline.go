@@ -85,7 +85,9 @@ func LoadStandardBaseline(path string) (StandardReport, error) {
 	if err != nil {
 		return StandardReport{}, fmt.Errorf("baseline を開けません: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	info, err := file.Stat()
 	if err != nil {
 		return StandardReport{}, fmt.Errorf("baseline を確認できません: %w", err)

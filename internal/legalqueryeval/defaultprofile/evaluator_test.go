@@ -288,6 +288,67 @@ func TestExecutionEvaluatorは誤Resource予算超過と順序逆転を検出す
 	}
 }
 
+func TestExecutionEvaluatorはStepIDで結果予算を照合する(t *testing.T) {
+	corpus, evaluator := loadExecutionTestRuntime(t)
+	semanticCase, executionCase := executionTestCases(
+		t,
+		corpus,
+		"execution-mixed-composition",
+	)
+	semanticEvaluation, plan, hasPlan, err := evaluator.EvaluateWithPlan(
+		context.Background(),
+		semanticCase,
+	)
+	if err != nil || !hasPlan {
+		t.Fatalf("試験用 plan を作成できません: hasPlan=%t error=%v", hasPlan, err)
+	}
+	fixture, err := resolveExecutionFixture(
+		semanticCase,
+		semanticEvaluation,
+		plan,
+		executionCase,
+	)
+	if err != nil {
+		t.Fatalf("試験用 execution fixture を解決できません: %v", err)
+	}
+	observed := make(
+		[]observedExecutionAttempt,
+		0,
+		len(fixture.actions),
+	)
+	for _, action := range fixture.actions {
+		count := 1
+		if limit, exists := action.budget.EffectiveLimit(); exists {
+			count = limit
+		}
+		observed = append(observed, observedExecutionAttempt{
+			stepID:             action.step.StepID(),
+			publishedItemCount: count,
+		})
+	}
+	observed[1], observed[2] = observed[2], observed[1]
+	if got := resultBudgetViolationCount(plan, observed); got != 0 {
+		t.Fatalf("SOT-ENG-024: step ID 照合の予算違反件数 = %d", got)
+	}
+}
+
+func TestProfileVersionReportsはProfileID順へ正規化する(t *testing.T) {
+	evaluator, err := New()
+	if err != nil {
+		t.Fatalf("default profile evaluator を構築できません: %v", err)
+	}
+	metadata := evaluator.planning.ProfileMetadata()
+	metadata[0], metadata[1] = metadata[1], metadata[0]
+	reports, err := profileVersionReports(metadata)
+	if err != nil {
+		t.Fatalf("profile version report を構築できません: %v", err)
+	}
+	if reports[0].ProfileID() != "core" ||
+		reports[1].ProfileID() != "judicial-cases" {
+		t.Fatalf("SOT-ENG-024: profile version 順 = %#v", reports)
+	}
+}
+
 func TestExecutionFixtureFacadeは空結果後の計画外再分類を検出する(
 	t *testing.T,
 ) {

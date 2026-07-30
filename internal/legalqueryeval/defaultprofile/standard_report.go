@@ -3,7 +3,9 @@ package defaultprofile
 import (
 	"context"
 	"fmt"
+	"slices"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval"
 )
@@ -39,24 +41,11 @@ func (e *Evaluator) BuildStandardReport(
 		return legalqueryeval.StandardReport{}, err
 	}
 
-	metadata := e.planning.ProfileMetadata()
-	profileVersions := make(
-		[]legalqueryeval.ProfileVersionReport,
-		0,
-		len(metadata),
+	profileVersions, err := profileVersionReports(
+		e.planning.ProfileMetadata(),
 	)
-	for _, profile := range metadata {
-		report, reportErr := legalqueryeval.NewProfileVersionReport(
-			legalqueryeval.ProfileVersionReportValues{
-				ProfileID:      profile.ProfileID(),
-				ProfileVersion: profile.ProfileVersion(),
-				RankingVersion: profile.RankingVersion(),
-			},
-		)
-		if reportErr != nil {
-			return legalqueryeval.StandardReport{}, reportErr
-		}
-		profileVersions = append(profileVersions, report)
+	if err != nil {
+		return legalqueryeval.StandardReport{}, err
 	}
 	holdoutCaseIDs := make([]string, 0, len(corpus.Holdout()))
 	for _, semanticCase := range corpus.Holdout() {
@@ -80,4 +69,42 @@ func (e *Evaluator) BuildStandardReport(
 			DerivedObservations:  derivedObservations,
 		},
 	)
+}
+
+func profileVersionReports(
+	metadata []legalquery.QueryProfileMetadata,
+) ([]legalqueryeval.ProfileVersionReport, error) {
+	ordered := append([]legalquery.QueryProfileMetadata{}, metadata...)
+	slices.SortFunc(
+		ordered,
+		func(left, right legalquery.QueryProfileMetadata) int {
+			switch {
+			case left.ProfileID() < right.ProfileID():
+				return -1
+			case left.ProfileID() > right.ProfileID():
+				return 1
+			default:
+				return 0
+			}
+		},
+	)
+	profileVersions := make(
+		[]legalqueryeval.ProfileVersionReport,
+		0,
+		len(ordered),
+	)
+	for _, profile := range ordered {
+		report, reportErr := legalqueryeval.NewProfileVersionReport(
+			legalqueryeval.ProfileVersionReportValues{
+				ProfileID:      profile.ProfileID(),
+				ProfileVersion: profile.ProfileVersion(),
+				RankingVersion: profile.RankingVersion(),
+			},
+		)
+		if reportErr != nil {
+			return nil, reportErr
+		}
+		profileVersions = append(profileVersions, report)
+	}
+	return profileVersions, nil
 }

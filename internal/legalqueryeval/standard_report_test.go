@@ -268,7 +268,10 @@ func TestStandardBaselineは閉じたJSONを読んで完全一致だけを受理
 		t.Fatal("SOT-ENG-024: 異なる評価結果を baseline 一致として受理しました")
 	}
 
-	unknown := append(encoded[:len(encoded)-1], []byte(`,"unknown":true}`)...)
+	unknown := append(
+		append([]byte{}, encoded[:len(encoded)-1]...),
+		[]byte(`,"unknown":true}`)...,
+	)
 	if err := os.WriteFile(path, unknown, 0o600); err != nil {
 		t.Fatalf("未知項目付き baseline を書き込めません: %v", err)
 	}

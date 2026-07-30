@@ -30,6 +30,7 @@ type resolvedExecutionFixture struct {
 type observedExecutionAttempt struct {
 	meaningID          string
 	stepOrdinal        int
+	stepID             string
 	outcome            legalquery.LegalQueryAttemptOutcome
 	publishedItemCount int
 	hasMore            bool
@@ -197,6 +198,10 @@ func resolveExecutionFixture(
 			outcome:      action.Outcome(),
 		}
 		actions = append(actions, resolved)
+		if _, duplicate := actionByStepID[step.StepID()]; duplicate {
+			return resolvedExecutionFixture{},
+				fmt.Errorf("action の step を重複させられません")
+		}
 		actionByStepID[step.StepID()] = resolved
 	}
 	meaningByInterpretation := make(map[string]string)
@@ -249,7 +254,8 @@ func compareExecutionFixture(
 		}
 	case legalquerycorpus.ExecutionExpectedError:
 		var allFailed legalquery.LegalQueryAllFailedError
-		if errors.As(executeErr, &allFailed) {
+		switch {
+		case errors.As(executeErr, &allFailed):
 			observed := observeFailedActions(fixture.actions)
 			attemptOrderMatched = compareAttemptOrder(
 				expected.Attempts(),
@@ -264,10 +270,10 @@ func compareExecutionFixture(
 			expectedMatched =
 				allFailed.ErrorResult().Code() == expected.ErrorCode() &&
 					compareExpectedAttempts(expected.Attempts(), observed)
-		} else if executeErr != nil {
+		case executeErr != nil:
 			return legalqueryeval.ExecutionCaseEvaluation{},
 				fmt.Errorf("全失敗を公開結果へ変換できません: %w", executeErr)
-		} else {
+		default:
 			return legalqueryeval.ExecutionCaseEvaluation{},
 				fmt.Errorf("全失敗 fixture が error を返しませんでした")
 		}
@@ -328,6 +334,7 @@ func observeAttempt(
 	value := observedExecutionAttempt{
 		meaningID:   action.meaningID,
 		stepOrdinal: action.stepOrdinal,
+		stepID:      action.step.StepID(),
 		outcome:     attempt.Outcome(),
 	}
 	switch typed := attempt.(type) {
@@ -368,6 +375,7 @@ func observeFailedActions(
 		value := observedExecutionAttempt{
 			meaningID:   action.meaningID,
 			stepOrdinal: action.stepOrdinal,
+			stepID:      action.step.StepID(),
 			outcome:     legalquery.LegalQueryAttemptOutcomeFailed,
 		}
 		switch outcome := action.outcome.(type) {
@@ -488,13 +496,17 @@ func resultBudgetViolationCount(
 	if publishedItemCount(attempts) > legalquery.MaxReturnedItems {
 		violations++
 	}
-	budgets := plan.Budget().StepBudgets()
-	for index, attempt := range attempts {
-		if index >= len(budgets) {
+	budgets := make(map[string]legalquery.LegalQueryStepBudget)
+	for _, budget := range plan.Budget().StepBudgets() {
+		budgets[budget.StepID()] = budget
+	}
+	for _, attempt := range attempts {
+		budget, exists := budgets[attempt.stepID]
+		if !exists {
 			violations++
 			continue
 		}
-		if limit, exists := budgets[index].EffectiveLimit(); exists &&
+		if limit, hasLimit := budget.EffectiveLimit(); hasLimit &&
 			attempt.publishedItemCount > limit {
 			violations++
 		}

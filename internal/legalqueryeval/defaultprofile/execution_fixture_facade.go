@@ -39,6 +39,9 @@ func newExecutionFixtureFacade(
 	if len(fixture.actions) == 0 {
 		return nil, fmt.Errorf("execution fixture action は一件以上必要です")
 	}
+	if err := validateResolvedExecutionFixture(fixture); err != nil {
+		return nil, err
+	}
 	payloads, err := newExecutionFixturePayloads()
 	if err != nil {
 		return nil, err
@@ -55,6 +58,26 @@ func newExecutionFixtureFacade(
 		initialized: true,
 	}
 	return facade, nil
+}
+
+func validateResolvedExecutionFixture(
+	fixture resolvedExecutionFixture,
+) error {
+	if len(fixture.actionByStepID) != len(fixture.actions) {
+		return fmt.Errorf("execution fixture の action index が一致しません")
+	}
+	seen := make(map[string]struct{}, len(fixture.actions))
+	for _, action := range fixture.actions {
+		stepID := action.step.StepID()
+		if _, duplicate := seen[stepID]; duplicate {
+			return fmt.Errorf("execution fixture の step action を重複させられません")
+		}
+		if _, exists := fixture.actionByStepID[stepID]; !exists {
+			return fmt.Errorf("execution fixture の action index に step がありません")
+		}
+		seen[stepID] = struct{}{}
+	}
+	return nil
 }
 
 func (f *executionFixtureFacade) Validate() error {
