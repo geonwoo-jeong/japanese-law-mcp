@@ -24,6 +24,7 @@ type PreprocessResultValues struct {
 	ParagraphMentions    []ParagraphMention
 	CaseNumberMentions   []JudicialCaseNumberMention
 	QueryTermMentions    []QueryTermMention
+	CueTaskRelations     []CueTaskRelation
 }
 
 // PreprocessResult は、原文上の位置を保持した provider 非依存の事実である。
@@ -40,6 +41,7 @@ type PreprocessResult struct {
 	paragraphMentions    []ParagraphMention
 	caseNumberMentions   []JudicialCaseNumberMention
 	queryTermMentions    []QueryTermMention
+	cueTaskRelations     []CueTaskRelation
 }
 
 // NewPreprocessResult は、入力を複製し、正規順と上限を検証する。
@@ -56,6 +58,7 @@ func NewPreprocessResult(values PreprocessResultValues) (PreprocessResult, error
 		paragraphMentions:    append([]ParagraphMention(nil), values.ParagraphMentions...),
 		caseNumberMentions:   append([]JudicialCaseNumberMention(nil), values.CaseNumberMentions...),
 		queryTermMentions:    append([]QueryTermMention(nil), values.QueryTermMentions...),
+		cueTaskRelations:     cloneCueTaskRelations(values.CueTaskRelations),
 	}
 	if values.Ref != nil {
 		ref := *values.Ref
@@ -128,6 +131,11 @@ func (r PreprocessResult) CaseNumberMentions() []JudicialCaseNumberMention {
 // QueryTermMentions は、一般検索語出現の複製を返す。
 func (r PreprocessResult) QueryTermMentions() []QueryTermMention {
 	return append([]QueryTermMention(nil), r.queryTermMentions...)
+}
+
+// CueTaskRelations は、構文 cue と task の関係を深く複製して返す。
+func (r PreprocessResult) CueTaskRelations() []CueTaskRelation {
+	return cloneCueTaskRelations(r.cueTaskRelations)
 }
 
 // Validate は、前処理結果の構造、位置、順序および上限を確認する。
@@ -258,6 +266,13 @@ func (r PreprocessResult) Validate() error {
 		func(value QueryTermMention) string {
 			return string(value.Kind())
 		},
+	); err != nil {
+		return err
+	}
+	if err := validateCueTaskRelationSequence(
+		r.query,
+		r.cueTaskRelations,
+		r.cueMentions,
 	); err != nil {
 		return err
 	}

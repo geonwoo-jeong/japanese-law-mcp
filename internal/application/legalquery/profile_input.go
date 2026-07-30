@@ -32,6 +32,7 @@ type CandidateGenerationInput struct {
 	paragraphMentions    []ParagraphMention
 	caseNumberMentions   []JudicialCaseNumberMention
 	queryTermMentions    []QueryTermMention
+	cueTaskRelations     []CueTaskRelation
 }
 
 // NewCandidateGenerationInput は、検証済み前処理結果から profile 入力を作る。
@@ -56,6 +57,7 @@ func NewCandidateGenerationInput(
 		paragraphMentions:    result.ParagraphMentions(),
 		caseNumberMentions:   result.CaseNumberMentions(),
 		queryTermMentions:    result.QueryTermMentions(),
+		cueTaskRelations:     result.CueTaskRelations(),
 	}
 	if ref, exists := result.Ref(); exists {
 		input.ref = &ref
@@ -126,6 +128,11 @@ func (i CandidateGenerationInput) QueryTermMentions() []QueryTermMention {
 	return append([]QueryTermMention(nil), i.queryTermMentions...)
 }
 
+// CueTaskRelations は、前処理で確認した cue と task の関係を深く複製して返す。
+func (i CandidateGenerationInput) CueTaskRelations() []CueTaskRelation {
+	return cloneCueTaskRelations(i.cueTaskRelations)
+}
+
 // Validate は、constructor で得た型付き事実の基本不変条件を確認する。
 func (i CandidateGenerationInput) Validate() error {
 	if i.language != QueryLanguageJapanese &&
@@ -163,6 +170,12 @@ func (i CandidateGenerationInput) Validate() error {
 		if err := mention.Validate(); err != nil {
 			return fmt.Errorf("cueMentions[%d]: %w", index, err)
 		}
+	}
+	if err := validateCueTaskRelationReferencesAndOrder(
+		i.cueTaskRelations,
+		i.cueMentions,
+	); err != nil {
+		return err
 	}
 	for index, mention := range i.identifierMentions {
 		if err := mention.Validate(); err != nil {

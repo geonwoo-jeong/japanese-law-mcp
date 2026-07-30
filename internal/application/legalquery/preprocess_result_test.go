@@ -8,6 +8,7 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querynormalization"
 )
 
 func TestNewPreprocessResultKeepsAllFactsAndCopiesInput(t *testing.T) {
@@ -179,6 +180,265 @@ func TestNewPreprocessResultKeepsAllFactsAndCopiesInput(t *testing.T) {
 	}
 	if err := result.Validate(); err != nil {
 		t.Fatalf("SOT-MODEL-025: Validate() のエラー = %v", err)
+	}
+}
+
+func TestPreprocessResultKeepsCueTaskRelationsAndCopiesInput(t *testing.T) {
+	t.Parallel()
+
+	query := "影響グラフを作成してください"
+	subject := mustCueMention(
+		t,
+		spanForSurface(t, query, "影響グラフ"),
+		"影響グラフ",
+		"core",
+		"task-graph",
+	)
+	predicate := mustCueMention(
+		t,
+		spanForSurface(t, query, "作成してください"),
+		"作成してください",
+		"core",
+		"predicate-create",
+	)
+	relation := mustCueTaskRelation(
+		t,
+		query,
+		subject,
+		predicate,
+		legalquery.CueSyntaxRoleTaskObject,
+		legalquery.CueSyntaxRoleTaskPredicate,
+		mustQuerySpan(t, 0, len(query)),
+		legalquery.CueTaskRelationObjectPredicate,
+	)
+	relations := []legalquery.CueTaskRelation{relation}
+
+	result, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:            query,
+			ComparisonKey:    querynormalization.ComparisonKey(query),
+			CueMentions:      []legalquery.CueMention{subject, predicate},
+			CueTaskRelations: relations,
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-025: relation を持つ result のエラー = %v", err)
+	}
+
+	relations[0] = legalquery.CueTaskRelation{}
+	got := result.CueTaskRelations()
+	if len(got) != 1 ||
+		got[0].Subject().CueID() != "task-graph" ||
+		got[0].Predicate().CueID() != "predicate-create" {
+		t.Fatalf("SOT-MODEL-025: CueTaskRelations() = %#v", got)
+	}
+	got[0] = legalquery.CueTaskRelation{}
+	if result.CueTaskRelations()[0].Subject().CueID() != "task-graph" {
+		t.Fatal("SOT-MODEL-025: getter から relation を変更できました")
+	}
+
+	withoutRelations, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:         query,
+			ComparisonKey: querynormalization.ComparisonKey(query),
+			CueMentions:   []legalquery.CueMention{subject, predicate},
+		},
+	)
+	if err != nil || withoutRelations.CueTaskRelations() != nil {
+		t.Fatalf(
+			"SOT-MODEL-025: relation 省略時の互換性 = %#v, %v",
+			withoutRelations.CueTaskRelations(),
+			err,
+		)
+	}
+}
+
+func TestPreprocessResultRejectsInvalidCueTaskRelationSequence(t *testing.T) {
+	t.Parallel()
+
+	query := "検索してください。比較"
+	direct := mustCueMention(
+		t,
+		spanForSurface(t, query, "検索してください"),
+		"検索してください",
+		"core",
+		"task-search",
+	)
+	standalone := mustCueMention(
+		t,
+		spanForSurface(t, query, "比較"),
+		"比較",
+		"core",
+		"task-compare",
+	)
+	directRelation := mustCueTaskRelation(
+		t,
+		query,
+		direct,
+		direct,
+		legalquery.CueSyntaxRoleTaskExpression,
+		legalquery.CueSyntaxRoleTaskExpression,
+		direct.Span(),
+		legalquery.CueTaskRelationDirectTask,
+	)
+	standaloneRelation := mustCueTaskRelation(
+		t,
+		query,
+		standalone,
+		standalone,
+		legalquery.CueSyntaxRoleTaskObject,
+		legalquery.CueSyntaxRoleTaskObject,
+		standalone.Span(),
+		legalquery.CueTaskRelationStandaloneTask,
+	)
+
+	valid, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:            query,
+			ComparisonKey:    querynormalization.ComparisonKey(query),
+			CueMentions:      []legalquery.CueMention{direct, standalone},
+			CueTaskRelations: []legalquery.CueTaskRelation{directRelation, standaloneRelation},
+		},
+	)
+	if err != nil || len(valid.CueTaskRelations()) != 2 {
+		t.Fatalf("SOT-MODEL-029: 正規順の relation を拒否しました: %v", err)
+	}
+
+	tests := map[string]legalquery.PreprocessResultValues{
+		"参照先 cue 欠落": {
+			Query:            query,
+			ComparisonKey:    querynormalization.ComparisonKey(query),
+			CueMentions:      []legalquery.CueMention{direct},
+			CueTaskRelations: []legalquery.CueTaskRelation{standaloneRelation},
+		},
+		"逆順": {
+			Query:         query,
+			ComparisonKey: querynormalization.ComparisonKey(query),
+			CueMentions:   []legalquery.CueMention{direct, standalone},
+			CueTaskRelations: []legalquery.CueTaskRelation{
+				standaloneRelation,
+				directRelation,
+			},
+		},
+		"重複": {
+			Query:         query,
+			ComparisonKey: querynormalization.ComparisonKey(query),
+			CueMentions:   []legalquery.CueMention{direct, standalone},
+			CueTaskRelations: []legalquery.CueTaskRelation{
+				directRelation,
+				directRelation,
+			},
+		},
+		"relation だけ": {
+			Query:            query,
+			ComparisonKey:    querynormalization.ComparisonKey(query),
+			CueTaskRelations: []legalquery.CueTaskRelation{directRelation},
+		},
+	}
+	for name, values := range tests {
+		name := name
+		values := values
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if _, err := legalquery.NewPreprocessResult(values); err == nil {
+				t.Fatal("SOT-MODEL-029: 不正な relation sequence を受理しました")
+			}
+		})
+	}
+
+	tooMany := make([]legalquery.CueTaskRelation, 129)
+	for index := range tooMany {
+		tooMany[index] = directRelation
+	}
+	if _, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:            query,
+			ComparisonKey:    querynormalization.ComparisonKey(query),
+			CueMentions:      []legalquery.CueMention{direct, standalone},
+			CueTaskRelations: tooMany,
+		},
+	); err == nil {
+		t.Fatal("SOT-MODEL-029: 百二十九件の relation を受理しました")
+	}
+
+	longerQuery := "検索してください "
+	longerDirect := mustCueMention(
+		t,
+		spanForSurface(t, longerQuery, "検索してください"),
+		"検索してください",
+		"core",
+		"task-search",
+	)
+	outOfRangeRelation := mustCueTaskRelation(
+		t,
+		longerQuery,
+		longerDirect,
+		longerDirect,
+		legalquery.CueSyntaxRoleTaskExpression,
+		legalquery.CueSyntaxRoleTaskExpression,
+		mustQuerySpan(t, 0, len(longerQuery)),
+		legalquery.CueTaskRelationDirectTask,
+	)
+	if _, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:            direct.Surface(),
+			ComparisonKey:    querynormalization.ComparisonKey(direct.Surface()),
+			CueMentions:      []legalquery.CueMention{direct},
+			CueTaskRelations: []legalquery.CueTaskRelation{outOfRangeRelation},
+		},
+	); err == nil {
+		t.Fatal("SOT-MODEL-029: query の範囲外にある clause span を受理しました")
+	}
+}
+
+func TestPreprocessResultは同じ開始位置の異なるRelationを保持する(t *testing.T) {
+	t.Parallel()
+
+	query := "検索してください  。"
+	cue := mustCueMention(
+		t,
+		spanForSurface(t, query, "検索してください"),
+		"検索してください",
+		"core",
+		"task-search",
+	)
+	shortClause := mustCueTaskRelation(
+		t,
+		query,
+		cue,
+		cue,
+		legalquery.CueSyntaxRoleTaskExpression,
+		legalquery.CueSyntaxRoleTaskExpression,
+		cue.Span(),
+		legalquery.CueTaskRelationDirectTask,
+	)
+	longClause := mustCueTaskRelation(
+		t,
+		query,
+		cue,
+		cue,
+		legalquery.CueSyntaxRoleTaskExpression,
+		legalquery.CueSyntaxRoleTaskExpression,
+		mustQuerySpan(t, 0, len(query)-len("。")),
+		legalquery.CueTaskRelationDirectTask,
+	)
+
+	result, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:            query,
+			ComparisonKey:    querynormalization.ComparisonKey(query),
+			CueMentions:      []legalquery.CueMention{cue},
+			CueTaskRelations: []legalquery.CueTaskRelation{shortClause, longClause},
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-029: 異なる clause span の relation を拒否しました: %v", err)
+	}
+	got := result.CueTaskRelations()
+	if len(got) != 2 ||
+		got[0].ClauseSpan() == got[1].ClauseSpan() {
+		t.Fatalf("SOT-MODEL-029: cueTaskRelations = %#v", got)
 	}
 }
 
@@ -563,6 +823,35 @@ func mustCueMention(
 		t.Fatalf("試験用 CueMention を作成できません: %v", err)
 	}
 	return mention
+}
+
+func mustCueTaskRelation(
+	t *testing.T,
+	query string,
+	subject legalquery.CueMention,
+	predicate legalquery.CueMention,
+	subjectRole legalquery.CueSyntaxRole,
+	predicateRole legalquery.CueSyntaxRole,
+	clauseSpan legalquery.QuerySpan,
+	kind legalquery.CueTaskRelationKind,
+) legalquery.CueTaskRelation {
+	t.Helper()
+
+	relation, err := legalquery.NewCueTaskRelation(
+		legalquery.CueTaskRelationValues{
+			Query:         query,
+			Subject:       subject,
+			Predicate:     predicate,
+			SubjectRole:   subjectRole,
+			PredicateRole: predicateRole,
+			ClauseSpan:    clauseSpan,
+			Kind:          kind,
+		},
+	)
+	if err != nil {
+		t.Fatalf("試験用 CueTaskRelation を作成できません: %v", err)
+	}
+	return relation
 }
 
 func mustLawIDMention(

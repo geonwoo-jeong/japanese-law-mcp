@@ -71,6 +71,75 @@ func TestCandidateGenerationInputは原文を再解析せず位置付き事実�
 	}
 }
 
+func TestCandidateGenerationInputはCueTaskRelationを複製する(t *testing.T) {
+	t.Parallel()
+
+	query := "影響グラフを作成してください"
+	subject, err := NewCueMention(CueMentionValues{
+		Span:      mustQuerySpan(t, 0, len("影響グラフ")),
+		Surface:   "影響グラフ",
+		ProfileID: "core",
+		CueID:     "task-graph",
+		MatchKind: PreprocessMatchRegisteredTerm,
+	})
+	if err != nil {
+		t.Fatalf("試験用 subject cue を作成できません: %v", err)
+	}
+	predicate, err := NewCueMention(CueMentionValues{
+		Span: mustQuerySpan(
+			t,
+			len("影響グラフを"),
+			len(query),
+		),
+		Surface:   "作成してください",
+		ProfileID: "core",
+		CueID:     "predicate-create",
+		MatchKind: PreprocessMatchRegisteredTerm,
+	})
+	if err != nil {
+		t.Fatalf("試験用 predicate cue を作成できません: %v", err)
+	}
+	relation, err := NewCueTaskRelation(CueTaskRelationValues{
+		Query:         query,
+		Subject:       subject,
+		Predicate:     predicate,
+		SubjectRole:   CueSyntaxRoleTaskObject,
+		PredicateRole: CueSyntaxRoleTaskPredicate,
+		ClauseSpan:    mustQuerySpan(t, 0, len(query)),
+		Kind:          CueTaskRelationObjectPredicate,
+	})
+	if err != nil {
+		t.Fatalf("試験用 cue task relation を作成できません: %v", err)
+	}
+	result, err := NewPreprocessResult(PreprocessResultValues{
+		Query:            query,
+		ComparisonKey:    querynormalization.ComparisonKey(query),
+		CueMentions:      []CueMention{subject, predicate},
+		CueTaskRelations: []CueTaskRelation{relation},
+	})
+	if err != nil {
+		t.Fatalf("試験用 preprocess result を作成できません: %v", err)
+	}
+
+	input, err := NewCandidateGenerationInput(result)
+	if err != nil {
+		t.Fatalf("candidate generation input のエラー = %v", err)
+	}
+	relations := input.CueTaskRelations()
+	if len(relations) != 1 ||
+		relations[0].Subject().CueID() != "task-graph" ||
+		relations[0].Predicate().CueID() != "predicate-create" {
+		t.Fatalf("cue task relations = %#v", relations)
+	}
+	relations[0] = CueTaskRelation{}
+	if input.CueTaskRelations()[0].Subject().CueID() != "task-graph" {
+		t.Fatal("SOT-MODEL-029: getter から generation input を変更できました")
+	}
+	if err := input.Validate(); err != nil {
+		t.Fatalf("candidate generation input の Validate() エラー = %v", err)
+	}
+}
+
 func TestCandidateGenerationInputは非日本語を型付き事実にする(t *testing.T) {
 	t.Parallel()
 
