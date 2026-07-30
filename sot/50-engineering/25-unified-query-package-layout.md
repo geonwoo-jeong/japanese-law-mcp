@@ -25,6 +25,7 @@ internal/
 │       ├── service.go
 │       └── ports.go
 ├── queryprofile/
+│   ├── cueartifact/
 │   ├── core/
 │   │   ├── profile.go
 │   │   ├── cues.go
@@ -38,6 +39,7 @@ internal/
 │       └── data/
 │           ├── profile.json
 │           └── cues.json
+├── querypreprocess/
 ├── nlp/
 │   └── kagome/
 ├── lawnamelexicon/
@@ -92,6 +94,12 @@ testdata/
 
 `queryprofile/core` は法令コアの task/resource、根拠、重み、閾値、tie-break および法概念辞書を実装する。`queryprofile/judicialcases` は裁判例固有の語彙、事件参照および plan 規則を実装する。意味認識 contribution は採用後つねに固定 profile set へ注入し、pack が有効な場合だけ裁判例の facade、request materializer、result mapper、binding および route から成る実行 contribution を注入する。
 
+`queryprofile/cueartifact` は、`SOT-ENG-030` の共通 cue 成果物構造、安全境界、
+語彙衝突および profile metadata との整合だけを検証する。category、value、
+signal、task/resource、score または採用範囲を共通 loader で決めない。
+`querypreprocess` は、注入された検証済み語彙と一回の Kagome 解析から
+`SOT-MODEL-025` の provider 非依存事実を作り、profile の意味候補を生成しない。
+
 同じ profile に属する複数の明示 task/resource は、その profile が
 `SOT-ARCH-025` に従って一候補の複数 step へまとめる。
 `queryprofile/judicialcases` は、検証済み入力 `ref` の
@@ -100,6 +108,11 @@ testdata/
 profile の member だけを合成し、同じ profile の search/read を組み立てない。
 
 profile が実装する interface と共通の enum は `application/legalquery` が所有する。core profile と pack profile は互いを import せず、composition root が決定的な順序で一つの不変 profile set として組み立てる。
+
+各 profile は、`SOT-ARCH-031` の意図根拠レイヤと `SOT-ARCH-032` の
+evidence cluster を、候補 draft の生成中だけ使う profile-private な型または
+関数へ分けられる。その一時データを共通前処理、`application/legalquery` の
+公開 interface、別 profile、provider または MCP schema に追加しない。
 
 pack 無効を認識する最小 cue と、入力された `SourceResourceRef` を採用済み provider/source/resource として構造検証する metadata は、core 側の予約済み pack metadata として保持できる。無効な pack の request builder、binding、provider route または result mapper は構成しない。
 
@@ -164,6 +177,9 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-026: 統合照会の request materialization](../30-architecture/26-unified-query-request-materialization.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)
+- [SOT-ARCH-031: 統合照会の意図根拠レイヤ](../30-architecture/31-unified-query-intent-evidence-layer.md)
+- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](../20-model/28-query-candidate-composition-member.md)
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)

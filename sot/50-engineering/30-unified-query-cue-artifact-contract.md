@@ -15,8 +15,9 @@ profile との対応を起動時に検証する。
 意味、task/resource への対応、score、signal および採用範囲は、それを所有する
 profile または領域別 SOT を定義元とし、本規定へ集約しない。
 
-対象外意図の閉じた対応は `SOT-ENG-028`、`syntaxRole` の意味と
-`CueTaskRelation` の構築規則は `SOT-MODEL-029` を定義元とする。
+採用済み意図の positive cue の閉じた所有範囲は `SOT-ENG-031`、対象外意図の
+閉じた対応は `SOT-ENG-028`、`syntaxRole` の意味と `CueTaskRelation` の
+構築規則は `SOT-MODEL-029` を定義元とする。
 
 ## 配置と最上位構造
 
@@ -138,3 +139,4 @@ schema version 3 の全 entry に `syntaxRole` があること、version 1 ま�
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](28-unified-query-unsupported-intent-cues.md)
+- [SOT-ENG-031: 統合照会の採用済み意図 cue セット](31-unified-query-adopted-intent-cues.md)

@@ -101,6 +101,10 @@ baseline および `SOT-ENG-029` が定める検索例カタログを同じ変�
 評価結果と説明文の乖離を残さない。将来の理想状態を SOT だけで採用する変更は、
 現行確認済みカタログへ先行して掲載せず、実装差分を Wiki で追跡する。
 
+採用済み profile set と準備状態の到達性、および production と標準評価を
+同時に切り替える単位は `SOT-ARCH-033` に従う。本規定は、その採用時に必要な
+評価成果物と受入基準を定義する。
+
 この評価はローカル binary の意味判定を検証するものであり、稼働率収集、外部情報源の運用障害検知または利用者 telemetry を導入しない。
 
 ## 標準 command と成果物
@@ -130,10 +134,12 @@ holdout digest を割り当て、変更前後の結果と独立 review を同じ
 - 標準 command、検索例カタログおよび中央品質ゲートの固定値切替
 - 変更前後の評価結果と独立 review
 
-relation を有効化しない準備変更として、固定 profile set 全体の cue artifact と
+`SOT-ARCH-033` の準備状態として、固定 profile set 全体の cue artifact と
 loader を schema version 3 へそろえることはできる。この準備変更では relation
 依存の signal、候補保持または公開 decision を有効にせず、標準 command、
-`corpus-v9`、`default-1` および中央品質ゲートの固定値を変更しない。
+`corpus-v9`、`default-1` および中央品質ゲートの corpus・baseline 固定値を
+変更しない。profile metadata の変更に伴う不透明な profile version と
+profile set version の更新は妨げない。
 
 上記の採用成果物がそろうまでは `corpus-v9` と `default-1` を現行標準として
 維持する。profile または loader の限定 test だけの成功を、relation 対応
@@ -156,6 +162,7 @@ command はネットワークを使用せず、固定 seed と repository 内の
 ## 関連
 
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
+- [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)

@@ -32,3 +32,4 @@
 - [30-canonical-law-target-priority.md](30-canonical-law-target-priority.md)
 - [31-unified-query-intent-evidence-layer.md](31-unified-query-intent-evidence-layer.md)
 - [32-unified-query-bounded-branch-retention.md](32-unified-query-bounded-branch-retention.md)
+- [33-unified-query-profile-set-adoption-boundary.md](33-unified-query-profile-set-adoption-boundary.md)

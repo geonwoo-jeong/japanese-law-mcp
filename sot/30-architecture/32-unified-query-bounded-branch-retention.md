@@ -29,6 +29,24 @@ evidence cluster ごとに校正し、上限と
 条件を満たさなければならない。照会文全体を一つの「広い検索語」にして
 全 provider へ展開する分岐を作らない。
 
+## 計算責任と寿命
+
+evidence cluster の key と保持 margin の適用は、候補 draft を所有する query
+profile の責務とする。profile は、`SOT-ARCH-025` の主題分離と
+`SOT-ARCH-031` の意図根拠レイヤを適用した後、`QueryProfileContribution` を
+構築する前に、各 draft の各 step に対応する一時的な根拠 span から cluster key を
+計算する。
+
+cluster key、首位との差、保持判定および棄却した draft は、一 request の
+profile 評価中だけ保持する。contribution の候補順、`selectionMode`、
+`hedgePairs` および既存の constraint に結果を反映した後で破棄し、
+`LegalQueryCandidate`、`QueryProfileContribution`、profile set result、
+公開結果または診断へ保存しない。
+
+candidate composer と selector は、検証済み contribution を profile 内の
+cluster へ戻さず、別 profile の候補、合成後の score または外部結果から
+cluster key を再計算しない。
+
 ## 分岐を保持できる条件
 
 ある候補を追加分岐として保持できるのは、少なくとも次の条件をすべて満たす場合だけとする。
@@ -113,3 +131,4 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](31-unified-query-intent-evidence-layer.md)
+- [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)

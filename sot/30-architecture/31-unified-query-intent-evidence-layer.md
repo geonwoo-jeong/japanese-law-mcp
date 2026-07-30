@@ -21,7 +21,7 @@
 | レイヤ | 主な根拠 | 役割 |
 |---|---|---|
 | `boundary` | `standalone_structured_query`、`non_japanese_query`、入力 `ref`、`SOT-ENG-028` の対象外 relation | 実行対象外、構造化入力または非実行境界を先に確定する |
-| `explicit_task_resource` | task cue relation、profile が定義した明示 resource cue、明示 task cue | 採用済み task/resource の候補を決める |
+| `explicit_task_resource` | task cue relation、`SOT-ENG-031` が定める明示 resource cue、明示 task cue | 採用済み task/resource の候補を決める |
 | `target_anchor` | 公式識別子、法令名、条項、事件番号、日付、明示検索対象 | task/resource に対応する取得対象を束縛する |
 | `semantic_expansion` | 法概念、一般検索語、弱い一般語 | 明示根拠が不足する候補を補助的に広げる |
 | `clarification_or_reject` | 略称衝突、弱い一般語だけの競合、五 step 以上、対象外との混在 | 非実行または明確化へ落とす |
@@ -44,6 +44,28 @@
 `explicit_task_resource` がない場合でも、法概念辞書または一般検索語だけから候補を作ることはできる。ただし、その候補は明示 task/resource による候補より弱く、上位レイヤの境界を破れない。`boundary` が非実行を確定した場合でも、`SOT-MODEL-026` が許可する内部候補保持に限り、下位レイヤは監査用の `LegalQueryCandidate` を組み立てられる。これらは選択または実行の対象にせず、非実行理由を覆さない。
 
 この評価順序は profile 共通の解釈境界であり、ある profile が下位レイヤの一般語だけで明示 task/resource を捏造したり、別 profile の cue relation を借りて自分の候補を強化したりしてはならない。
+
+## 適用責任と一時データ
+
+共通前処理は、位置付き出現、構造化参照、節、token および
+`CueTaskRelation` までを返し、各出現を本規定の五層へ分類しない。
+
+各 query profile は、自身の候補 draft を作る過程で、五層を一回だけ順番に
+適用する。profile は、各 draft の各 step と、その step を成立させた原文 span、
+evidence code および意図根拠レイヤを、profile 内の一時的な対応として保持できる。
+この対応は、候補の根拠検証、対象外との混在時の候補 scope、および
+`SOT-ARCH-032` の evidence cluster を確定するためだけに使用する。
+
+一時的な対応は一 request の profile 評価中だけ保持し、
+`LegalQueryPreprocessResult`、`LegalQueryCandidate`、
+`QueryProfileContribution` または profile set result に新しい field として
+保存しない。contribution を構築した時点で破棄し、別 profile、candidate
+composer、selector または executor へ渡さない。
+
+candidate composer と selector は、完成した contribution の候補、signal、
+selection mode、composition member および constraint だけを検証する。
+原文を再解析したり、失われた一時対応を score、候補近接または別 profile の
+根拠から復元したりして、五層を再適用しない。
 
 ## 実行適格な同じ語の複数解釈
 
@@ -99,4 +121,6 @@ task/resource に適用できる `SOT-ARCH-025` の複数主題分離を前提�
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](../50-engineering/28-unified-query-unsupported-intent-cues.md)
+- [SOT-ENG-031: 統合照会の採用済み意図 cue セット](../50-engineering/31-unified-query-adopted-intent-cues.md)

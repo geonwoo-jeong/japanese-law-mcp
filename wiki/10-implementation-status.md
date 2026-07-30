@@ -45,6 +45,13 @@
 - [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) および [SOT-ENG-022](../sot/50-engineering/22-law-name-search-lexicon.md) に従う、e-Gov 全 9,536 法令と 3,363 略称の組込みスナップショット、出典付き補足略称、Kagome user dictionary、比較用 Unicode 正規化および一意な誤記候補。現在の `search_laws` は廃止した [SOT-IF-049](../sot/40-interfaces/49-mcp-search-laws-v2.md) の、原検索が正常な空結果の場合だけ正式名称で再検索する動作までを実装している
 - [SOT-MODEL-025](../sot/20-model/25-legal-query-preprocess-result.md)、[SOT-MODEL-027](../sot/20-model/27-judicial-case-number-mention.md) および [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) に従う、統合法情報照会の原文 byte span、法令名・法概念・profile cue・公式識別子・日付・条・項・完全な裁判事件番号・明示引用句・文法的に接続した最大名詞句の出現、事件番号から決定的に導出する検索語、四種類の照合根拠、一回の Kagome 解析結果の再利用、能力別に差し替えられる任意の語彙、曖昧な辞書対応の保持、および provider や実行能力を選択しない共通前処理
 - [SOT-ENG-023](../sot/50-engineering/23-unified-query-concept-lexicon.md) に従う、育休の制度・給付、永住権の一般・条文意図およびネット中傷を含む十一概念について、公式語、出典付き同義表記、衝突群、検索対象 resource、pack および確認日を不変に保持する辞書スナップショット
+- [SOT-MODEL-029](../sot/20-model/29-cue-task-relation.md)、
+  [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) および
+  [SOT-ENG-030](../sot/50-engineering/30-unified-query-cue-artifact-contract.md) に従う、
+  cue task relation の不変な内部 model と前処理結果の構造検証、schema version 3
+  の共通 cue 成果物 loader と profile ごとの cue 成果物整合、
+  ならびに固定 profile set 全体での cue 成果物整合。production 前処理での
+  relation 生成と profile の意味判定への利用は未実装である
 - [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md)、[SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) および [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) に従う、閉じた schema、安全な loader、意味・根拠・選択・実行指標の集計器、再現用の `corpus-v1` から `corpus-v8`、独立 review 済みの標準 `corpus-v9`、review 済みの `default-1` baseline、固定引数だけを受け付ける `legal-query-eval` および中央品質ゲートからの評価接続
 - [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md) と [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、版付きの法令コア query profile、五つの法令コア能力に対する決定的な意味候補生成、十六候補・四 step の固定上限、同じ意味を持つ辞書根拠の統合、二つ以上四つ以下の主題を原文順の独立 step にする処理、明示した `all`、`any` および `exclude` の優先、ならびに個数別の列挙をしない `とも含む` の全件指定
 - [SOT-PROD-011](../sot/00-product/11-unified-legal-query-scope.md)、[SOT-ARCH-019](../sot/30-architecture/19-extension-pack-activation-boundary.md)、[SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、法令コアから独立した版付きの裁判例 query profile、裁判例検索と検証済み `judicial-decision` 参照の読取り候補、検索 task と裁判例 resource の両 cue がある完全な事件番号から `searchText` による一つの `structured_reference` 検索候補を作り、同一 span の引用候補を重複させず read または `ref` を推測しない処理、全候補への `judicial-cases` 必須 pack の付与、最大四 step の個別検索、pack 有効時と無効時の selector 回帰試験、および development corpus の裁判例二事例との照合
@@ -63,25 +70,16 @@
 ## 未実装
 
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
-- [SOT-MODEL-029](../sot/20-model/29-cue-task-relation.md)、
-  [SOT-MODEL-025](../sot/20-model/25-legal-query-preprocess-result.md)、
-  [SOT-MODEL-026](../sot/20-model/26-query-profile-contribution.md)、
-  [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md)、
-  [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md)、
-  [SOT-ENG-030](../sot/50-engineering/30-unified-query-cue-artifact-contract.md) の
-  cue task relation と cue schema version 3、および
-  [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) の
-  relation 対応 corpus・baseline
-- [SOT-ARCH-031](../sot/30-architecture/31-unified-query-intent-evidence-layer.md)、
-  [SOT-ARCH-032](../sot/30-architecture/32-unified-query-bounded-branch-retention.md) および
-  [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md) の
-  固定した意図根拠順、共有末尾 cue の閉じた列挙判定、および evidence cluster
-  単位の限定分岐保持
-- [SOT-IF-052](../sot/40-interfaces/52-egov-keyword-response-contract.md) の省略可能三項目の `null` 受理と、個別応答の不正を `invalid_source_response`、一次資料で確認した契約変更を `source_contract_changed` とする共有 parser の分類
-- [SOT-IF-054](../sot/40-interfaces/54-egov-law-search-mapping-v3.md) の、`GET /laws` の個別 2xx 応答不正を `invalid_source_response`、一次資料で確認した契約変更だけを `source_contract_changed` とする分類、および現行 mapping への移行
-- [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) の、`GET /law_data` の個別 XML 応答不正を `invalid_source_response`、公式 XML 契約の確認済み変更だけを `source_contract_changed` とする分類、および XML 専用 fixture
-- [SOT-ARCH-030](../sot/30-architecture/30-canonical-law-target-priority.md)、[SOT-SCN-011](../sot/10-scenarios/11-prioritize-resolved-law-search-result.md) および [SOT-IF-053](../sot/40-interfaces/53-mcp-search-laws-v3.md) の application 層 law-target resolver、原検索と確認検索の page 内安定優先、および v2 と同一の公開 schema を固定する契約 test
-- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の状態別再照会シナリオは既存の `SOT-MODEL-024` と `SOT-IF-051` の公開値で表現できるが、法的助言・翻訳だけの要求へ対応する `SOT-MODEL-024` の八番目の固定 notice、および五つ以上の主題、無効 pack、比較・影響分析との混在、法的助言・翻訳をまとめて確認するシナリオ契約 test は未実装
+- 統合照会の relation 生成、profile 内の意図根拠適用、限定分岐保持、
+  relation 対応 corpus・baseline・検索例の原子的切替、および後続の provider
+  契約更新。現在地と着手順は
+  [統合照会の意図判定導入順](30-unified-query-intent-rollout.md) で追跡する
+- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の
+  状態別再照会シナリオは既存の `SOT-MODEL-024` と `SOT-IF-051` の公開値で
+  表現できるが、法的助言・翻訳だけの要求へ対応する
+  `SOT-MODEL-024` の八番目の固定 notice、および五つ以上の主題、無効 pack、
+  比較・影響分析との混在、法的助言・翻訳をまとめて確認するシナリオ契約 test は
+  未実装
 
 ## 現在の起動面
 
