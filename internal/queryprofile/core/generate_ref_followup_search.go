@@ -64,7 +64,7 @@ func refFollowupLawSearchTargets(
 	readCues := cues.mentions[cueMeaningKey("task", "read")]
 	searchCues := cues.mentions[cueMeaningKey("task", "search")]
 	result := make([]lawTarget, 0)
-	for _, target := range buildMentionLawTargets(input) {
+	for _, target := range buildMentionLawTargets(input, cues) {
 		if targetFollowsReadAndPrecedesSearch(
 			target,
 			readCues,

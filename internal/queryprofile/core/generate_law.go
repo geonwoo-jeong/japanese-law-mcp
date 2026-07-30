@@ -25,6 +25,7 @@ type lawTarget struct {
 
 func buildLawTargets(
 	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
 ) []lawTarget {
 	if ref, exists := input.Ref(); exists && ref.Key().ResourceType() == "law" {
 		return []lawTarget{{
@@ -32,11 +33,12 @@ func buildLawTargets(
 			evidence: legalquery.EvidenceOfficialIdentifier,
 		}}
 	}
-	return buildMentionLawTargets(input)
+	return buildMentionLawTargets(input, cues)
 }
 
 func buildMentionLawTargets(
 	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
 ) []lawTarget {
 	targets := make([]lawTarget, 0)
 	for _, mention := range input.IdentifierMentions() {
@@ -59,7 +61,7 @@ func buildMentionLawTargets(
 		})
 	}
 	for _, mention := range input.LawNameMentions() {
-		if shouldIgnoreTypoLawMention(mention) {
+		if shouldIgnoreLawMention(input, mention, cues) {
 			continue
 		}
 		targets = append(targets, lawTarget{
@@ -406,6 +408,18 @@ func normalizedCanonicalLawQuery(value string) string {
 	return value
 }
 
+func shouldIgnoreLawMention(
+	input legalquery.CandidateGenerationInput,
+	mention legalquery.LawNameMention,
+	cues resolvedCues,
+) bool {
+	if !shouldIgnoreTypoLawMention(mention) &&
+		!shouldIgnoreReservedPackTypoLawMention(input, mention, cues) {
+		return false
+	}
+	return true
+}
+
 func shouldIgnoreTypoLawMention(mention legalquery.LawNameMention) bool {
 	if mention.MatchKind() != legalquery.PreprocessMatchUniqueTypoCorrection {
 		return false
@@ -420,6 +434,77 @@ func shouldIgnoreTypoLawMention(mention legalquery.LawNameMention) bool {
 	default:
 		return false
 	}
+}
+
+func shouldIgnoreReservedPackTypoLawMention(
+	input legalquery.CandidateGenerationInput,
+	mention legalquery.LawNameMention,
+	cues resolvedCues,
+) bool {
+	if mention.MatchKind() != legalquery.PreprocessMatchUniqueTypoCorrection {
+		return false
+	}
+	if cues.has("resource", "law") ||
+		cues.has("resource", "law_provision") ||
+		cues.has("resource", "updates") {
+		return false
+	}
+	nextStartByte, exists := nextFactStartAfter(input, mention.Span().EndByte())
+	if !exists {
+		return false
+	}
+	reserved := cues.mentions[cueMeaningKey("reserved_pack", "judicial-cases")]
+	for _, current := range reserved {
+		if current.Span().StartByte() == nextStartByte {
+			return true
+		}
+	}
+	return false
+}
+
+func nextFactStartAfter(
+	input legalquery.CandidateGenerationInput,
+	endByte int,
+) (int, bool) {
+	startByte := 0
+	exists := false
+	record := func(value int) {
+		if value <= endByte {
+			return
+		}
+		if !exists || value < startByte {
+			startByte = value
+			exists = true
+		}
+	}
+	for _, mention := range input.CueMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.LawNameMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.LegalConceptMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.IdentifierMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.DateMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.ArticleMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.ParagraphMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.CaseNumberMentions() {
+		record(mention.Span().StartByte())
+	}
+	for _, mention := range input.QueryTermMentions() {
+		record(mention.Span().StartByte())
+	}
+	return startByte, exists
 }
 
 func searchTermForLawMention(mention legalquery.LawNameMention) string {

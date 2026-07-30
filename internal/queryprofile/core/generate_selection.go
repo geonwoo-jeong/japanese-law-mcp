@@ -113,7 +113,7 @@ func (p *Profile) hasWeakGeneralAmbiguity(
 ) bool {
 	return isWeakLawResourceAmbiguity(
 		cues,
-		len(buildLawTargets(input)) > 0,
+		len(buildLawTargets(input, cues)) > 0,
 		p.coreConceptCandidateCount(input.LegalConceptMentions()),
 		len(coreContentQueryTerms(input, cues)),
 	)

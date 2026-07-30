@@ -10,6 +10,6 @@ func isCoreResourceChoice(
 		cues.has("resource", "law") &&
 		cues.has("resource", "law_provision") &&
 		!cues.has("resource", "updates") &&
-		len(buildLawTargets(input)) == 0 &&
+		len(buildLawTargets(input, cues)) == 0 &&
 		len(coreContentQueryTerms(input, cues)) == 1
 }

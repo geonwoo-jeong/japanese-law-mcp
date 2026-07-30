@@ -170,9 +170,10 @@ func compareAliasCollisionGroupPositions(
 
 func hasMultipleLawAliasCollisionGroups(
 	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
 ) bool {
 	collisionGroupCount := 0
-	for _, group := range groupLawTargets(buildLawTargets(input)) {
+	for _, group := range groupLawTargets(buildLawTargets(input, cues)) {
 		if len(group) < 2 {
 			continue
 		}

@@ -88,6 +88,7 @@ func (p *Profile) Generate(
 	drafts = retainGroundedDraftsForUnsupportedResource(drafts, signals)
 	candidates, stepStartBytes, err := p.materializeCandidates(
 		input,
+		cues,
 		drafts,
 		scope,
 	)
@@ -167,7 +168,7 @@ func (p *Profile) generateDrafts(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 ) ([]candidateDraft, error) {
-	targets := buildLawTargets(input)
+	targets := buildLawTargets(input, cues)
 	if reservedPackOnlyRequest(input, cues) {
 		return nil, nil
 	}
@@ -363,6 +364,7 @@ func cloneDraft(value candidateDraft) candidateDraft {
 
 func (p *Profile) materializeCandidates(
 	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
 	drafts []candidateDraft,
 	scope legalquery.CandidateIDScope,
 ) (
@@ -398,12 +400,13 @@ func (p *Profile) materializeCandidates(
 	}
 	rankAliasCollisionOverflow := canRankAliasCollisionOverflow(
 		input,
+		cues,
 		aggregated,
 	)
 	rankAliasCollisionGroupsBySource :=
 		p.rankAliasCollisionGroupsBySource &&
 			rankAliasCollisionOverflow &&
-			hasMultipleLawAliasCollisionGroups(input)
+			hasMultipleLawAliasCollisionGroups(input, cues)
 	if len(aggregated) > maximumGeneratedCandidates &&
 		!rankAliasCollisionOverflow {
 		return nil, nil, fmt.Errorf(
@@ -493,12 +496,13 @@ func (p *Profile) materializeCandidates(
 
 func canRankAliasCollisionOverflow(
 	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
 	drafts []aggregatedDraft,
 ) bool {
 	if len(drafts) <= maximumGeneratedCandidates {
 		return false
 	}
-	targets := buildLawTargets(input)
+	targets := buildLawTargets(input, cues)
 	groups := groupLawTargets(targets)
 	if len(groups) == 0 ||
 		len(groups) > 4 ||

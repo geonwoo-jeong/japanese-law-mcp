@@ -361,6 +361,28 @@ func TestProfileは安全信号を候補と分離する(t *testing.T) {
 	}
 }
 
+func TestProfileは裁判例resource直結の法令誤記補正を候補化しない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"裁判所の裁判例から「解雇権濫用」を探す",
+		nil,
+	)
+	if len(generation.Candidates()) != 0 {
+		t.Fatalf(
+			"SOT-ARCH-021/SOT-ARCH-025: candidates = %#v",
+			generation.Candidates(),
+		)
+	}
+	if !slices.Contains(
+		generation.Signals(),
+		legalquery.CandidateSignalReservedPackRequest,
+	) {
+		t.Fatalf("signals = %#v", generation.Signals())
+	}
+}
+
 func TestProfileは同じ意味へ解決した全ての法概念出典を保持する(
 	t *testing.T,
 ) {
