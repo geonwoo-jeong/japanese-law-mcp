@@ -381,11 +381,11 @@ func typoCandidates(
 			if !isLexicalToken(tokens[end].Surface()) {
 				break
 			}
-			if !isTypoCandidateTerminal(tokens[end]) {
+			endByte, terminal := typoCandidateEndByte(tokens, end)
+			if !terminal {
 				continue
 			}
 			startByte := tokens[start].StartByte()
-			endByte := tokens[end].EndByte()
 			if overlapsAny(
 				startByte,
 				endByte,
@@ -421,6 +421,49 @@ func typoCandidates(
 		}
 	}
 	return values, nil
+}
+
+func typoCandidateEndByte(
+	tokens []kagome.TokenOccurrence,
+	index int,
+) (int, bool) {
+	if endByte, exists := colloquialQuoteBoundaryEndByte(tokens, index); exists {
+		return endByte, true
+	}
+	if !isTypoCandidateTerminal(tokens[index]) {
+		return 0, false
+	}
+	return tokens[index].EndByte(), true
+}
+
+func colloquialQuoteBoundaryEndByte(
+	tokens []kagome.TokenOccurrence,
+	index int,
+) (int, bool) {
+	if index+1 >= len(tokens) || tokens[index].UserDictionary() {
+		return 0, false
+	}
+	current := tokens[index]
+	currentPartOfSpeech := current.PartOfSpeech()
+	nextPartOfSpeech := tokens[index+1].PartOfSpeech()
+	if len(currentPartOfSpeech) == 0 ||
+		currentPartOfSpeech[0] != "動詞" ||
+		tokens[index+1].Surface() != "ていう" ||
+		len(nextPartOfSpeech) < 3 ||
+		nextPartOfSpeech[0] != "助詞" ||
+		nextPartOfSpeech[1] != "格助詞" ||
+		nextPartOfSpeech[2] != "連語" {
+		return 0, false
+	}
+	const quotePrefix = "っ"
+	if !strings.HasSuffix(current.Surface(), quotePrefix) {
+		return 0, false
+	}
+	prefix := strings.TrimSuffix(current.Surface(), quotePrefix)
+	if !isLexicalToken(prefix) {
+		return 0, false
+	}
+	return current.EndByte() - len(quotePrefix), true
 }
 
 func isTypoCandidateTerminal(token kagome.TokenOccurrence) bool {

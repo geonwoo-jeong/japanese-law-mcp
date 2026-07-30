@@ -140,6 +140,25 @@ func mustSelectorTestCandidate(
 	stepCount int,
 ) LegalQueryCandidate {
 	t.Helper()
+	return mustSelectorTestCandidateWithEvidence(
+		t,
+		candidateID,
+		score,
+		requiredPacks,
+		stepCount,
+		[]EvidenceCode{EvidenceExplicitTask},
+	)
+}
+
+func mustSelectorTestCandidateWithEvidence(
+	t *testing.T,
+	candidateID string,
+	score int,
+	requiredPacks []string,
+	stepCount int,
+	evidenceCodes []EvidenceCode,
+) LegalQueryCandidate {
+	t.Helper()
 	steps := make([]LegalQueryCandidateStep, 0, stepCount)
 	specification, exists := stepSpecificationFor(InputKindLawSearch)
 	if !exists {
@@ -183,7 +202,7 @@ func mustSelectorTestCandidate(
 		CandidateID:    candidateID,
 		SemanticScore:  score,
 		Confidence:     confidence,
-		EvidenceCodes:  []EvidenceCode{EvidenceExplicitTask},
+		EvidenceCodes:  append([]EvidenceCode{}, evidenceCodes...),
 		ConceptSources: []LegalConceptSource{},
 		RequiredPacks:  requiredPacks,
 		Steps:          steps,

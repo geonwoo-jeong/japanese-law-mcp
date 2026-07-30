@@ -321,6 +321,75 @@ func TestPreprocessPreservesEveryTargetOfAmbiguousAliasAndTypo(
 	}
 }
 
+func TestNewEmbeddedは口語引用境界直前の曖昧な略称誤記を保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	preprocessor, err := querypreprocess.NewEmbedded(nil)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: NewEmbedded() のエラー = %v", err)
+	}
+	query := "民訴去っていう法令を検索してもらえますか。"
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, query),
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+	}
+	mentions := result.LawNameMentions()
+	if len(mentions) != 2 {
+		t.Fatalf(
+			"SOT-MODEL-025: 同じ略称の対象を保持できません: %#v",
+			mentions,
+		)
+	}
+	wantIDs := []string{"215AC0000000062", "408AC0000000109"}
+	wantCanonicals := []string{
+		"民事訴訟法中改正法律施行法",
+		"民事訴訟法",
+	}
+	for index, mention := range mentions {
+		if mention.LawID() != wantIDs[index] ||
+			mention.Canonical() != wantCanonicals[index] ||
+			mention.Surface() != "民訴去" ||
+			mention.MatchKind() !=
+				legalquery.PreprocessMatchUniqueTypoCorrection {
+			t.Fatalf(
+				"SOT-MODEL-025: lawNameMentions[%d] = %#v",
+				index,
+				mention,
+			)
+		}
+		assertSpan(t, query, mention.Span(), "民訴去", 0)
+	}
+}
+
+func TestPreprocessは口語引用でない促音を法令名境界にしない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	preprocessor, err := querypreprocess.NewEmbedded(nil)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: NewEmbedded() のエラー = %v", err)
+	}
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, "民訴去ってしまう"),
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+	}
+	if mentions := result.LawNameMentions(); len(mentions) != 0 {
+		t.Fatalf(
+			"SOT-MODEL-025: 通常の促音から法令名を作りました: %#v",
+			mentions,
+		)
+	}
+}
+
 func TestPreprocessSuppressesSameSpanConceptOnlyForExactLawName(
 	t *testing.T,
 ) {

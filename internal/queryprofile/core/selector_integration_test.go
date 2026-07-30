@@ -91,6 +91,15 @@ func Test製品前処理からCoreProfileとSelectorまで一貫した計画を�
 			wantFirstMeaningSteps: 1,
 		},
 		{
+			name:                  "口語引用直前の略称誤記は候補順位を残して明確化する",
+			query:                 "民訴去っていう法令を検索してもらえますか。",
+			wantDecision:          legalquery.PlanDecisionNeedsClarification,
+			wantReasons:           []legalquery.ReasonCode{legalquery.ReasonCodeAmbiguousCandidates},
+			wantRanked:            2,
+			wantSelected:          0,
+			wantFirstMeaningSteps: 1,
+		},
+		{
 			name:                  "明示した独立二候補だけをhedgeする",
 			query:                 "実行検証用に保証を法令名と条文の二候補で検索してください。",
 			wantDecision:          legalquery.PlanDecisionHedged,

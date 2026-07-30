@@ -368,6 +368,65 @@ func TestSelectorは第三の有効候補がある場合にhedgeしない(t *tes
 	}
 }
 
+func TestSelectorは誤記補正だけで分岐した法令検索候補をselectedに残さない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	typoEvidence := []EvidenceCode{
+		EvidenceExplicitTask,
+		EvidenceExplicitResource,
+		EvidenceOfficialAlias,
+		EvidenceUniqueTypoCorrection,
+	}
+	first := mustSelectorTestCandidateWithEvidence(
+		t,
+		"candidate-first",
+		165,
+		nil,
+		1,
+		typoEvidence,
+	)
+	second := mustSelectorTestCandidateWithEvidence(
+		t,
+		"candidate-second",
+		165,
+		nil,
+		1,
+		typoEvidence,
+	)
+	plan := mustSelectTestPlan(
+		t,
+		mustSelectorTestProfileSetResult(
+			t,
+			[]LegalQueryCandidate{first, second},
+			nil,
+			QuerySelectionModeAutomatic,
+			nil,
+		),
+		mustSelectorTestPackState(t, nil, nil),
+		DefaultLimitPerAttempt,
+	)
+	if plan.Decision() != PlanDecisionNeedsClarification ||
+		!slices.Equal(
+			plan.ReasonCodes(),
+			[]ReasonCode{ReasonCodeAmbiguousCandidates},
+		) {
+		t.Fatalf(
+			"SOT-ARCH-023: typo ambiguity plan = decision:%q reasons:%#v",
+			plan.Decision(),
+			plan.ReasonCodes(),
+		)
+	}
+	if len(plan.RankedCandidates()) != 2 || len(plan.Selected()) != 0 {
+		t.Fatalf(
+			"SOT-ARCH-023: typo ambiguity ranked=%d selected=%#v",
+			len(plan.RankedCandidates()),
+			plan.Selected(),
+		)
+	}
+}
+
 func TestSelectorは複数stepの一候補をsingleとして選ぶ(t *testing.T) {
 	t.Parallel()
 
