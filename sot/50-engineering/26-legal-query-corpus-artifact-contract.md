@@ -401,6 +401,12 @@ holdout の期待値を変える場合は、実装へ合わせるためではな
 - schema version 2 の閉じた typed decoder
 - `schemaVersion=2` の `testdata/legalquery/corpus-v10`
 
+`corpus-v10` は、現行 `corpus-v9` から最初に relation と意図分岐 coverage を
+追加する候補成果物の名前である。以後の標準 corpus をこの版へ恒久的に固定せず、
+採用後の現行版は `SOT-ENG-033` の current adoption tuple を定義元とする。
+本節の corpus schema version 2 は `SOT-ENG-035` の profile metadata schema
+version 2 と独立した版であり、一方の更新から他方の版を推測しない。
+
 schema version 2 の coverage ID は、version 1 の閉じた一覧へ次の七件を追加した
 一覧とする。version 1 の schema、decoder および corpus はこれらを受理せず、
 version 2 の manifest と全 fixture は schema version 2 で一致しなければならない。
@@ -428,7 +434,8 @@ semantic fixture ではないため coverage ID にしない。これらは `SOT
 上記 schema、decoder、corpus および独立 review がそろうまでは、
 schema version 2 または `corpus-v10` を有効な評価成果物として扱わない。
 relation 対応 profile set の実装完了、`default-2` baseline、標準 command および
-中央品質ゲートの一括切替は `SOT-ENG-024` を定義元とする。
+中央品質ゲートの一括切替は `SOT-ARCH-033`、`SOT-ENG-024`、
+`SOT-ENG-033`、`SOT-ENG-034` および `SOT-ENG-036` に従う。
 
 ## 確認
 
@@ -450,3 +457,7 @@ race detector で同じ corpus の並行読取りが共有状態を変更しな�
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
+- [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
+- [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
+- [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
+- [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)

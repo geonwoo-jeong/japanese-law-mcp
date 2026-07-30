@@ -73,7 +73,7 @@ cluster key を再計算しない。
 候補数に応じて動的に変えない。
 
 `branchRetentionMargin` と分岐順は `SOT-ENG-024` の評価で受け入れ、
-`SOT-ENG-025` の検証済み profile metadata から取得する。これは同じ
+`SOT-ENG-035` の検証済み profile metadata から取得する。これは同じ
 ranking version の profile set が共有する score policy の一部とし、値を
 変更する場合は全 profile の profile version と ranking version を更新する。
 profile 固有の候補生成、根拠対応または cluster key の規則だけを変え、
@@ -97,11 +97,21 @@ profile 固有の候補生成、根拠対応または cluster key の規則だ�
 
 ここでいう evidence cluster は、同じ profile の候補 draft が持つ各 step について、
 原文順に `{topicOrdinal, evidenceSpan}` を並べた一時的な key が一致する候補群を
-表す。`evidenceSpan` は、その step に属する最初の明示 task/resource 根拠 span、
+表す。
+
+`topicOrdinal` は、`SOT-ARCH-025` の複数主題規則を適用した後の独立主題を
+原文順に数える、一から始まる整数とする。同じ主題から作る複数 step は同じ
+ordinal を共有し、異なる主題は原文順に一ずつ増やす。複数主題へ分離しない候補では、
+全 step の `topicOrdinal` を `1` とする。profile は resource、task、候補順位または
+生成順から別の ordinal を作らない。
+
+`evidenceSpan` は、その step に属する最初の明示 task/resource 根拠 span、
 それがない場合は最初の `target_anchor` span、それもない場合は、その step を
 実際に生成した最初の `semantic_expansion` の法概念または一般検索語 span とする。
 別候補の span を流用せず、一 step でもこの span を持たない候補は追加分岐に
-できない。同じ evidence cluster 内で同じ意味署名を持つ候補 draft が複数ある
+できない。span がない場合に零長 span、照会全体、step 全体または合成 span を
+捏造して cluster key を作らない。同じ evidence cluster 内で同じ意味署名を持つ
+候補 draft が複数ある
 場合は、保持件数、四件目判定および margin 適用の前に、根拠を決定的に統合して
 一件へ縮約する。同じ意味を複数の生成経路で作った件数を別分岐として数えない。
 この統合では、同じ profile の完全順序で最初の draft を代表として、その
@@ -175,3 +185,4 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](../50-engineering/25-unified-query-package-layout.md)
+- [SOT-ENG-035: 統合照会 profile metadata 成果物契約](../50-engineering/35-unified-query-profile-metadata-artifact-contract.md)

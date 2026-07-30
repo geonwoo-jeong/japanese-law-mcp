@@ -24,7 +24,9 @@
 
 ## 配置と最小規模
 
-評価コーパスの配置、schema、manifest、fixture、checksum および loader の成果物契約は `SOT-ENG-026` に従う。baseline は `testdata/legalquery/baselines/default.json` に置く。
+評価コーパスの配置、schema、manifest、fixture、checksum および loader の
+成果物契約は `SOT-ENG-026` に従う。baseline と評価 report の構造、配置および
+version file は `SOT-ENG-036` に従う。
 
 case ID は集合間で一意とし、同じ入力、正規化後に同じ入力または同じ発話・法的対象の変形群を development と holdout の両方へ置かない。
 
@@ -124,27 +126,44 @@ baseline および `SOT-ENG-029` が定める検索例カタログを同じ変�
 
 ## 標準 command と成果物
 
-repository root から実行する標準 command を導入する場合、その固定引数は次とする。
+`SOT-ENG-033` の `profile-set-initial-adoption-bootstrap` が成功し、
+初回 `current.json` を採用する変更が完了するまでは、repository root から
+実行する標準 command を次に固定する。
 
 ```text
 go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v9 --profile-set=default --baseline=./testdata/legalquery/baselines/default.json --format=json
 ```
 
-標準 command は、独立 review で期待値を訂正した現行の `corpus-v9` と
-review 済みの `default-1` baseline を使用する。過去の corpus version は
-再現用成果物として保持するが、標準 command の採用判定へ使用しない。
-標準 corpus を更新する場合は、過去版を変更せず新しい corpus version と
-holdout digest を割り当て、変更前後の結果と独立 review を同じ変更で残し、
-標準 command と baseline を同時に更新する。
+この移行 command は、`corpus-v9`、`default` profile set および review 済みの
+`default-1` baseline だけを受け付ける。
+
+初回採用 manifest の導入完了後は、標準 command を次の固定引数へ置き換える。
+
+```text
+go run ./cmd/legal-query-eval --adoption=./testdata/legalquery/adoptions/current.json --format=json
+```
+
+command は `SOT-ENG-033` の current adoption tuple から profile set、corpus、
+holdout digest、baseline version、baseline file および検索例カタログとの整合を
+解決する。標準 mode に、これらの一部だけを別値へ上書きする引数、環境変数、
+設定または fallback を設けない。過去の corpus、profile set および baseline は
+再現用成果物として保持できるが、current tuple が参照しない版を標準採用判定へ
+使用しない。
+
+採用 manifest の初回導入では、移行 command が使用していた
+`corpus-v9`、`default` profile set および review 済みの `default-1` baseline を、
+観測結果を変えず最初の current tuple へ固定する。この三値は初回 bootstrap の
+現行実装を識別する値であり、初回導入後の標準版を本規定へ恒久的に固定するもの
+ではない。初回導入と同じ変更で中央品質ゲートを adoption 基準 command へ
+切り替え、以後は移行 command を標準として実行しない。
 
 relation 依存の意味判定、共有末尾 cue、限定分岐保持または profile set の
-公開既定動作を変更する採用では、`SOT-ARCH-033`、`SOT-ENG-033` および
-`SOT-ENG-034` が定める current adoption tuple、標準 corpus、baseline、
-検索例カタログ、中央品質ゲートおよび標準 command の参照先を、同じ採用変更で
-切り替える。特定の corpus version、baseline version、schema version または
-一回限りの導入束は本規定へ固定せず、current adoption tuple を定義元とする。
+公開既定動作を変更する採用では、原子的に切り替える完全な単位を
+`SOT-ARCH-033`、機械的な tuple と digest を `SOT-ENG-033`、変更順を
+`SOT-ENG-034` の定義に従わせる。本規定はその一覧を重複して持たず、
+評価の受入基準だけを定義する。
 
-次版の corpus、baseline、cue artifact、loader または検索例は、`SOT-ARCH-033`
+次版の corpus、baseline、cue artifact または loader は、`SOT-ARCH-033`
 の準備状態として採用前に repository へ追加できる。ただし、その準備成果物を
 現行標準 command、中央品質ゲートまたは production 既定動作から選択可能にしては
 ならない。新しい holdout case は corpus 準備変更で独立 review と digest 固定を
@@ -152,9 +171,15 @@ relation 依存の意味判定、共有末尾 cue、限定分岐保持または 
 
 command はネットワークを使用せず、固定 seed と repository 内の不変 profile・辞書・fake provider だけを使う。`default` profile set は法令コア、`judicial-cases` 有効時および無効時を manifest の指定どおり評価する。
 
-標準出力は一つの JSON object とし、少なくとも corpus version、holdout digest、profile version 一覧、baseline version、集合別・カテゴリ別件数、各指標の分子・分母・割合、予算違反件数および失敗 case ID を持つ。照会本文、辞書 entry 全体、外部 response または個人情報を出力しない。
+標準出力は `SOT-ENG-036` の一つの閉じた JSON object とする。同 SOT の
+privacy 境界を守り、照会本文、辞書 entry 全体、外部 response または個人情報を
+出力しない。
 
-引数、schema、checksum、最小件数、baseline、受入基準または再現性のいずれかを満たさない場合は非ゼロ終了する。baseline file は、同じ command の JSON schema に従う review 済みの期待値と holdout digest を持ち、manifest と一致しなければならない。command 実行中に baseline を書き換えない。
+引数、schema、checksum、最小件数、baseline、受入基準または再現性のいずれかを
+満たさない場合は非ゼロ終了する。初回 `current.json` 導入後の adoption 基準
+command では、baseline file が `SOT-ENG-036` の review 済み期待値と holdout
+digest を持ち、current adoption tuple と一致しなければならない。移行 command と
+adoption 基準 command のどちらも、実行中に baseline を書き換えない。
 
 統合照会の application、profile、辞書、planner model、公開 interface、評価 corpus、baseline または evaluator を変更した場合は、この command を `SOT-ENG-020` の中央品質ゲートから実行する。
 
@@ -179,3 +204,4 @@ command はネットワークを使用せず、固定 seed と repository 内の
 - [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
+- [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)

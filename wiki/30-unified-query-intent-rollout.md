@@ -16,7 +16,13 @@ Wiki である。公開動作または採用済み契約の定義元にはしな
 ただし、production composition root が構成する active profile set は従来の
 意味判定を維持し、生成済み relation を signal、候補保持または decision に
 使用しない。次版 profile を CLI、設定、環境変数、MCP または transport から
-選択する入口もなく、採用 manifest は未実装である。
+選択する入口もなく、採用 manifest は未実装である。そのため、現行の標準評価
+command はまだ `corpus-v9/default-1` を固定引数で参照しており、
+`SOT-ENG-024` が採用 manifest 導入後に定める `current.json` 基準の command との
+差分が残る。`SOT-ENG-036` が定める baseline schema、変更不能な version file、
+重複 key と symlink を含む厳格な安全検証も未実装である。現行 baseline report は
+profile を profile ID 順に整列しており、production composition root の固定順を
+そのまま保持する同 SOT の目標状態へ移行していない。
 
 したがって、relation 対応の意味判定、`corpus-v10`、`default-2` および対応する
 検索例カタログは、まだ現行標準ではない。
@@ -31,9 +37,9 @@ Wiki である。公開動作または採用済み契約の定義元にはしな
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
-| 3 | 未着手 | 共有末尾 cue の閉じた列挙判定と evidence cluster 単位の限定分岐保持を profile 内で完成させる | `SOT-ARCH-025`、`SOT-ARCH-032` |
-| 4 | 未着手 | 現行 `corpus-v9/default-1` の初回採用 manifest を作り、新規 holdout を含む `corpus-v10` と `default-2` の候補成果物を、profile を変えない準備変更で独立 review し、digest を固定する | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033` |
-| 5 | 未着手 | relation 対応 profile set、準備済み corpus・baseline、採用 manifest、標準 command、品質ゲートおよび検索例カタログを一変更で公開既定へ切り替える | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-029`、`SOT-ENG-033` |
+| 3 | 未着手 | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-032`、`SOT-ENG-035` |
+| 4 | 未着手 | 現行集合の初回採用 manifest、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036` |
+| 5 | 未着手 | `SOT-ARCH-033` の全採用要素と `SOT-ENG-033` の current tuple を一変更で公開既定へ切り替える | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | e-Gov parser のエラー分類と法令検索の canonical target 優先を、意図判定変更とは別に移行する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
 | 7 | 未着手 | 前段の同一変更義務に含まれない非実行案内と scenario 契約を現行標準へ同期する | `SOT-SCN-010`、`SOT-MODEL-024`、`SOT-IF-051` |
 
@@ -43,6 +49,33 @@ Wiki である。公開動作または採用済み契約の定義元にはしな
 |---:|---|---:|---:|---:|---|
 | 1 | 2026-07-31 | 9.2 / 10 | 9.1 / 10 | 0 | v2 role、relation 保持、閉じた role 入力、profile 所有 ID、active 成果物の不変 |
 | 2 | 2026-07-31 | 9.5 / 10 | 9.3 / 10 | 0 | 共通 relation 生成、positive task role、引用・言及・topic 除外、profile 内の意図根拠、対象外候補 scope、next/active 分離 |
+
+## 第 3・第 4 段階の SOT 文書 review
+
+2026-07-31 に、実装へ着手せず SOT と派生文書だけを review した。
+
+| 観点 | 評価 | blocker | 確認範囲 |
+|---|---:|---:|---|
+| architecture と導入順 | 8.8 / 10 | 0 | 第 3・第 4 段階の内部順序、sidecar の profile 境界、bootstrap 前後の標準 command |
+| 実装可能性 | 8.5 / 10 | 0 | profile metadata、baseline、loader、writer、version および固定 test ID |
+| SSOT と責務分離 | 8.9 / 10 | 0 | package、成果物、adoption tuple、current・candidate・history の定義元 |
+| artifact とカタログ追跡性 | 9.0 / 10 | 0 | 現行 fixture、baseline 構造、`verification_artifact` の解決 |
+
+これは文書設計の通過記録であり、第 3 段階または第 4 段階の実装完了を表さない。
+実装状態は次節のとおり全項目を `未着手` のままとする。
+
+## 第 3 段階の内部進捗
+
+内部順序の定義元は `SOT-ENG-034` とし、ここでは実装状態だけを追跡する。
+
+| 順序 | 状態 | 変更単位 |
+|---:|---|---|
+| 3.1 | 未着手 | schema version 2 の profile metadata model、loader、存在状態および固定 set 整合 |
+| 3.2 | 未着手 | production-neutral な `SharedTerminalSequence` sidecar |
+| 3.3 | 未着手 | profile-private な根拠対応と evidence cluster |
+| 3.4 | 未着手 | core の sidecar 消費、複数主題 step および限定分岐 |
+| 3.5 | 未着手 | sidecar を消費しない `judicial-cases` 固有の限定分岐 |
+| 3.6 | 未着手 | 全 profile が schema version 2 と共有校正値を持つ test 専用固定 set |
 
 ## 段階の境界
 
@@ -58,9 +91,13 @@ baseline を変更しない。
 `corpus-v9/default-1` 集合から `previousAdoptionId` のない初回 history manifest と
 それを指す `current.json`、現行 `default.json` と同じ
 `baselines/versions/default-1.json` を作り、導入前後の観測動作が一致することを
-確認する。候補 `default-2` は test が直接構成する次版 set から
-`baselines/versions/default-2.json` へ生成し、第五段階で version file の byte と
-digest を書き換えない。
+確認する。その後、holdout を参照せず development 集合だけで次版固定 set を
+校正し、`SOT-ENG-036` の schema、evaluator、`default-2` の予約名と出力先を
+準備する。一回だけ holdout の採用判定を行い、合格した report byte を
+`default-2` 候補として保存する。採用前の候補 history manifest は置かず、
+`current.json` と `default.json` は現行集合を指し続ける。第五段階では version
+file の byte と digest を書き換えず、新しい history manifest の追加と current
+pointer の切替を全採用要素と同じ変更で行う。
 
 第五段階だけが、relation 依存の意味判定を production composition root へ採用する
 段階である。profile 実装だけ、corpus だけ、baseline だけ、採用 manifest だけ、

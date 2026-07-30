@@ -39,8 +39,7 @@ CLI、環境変数、設定ファイル、MCP 引数または transport の違�
 2. test が明示的に直接構成する別の内部実装であり、production composition root、
    標準評価 command および中央品質ゲートの既定 profile set へ登録せず、
    次版の cue artifact と profile metadata を現行成果物とは別に保持する
-3. 次版の corpus、baseline または検索例の候補成果物であり、現行標準または
-   確認済みの現行カタログとして参照しない
+3. 次版の corpus または baseline の候補成果物であり、現行標準から参照しない
 
 準備要素が存在するだけで採用済み profile set とみなさない。共通前処理が
 `CueTaskRelation` を不変な sidecar として生成しても、採用済み profile が
@@ -80,8 +79,8 @@ version を変更する場合は、意味計画の観測結果が同じであっ
 - production composition root が構成する profile、共通前処理および planner
 - profile version、ranking version、composition version および profile set version
 - 対象動作を検証する model、profile、planner、application および MCP 契約 test
-- `SOT-ENG-024` と `SOT-ENG-026` が要求する corpus、baseline、標準 command
-  および変更前後の評価
+- `SOT-ENG-024`、`SOT-ENG-026` および `SOT-ENG-036` が要求する corpus、
+  baseline、標準 command および変更前後の評価
 - 中央品質ゲートの固定値
 - `SOT-ENG-029` の現行検索例カタログ
 - `SOT-ENG-033` の current adoption tuple と履歴 manifest
@@ -137,3 +136,5 @@ decision、reason、selection、meaning、step および外部呼出し境界に
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](../50-engineering/26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](../50-engineering/29-unified-query-example-catalog.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](../50-engineering/33-unified-query-profile-set-adoption-manifest.md)
+- [SOT-ENG-035: 統合照会 profile metadata 成果物契約](../50-engineering/35-unified-query-profile-metadata-artifact-contract.md)
+- [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](../50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md)

@@ -121,50 +121,11 @@ evidence cluster を、候補 draft の生成中だけ使う profile-private な
 
 pack 無効を認識する最小 cue と、入力された `SourceResourceRef` を採用済み provider/source/resource として構造検証する metadata は、core 側の予約済み pack metadata として保持できる。無効な pack の request builder、binding、provider route または result mapper は構成しない。
 
-各 profile directory は `data/profile.json` に profile ID、schema version、
-profile version、ranking version、対象 task/resource、weight set、閾値、
-margin、tie-break および参照する辞書 version を持つ。profile version は固有の
-規則と辞書を、ranking version は profile set 内で共有する score scale、
-confidence、閾値、margin および tie-break の校正を識別する。
-
-`SOT-ARCH-032` の限定分岐を使用する profile metadata は、
-`selection.branchRetentionMargin` を必須の整数として持つ。値は零以上かつ
-`score.maximum - score.minimum` 以下とし、`singleMargin` または
-`hedgeMargin` と別に検証する。loader、共通 metadata model または profile が、
-欠落値を既存 margin、零若しくは固定定数から補わない。
-
-`profile.json` の `schemaVersion=2` を
-`selection.branchRetentionMargin` を持つ最初の版とする。
-`schemaVersion=1` は、`SOT-ARCH-033` の現行 active profile set、変更不能な
-履歴成果物の再現および直前の採用済み集合への原子的 rollback のために
-loader が受理し続ける。ただし、本規定の限定分岐へ対応した profile と
-みなさない。
-次版 profile set の一部だけを schema version 2 にせず、限定分岐を検証する固定
-set は全 profile を schema version 2 にそろえる。
-
-共通 metadata model と loader は、`schemaVersion=1` と `schemaVersion=2` を
-明示的に区別する閉じた版型として表す。`schemaVersion=1` を読んだときに
-`branchRetentionMargin` へ零、既存 margin または暫定定数を補って同じ型へ
-平坦化しない。限定分岐を使う profile interface は `schemaVersion=2` の検証済み
-metadata だけを受け取る。
-
-共通 metadata model の accessor は
-`BranchRetentionMargin() (value int, present bool)` とする。
-`schemaVersion=1` は `(0, false)` を返し、この零を設定値として扱わない。
-`schemaVersion=2` は検証済み値と `true` を返すため、零の有効値と欠落を
-区別できる。同じ固定 profile set で version 1 と version 2 を混在させた場合、
-または限定分岐を使う profile が `present=false` を受けた場合は構成を失敗させる。
-`schemaVersion=1` が `selection.branchRetentionMargin` を持つ場合、
-`schemaVersion=2` が同 field を欠く場合、および未知の schema version は
-loader error とする。
-
-同じ固定 profile set の全 profile は、同じ `branchRetentionMargin` と
-ranking version を持たなければならない。この値は metadata の不変性検証、
-profile set の校正値照合および不透明な profile set version の入力に含める。
-値を追加または変更する version の責務は `SOT-ARCH-032` を定義元とする。
-準備、校正、holdout 判定および原子的採用の順序は `SOT-ENG-034` だけを
-定義元とし、本規定では再定義しない。共通 loader は、その各段階で渡された
-一つの固定 profile set に対して本節の schema、値一致および不変性だけを検証する。
+各 profile directory は `data/profile.json` を所有する。その成果物の閉じた構造、
+schema version、`branchRetentionMargin` の存在状態、loader、安全境界および
+固定 profile set 内の整合は `SOT-ENG-035` を定義元とする。本規定は、
+`profile.json` を各 profile package に配置する責務境界だけを定め、成果物契約を
+重複して定義しない。
 
 `data/cues.json` は出典不要の構文 cue と予約語だけを持ち、法概念と法令名の
 出典付きデータを混在させない。
@@ -195,9 +156,12 @@ composition root は tokenizer、辞書、profile、pack 状態、route およ�
 
 executor は root context と固定 budget を各 step へ渡す。結果は通信完了順ではなく plan 順に新しい配列へ組み立てる。
 
-## 実装順序
+## 初回構築の実装順序
 
-実装は次の依存順に分け、各段階で test-first の検証を通す。
+統合照会を最初に構築するときは次の依存順に分け、各段階で test-first の検証を
+通す。この順序は package の初回構築順であり、採用済み意味判定を変更する
+rollout の段階、進行条件または commit 境界を定義しない。後者の定義元は
+`SOT-ENG-034` だけとする。
 
 1. logical input、candidate、plan、item 配分式、concrete result 型および JSON Schema
 2. 固定 corpus、evaluator、core profile、法概念辞書および共通前処理 port
@@ -214,12 +178,8 @@ package import test で `legalquery` と profile から `source` および MCP S
 
 core profile だけ、core と judicial profile、fake profile、fake ability ports および race detector を使い、pack 分離、不変性、request materialization、item 配分、決定的順序、context cancellation および既存専門ツールとの独立性を確認する。
 
-profile metadata の確認では、`branchRetentionMargin` の欠落、負数、score 範囲
-超過、version 1 での field 混入、version 2 での field 欠落、未知 version、
-schema version の混在、`present` の誤判定、固定 set 内の値不一致、
-ranking version 非更新および既存 margin からの暗黙補完を拒否する。完全な
-version 1 の履歴 set は再現と rollback のために読めるが、限定分岐を
-有効にしないことも確認する。
+profile metadata は `SOT-ENG-035` の固定 test ID で確認し、本規定の package
+依存検査から成果物構造を重複定義しない。
 閉じた separator 検証では、原文または任意の byte 列を
 profile interface へ公開せず、同じ span の複数意味を重複主題にせず、検証済み
 `SharedTerminalSequence` だけを深く複製して渡すことを確認する。
@@ -248,3 +208,5 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](28-unified-query-unsupported-intent-cues.md)
+- [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
+- [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)

@@ -91,7 +91,11 @@ package 間で使う accessor は次に固定する。
 決める。構造上の異なる span が同じ logical input の意味署名へ到達した場合の
 縮約も profile の責務とする。
 
-裁判例その他の profile は、各 profile の有効な SOT が採用を明示しない限り
+`judicial-cases` profile はこの sidecar を裁判例 search/read step または
+候補 fan-out の生成に使用しない。裁判例固有の根拠対応と evidence cluster は
+同 profile の位置付き出現から独立に作る。
+
+その他の profile も、各 profile の新しい有効な SOT が採用を明示しない限り
 sidecar を意味候補へ変換しない。profile、composer、selector または provider が
 sidecar から原文を復元したり、別の separator 条件を補ったりしない。
 
@@ -108,6 +112,8 @@ contract test で、少なくとも次を確認する。
 - 同じ span の複数意味を一主題とし、異なる span の同じ意味は構造段階で
   失わない
 - 五件以上の topic span を切り捨てず、二百五十六件まで保持する
+- `judicial-cases` profile が sidecar から search/read step または fan-out を
+  生成しない
 - 単純列挙、separator 違反、未知の接続、別の節、文末でない cue または
   `direct_task` でない relation から sidecar を作らない
 - 存在しない relation、範囲外 span、UTF-8 の途中、逆順、重複、

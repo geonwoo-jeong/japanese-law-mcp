@@ -34,3 +34,5 @@
 - [32-unified-query-positive-cue-role-mapping.md](32-unified-query-positive-cue-role-mapping.md)
 - [33-unified-query-profile-set-adoption-manifest.md](33-unified-query-profile-set-adoption-manifest.md)
 - [34-unified-query-rollout-stages.md](34-unified-query-rollout-stages.md)
+- [35-unified-query-profile-metadata-artifact-contract.md](35-unified-query-profile-metadata-artifact-contract.md)
+- [36-unified-query-evaluation-baseline-artifact-contract.md](36-unified-query-evaluation-baseline-artifact-contract.md)

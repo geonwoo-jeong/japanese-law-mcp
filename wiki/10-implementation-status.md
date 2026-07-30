@@ -71,9 +71,12 @@
 ## 未実装
 
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
-- 統合照会の共有末尾 cue と evidence cluster による限定分岐保持、採用 manifest、
-  relation 対応 corpus・baseline・検索例の原子的切替、next profile set の
-  production 採用、および後続の provider 契約更新。
+- [SOT-ENG-035](../sot/50-engineering/35-unified-query-profile-metadata-artifact-contract.md)
+  の schema version 2 profile metadata、共有末尾 cue と evidence cluster による
+  限定分岐保持、採用 manifest、
+  [SOT-ENG-036](../sot/50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md)
+  の baseline schema と厳格な loader、relation 対応 corpus・baseline・検索例の
+  原子的切替、next profile set の production 採用、および後続の provider 契約更新。
   現在地と着手順は
   [統合照会の意図判定導入順](30-unified-query-intent-rollout.md) で追跡する
 - [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の
