@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-8",
+  "cueSetVersion": "core-cues-2026-07-30-9",
   "cues": [
     {
       "cueId": "operator-all",
@@ -25,7 +25,7 @@
       "cueId": "operator-document-article",
       "category": "operator",
       "value": "document_article",
-      "terms": ["本文と第", "本文及び第"]
+      "terms": ["本文と第", "本文及び第", "本文第"]
     },
     {
       "cueId": "operator-dual-candidate",
