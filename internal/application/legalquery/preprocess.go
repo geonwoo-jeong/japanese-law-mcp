@@ -91,7 +91,10 @@ func (s QuerySpan) Validate() error {
 type CueVocabularyEntry struct {
 	ProfileID string
 	CueID     string
-	Terms     []string
+	// MatchGroup は、同じ profile の同一意味 tuple から最長 span を選ぶ不透明 ID である。
+	MatchGroup string
+	SyntaxRole CueSyntaxRole
+	Terms      []string
 }
 
 func validatePreprocessMatchKind(kind PreprocessMatchKind) error {

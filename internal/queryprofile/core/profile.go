@@ -7,21 +7,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"regexp"
 	"slices"
-	"strings"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/cueartifact"
 )
 
 const (
-	supportedSchemaVersion = 1
-	maxProfileBytes        = 64 << 10
-	maxCuesBytes           = 256 << 10
-	maxCueCount            = 128
+	supportedProfileSchemaVersion = 1
+	maxProfileBytes               = 64 << 10
 )
 
 var (
@@ -30,8 +27,6 @@ var (
 
 	//go:embed data/cues.json
 	embeddedCues []byte
-
-	coreIDPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 )
 
 type profileDocument struct {
@@ -83,23 +78,12 @@ type lexiconVersionsDocument struct {
 	LegalConcepts string `json:"legalConcepts"`
 }
 
-type cuesDocument struct {
-	SchemaVersion int           `json:"schemaVersion"`
-	ProfileID     string        `json:"profileId"`
-	CueSetVersion string        `json:"cueSetVersion"`
-	Cues          []cueDocument `json:"cues"`
-}
-
-type cueDocument struct {
-	CueID    string   `json:"cueId"`
-	Category string   `json:"category"`
-	Value    string   `json:"value"`
-	Terms    []string `json:"terms"`
-}
-
 type cueDefinition struct {
-	category string
-	value    string
+	category    string
+	value       string
+	intentGroup string
+	signal      legalquery.CandidateGenerationSignal
+	syntaxRole  legalquery.CueSyntaxRole
 }
 
 type conceptDefinition struct {
@@ -150,21 +134,18 @@ func Load(
 	if err != nil {
 		return nil, err
 	}
-	cueData, err := decodeStrict[cuesDocument](
-		"cues.json",
-		cuesJSON,
-		maxCuesBytes,
-	)
+	cueData, err := cueartifact.Load(cuesJSON)
 	if err != nil {
 		return nil, err
 	}
-	if profileData.SchemaVersion != supportedSchemaVersion ||
-		cueData.SchemaVersion != supportedSchemaVersion {
+	if profileData.SchemaVersion != supportedProfileSchemaVersion {
 		return nil, fmt.Errorf("profile data の schemaVersion が未対応です")
 	}
-	if profileData.ProfileID != cueData.ProfileID ||
-		profileData.CueSetVersion != cueData.CueSetVersion {
-		return nil, fmt.Errorf("profile.json と cues.json の版が一致しません")
+	if err := cueData.MatchProfile(
+		profileData.ProfileID,
+		profileData.CueSetVersion,
+	); err != nil {
+		return nil, err
 	}
 	if profileData.Lexicons.LawNames != lawNames.Version() ||
 		profileData.Lexicons.LegalConcepts != concepts.Version() {
@@ -233,9 +214,11 @@ func (p *Profile) CueVocabulary() []legalquery.CueVocabularyEntry {
 	result := make([]legalquery.CueVocabularyEntry, 0, len(p.cues))
 	for _, cue := range p.cues {
 		result = append(result, legalquery.CueVocabularyEntry{
-			ProfileID: cue.ProfileID,
-			CueID:     cue.CueID,
-			Terms:     append([]string(nil), cue.Terms...),
+			ProfileID:  cue.ProfileID,
+			CueID:      cue.CueID,
+			MatchGroup: cue.MatchGroup,
+			SyntaxRole: cue.SyntaxRole,
+			Terms:      append([]string(nil), cue.Terms...),
 		})
 	}
 	return result
@@ -376,51 +359,196 @@ func isExactCoreTargets(values []legalquery.QueryProfileTarget) bool {
 }
 
 func buildCues(
-	document cuesDocument,
+	document *cueartifact.Artifact,
 ) (
 	[]legalquery.CueVocabularyEntry,
 	map[string]cueDefinition,
 	error,
 ) {
-	if len(document.Cues) == 0 || len(document.Cues) > maxCueCount {
-		return nil, nil, fmt.Errorf("cues は一件以上 %d 件以下必要です", maxCueCount)
+	if err := document.ValidateEntries(validateCueEntry); err != nil {
+		return nil, nil, err
 	}
-	cues := make([]legalquery.CueVocabularyEntry, 0, len(document.Cues))
-	definitions := make(map[string]cueDefinition, len(document.Cues))
-	previousID := ""
-	for index, raw := range document.Cues {
-		if !coreIDPattern.MatchString(raw.CueID) ||
-			(index > 0 && previousID >= raw.CueID) {
-			return nil, nil, fmt.Errorf("cues は有効な cueId の昇順でなければなりません")
+	entries := document.Entries()
+	if err := validateRequiredUnsupportedIntentGroups(entries); err != nil {
+		return nil, nil, err
+	}
+	definitions := make(map[string]cueDefinition, len(entries))
+	for _, entry := range entries {
+		intentGroup, _ := entry.IntentGroup()
+		signal, err := validateCueSignal(entry)
+		if err != nil {
+			return nil, nil, err
 		}
-		if !validCueMeaning(raw.Category, raw.Value) {
-			return nil, nil, fmt.Errorf("cues[%d] の category/value が未対応です", index)
+		definitions[entry.CueID()] = cueDefinition{
+			category:    entry.Category(),
+			value:       entry.Value(),
+			intentGroup: intentGroup,
+			signal:      signal,
+			syntaxRole:  entry.SyntaxRole(),
 		}
-		if len(raw.Terms) == 0 || len(raw.Terms) > 64 {
-			return nil, nil, fmt.Errorf("cues[%d].terms の件数が有効ではありません", index)
+	}
+	return document.Vocabulary(), definitions, nil
+}
+
+func validateCueEntry(document cueartifact.Entry) error {
+	if !validCueMeaning(document.Category(), document.Value()) {
+		return fmt.Errorf("category/value が未対応です")
+	}
+	if err := validateCueSyntaxRole(document); err != nil {
+		return err
+	}
+	_, err := validateCueSignal(document)
+	return err
+}
+
+func validateCueSyntaxRole(document cueartifact.Entry) error {
+	role := document.SyntaxRole()
+	switch document.Category() {
+	case "unsupported":
+		if role != legalquery.CueSyntaxRoleTaskExpression &&
+			role != legalquery.CueSyntaxRoleTaskObject {
+			return fmt.Errorf(
+				"対象外 cue の syntaxRole は task_expression または task_object でなければなりません",
+			)
 		}
-		terms := append([]string(nil), raw.Terms...)
-		for termIndex, term := range terms {
-			if strings.TrimSpace(term) == "" {
-				return nil, nil, fmt.Errorf("cues[%d].terms[%d] は必須です", index, termIndex)
+	case "task":
+		if role != legalquery.CueSyntaxRoleTaskExpression &&
+			role != legalquery.CueSyntaxRoleTaskPredicate {
+			return fmt.Errorf(
+				"task cue の syntaxRole は task_expression または task_predicate でなければなりません",
+			)
+		}
+	case "syntax":
+		if document.Value() == "task_predicate" {
+			if role != legalquery.CueSyntaxRoleTaskPredicate {
+				return fmt.Errorf(
+					"task_predicate syntax cue の syntaxRole は task_predicate でなければなりません",
+				)
+			}
+			break
+		}
+		if role != legalquery.CueSyntaxRoleNone {
+			return fmt.Errorf(
+				"task relation に使わない syntax cue の syntaxRole は none でなければなりません",
+			)
+		}
+	default:
+		if role != legalquery.CueSyntaxRoleNone {
+			return fmt.Errorf(
+				"task relation に使わない cue の syntaxRole は none でなければなりません",
+			)
+		}
+	}
+	return nil
+}
+
+func validateRequiredUnsupportedIntentGroups(
+	cues []cueartifact.Entry,
+) error {
+	required := []string{
+		"explicit_out_of_scope_task",
+		"external_information_source",
+		"legal_advice",
+		"relationship_analysis",
+		"translation",
+		"unadopted_information_or_extension",
+		"version_comparison",
+	}
+	seen := make(map[string]struct{}, len(required))
+	for _, cue := range cues {
+		if cue.Category() == "unsupported" {
+			intentGroup, exists := cue.IntentGroup()
+			if exists {
+				seen[intentGroup] = struct{}{}
 			}
 		}
-		slices.Sort(terms)
-		if len(slices.Compact(terms)) != len(terms) {
-			return nil, nil, fmt.Errorf("cues[%d].terms を重複させることはできません", index)
-		}
-		cues = append(cues, legalquery.CueVocabularyEntry{
-			ProfileID: document.ProfileID,
-			CueID:     raw.CueID,
-			Terms:     terms,
-		})
-		definitions[raw.CueID] = cueDefinition{
-			category: raw.Category,
-			value:    raw.Value,
-		}
-		previousID = raw.CueID
 	}
-	return cues, definitions, nil
+	for _, intentGroup := range required {
+		if _, exists := seen[intentGroup]; !exists {
+			return fmt.Errorf(
+				"対象外 cue に必須の intentGroup %q がありません",
+				intentGroup,
+			)
+		}
+	}
+	return nil
+}
+
+func validateCueSignal(
+	document cueartifact.Entry,
+) (legalquery.CandidateGenerationSignal, error) {
+	intentGroup, hasIntentGroup := document.IntentGroup()
+	signalValue, hasSignal := document.Signal()
+	if document.Category() != "unsupported" {
+		if hasIntentGroup || hasSignal {
+			return "", fmt.Errorf(
+				"対象外以外の cue に intentGroup または signal は指定できません",
+			)
+		}
+		return "", nil
+	}
+	if !hasIntentGroup || !validUnsupportedIntentGroup(intentGroup) {
+		return "", fmt.Errorf("intentGroup が未対応です")
+	}
+	if !hasSignal {
+		return "", fmt.Errorf("signal は必須です")
+	}
+	signal := legalquery.CandidateGenerationSignal(signalValue)
+	expectedValue, expectedSignal, exists := unsupportedCueMapping(
+		intentGroup,
+	)
+	if !exists ||
+		document.Value() != expectedValue ||
+		signal != expectedSignal {
+		return "", fmt.Errorf(
+			"intentGroup、value および signal の対応が一致しません",
+		)
+	}
+	return signal, nil
+}
+
+func validUnsupportedIntentGroup(value string) bool {
+	switch value {
+	case "external_information_source",
+		"explicit_out_of_scope_task",
+		"legal_advice",
+		"relationship_analysis",
+		"translation",
+		"unadopted_information_or_extension",
+		"version_comparison":
+		return true
+	default:
+		return false
+	}
+}
+
+func unsupportedCueMapping(
+	intentGroup string,
+) (
+	string,
+	legalquery.CandidateGenerationSignal,
+	bool,
+) {
+	switch intentGroup {
+	case "legal_advice":
+		return "legal_advice",
+			legalquery.CandidateSignalUnsupportedLegalAdvice,
+			true
+	case "translation":
+		return "translation",
+			legalquery.CandidateSignalUnsupportedTranslation,
+			true
+	case "external_information_source",
+		"explicit_out_of_scope_task",
+		"relationship_analysis",
+		"unadopted_information_or_extension",
+		"version_comparison":
+		return "task_or_resource",
+			legalquery.CandidateSignalUnsupportedTaskOrResource,
+			true
+	default:
+		return "", "", false
+	}
 }
 
 func validCueMeaning(category string, value string) bool {
@@ -437,7 +565,6 @@ func validCueMeaning(category string, value string) bool {
 		return value == "all" ||
 			value == "any" ||
 			value == "as_of" ||
-			value == "document_article" ||
 			value == "dual_candidate" ||
 			value == "exclude" ||
 			value == "individual" ||
@@ -445,7 +572,8 @@ func validCueMeaning(category string, value string) bool {
 			value == "single_choice"
 	case "syntax":
 		return value == "content_result_unit" ||
-			value == "related_law_scope"
+			value == "related_law_scope" ||
+			value == "task_predicate"
 	case "safety":
 		return value == "implicit_first_read"
 	case "unsupported":

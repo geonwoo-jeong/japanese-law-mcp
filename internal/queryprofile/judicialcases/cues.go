@@ -2,32 +2,15 @@ package judicialcases
 
 import (
 	"fmt"
-	"regexp"
-	"slices"
-	"strings"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/cueartifact"
 )
 
-var cueIDPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
-
-type cuesDocument struct {
-	SchemaVersion int           `json:"schemaVersion"`
-	ProfileID     string        `json:"profileId"`
-	CueSetVersion string        `json:"cueSetVersion"`
-	Cues          []cueDocument `json:"cues"`
-}
-
-type cueDocument struct {
-	CueID    string   `json:"cueId"`
-	Category string   `json:"category"`
-	Value    string   `json:"value"`
-	Terms    []string `json:"terms"`
-}
-
 type cueDefinition struct {
-	category string
-	value    string
+	category   string
+	value      string
+	syntaxRole legalquery.CueSyntaxRole
 }
 
 type resolvedCues struct {
@@ -35,87 +18,28 @@ type resolvedCues struct {
 }
 
 func buildCues(
-	document cuesDocument,
+	document *cueartifact.Artifact,
 ) (
 	[]legalquery.CueVocabularyEntry,
 	map[string]cueDefinition,
 	error,
 ) {
-	if len(document.Cues) == 0 || len(document.Cues) > maximumCueCount {
-		return nil, nil, fmt.Errorf(
-			"cues は一件以上 %d 件以下必要です",
-			maximumCueCount,
-		)
+	if err := document.ValidateEntries(validateCueEntry); err != nil {
+		return nil, nil, err
 	}
-	cues := make([]legalquery.CueVocabularyEntry, 0, len(document.Cues))
-	definitions := make(map[string]cueDefinition, len(document.Cues))
-	meaningIDs := make(map[string]string, len(document.Cues))
-	termOwners := make(map[string]string)
-	previousID := ""
-	for index, raw := range document.Cues {
-		if !cueIDPattern.MatchString(raw.CueID) ||
-			(index > 0 && previousID >= raw.CueID) {
-			return nil, nil, fmt.Errorf(
-				"cues は有効な cueId の昇順でなければなりません",
-			)
+	entries := document.Entries()
+	definitions := make(map[string]cueDefinition, len(entries))
+	meaningIDs := make(map[string]string, len(entries))
+	for _, entry := range entries {
+		meaningKey := cueMeaningKey(entry.Category(), entry.Value())
+		definitions[entry.CueID()] = cueDefinition{
+			category:   entry.Category(),
+			value:      entry.Value(),
+			syntaxRole: entry.SyntaxRole(),
 		}
-		if !validCueMeaning(raw.Category, raw.Value) {
-			return nil, nil, fmt.Errorf(
-				"cues[%d] の category/value が未対応です",
-				index,
-			)
+		if _, exists := meaningIDs[meaningKey]; !exists {
+			meaningIDs[meaningKey] = entry.CueID()
 		}
-		meaningKey := cueMeaningKey(raw.Category, raw.Value)
-		if previousCueID, exists := meaningIDs[meaningKey]; exists {
-			return nil, nil, fmt.Errorf(
-				"cue %q と %q の category/value が重複しています",
-				previousCueID,
-				raw.CueID,
-			)
-		}
-		if len(raw.Terms) == 0 || len(raw.Terms) > 64 {
-			return nil, nil, fmt.Errorf(
-				"cues[%d].terms の件数が有効ではありません",
-				index,
-			)
-		}
-		terms := append([]string(nil), raw.Terms...)
-		for termIndex, term := range terms {
-			if strings.TrimSpace(term) == "" {
-				return nil, nil, fmt.Errorf(
-					"cues[%d].terms[%d] は必須です",
-					index,
-					termIndex,
-				)
-			}
-			if previousCueID, exists := termOwners[term]; exists {
-				return nil, nil, fmt.Errorf(
-					"cue %q と %q で term %q が重複しています",
-					previousCueID,
-					raw.CueID,
-					term,
-				)
-			}
-			termOwners[term] = raw.CueID
-		}
-		slices.Sort(terms)
-		if len(slices.Compact(terms)) != len(terms) {
-			return nil, nil, fmt.Errorf(
-				"cues[%d].terms を重複させることはできません",
-				index,
-			)
-		}
-		cues = append(cues, legalquery.CueVocabularyEntry{
-			ProfileID: document.ProfileID,
-			CueID:     raw.CueID,
-			Terms:     terms,
-		})
-		definitions[raw.CueID] = cueDefinition{
-			category: raw.Category,
-			value:    raw.Value,
-		}
-		meaningIDs[meaningKey] = raw.CueID
-		previousID = raw.CueID
 	}
 	requiredMeanings := []string{
 		cueMeaningKey("operator", "individual"),
@@ -132,7 +56,39 @@ func buildCues(
 			)
 		}
 	}
-	return cues, definitions, nil
+	return document.Vocabulary(), definitions, nil
+}
+
+func validateCueEntry(document cueartifact.Entry) error {
+	if !validCueMeaning(document.Category(), document.Value()) {
+		return fmt.Errorf("category/value が未対応です")
+	}
+	if _, exists := document.IntentGroup(); exists {
+		return fmt.Errorf("intentGroup は指定できません")
+	}
+	if _, exists := document.Signal(); exists {
+		return fmt.Errorf("signal は指定できません")
+	}
+	return validateCueSyntaxRole(document)
+}
+
+func validateCueSyntaxRole(document cueartifact.Entry) error {
+	role := document.SyntaxRole()
+	if document.Category() == "task" {
+		if role != legalquery.CueSyntaxRoleTaskExpression &&
+			role != legalquery.CueSyntaxRoleTaskPredicate {
+			return fmt.Errorf(
+				"task cue の syntaxRole は task_expression または task_predicate でなければなりません",
+			)
+		}
+		return nil
+	}
+	if role != legalquery.CueSyntaxRoleNone {
+		return fmt.Errorf(
+			"task relation に使わない cue の syntaxRole は none でなければなりません",
+		)
+	}
+	return nil
 }
 
 func validCueMeaning(category string, value string) bool {

@@ -2,6 +2,7 @@ package judicialcases
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -17,9 +18,9 @@ func TestLoadEmbeddedは裁判例二能力と共有校正を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "judicial-cases" ||
-		metadata.ProfileVersion() != "judicial-cases-2026-07-30-8" ||
+		metadata.ProfileVersion() != "judicial-cases-2026-07-30-9" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
-		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-30-3" {
+		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-30-4" {
 		t.Fatalf("metadata = %#v", metadata)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
@@ -74,12 +75,14 @@ func TestProfileGetterはcueとmetadataを変更させない(t *testing.T) {
 	}
 	cues := profile.CueVocabulary()
 	cues[0].ProfileID = "changed"
+	cues[0].MatchGroup = "changed"
 	cues[0].Terms[0] = "changed"
 	targets := profile.Metadata().Targets()
 	targets[0] = legalquery.QueryProfileTarget{}
 
 	nextCues := profile.CueVocabulary()
 	if nextCues[0].ProfileID != "judicial-cases" ||
+		nextCues[0].MatchGroup == "changed" ||
 		nextCues[0].Terms[0] == "changed" ||
 		profile.Metadata().Targets()[0].InputKind() !=
 			legalquery.InputKindJudicialDecisionSearch {
@@ -115,8 +118,17 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 			profile: embeddedProfile,
 			cues: bytes.Replace(
 				embeddedCues,
-				[]byte(`"schemaVersion": 1,`),
-				[]byte(`"schemaVersion": 1, "unknown": true,`),
+				[]byte(`"schemaVersion": 3,`),
+				[]byte(`"schemaVersion": 3, "unknown": true,`),
+				1,
+			),
+		},
+		"cue 重複 key": {
+			profile: embeddedProfile,
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"schemaVersion": 3,`),
+				[]byte(`"schemaVersion": 3, "schemaVersion": 3,`),
 				1,
 			),
 		},
@@ -124,7 +136,7 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 			profile: embeddedProfile,
 			cues: bytes.Replace(
 				embeddedCues,
-				[]byte(`judicial-cases-cues-2026-07-30-3`),
+				[]byte(`judicial-cases-cues-2026-07-30-4`),
 				[]byte(`judicial-cases-cues-2026-07-29-9`),
 				1,
 			),
@@ -191,58 +203,52 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 	}
 }
 
-func TestBuildCuesは必要な五意味の欠落と語の横断重複を拒否する(
+func TestLoadは裁判例に必要な意味の欠落と任意項目を拒否する(
 	t *testing.T,
 ) {
 	t.Parallel()
 
-	base := cuesDocument{
-		SchemaVersion: 1,
-		ProfileID:     "judicial-cases",
-		CueSetVersion: "test-cues-1",
-		Cues: []cueDocument{
-			{
-				CueID:    "operator-individual",
-				Category: "operator",
-				Value:    "individual",
-				Terms:    []string{"個別に"},
-			},
-		},
+	concepts := mustEmbeddedConceptLexicon(t)
+	var document map[string]any
+	if err := json.Unmarshal(embeddedCues, &document); err != nil {
+		t.Fatalf("cue data を解析できません: %v", err)
 	}
-	if _, _, err := buildCues(base); err == nil {
-		t.Fatal("必要な task/resource cue の欠落を受理しました")
+	rawCues, ok := document["cues"].([]any)
+	if !ok {
+		t.Fatal("cue data に cues 配列がありません")
+	}
+	filtered := make([]any, 0, len(rawCues))
+	for _, raw := range rawCues {
+		cue, cueOK := raw.(map[string]any)
+		if !cueOK {
+			t.Fatal("cue data に object ではない値があります")
+		}
+		if cue["category"] == "resource" &&
+			cue["value"] == "judicial_decision" {
+			continue
+		}
+		filtered = append(filtered, cue)
+	}
+	document["cues"] = filtered
+	missing, err := json.Marshal(document)
+	if err != nil {
+		t.Fatalf("意味欠落 fixture を作成できません: %v", err)
+	}
+	if _, err := Load(embeddedProfile, missing, concepts); err == nil {
+		t.Fatal("裁判例 profile に必要な意味の欠落を受理しました")
 	}
 
-	duplicate := base
-	duplicate.Cues = append(
-		append([]cueDocument(nil), base.Cues...),
-		cueDocument{
-			CueID:    "resource-judicial-decision",
-			Category: "resource",
-			Value:    "judicial_decision",
-			Terms:    []string{"裁判例"},
-		},
-		cueDocument{
-			CueID:    "resource-legal-information",
-			Category: "resource_scope",
-			Value:    "legal_information",
-			Terms:    []string{"法情報"},
-		},
-		cueDocument{
-			CueID:    "task-read",
-			Category: "task",
-			Value:    "read",
-			Terms:    []string{"取得"},
-		},
-		cueDocument{
-			CueID:    "task-search",
-			Category: "task",
-			Value:    "search",
-			Terms:    []string{"裁判例"},
-		},
-	)
-	if _, _, err := buildCues(duplicate); err == nil {
-		t.Fatal("異なる cue 間の同一 term を受理しました")
+	if err := json.Unmarshal(embeddedCues, &document); err != nil {
+		t.Fatalf("cue data を再解析できません: %v", err)
+	}
+	rawCues = document["cues"].([]any)
+	rawCues[0].(map[string]any)["intentGroup"] = "translation"
+	optional, err := json.Marshal(document)
+	if err != nil {
+		t.Fatalf("任意項目 fixture を作成できません: %v", err)
+	}
+	if _, err := Load(embeddedProfile, optional, concepts); err == nil {
+		t.Fatal("裁判例 cue の intentGroup を受理しました")
 	}
 }
 
@@ -302,8 +308,8 @@ func TestLoadは不正なcue語彙を拒否する(t *testing.T) {
 		),
 		"重複 term": bytes.Replace(
 			embeddedCues,
-			[]byte(`["それぞれ", "について"`),
-			[]byte(`["それぞれ", "それぞれ"`),
+			[]byte("\"それぞれ\",\n        \"について\""),
+			[]byte("\"それぞれ\",\n        \"それぞれ\""),
 			1,
 		),
 		"cueId 逆順": bytes.Replace(
@@ -318,6 +324,9 @@ func TestLoadは不正なcue語彙を拒否する(t *testing.T) {
 		cues := cues
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+			if bytes.Equal(cues, embeddedCues) {
+				t.Fatalf("fixture %q を変更できませんでした", name)
+			}
 			if _, err := Load(
 				embeddedProfile,
 				cues,

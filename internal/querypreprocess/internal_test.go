@@ -310,6 +310,47 @@ func TestPreprocessMatchPriorityRejectsUnknownKind(t *testing.T) {
 	}
 }
 
+func TestDeduplicateCueDraftsは同じ意味群の最長spanをProfile別に残す(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	values := []cueDraft{
+		{
+			startByte:  0,
+			endByte:    6,
+			profileID:  "core",
+			cueID:      "short",
+			matchGroup: "same-tuple",
+		},
+		{
+			startByte:  0,
+			endByte:    18,
+			profileID:  "core",
+			cueID:      "long",
+			matchGroup: "same-tuple",
+		},
+		{
+			startByte:  0,
+			endByte:    6,
+			profileID:  "judicial-cases",
+			cueID:      "short",
+			matchGroup: "same-tuple",
+		},
+	}
+	got := deduplicateCueDrafts(values)
+	if len(got) != 2 ||
+		got[0].profileID != "core" ||
+		got[0].cueID != "long" ||
+		got[1].profileID != "judicial-cases" ||
+		got[1].cueID != "short" {
+		t.Fatalf(
+			"cue-loader-longest-same-tuple: cue drafts = %#v",
+			got,
+		)
+	}
+}
+
 func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 	t.Parallel()
 
@@ -394,6 +435,32 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 					ProfileID: validCue.ProfileID,
 					CueID:     "Read_Value",
 					Terms:     validCue.Terms,
+				}},
+			},
+		},
+		{
+			name: "cue match group 形式",
+			values: Values{
+				Analyzer: emptyOccurrenceAnalyzer{},
+				LawNames: validLaws,
+				Cues: []legalquery.CueVocabularyEntry{{
+					ProfileID:  validCue.ProfileID,
+					CueID:      validCue.CueID,
+					MatchGroup: "Invalid_Group",
+					Terms:      validCue.Terms,
+				}},
+			},
+		},
+		{
+			name: "cue match group 長超過",
+			values: Values{
+				Analyzer: emptyOccurrenceAnalyzer{},
+				LawNames: validLaws,
+				Cues: []legalquery.CueVocabularyEntry{{
+					ProfileID:  validCue.ProfileID,
+					CueID:      validCue.CueID,
+					MatchGroup: strings.Repeat("a", maxCueMatchGroupBytes+1),
+					Terms:      validCue.Terms,
 				}},
 			},
 		},

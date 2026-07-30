@@ -7,16 +7,15 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/cueartifact"
 )
 
 const (
-	profileID              = "judicial-cases"
-	requiredPackID         = "judicial-cases"
-	sharedRankingVersion   = "legal-query-ranking-2026-07-28-1"
-	supportedSchemaVersion = 1
-	maximumProfileBytes    = 64 << 10
-	maximumCuesBytes       = 256 << 10
-	maximumCueCount        = 128
+	profileID                     = "judicial-cases"
+	requiredPackID                = "judicial-cases"
+	sharedRankingVersion          = "legal-query-ranking-2026-07-28-1"
+	supportedProfileSchemaVersion = 1
+	maximumProfileBytes           = 64 << 10
 )
 
 var (
@@ -61,24 +60,22 @@ func Load(
 	if err != nil {
 		return nil, err
 	}
-	cueData, err := decodeStrict[cuesDocument](
-		"cues.json",
-		cuesJSON,
-		maximumCuesBytes,
-	)
+	cueData, err := cueartifact.Load(cuesJSON)
 	if err != nil {
 		return nil, err
 	}
-	if profileData.SchemaVersion != supportedSchemaVersion ||
-		cueData.SchemaVersion != supportedSchemaVersion {
+	if profileData.SchemaVersion != supportedProfileSchemaVersion {
 		return nil, fmt.Errorf("profile data の schemaVersion が未対応です")
 	}
 	if profileData.ProfileID != profileID ||
-		cueData.ProfileID != profileID {
+		cueData.ProfileID() != profileID {
 		return nil, fmt.Errorf("profileId は %q でなければなりません", profileID)
 	}
-	if profileData.CueSetVersion != cueData.CueSetVersion {
-		return nil, fmt.Errorf("profile.json と cues.json の版が一致しません")
+	if err := cueData.MatchProfile(
+		profileData.ProfileID,
+		profileData.CueSetVersion,
+	); err != nil {
+		return nil, err
 	}
 	if profileData.Lexicons.LegalConcepts != concepts.Version() {
 		return nil, fmt.Errorf("profile が参照する辞書 version と実体が一致しません")
@@ -120,9 +117,11 @@ func (p *Profile) CueVocabulary() []legalquery.CueVocabularyEntry {
 	result := make([]legalquery.CueVocabularyEntry, 0, len(p.cues))
 	for _, cue := range p.cues {
 		result = append(result, legalquery.CueVocabularyEntry{
-			ProfileID: cue.ProfileID,
-			CueID:     cue.CueID,
-			Terms:     append([]string(nil), cue.Terms...),
+			ProfileID:  cue.ProfileID,
+			CueID:      cue.CueID,
+			MatchGroup: cue.MatchGroup,
+			SyntaxRole: cue.SyntaxRole,
+			Terms:      append([]string(nil), cue.Terms...),
 		})
 	}
 	return result

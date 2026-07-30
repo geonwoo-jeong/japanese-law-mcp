@@ -21,6 +21,7 @@ import (
 const (
 	maxCueEntries          = 512
 	maxCueTermsPerEntry    = 64
+	maxCueMatchGroupBytes  = 128
 	maxPreprocessTermBytes = 2048
 )
 
@@ -49,10 +50,11 @@ const (
 )
 
 type dictionaryTarget struct {
-	kind      dictionaryKind
-	id        string
-	secondary string
-	term      string
+	kind       dictionaryKind
+	id         string
+	secondary  string
+	matchGroup string
+	term       string
 }
 
 type identifierTarget struct {
@@ -244,6 +246,10 @@ func New(values Values) (*Preprocessor, error) {
 				entry.CueID,
 			)
 		}
+		matchGroup := entry.MatchGroup
+		if matchGroup == "" {
+			matchGroup = entry.CueID
+		}
 		cuesByKey[key] = cueTarget{
 			profileID: entry.ProfileID,
 			cueID:     entry.CueID,
@@ -252,10 +258,11 @@ func New(values Values) (*Preprocessor, error) {
 			if err := normalizedTerms.add(
 				querynormalization.ComparisonKey(term),
 				dictionaryTarget{
-					kind:      dictionaryCue,
-					id:        entry.ProfileID,
-					secondary: entry.CueID,
-					term:      term,
+					kind:       dictionaryCue,
+					id:         entry.ProfileID,
+					secondary:  entry.CueID,
+					matchGroup: matchGroup,
+					term:       term,
 				},
 			); err != nil {
 				return nil, fmt.Errorf("cues[%d] の語を登録できません: %w", index, err)
@@ -318,6 +325,14 @@ func validateCueEntry(entry legalquery.CueVocabularyEntry) error {
 	}
 	if !internalIDPattern.MatchString(entry.CueID) {
 		return fmt.Errorf("cueId は小文字 ASCII 識別子でなければなりません")
+	}
+	if entry.MatchGroup != "" &&
+		(len(entry.MatchGroup) > maxCueMatchGroupBytes ||
+			!internalIDPattern.MatchString(entry.MatchGroup)) {
+		return fmt.Errorf(
+			"matchGroup は空または %d byte 以下の小文字 ASCII 識別子でなければなりません",
+			maxCueMatchGroupBytes,
+		)
 	}
 	if len(entry.Terms) == 0 || len(entry.Terms) > maxCueTermsPerEntry {
 		return fmt.Errorf(

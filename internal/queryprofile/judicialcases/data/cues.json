@@ -1,43 +1,101 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 3,
   "profileId": "judicial-cases",
-  "cueSetVersion": "judicial-cases-cues-2026-07-30-3",
+  "cueSetVersion": "judicial-cases-cues-2026-07-30-4",
   "cues": [
     {
       "cueId": "operator-individual",
       "category": "operator",
       "value": "individual",
-      "terms": ["それぞれ", "について", "一つずつ", "個別に", "各々", "各一ページ確認してください"]
+      "syntaxRole": "none",
+      "terms": [
+        "それぞれ",
+        "について",
+        "一つずつ",
+        "個別に",
+        "各々",
+        "各一ページ確認してください"
+      ]
     },
     {
       "cueId": "operator-resource-choice",
       "category": "operator",
       "value": "resource_choice",
-      "terms": ["どれで探すか決められません"]
+      "syntaxRole": "none",
+      "terms": [
+        "どれで探すか決められません"
+      ]
     },
     {
       "cueId": "resource-judicial-decision",
       "category": "resource",
       "value": "judicial_decision",
-      "terms": ["判例", "司法パック", "裁判例", "裁判例本文", "最高裁判例"]
+      "syntaxRole": "none",
+      "terms": [
+        "判例",
+        "司法パック",
+        "最高裁判例",
+        "裁判例",
+        "裁判例本文"
+      ]
     },
     {
       "cueId": "resource-legal-information",
       "category": "resource_scope",
       "value": "legal_information",
-      "terms": ["法情報"]
+      "syntaxRole": "none",
+      "terms": [
+        "法情報"
+      ]
     },
     {
       "cueId": "task-read",
       "category": "task",
       "value": "read",
-      "terms": ["取得して", "取得してください", "取得する", "本文を取得", "本文を取得して", "確認して", "確認する", "表示して", "表示する", "見せて", "見せてください", "読んで", "読んでください", "読み", "読みたい", "読む"]
+      "syntaxRole": "task_expression",
+      "terms": [
+        "取得して",
+        "取得してください",
+        "取得する",
+        "本文を取得",
+        "本文を取得して",
+        "確認して",
+        "確認する",
+        "表示して",
+        "表示する",
+        "見せて",
+        "見せてください",
+        "読み",
+        "読みたい",
+        "読む",
+        "読んで",
+        "読んでください"
+      ]
     },
     {
       "cueId": "task-search",
       "category": "task",
       "value": "search",
-      "terms": ["教えて", "教えてください", "検索", "検索したい", "検索して", "検索してください", "検索する", "探したい", "探して", "探してください", "探す", "見つけて", "見つける", "調べたい", "調べて", "調べてください", "調べる"]
+      "syntaxRole": "task_expression",
+      "terms": [
+        "探したい",
+        "探して",
+        "探してください",
+        "探す",
+        "教えて",
+        "教えてください",
+        "検索",
+        "検索したい",
+        "検索して",
+        "検索してください",
+        "検索する",
+        "見つけて",
+        "見つける",
+        "調べたい",
+        "調べて",
+        "調べてください",
+        "調べる"
+      ]
     }
   ]
 }

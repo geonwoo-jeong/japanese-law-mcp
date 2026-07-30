@@ -100,7 +100,9 @@ func TestCueTaskRelationConstructorKeepsValidatedImmutableValues(t *testing.T) {
 
 			subjectRef = legalquery.CueTaskRelationRef{}
 			predicateRef = legalquery.CueTaskRelationRef{}
-			if relation.Subject().CueID() != "subject" ||
+			if subjectRef.CueID() != "" ||
+				predicateRef.CueID() != "" ||
+				relation.Subject().CueID() != "subject" ||
 				relation.Predicate().CueID() != predicate.CueID() {
 				t.Fatal("SOT-MODEL-029: getter の参照から relation を変更できました")
 			}
@@ -339,8 +341,11 @@ func TestCueTaskRelationGetterは並行呼出しで共有状態を変更しな�
 				return
 			}
 			subjectRef := relation.Subject()
+			originalCueID := subjectRef.CueID()
 			subjectRef = legalquery.CueTaskRelationRef{}
-			if subjectRef.CueID() != "" || relation.Subject().CueID() != "task-graph" {
+			if subjectRef.CueID() != "" ||
+				originalCueID != "task-graph" ||
+				relation.Subject().CueID() != "task-graph" {
 				errors <- "getter から relation が変更されました"
 			}
 		}()

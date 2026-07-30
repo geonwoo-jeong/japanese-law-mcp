@@ -19,9 +19,9 @@ func TestLoadEmbeddedは法令コア五能力と辞書版を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "core" ||
-		metadata.ProfileVersion() != "core-2026-07-30-31" ||
+		metadata.ProfileVersion() != "core-2026-07-30-33" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
-		metadata.CueSetVersion() != "core-cues-2026-07-30-13" {
+		metadata.CueSetVersion() != "core-cues-2026-07-30-15" {
 		t.Fatalf("metadata = %#v", metadata)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
@@ -65,12 +65,14 @@ func TestProfileGetterはcueとmetadataを変更させない(t *testing.T) {
 	}
 	cues := profile.CueVocabulary()
 	cues[0].ProfileID = "changed"
+	cues[0].MatchGroup = "changed"
 	cues[0].Terms[0] = "changed"
 	targets := profile.Metadata().Targets()
 	targets[0] = legalquery.QueryProfileTarget{}
 
 	nextCues := profile.CueVocabulary()
 	if nextCues[0].ProfileID != "core" ||
+		nextCues[0].MatchGroup == "changed" ||
 		nextCues[0].Terms[0] == "changed" ||
 		profile.Metadata().Targets()[0].InputKind() != legalquery.InputKindLawSearch {
 		t.Fatal("SOT-ENG-025: profile getter から内部状態を変更できました")
@@ -102,8 +104,53 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 			profile: embeddedProfile,
 			cues: bytes.Replace(
 				embeddedCues,
-				[]byte(`"schemaVersion": 1,`),
-				[]byte(`"schemaVersion": 1, "unknown": true,`),
+				[]byte(`"schemaVersion": 3,`),
+				[]byte(`"schemaVersion": 3, "unknown": true,`),
+				1,
+			),
+		},
+		"cue 重複 key": {
+			profile: embeddedProfile,
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"schemaVersion": 3,`),
+				[]byte(`"schemaVersion": 3, "schemaVersion": 3,`),
+				1,
+			),
+		},
+		"cue schema version 不一致": {
+			profile: embeddedProfile,
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"schemaVersion": 3,`),
+				[]byte(`"schemaVersion": 99,`),
+				1,
+			),
+		},
+		"cue profile ID 不一致": {
+			profile: embeddedProfile,
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"profileId": "core",`),
+				[]byte(`"profileId": "other",`),
+				1,
+			),
+		},
+		"cue ID 順序不一致": {
+			profile: embeddedProfile,
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"cueId": "operator-all"`),
+				[]byte(`"cueId": "zz-order"`),
+				1,
+			),
+		},
+		"廃止 cue meaning": {
+			profile: embeddedProfile,
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"value": "all"`),
+				[]byte(`"value": "document_article"`),
 				1,
 			),
 		},
@@ -136,6 +183,136 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 			}
 		})
 	}
+}
+
+func TestEmbeddedCueDataは対象外意図群とsignalを明示する(t *testing.T) {
+	t.Parallel()
+
+	var document map[string]any
+	if err := json.Unmarshal(embeddedCues, &document); err != nil {
+		t.Fatalf("cue data を解析できません: %v", err)
+	}
+	cues, ok := document["cues"].([]any)
+	if !ok {
+		t.Fatal("cue data に cues 配列がありません")
+	}
+	unsupportedCount := 0
+	for index, value := range cues {
+		cue, cueOK := value.(map[string]any)
+		if !cueOK || cue["category"] != "unsupported" {
+			continue
+		}
+		unsupportedCount++
+		if intentGroup, groupOK := cue["intentGroup"].(string); !groupOK ||
+			intentGroup == "" {
+			t.Fatalf(
+				"SOT-ENG-028: cues[%d].intentGroup が明示されていません",
+				index,
+			)
+		}
+		if signal, signalOK := cue["signal"].(string); !signalOK ||
+			signal == "" {
+			t.Fatalf(
+				"SOT-ENG-028: cues[%d].signal が明示されていません",
+				index,
+			)
+		}
+	}
+	if unsupportedCount == 0 {
+		t.Fatal("SOT-ENG-028: 対象外 cue がありません")
+	}
+}
+
+func TestLoadは対象外cueの不正schemaとsignal衝突を拒否する(t *testing.T) {
+	t.Parallel()
+
+	lawNames, concepts := mustEmbeddedLexicons(t)
+	tests := map[string]func(map[string]any){
+		"intentGroup 欠落": func(document map[string]any) {
+			cue := firstUnsupportedCue(t, document)
+			delete(cue, "intentGroup")
+		},
+		"未知の signal": func(document map[string]any) {
+			cue := firstUnsupportedCue(t, document)
+			cue["signal"] = "unsupported_unknown"
+		},
+		"異なる signal 間の正規化語衝突": func(document map[string]any) {
+			byID := cuesByID(t, document)
+			legalAdvice := byID["unsupported-legal-advice-expression"]
+			translation := byID["unsupported-translation-expression"]
+			legalAdvice["terms"] = append(
+				legalAdvice["terms"].([]any),
+				"比較　してください",
+			)
+			translation["terms"] = append(
+				translation["terms"].([]any),
+				"比較してください",
+			)
+		},
+	}
+	for name, mutate := range tests {
+		name := name
+		mutate := mutate
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var document map[string]any
+			if err := json.Unmarshal(embeddedCues, &document); err != nil {
+				t.Fatalf("cue data を解析できません: %v", err)
+			}
+			mutate(document)
+			invalid, err := json.Marshal(document)
+			if err != nil {
+				t.Fatalf("不正 cue data を作成できません: %v", err)
+			}
+			if _, err := Load(
+				embeddedProfile,
+				invalid,
+				lawNames,
+				concepts,
+			); err == nil {
+				t.Fatal("SOT-ENG-028: 不正な対象外 cue data を受理しました")
+			}
+		})
+	}
+}
+
+func firstUnsupportedCue(
+	t *testing.T,
+	document map[string]any,
+) map[string]any {
+	t.Helper()
+	for _, cue := range cuesByID(t, document) {
+		if cue["category"] == "unsupported" {
+			return cue
+		}
+	}
+	t.Fatal("対象外 cue がありません")
+	return nil
+}
+
+func cuesByID(
+	t *testing.T,
+	document map[string]any,
+) map[string]map[string]any {
+	t.Helper()
+	values, ok := document["cues"].([]any)
+	if !ok {
+		t.Fatal("cue data に cues 配列がありません")
+	}
+	result := make(map[string]map[string]any, len(values))
+	for index, value := range values {
+		cue, cueOK := value.(map[string]any)
+		if !cueOK {
+			t.Fatalf("cues[%d] が object ではありません", index)
+		}
+		cueID, idOK := cue["cueId"].(string)
+		if !idOK || cueID == "" {
+			t.Fatalf("cues[%d].cueId がありません", index)
+		}
+		result[cueID] = cue
+	}
+	return result
 }
 
 func TestLoadは法令別名衝突上限の条件付き順位不一致を拒否する(

@@ -34,11 +34,12 @@ type conceptDraft struct {
 }
 
 type cueDraft struct {
-	startByte int
-	endByte   int
-	profileID string
-	cueID     string
-	matchKind legalquery.PreprocessMatchKind
+	startByte  int
+	endByte    int
+	profileID  string
+	cueID      string
+	matchGroup string
+	matchKind  legalquery.PreprocessMatchKind
 }
 
 type registeredOccurrence struct {
@@ -224,11 +225,12 @@ func (p *Preprocessor) dictionaryDrafts(
 			})
 		case dictionaryCue:
 			cues = append(cues, cueDraft{
-				startByte: hit.startByte,
-				endByte:   hit.endByte,
-				profileID: hit.value.id,
-				cueID:     hit.value.secondary,
-				matchKind: matchKind,
+				startByte:  hit.startByte,
+				endByte:    hit.endByte,
+				profileID:  hit.value.id,
+				cueID:      hit.value.secondary,
+				matchGroup: hit.value.matchGroup,
+				matchKind:  matchKind,
 			})
 		}
 	}
@@ -613,9 +615,30 @@ func deduplicateCueDrafts(values []cueDraft) []cueDraft {
 			byIdentity[key] = value
 		}
 	}
+	longestEndByGroup := make(map[string]int, len(byIdentity))
+	for _, value := range byIdentity {
+		groupKey := fmt.Sprintf(
+			"%d:%s:%s",
+			value.startByte,
+			value.profileID,
+			value.matchGroup,
+		)
+		if longest, exists := longestEndByGroup[groupKey]; !exists ||
+			value.endByte > longest {
+			longestEndByGroup[groupKey] = value.endByte
+		}
+	}
 	deduplicated := make([]cueDraft, 0, len(byIdentity))
 	for _, value := range byIdentity {
-		deduplicated = append(deduplicated, value)
+		groupKey := fmt.Sprintf(
+			"%d:%s:%s",
+			value.startByte,
+			value.profileID,
+			value.matchGroup,
+		)
+		if value.endByte == longestEndByGroup[groupKey] {
+			deduplicated = append(deduplicated, value)
+		}
 	}
 	slices.SortFunc(deduplicated, func(left cueDraft, right cueDraft) int {
 		return compareDraft(

@@ -488,6 +488,89 @@ func TestPreprocessUsesInjectedProfileCuesWithoutTypoCorrection(t *testing.T) {
 	}
 }
 
+func TestPreprocessKeepsLongestCueMentionForSameMatchGroup(t *testing.T) {
+	t.Parallel()
+
+	const matchGroup = "cue-tuple-test-search"
+	preprocessor := mustNewPreprocessor(
+		t,
+		nil,
+		nil,
+		[]legalquery.CueVocabularyEntry{
+			{
+				ProfileID:  testCueProfileID,
+				CueID:      "task-search-short",
+				MatchGroup: matchGroup,
+				Terms:      []string{"検索"},
+			},
+			{
+				ProfileID:  testCueProfileID,
+				CueID:      "task-search-long",
+				MatchGroup: matchGroup,
+				Terms:      []string{"検索してください"},
+			},
+		},
+	)
+
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, "検 索 してください"),
+	)
+	if err != nil {
+		t.Fatalf("cue-loader-longest-same-tuple: Preprocess() のエラー = %v", err)
+	}
+	mentions := result.CueMentions()
+	if len(mentions) != 1 ||
+		mentions[0].CueID() != "task-search-long" ||
+		mentions[0].Span().StartByte() != 0 ||
+		mentions[0].Span().EndByte() != len("検 索 してください") {
+		t.Fatalf(
+			"cue-loader-longest-same-tuple: cue mentions = %#v",
+			mentions,
+		)
+	}
+}
+
+func TestPreprocessDoesNotCombineSameMatchGroupAcrossProfiles(t *testing.T) {
+	t.Parallel()
+
+	preprocessor := mustNewPreprocessor(
+		t,
+		nil,
+		nil,
+		[]legalquery.CueVocabularyEntry{
+			{
+				ProfileID:  "core-test",
+				CueID:      "task-search",
+				MatchGroup: "cue-tuple-test-search",
+				Terms:      []string{"検索"},
+			},
+			{
+				ProfileID:  "judicial-test",
+				CueID:      "task-search",
+				MatchGroup: "cue-tuple-test-search",
+				Terms:      []string{"検索してください"},
+			},
+		},
+	)
+
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, "検 索 してください"),
+	)
+	if err != nil {
+		t.Fatalf("cue-loader-cross-profile-reuse: Preprocess() のエラー = %v", err)
+	}
+	mentions := result.CueMentions()
+	if len(mentions) != 2 ||
+		mentions[0].ProfileID() == mentions[1].ProfileID() {
+		t.Fatalf(
+			"cue-loader-cross-profile-reuse: cue mentions = %#v",
+			mentions,
+		)
+	}
+}
+
 func TestNewEmbeddedLoadsOneImmutableSharedVocabulary(t *testing.T) {
 	t.Parallel()
 

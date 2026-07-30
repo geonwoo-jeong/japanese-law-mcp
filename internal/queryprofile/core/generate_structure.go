@@ -235,7 +235,10 @@ func shouldReadDocument(
 	}
 	readCues := cues.mentions[cueMeaningKey("task", "read")]
 	searchCues := cues.mentions[cueMeaningKey("task", "search")]
-	for _, connector := range cues.mentions[cueMeaningKey("operator", "document_article")] {
+	for _, connector := range cues.mentions[cueMeaningKey("resource", "law_provision")] {
+		if !strings.Contains(connector.Surface(), "本文") {
+			continue
+		}
 		if !explicitRefDocumentBeforeArticle(input, connector, cues) {
 			continue
 		}
