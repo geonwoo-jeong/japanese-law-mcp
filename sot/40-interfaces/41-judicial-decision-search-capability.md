@@ -34,9 +34,9 @@
 | 項目 | 型 | 必須 | 意味 |
 |---|---|---:|---|
 | `items` | `SourcedResource<JudicialDecisionSummary>[]` | はい | DOM 順の公式掲載裁判例 |
-| `page` | `SourcePage` | はい | 返却件数、同じ item 単位で示せる場合の公式総件数および存在する場合の継続位置 |
+| `page` | `SourcePage` | はい | 返却件数、公式総件数および存在する場合の継続位置 |
 
-各 item の `ref.key.resourceType` は `judicial-decision` とし、`ref.key.resourceId` は provider mapping が公式詳細 URL から作る canonical ID とする。同じ裁判例が複数の掲載カテゴリーに掲載されている場合は、カテゴリーごとの公式詳細 URL を別の item として保持する。検索結果を同じ裁判例識別子、事件番号、事件名または裁判日だけで統合、上書きまたは重複排除しない。
+各 item の `ref.key.resourceType` は `judicial-decision` とし、`ref.key.resourceId` は provider mapping が公式詳細 URL から作る canonical ID とする。検索結果を同じ事件番号、事件名または裁判日だけで統合、上書きまたは重複排除しない。
 
 ## 継続取得と空結果
 
