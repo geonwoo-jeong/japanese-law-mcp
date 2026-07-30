@@ -27,6 +27,12 @@ confidence、step、候補上限または重複判定を変更しない。
 
 この規則を変更する場合は core profile version を更新する。複数 profile が共有する tie-break の種類または校正値まで変更する場合は ranking version も更新する。
 
+core の `data/profile.json` は、
+`conditionalTieBreaks.lawAliasCollisionGroupsOverCandidateLimit` に
+`evidence_set`、`step_count`、`source_position`、`meaning_signature` の
+条件付き完全順序を宣言する。loader は欠落、未知値、重複または順序不一致を
+起動時に拒否し、実装はこの検証済み宣言がある場合だけ前項の順序を適用する。
+
 ## 確認
 
 `民訴法` が `民事訴訟法` と `民事訴訟法中改正法律施行法` に対応する場合に前者を先頭へ置き、両候補と明確化要求を保持することを確認する。
@@ -36,6 +42,9 @@ confidence、step、候補上限または重複判定を変更しない。
 異なる原文位置にある二つの衝突群が合わせて十六候補を超える例で、
 原文先頭の衝突群が上位となり、各衝突群内の順位と十六候補上限を
 維持することを確認する。
+
+条件付き完全順序の欠落または順序不一致を profile loader が拒否することを
+確認する。
 
 ## 関連
 

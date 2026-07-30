@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "profileVersion": "core-2026-07-30-20",
+  "profileVersion": "core-2026-07-30-21",
   "rankingVersion": "legal-query-ranking-2026-07-28-1",
   "cueSetVersion": "core-cues-2026-07-30-9",
   "targets": [
@@ -87,6 +87,14 @@
     "meaning_signature",
     "source_position"
   ],
+  "conditionalTieBreaks": {
+    "lawAliasCollisionGroupsOverCandidateLimit": [
+      "evidence_set",
+      "step_count",
+      "source_position",
+      "meaning_signature"
+    ]
+  },
   "lexicons": {
     "lawNames": "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27",
     "legalConcepts": "legal-concept-2026-07-28-2"

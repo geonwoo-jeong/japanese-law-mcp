@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -18,7 +19,7 @@ func TestLoadEmbeddedは法令コア五能力と辞書版を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "core" ||
-		metadata.ProfileVersion() != "core-2026-07-30-20" ||
+		metadata.ProfileVersion() != "core-2026-07-30-21" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "core-cues-2026-07-30-9" {
 		t.Fatalf("metadata = %#v", metadata)
@@ -134,6 +135,35 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 				t.Fatal("不正な profile data を受理しました")
 			}
 		})
+	}
+}
+
+func TestLoadは法令別名衝突上限の条件付き順位不一致を拒否する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	var document map[string]any
+	if err := json.Unmarshal(embeddedProfile, &document); err != nil {
+		t.Fatalf("profile data を解析できません: %v", err)
+	}
+	conditional, ok := document["conditionalTieBreaks"].(map[string]any)
+	if !ok {
+		t.Fatal("条件付き tie-break の宣言がありません")
+	}
+	conditional["lawAliasCollisionGroupsOverCandidateLimit"] = []any{
+		"evidence_set",
+		"step_count",
+		"meaning_signature",
+		"source_position",
+	}
+	invalid, err := json.Marshal(document)
+	if err != nil {
+		t.Fatalf("不正 profile data を作成できません: %v", err)
+	}
+	lawNames, concepts := mustEmbeddedLexicons(t)
+	if _, err := Load(invalid, embeddedCues, lawNames, concepts); err == nil {
+		t.Fatal("条件付き tie-break の不一致を受理しました")
 	}
 }
 

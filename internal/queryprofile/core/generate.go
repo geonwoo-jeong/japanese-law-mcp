@@ -401,7 +401,8 @@ func (p *Profile) materializeCandidates(
 		aggregated,
 	)
 	rankAliasCollisionGroupsBySource :=
-		rankAliasCollisionOverflow &&
+		p.rankAliasCollisionGroupsBySource &&
+			rankAliasCollisionOverflow &&
 			hasMultipleLawAliasCollisionGroups(input)
 	if len(aggregated) > maximumGeneratedCandidates &&
 		!rankAliasCollisionOverflow {

@@ -35,16 +35,21 @@ var (
 )
 
 type profileDocument struct {
-	SchemaVersion  int                     `json:"schemaVersion"`
-	ProfileID      string                  `json:"profileId"`
-	ProfileVersion string                  `json:"profileVersion"`
-	RankingVersion string                  `json:"rankingVersion"`
-	CueSetVersion  string                  `json:"cueSetVersion"`
-	Targets        []targetDocument        `json:"targets"`
-	Score          scoreDocument           `json:"score"`
-	Selection      selectionDocument       `json:"selection"`
-	TieBreak       []string                `json:"tieBreak"`
-	Lexicons       lexiconVersionsDocument `json:"lexicons"`
+	SchemaVersion        int                          `json:"schemaVersion"`
+	ProfileID            string                       `json:"profileId"`
+	ProfileVersion       string                       `json:"profileVersion"`
+	RankingVersion       string                       `json:"rankingVersion"`
+	CueSetVersion        string                       `json:"cueSetVersion"`
+	Targets              []targetDocument             `json:"targets"`
+	Score                scoreDocument                `json:"score"`
+	Selection            selectionDocument            `json:"selection"`
+	TieBreak             []string                     `json:"tieBreak"`
+	ConditionalTieBreaks conditionalTieBreaksDocument `json:"conditionalTieBreaks"`
+	Lexicons             lexiconVersionsDocument      `json:"lexicons"`
+}
+
+type conditionalTieBreaksDocument struct {
+	LawAliasCollisionGroupsOverCandidateLimit []string `json:"lawAliasCollisionGroupsOverCandidateLimit"`
 }
 
 type targetDocument struct {
@@ -104,10 +109,11 @@ type conceptDefinition struct {
 
 // Profile は、起動時に検証した不変の法令コア profile である。
 type Profile struct {
-	metadata legalquery.QueryProfileMetadata
-	cues     []legalquery.CueVocabularyEntry
-	cueByID  map[string]cueDefinition
-	concepts map[string]conceptDefinition
+	metadata                         legalquery.QueryProfileMetadata
+	cues                             []legalquery.CueVocabularyEntry
+	cueByID                          map[string]cueDefinition
+	concepts                         map[string]conceptDefinition
+	rankAliasCollisionGroupsBySource bool
 }
 
 // LoadEmbedded は、組込み profile、cue および辞書を検証して構築する。
@@ -164,6 +170,11 @@ func Load(
 		profileData.Lexicons.LegalConcepts != concepts.Version() {
 		return nil, fmt.Errorf("profile が参照する辞書 version と実体が一致しません")
 	}
+	if err := validateConditionalTieBreaks(
+		profileData.ConditionalTieBreaks,
+	); err != nil {
+		return nil, err
+	}
 
 	metadata, err := buildMetadata(profileData)
 	if err != nil {
@@ -178,11 +189,32 @@ func Load(
 		return nil, err
 	}
 	return &Profile{
-		metadata: metadata,
-		cues:     cues,
-		cueByID:  cueByID,
-		concepts: conceptByID,
+		metadata:                         metadata,
+		cues:                             cues,
+		cueByID:                          cueByID,
+		concepts:                         conceptByID,
+		rankAliasCollisionGroupsBySource: true,
 	}, nil
+}
+
+func validateConditionalTieBreaks(
+	document conditionalTieBreaksDocument,
+) error {
+	expected := []string{
+		"evidence_set",
+		"step_count",
+		"source_position",
+		"meaning_signature",
+	}
+	if !slices.Equal(
+		document.LawAliasCollisionGroupsOverCandidateLimit,
+		expected,
+	) {
+		return fmt.Errorf(
+			"lawAliasCollisionGroupsOverCandidateLimit の tie-break が定義済みの完全順と一致しません",
+		)
+	}
+	return nil
 }
 
 // Metadata は、selector と評価が参照する不変 metadata を返す。
