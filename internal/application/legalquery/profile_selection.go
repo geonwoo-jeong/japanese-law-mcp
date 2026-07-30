@@ -8,6 +8,8 @@ type QuerySelectionPolicyValues struct {
 	MinimumExecutionThreshold int
 	SingleMargin              int
 	HedgeMargin               int
+	BranchRetentionMargin     int
+	BranchRetentionPresent    bool
 	ScoreMinimum              int
 	ScoreMaximum              int
 }
@@ -18,6 +20,8 @@ type QuerySelectionPolicy struct {
 	minimumExecutionThreshold int
 	singleMargin              int
 	hedgeMargin               int
+	branchRetentionMargin     int
+	branchRetentionPresent    bool
 	scoreMinimum              int
 	scoreMaximum              int
 }
@@ -31,6 +35,8 @@ func NewQuerySelectionPolicy(
 		minimumExecutionThreshold: values.MinimumExecutionThreshold,
 		singleMargin:              values.SingleMargin,
 		hedgeMargin:               values.HedgeMargin,
+		branchRetentionMargin:     values.BranchRetentionMargin,
+		branchRetentionPresent:    values.BranchRetentionPresent,
 		scoreMinimum:              values.ScoreMinimum,
 		scoreMaximum:              values.ScoreMaximum,
 	}
@@ -60,6 +66,11 @@ func (p QuerySelectionPolicy) HedgeMargin() int {
 	return p.hedgeMargin
 }
 
+// BranchRetentionMargin は、限定分岐保持 margin と存在有無を返す。
+func (p QuerySelectionPolicy) BranchRetentionMargin() (int, bool) {
+	return p.branchRetentionMargin, p.branchRetentionPresent
+}
+
 // Validate は、閾値と margin の整合を確認する。
 func (p QuerySelectionPolicy) Validate() error {
 	if p.scoreMinimum < 0 ||
@@ -74,6 +85,16 @@ func (p QuerySelectionPolicy) Validate() error {
 		p.hedgeMargin > p.singleMargin ||
 		p.singleMargin > p.scoreMaximum-p.scoreMinimum {
 		return fmt.Errorf("selection margin が有効ではありません")
+	}
+	if p.branchRetentionPresent &&
+		(p.branchRetentionMargin < 0 ||
+			p.branchRetentionMargin > p.scoreMaximum-p.scoreMinimum) {
+		return fmt.Errorf("branchRetentionMargin が score 範囲内ではありません")
+	}
+	if !p.branchRetentionPresent && p.branchRetentionMargin != 0 {
+		return fmt.Errorf(
+			"存在しない branchRetentionMargin に値を保持することはできません",
+		)
 	}
 	return nil
 }

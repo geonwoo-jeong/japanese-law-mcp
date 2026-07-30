@@ -14,6 +14,8 @@ func TestQueryProfileMetadataはscore選択辞書版を不変に保持する(t *
 		MinimumExecutionThreshold: 80,
 		SingleMargin:              25,
 		HedgeMargin:               10,
+		BranchRetentionMargin:     0,
+		BranchRetentionPresent:    false,
 		ScoreMinimum:              0,
 		ScoreMaximum:              405,
 	})
@@ -45,6 +47,14 @@ func TestQueryProfileMetadataはscore選択辞書版を不変に保持する(t *
 			QueryTieBreakMeaningSignature,
 			QueryTieBreakSourcePosition,
 		},
+		ConditionalTieBreaks: map[ConditionalTieBreakName][]QueryTieBreak{
+			ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit: {
+				QueryTieBreakEvidenceSet,
+				QueryTieBreakStepCount,
+				QueryTieBreakSourcePosition,
+				QueryTieBreakMeaningSignature,
+			},
+		},
 	})
 	if err != nil {
 		t.Fatalf("SOT-ENG-025: metadata のエラー = %v", err)
@@ -59,15 +69,25 @@ func TestQueryProfileMetadataはscore選択辞書版を不変に保持する(t *
 	}
 	targets := metadata.Targets()
 	tieBreak := metadata.TieBreak()
+	conditional := metadata.ConditionalTieBreaks()
+	conditionalTieBreak := conditional[ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit]
 	targets[0] = QueryProfileTarget{}
 	tieBreak[0] = QueryTieBreakSourcePosition
+	conditionalTieBreak[0] = QueryTieBreakMeaningSignature
+	nextConditional := metadata.ConditionalTieBreaks()
+	nextConditionalTieBreak := nextConditional[ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit]
 	if metadata.Targets()[0].InputKind() != InputKindLawSearch ||
-		metadata.TieBreak()[0] != QueryTieBreakEvidenceSet {
+		metadata.TieBreak()[0] != QueryTieBreakEvidenceSet ||
+		nextConditionalTieBreak[0] != QueryTieBreakEvidenceSet {
 		t.Fatal("SOT-ENG-025: getter から metadata を変更できました")
 	}
 	if got, exists := metadata.Score().Weight(EvidenceOfficialAlias); !exists ||
 		got != 40 {
 		t.Fatalf("official_alias weight = %d, %t", got, exists)
+	}
+	if value, present := metadata.Selection().BranchRetentionMargin(); present ||
+		value != 0 {
+		t.Fatalf("schemaVersion1 の branchRetentionMargin = (%d, %t)", value, present)
 	}
 }
 
@@ -133,6 +153,8 @@ func TestQueryProfileMetadataは重複targetと不完全tieBreakを拒否する(
 		MinimumExecutionThreshold: 80,
 		SingleMargin:              25,
 		HedgeMargin:               10,
+		BranchRetentionMargin:     0,
+		BranchRetentionPresent:    false,
 		ScoreMinimum:              score.Minimum(),
 		ScoreMaximum:              score.Maximum(),
 	})
@@ -166,6 +188,128 @@ func TestQueryProfileMetadataは重複targetと不完全tieBreakを拒否する(
 	incomplete.TieBreak = []QueryTieBreak{QueryTieBreakEvidenceSet}
 	if _, err := NewQueryProfileMetadata(incomplete); err == nil {
 		t.Fatal("不完全な tie-break を受理しました")
+	}
+}
+
+func TestQueryProfileMetadataはschemaVersionとbranchRetentionの存在状態を区別する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	score := mustTestQueryScorePolicy(t)
+	target, err := NewQueryProfileTarget(QueryProfileTargetValues{
+		Task:      TaskSearch,
+		Resource:  ResourceLaw,
+		InputKind: InputKindLawSearch,
+	})
+	if err != nil {
+		t.Fatalf("target を作成できません: %v", err)
+	}
+	base := QueryProfileMetadataValues{
+		SchemaVersion:              1,
+		ProfileID:                  "core",
+		ProfileVersion:             "core-v1",
+		RankingVersion:             "ranking-v1",
+		CueSetVersion:              "core-cues-v1",
+		LawNameLexiconVersion:      "law-name-v1",
+		LegalConceptLexiconVersion: "legal-concept-v1",
+		Targets:                    []QueryProfileTarget{target},
+		Score:                      score,
+		TieBreak: []QueryTieBreak{
+			QueryTieBreakEvidenceSet,
+			QueryTieBreakStepCount,
+			QueryTieBreakMeaningSignature,
+			QueryTieBreakSourcePosition,
+		},
+	}
+
+	v1Selection, err := NewQuerySelectionPolicy(QuerySelectionPolicyValues{
+		SingleThreshold:           120,
+		MinimumExecutionThreshold: 80,
+		SingleMargin:              25,
+		HedgeMargin:               10,
+		BranchRetentionMargin:     0,
+		BranchRetentionPresent:    false,
+		ScoreMinimum:              score.Minimum(),
+		ScoreMaximum:              score.Maximum(),
+	})
+	if err != nil {
+		t.Fatalf("schemaVersion1 selection を作成できません: %v", err)
+	}
+	base.Selection = v1Selection
+	v1, err := NewQueryProfileMetadata(base)
+	if err != nil {
+		t.Fatalf("schemaVersion1 metadata を作成できません: %v", err)
+	}
+	if value, present := v1.Selection().BranchRetentionMargin(); present ||
+		value != 0 {
+		t.Fatalf("schemaVersion1 の branchRetentionMargin = (%d, %t)", value, present)
+	}
+
+	v1WithBranch := base
+	v1WithBranch.Selection, err = NewQuerySelectionPolicy(QuerySelectionPolicyValues{
+		SingleThreshold:           120,
+		MinimumExecutionThreshold: 80,
+		SingleMargin:              25,
+		HedgeMargin:               10,
+		BranchRetentionMargin:     0,
+		BranchRetentionPresent:    true,
+		ScoreMinimum:              score.Minimum(),
+		ScoreMaximum:              score.Maximum(),
+	})
+	if err != nil {
+		t.Fatalf("schemaVersion1 branch selection を作成できません: %v", err)
+	}
+	if _, err := NewQueryProfileMetadata(v1WithBranch); err == nil {
+		t.Fatal("schemaVersion1 に branchRetentionMargin を受理しました")
+	}
+
+	v2Selection, err := NewQuerySelectionPolicy(QuerySelectionPolicyValues{
+		SingleThreshold:           120,
+		MinimumExecutionThreshold: 80,
+		SingleMargin:              25,
+		HedgeMargin:               10,
+		BranchRetentionMargin:     0,
+		BranchRetentionPresent:    true,
+		ScoreMinimum:              score.Minimum(),
+		ScoreMaximum:              score.Maximum(),
+	})
+	if err != nil {
+		t.Fatalf("schemaVersion2 selection を作成できません: %v", err)
+	}
+	v2Values := base
+	v2Values.SchemaVersion = 2
+	v2Values.Selection = v2Selection
+	v2, err := NewQueryProfileMetadata(v2Values)
+	if err != nil {
+		t.Fatalf("schemaVersion2 metadata を作成できません: %v", err)
+	}
+	if value, present := v2.Selection().BranchRetentionMargin(); !present ||
+		value != 0 {
+		t.Fatalf("schemaVersion2 の branchRetentionMargin = (%d, %t)", value, present)
+	}
+
+	v2MissingBranch := v2Values
+	v2MissingBranch.Selection = v1Selection
+	if _, err := NewQueryProfileMetadata(v2MissingBranch); err == nil {
+		t.Fatal("schemaVersion2 に branchRetentionMargin 欠落を受理しました")
+	}
+
+	hiddenBranch, err := NewQuerySelectionPolicy(QuerySelectionPolicyValues{
+		SingleThreshold:           120,
+		MinimumExecutionThreshold: 80,
+		SingleMargin:              25,
+		HedgeMargin:               10,
+		BranchRetentionMargin:     1,
+		BranchRetentionPresent:    false,
+		ScoreMinimum:              score.Minimum(),
+		ScoreMaximum:              score.Maximum(),
+	})
+	if err == nil {
+		t.Fatalf(
+			"profile-metadata-branch-retention-presence: 隠れた値を受理しました: %#v",
+			hiddenBranch,
+		)
 	}
 }
 

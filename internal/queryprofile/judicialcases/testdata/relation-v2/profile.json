@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "profileId": "judicial-cases",
-  "profileVersion": "judicial-cases-2026-07-31-10",
-  "rankingVersion": "legal-query-ranking-2026-07-28-1",
+  "profileVersion": "judicial-cases-2026-07-31-11",
+  "rankingVersion": "legal-query-ranking-2026-07-31-2",
   "cueSetVersion": "judicial-cases-cues-2026-07-30-4",
   "targets": [
     {
@@ -64,7 +64,8 @@
     "singleThreshold": 85,
     "minimumExecutionThreshold": 80,
     "singleMargin": 25,
-    "hedgeMargin": 10
+    "hedgeMargin": 10,
+    "branchRetentionMargin": 12
   },
   "tieBreak": [
     "evidence_set",

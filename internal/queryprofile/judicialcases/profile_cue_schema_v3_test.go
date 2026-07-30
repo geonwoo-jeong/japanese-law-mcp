@@ -61,6 +61,7 @@ func TestCueLoaderSchemaV3は旧版欠落未知roleを拒否する(
 ) {
 	t.Parallel()
 
+	lawNames := mustEmbeddedLawNameLexicon(t)
 	concepts := mustEmbeddedConceptLexicon(t)
 	tests := map[string][]byte{
 		"schema version 1": bytes.Replace(
@@ -111,6 +112,7 @@ func TestCueLoaderSchemaV3は旧版欠落未知roleを拒否する(
 			if _, err := Load(
 				embeddedProfile,
 				cues,
+				lawNames,
 				concepts,
 			); err == nil {
 				t.Fatal("cue-loader-schema-v3: 不正な cue data を受理しました")

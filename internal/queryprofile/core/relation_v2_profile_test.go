@@ -55,9 +55,21 @@ func TestRelationV2ProfileはPositiveCueRoleの完全対応を固定する(
 	if err != nil {
 		t.Fatalf("active profile を読み込めません: %v", err)
 	}
-	if active.Metadata().ProfileVersion() != "core-2026-07-30-33" ||
+	activeMargin, activeMarginPresent :=
+		active.Metadata().Selection().BranchRetentionMargin()
+	nextMargin, nextMarginPresent :=
+		profile.Metadata().Selection().BranchRetentionMargin()
+	if active.Metadata().SchemaVersion() != 1 ||
+		activeMarginPresent ||
+		activeMargin != 0 ||
+		active.Metadata().ProfileVersion() != "core-2026-07-30-33" ||
 		active.Metadata().CueSetVersion() != "core-cues-2026-07-30-15" ||
-		profile.Metadata().ProfileVersion() != "core-2026-07-31-34" ||
+		profile.Metadata().SchemaVersion() != 2 ||
+		profile.Metadata().ProfileVersion() != "core-2026-07-31-35" ||
+		profile.Metadata().RankingVersion() !=
+			"legal-query-ranking-2026-07-31-2" ||
+		!nextMarginPresent ||
+		nextMargin != 12 ||
 		profile.Metadata().CueSetVersion() != "core-cues-2026-07-31-16" {
 		t.Fatalf(
 			"SOT-ARCH-033: active=%q/%q next=%q/%q",

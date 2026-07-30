@@ -80,6 +80,8 @@ func TestQueryProfileSetは共通ranking規則だけを受理する(t *testing.T
 				MinimumExecutionThreshold: 80,
 				SingleMargin:              25,
 				HedgeMargin:               10,
+				BranchRetentionMargin:     0,
+				BranchRetentionPresent:    false,
 				ScoreMinimum:              score.Minimum(),
 				ScoreMaximum:              score.Maximum(),
 			},
@@ -115,6 +117,8 @@ func TestQueryProfileSetは共通ranking規則だけを受理する(t *testing.T
 				MinimumExecutionThreshold: 80,
 				SingleMargin:              25,
 				HedgeMargin:               10,
+				BranchRetentionMargin:     0,
+				BranchRetentionPresent:    false,
 				ScoreMinimum:              values.Score.Minimum(),
 				ScoreMaximum:              values.Score.Maximum(),
 			},
@@ -149,6 +153,104 @@ func TestQueryProfileSetは共通ranking規則だけを受理する(t *testing.T
 			selectorTestProfile{metadata: different, selectionMode: QuerySelectionModeAutomatic},
 		}); err == nil {
 			t.Fatal("SOT-ARCH-023: 異なる tie-break の contribution を受理しました")
+		}
+	})
+
+	t.Run("schemaVersion と branchRetention の混在", func(t *testing.T) {
+		t.Parallel()
+		values := selectorTestMetadataValues(
+			t,
+			"judicial",
+			"judicial-profile-v7",
+			selectorTestRankingVersion,
+		)
+		selection, selectionErr := NewQuerySelectionPolicy(
+			QuerySelectionPolicyValues{
+				SingleThreshold:           120,
+				MinimumExecutionThreshold: 80,
+				SingleMargin:              25,
+				HedgeMargin:               10,
+				BranchRetentionMargin:     12,
+				BranchRetentionPresent:    true,
+				ScoreMinimum:              values.Score.Minimum(),
+				ScoreMaximum:              values.Score.Maximum(),
+			},
+		)
+		if selectionErr != nil {
+			t.Fatalf("試験用 selection policy を作成できません: %v", selectionErr)
+		}
+		values.SchemaVersion = 2
+		values.Selection = selection
+		v2, metadataErr := NewQueryProfileMetadata(values)
+		if metadataErr != nil {
+			t.Fatalf("試験用 metadata を作成できません: %v", metadataErr)
+		}
+		if _, err := NewQueryProfileSet([]QueryProfile{
+			selectorTestProfile{metadata: base, selectionMode: QuerySelectionModeAutomatic},
+			selectorTestProfile{metadata: v2, selectionMode: QuerySelectionModeAutomatic},
+		}); err == nil {
+			t.Fatal("schemaVersion1 と schemaVersion2 の混在を受理しました")
+		}
+
+		baseV2Values := selectorTestMetadataValues(
+			t,
+			"core",
+			"core-profile-v1",
+			selectorTestRankingVersion,
+		)
+		baseV2Selection, baseV2SelectionErr := NewQuerySelectionPolicy(
+			QuerySelectionPolicyValues{
+				SingleThreshold:           120,
+				MinimumExecutionThreshold: 80,
+				SingleMargin:              25,
+				HedgeMargin:               10,
+				BranchRetentionMargin:     12,
+				BranchRetentionPresent:    true,
+				ScoreMinimum:              baseV2Values.Score.Minimum(),
+				ScoreMaximum:              baseV2Values.Score.Maximum(),
+			},
+		)
+		if baseV2SelectionErr != nil {
+			t.Fatalf("試験用 v2 selection policy を作成できません: %v", baseV2SelectionErr)
+		}
+		baseV2Values.SchemaVersion = 2
+		baseV2Values.Selection = baseV2Selection
+		baseV2, baseV2Err := NewQueryProfileMetadata(baseV2Values)
+		if baseV2Err != nil {
+			t.Fatalf("試験用 v2 metadata を作成できません: %v", baseV2Err)
+		}
+		if _, err := NewQueryProfileSet([]QueryProfile{
+			selectorTestProfile{metadata: baseV2, selectionMode: QuerySelectionModeAutomatic},
+			selectorTestProfile{metadata: v2, selectionMode: QuerySelectionModeAutomatic},
+		}); err != nil {
+			t.Fatalf("同じ branchRetentionMargin の schemaVersion2 set を拒否しました: %v", err)
+		}
+
+		differentValues := values
+		differentValues.Selection, selectionErr = NewQuerySelectionPolicy(
+			QuerySelectionPolicyValues{
+				SingleThreshold:           120,
+				MinimumExecutionThreshold: 80,
+				SingleMargin:              25,
+				HedgeMargin:               10,
+				BranchRetentionMargin:     13,
+				BranchRetentionPresent:    true,
+				ScoreMinimum:              values.Score.Minimum(),
+				ScoreMaximum:              values.Score.Maximum(),
+			},
+		)
+		if selectionErr != nil {
+			t.Fatalf("試験用差分 selection policy を作成できません: %v", selectionErr)
+		}
+		different, metadataErr := NewQueryProfileMetadata(differentValues)
+		if metadataErr != nil {
+			t.Fatalf("試験用差分 metadata を作成できません: %v", metadataErr)
+		}
+		if _, err := NewQueryProfileSet([]QueryProfile{
+			selectorTestProfile{metadata: baseV2, selectionMode: QuerySelectionModeAutomatic},
+			selectorTestProfile{metadata: different, selectionMode: QuerySelectionModeAutomatic},
+		}); err == nil {
+			t.Fatal("異なる branchRetentionMargin の schemaVersion2 set を受理しました")
 		}
 	})
 }
@@ -231,6 +333,98 @@ func TestQueryProfileSetは集合全体の不透明な版を決定的に作る(
 	if firstComposition == secondComposition {
 		t.Fatal("SOT-ARCH-027: compositionVersion の変更が set version に反映されません")
 	}
+}
+
+func TestQueryProfileSetVersionはSchemaV2固有値をDigestに含める(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	v1 := mustProfileSetVersionTestMetadata(t, 1, 0, false, nil)
+	v2 := mustProfileSetVersionTestMetadata(t, 2, 12, true, nil)
+	v2MarginChanged := mustProfileSetVersionTestMetadata(
+		t,
+		2,
+		13,
+		true,
+		nil,
+	)
+	v2Conditional := mustProfileSetVersionTestMetadata(
+		t,
+		2,
+		12,
+		true,
+		map[ConditionalTieBreakName][]QueryTieBreak{
+			ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit: {
+				QueryTieBreakEvidenceSet,
+				QueryTieBreakStepCount,
+				QueryTieBreakSourcePosition,
+				QueryTieBreakMeaningSignature,
+			},
+		},
+	)
+	const compositionVersion = "composition-test-v1"
+	v1Digest := queryProfileSetVersion(
+		[]QueryProfileMetadata{v1},
+		compositionVersion,
+	)
+	v2Digest := queryProfileSetVersion(
+		[]QueryProfileMetadata{v2},
+		compositionVersion,
+	)
+	if v1Digest == v2Digest {
+		t.Fatal("schema version 1 と 2 が同じ set version になりました")
+	}
+	if v2Digest == queryProfileSetVersion(
+		[]QueryProfileMetadata{v2MarginChanged},
+		compositionVersion,
+	) {
+		t.Fatal("branchRetentionMargin の変更が set version に反映されません")
+	}
+	if v2Digest == queryProfileSetVersion(
+		[]QueryProfileMetadata{v2Conditional},
+		compositionVersion,
+	) {
+		t.Fatal("conditionalTieBreaks の変更が set version に反映されません")
+	}
+}
+
+func mustProfileSetVersionTestMetadata(
+	t *testing.T,
+	schemaVersion int,
+	branchRetentionMargin int,
+	branchRetentionPresent bool,
+	conditional map[ConditionalTieBreakName][]QueryTieBreak,
+) QueryProfileMetadata {
+	t.Helper()
+
+	values := selectorTestMetadataValues(
+		t,
+		"core",
+		"core-profile-version-test",
+		selectorTestRankingVersion,
+	)
+	selection, err := NewQuerySelectionPolicy(QuerySelectionPolicyValues{
+		SingleThreshold:           120,
+		MinimumExecutionThreshold: 80,
+		SingleMargin:              25,
+		HedgeMargin:               10,
+		BranchRetentionMargin:     branchRetentionMargin,
+		BranchRetentionPresent:    branchRetentionPresent,
+		ScoreMinimum:              values.Score.Minimum(),
+		ScoreMaximum:              values.Score.Maximum(),
+	})
+	if err != nil {
+		t.Fatalf("set version 試験用 selection を作成できません: %v", err)
+	}
+	values.SchemaVersion = schemaVersion
+	values.Selection = selection
+	values.ConditionalTieBreaks = conditional
+	metadata, err := NewQueryProfileMetadata(values)
+	if err != nil {
+		t.Fatalf("set version 試験用 metadata を作成できません: %v", err)
+	}
+	return metadata
 }
 
 func TestQueryProfileSetは構築後のmetadata変更を拒否する(t *testing.T) {

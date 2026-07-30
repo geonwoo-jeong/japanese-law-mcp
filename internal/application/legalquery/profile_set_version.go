@@ -3,6 +3,7 @@ package legalquery
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -14,9 +15,17 @@ func queryProfileSetVersion(
 	compositionVersion string,
 ) string {
 	var canonical strings.Builder
-	appendCanonicalPart(&canonical, "schema-v2")
+	canonicalSchema := "schema-v2"
+	if len(metadata) > 0 && metadata[0].SchemaVersion() == 2 {
+		canonicalSchema = "schema-v3"
+	}
+	appendCanonicalPart(&canonical, canonicalSchema)
 	appendCanonicalPart(&canonical, compositionVersion)
 	for _, value := range metadata {
+		if value.SchemaVersion() == 1 {
+			appendLegacyMetadataCanonicalParts(&canonical, value)
+			continue
+		}
 		appendMetadataCanonicalParts(&canonical, value)
 	}
 	sum := sha256.Sum256([]byte(canonical.String()))
@@ -35,6 +44,10 @@ func rankingCalibrationSignature(
 	metadata QueryProfileMetadata,
 ) string {
 	var canonical strings.Builder
+	appendCanonicalPart(
+		&canonical,
+		strconv.Itoa(metadata.SchemaVersion()),
+	)
 	appendCanonicalPart(&canonical, metadata.RankingVersion())
 	appendScoreCanonicalParts(&canonical, metadata.Score())
 	appendSelectionCanonicalParts(&canonical, metadata.Selection())
@@ -44,7 +57,32 @@ func rankingCalibrationSignature(
 	return canonical.String()
 }
 
+func appendLegacyMetadataCanonicalParts(
+	target *strings.Builder,
+	metadata QueryProfileMetadata,
+) {
+	appendMetadataIdentityCanonicalParts(target, metadata)
+	appendScoreCanonicalParts(target, metadata.Score())
+	appendLegacySelectionCanonicalParts(target, metadata.Selection())
+	for _, value := range metadata.TieBreak() {
+		appendCanonicalPart(target, string(value))
+	}
+}
+
 func appendMetadataCanonicalParts(
+	target *strings.Builder,
+	metadata QueryProfileMetadata,
+) {
+	appendMetadataIdentityCanonicalParts(target, metadata)
+	appendScoreCanonicalParts(target, metadata.Score())
+	appendSelectionCanonicalParts(target, metadata.Selection())
+	for _, value := range metadata.TieBreak() {
+		appendCanonicalPart(target, string(value))
+	}
+	appendConditionalTieBreakCanonicalParts(target, metadata)
+}
+
+func appendMetadataIdentityCanonicalParts(
 	target *strings.Builder,
 	metadata QueryProfileMetadata,
 ) {
@@ -60,11 +98,37 @@ func appendMetadataCanonicalParts(
 		appendCanonicalPart(target, string(value.Resource()))
 		appendCanonicalPart(target, string(value.InputKind()))
 	}
-	appendScoreCanonicalParts(target, metadata.Score())
-	appendSelectionCanonicalParts(target, metadata.Selection())
-	for _, value := range metadata.TieBreak() {
-		appendCanonicalPart(target, string(value))
+}
+
+func appendConditionalTieBreakCanonicalParts(
+	target *strings.Builder,
+	metadata QueryProfileMetadata,
+) {
+	names := make([]string, 0, len(metadata.ConditionalTieBreaks()))
+	for name := range metadata.ConditionalTieBreaks() {
+		names = append(names, string(name))
 	}
+	sort.Strings(names)
+	conditional := metadata.ConditionalTieBreaks()
+	for _, name := range names {
+		appendCanonicalPart(target, name)
+		for _, value := range conditional[ConditionalTieBreakName(name)] {
+			appendCanonicalPart(target, string(value))
+		}
+	}
+}
+
+func appendLegacySelectionCanonicalParts(
+	target *strings.Builder,
+	selection QuerySelectionPolicy,
+) {
+	appendCanonicalPart(target, strconv.Itoa(selection.SingleThreshold()))
+	appendCanonicalPart(
+		target,
+		strconv.Itoa(selection.MinimumExecutionThreshold()),
+	)
+	appendCanonicalPart(target, strconv.Itoa(selection.SingleMargin()))
+	appendCanonicalPart(target, strconv.Itoa(selection.HedgeMargin()))
 }
 
 func appendScoreCanonicalParts(
@@ -85,13 +149,15 @@ func appendSelectionCanonicalParts(
 	target *strings.Builder,
 	selection QuerySelectionPolicy,
 ) {
-	appendCanonicalPart(target, strconv.Itoa(selection.SingleThreshold()))
-	appendCanonicalPart(
-		target,
-		strconv.Itoa(selection.MinimumExecutionThreshold()),
-	)
-	appendCanonicalPart(target, strconv.Itoa(selection.SingleMargin()))
-	appendCanonicalPart(target, strconv.Itoa(selection.HedgeMargin()))
+	appendLegacySelectionCanonicalParts(target, selection)
+	branchRetentionMargin, branchRetentionPresent := selection.BranchRetentionMargin()
+	if branchRetentionPresent {
+		appendCanonicalPart(target, "1")
+		appendCanonicalPart(target, strconv.Itoa(branchRetentionMargin))
+		return
+	}
+	appendCanonicalPart(target, "0")
+	appendCanonicalPart(target, "")
 }
 
 func appendCanonicalPart(target *strings.Builder, value string) {

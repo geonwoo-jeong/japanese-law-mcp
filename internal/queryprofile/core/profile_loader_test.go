@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -19,10 +20,37 @@ func TestLoadEmbeddedは法令コア五能力と辞書版を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "core" ||
+		metadata.SchemaVersion() != 1 ||
 		metadata.ProfileVersion() != "core-2026-07-30-33" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "core-cues-2026-07-30-15" {
 		t.Fatalf("metadata = %#v", metadata)
+	}
+	if value, present := metadata.Selection().
+		BranchRetentionMargin(); present || value != 0 {
+		t.Fatalf(
+			"profile-metadata-branch-retention-presence: active = (%d, %t)",
+			value,
+			present,
+		)
+	}
+	conditionName :=
+		legalquery.ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit
+	conditional := metadata.ConditionalTieBreaks()
+	if len(conditional) != 1 ||
+		!slices.Equal(
+			conditional[conditionName],
+			[]legalquery.QueryTieBreak{
+				legalquery.QueryTieBreakEvidenceSet,
+				legalquery.QueryTieBreakStepCount,
+				legalquery.QueryTieBreakSourcePosition,
+				legalquery.QueryTieBreakMeaningSignature,
+			},
+		) {
+		t.Fatalf(
+			"profile-metadata-conditional-tie-break: conditional = %#v",
+			conditional,
+		)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
 	if metadata.LawNameLexiconVersion() != lawVersion ||
@@ -69,12 +97,19 @@ func TestProfileGetterはcueとmetadataを変更させない(t *testing.T) {
 	cues[0].Terms[0] = "changed"
 	targets := profile.Metadata().Targets()
 	targets[0] = legalquery.QueryProfileTarget{}
+	conditionName :=
+		legalquery.ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit
+	conditional := profile.Metadata().ConditionalTieBreaks()
+	conditional[conditionName][0] =
+		legalquery.QueryTieBreakMeaningSignature
 
 	nextCues := profile.CueVocabulary()
 	if nextCues[0].ProfileID != "core" ||
 		nextCues[0].MatchGroup == "changed" ||
 		nextCues[0].Terms[0] == "changed" ||
-		profile.Metadata().Targets()[0].InputKind() != legalquery.InputKindLawSearch {
+		profile.Metadata().Targets()[0].InputKind() != legalquery.InputKindLawSearch ||
+		profile.Metadata().ConditionalTieBreaks()[conditionName][0] !=
+			legalquery.QueryTieBreakEvidenceSet {
 		t.Fatal("SOT-ENG-025: profile getter から内部状態を変更できました")
 	}
 }
@@ -98,6 +133,19 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 		},
 		"profile trailing": {
 			profile: append(append([]byte(nil), embeddedProfile...), []byte(`{}`)...),
+			cues:    embeddedCues,
+		},
+		"profile 重複 key": {
+			profile: bytes.Replace(
+				embeddedProfile,
+				[]byte(`"schemaVersion": 1,`),
+				[]byte(`"schemaVersion": 1, "schemaVersion": 1,`),
+				1,
+			),
+			cues: embeddedCues,
+		},
+		"profile 不正 UTF-8": {
+			profile: append([]byte{0xff}, embeddedProfile...),
 			cues:    embeddedCues,
 		},
 		"cue 未知項目": {

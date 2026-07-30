@@ -42,12 +42,24 @@ func TestRelationV2ProfileはPositiveCueRoleとActive版の分離を固定する
 	if err != nil {
 		t.Fatalf("active profile を読み込めません: %v", err)
 	}
-	if active.Metadata().ProfileVersion() !=
-		"judicial-cases-2026-07-30-9" ||
+	activeMargin, activeMarginPresent :=
+		active.Metadata().Selection().BranchRetentionMargin()
+	nextMargin, nextMarginPresent :=
+		profile.Metadata().Selection().BranchRetentionMargin()
+	if active.Metadata().SchemaVersion() != 1 ||
+		activeMarginPresent ||
+		activeMargin != 0 ||
+		active.Metadata().ProfileVersion() !=
+			"judicial-cases-2026-07-30-9" ||
 		active.Metadata().CueSetVersion() !=
 			"judicial-cases-cues-2026-07-30-4" ||
+		profile.Metadata().SchemaVersion() != 2 ||
 		profile.Metadata().ProfileVersion() !=
-			"judicial-cases-2026-07-31-10" ||
+			"judicial-cases-2026-07-31-11" ||
+		profile.Metadata().RankingVersion() !=
+			"legal-query-ranking-2026-07-31-2" ||
+		!nextMarginPresent ||
+		nextMargin != 12 ||
 		profile.Metadata().CueSetVersion() !=
 			"judicial-cases-cues-2026-07-30-4" {
 		t.Fatalf(
@@ -65,10 +77,12 @@ func TestRelationV2Profileは元Profileの内部状態を共有しない(
 ) {
 	t.Parallel()
 
+	lawNames := mustEmbeddedLawNameLexicon(t)
 	concepts := mustEmbeddedConceptLexicon(t)
 	original, err := Load(
 		relationV2ProfileJSON,
 		embeddedCues,
+		lawNames,
 		concepts,
 	)
 	if err != nil {
@@ -195,6 +209,7 @@ func mustRelationV2Profile(t *testing.T) *Profile {
 	profile, err := Load(
 		relationV2ProfileJSON,
 		embeddedCues,
+		mustEmbeddedLawNameLexicon(t),
 		mustEmbeddedConceptLexicon(t),
 	)
 	if err != nil {

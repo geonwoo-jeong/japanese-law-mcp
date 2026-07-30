@@ -18,6 +18,13 @@ func TestLoadEmbeddedは評価用のProfile版を不変に公開する(t *testin
 		dependencies.Profiles().RankingVersion() == "" {
 		t.Fatal("SOT-ENG-024: profile set の版が空です")
 	}
+	if got := dependencies.Profiles().ProfileVersion(); got !=
+		"profile-set-sha256-be9ce1499a7b6708a162c4ae2f4da9a340ed2883d3bd3480b2ec21989d11bf8f" {
+		t.Fatalf(
+			"SOT-ARCH-033: schemaVersion 1 の現行 profile set version = %q",
+			got,
+		)
+	}
 
 	metadata[0] = metadata[1]
 	again := dependencies.ProfileMetadata()

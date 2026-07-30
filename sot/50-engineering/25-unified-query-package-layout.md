@@ -26,6 +26,7 @@ internal/
 │       └── ports.go
 ├── queryprofile/
 │   ├── cueartifact/
+│   ├── metadataartifact/
 │   ├── core/
 │   │   ├── profile.go
 │   │   ├── cues.go
@@ -89,6 +90,11 @@ testdata/
 `queryprofile/cueartifact` は、`SOT-ENG-030` の共通 cue 成果物構造、安全境界、
 語彙衝突および profile metadata との整合だけを検証する。category、value、
 signal、task/resource、score または採用範囲を共通 loader で決めない。
+`queryprofile/metadataartifact` は、`SOT-ENG-035` の schema version 別の
+閉じた typed decoder、安全境界および共通 metadata model への変換だけを
+所有する。profile ID、target の固定順、cue・辞書 version および
+条件付き tie-break の採否と完全順は、各 profile 固有 loader が検証する。
+固定 profile set 全体の整合は `application/legalquery` が検証する。
 `querypreprocess` は、注入された検証済み語彙と一回の Kagome 解析から
 `SOT-MODEL-025` の provider 非依存事実を作り、profile の意味候補を生成しない。
 

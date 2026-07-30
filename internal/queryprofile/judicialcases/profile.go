@@ -6,16 +6,15 @@ import (
 	"fmt"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/cueartifact"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/metadataartifact"
 )
 
 const (
-	profileID                     = "judicial-cases"
-	requiredPackID                = "judicial-cases"
-	sharedRankingVersion          = "legal-query-ranking-2026-07-28-1"
-	supportedProfileSchemaVersion = 1
-	maximumProfileBytes           = 64 << 10
+	profileID      = "judicial-cases"
+	requiredPackID = "judicial-cases"
 )
 
 var (
@@ -37,53 +36,57 @@ type Profile struct {
 
 // LoadEmbedded は、組込み profile、cue および共有辞書を検証して構築する。
 func LoadEmbedded() (*Profile, error) {
+	lawNames, err := lawnamelexicon.LoadEmbedded()
+	if err != nil {
+		return nil, fmt.Errorf("法令名辞書を読み込めません: %w", err)
+	}
 	concepts, err := legalconceptlexicon.LoadEmbedded()
 	if err != nil {
 		return nil, fmt.Errorf("法概念辞書を読み込めません: %w", err)
 	}
-	return Load(embeddedProfile, embeddedCues, concepts)
+	return Load(embeddedProfile, embeddedCues, lawNames, concepts)
 }
 
 // Load は、閉じた JSON と共有辞書の版を fail closed で検証する。
 func Load(
 	profileJSON []byte,
 	cuesJSON []byte,
+	lawNames *lawnamelexicon.Lexicon,
 	concepts *legalconceptlexicon.Lexicon,
 ) (*Profile, error) {
+	if lawNames == nil || lawNames.Version() == "" {
+		return nil, fmt.Errorf("法令名辞書は必須です")
+	}
 	if concepts == nil || concepts.Version() == "" {
 		return nil, fmt.Errorf("法概念辞書は必須です")
 	}
-	profileData, err := decodeStrict[profileDocument](
-		"profile.json",
-		profileJSON,
-		maximumProfileBytes,
-	)
+	profileArtifact, err := metadataartifact.Load(profileJSON)
 	if err != nil {
 		return nil, err
 	}
+	metadata := profileArtifact.Metadata()
 	cueData, err := cueartifact.Load(cuesJSON)
 	if err != nil {
 		return nil, err
 	}
-	if profileData.SchemaVersion != supportedProfileSchemaVersion {
-		return nil, fmt.Errorf("profile data の schemaVersion が未対応です")
-	}
-	if profileData.ProfileID != profileID ||
+	if metadata.ProfileID() != profileID ||
 		cueData.ProfileID() != profileID {
 		return nil, fmt.Errorf("profileId は %q でなければなりません", profileID)
 	}
 	if err := cueData.MatchProfile(
-		profileData.ProfileID,
-		profileData.CueSetVersion,
+		metadata.ProfileID(),
+		metadata.CueSetVersion(),
 	); err != nil {
 		return nil, err
 	}
-	if profileData.Lexicons.LegalConcepts != concepts.Version() {
+	if metadata.LawNameLexiconVersion() != lawNames.Version() ||
+		metadata.LegalConceptLexiconVersion() != concepts.Version() {
 		return nil, fmt.Errorf("profile が参照する辞書 version と実体が一致しません")
 	}
-
-	metadata, err := buildMetadata(profileData)
-	if err != nil {
+	if err := validateJudicialMetadata(
+		metadata,
+		profileArtifact.ConditionalTieBreaksPresent(),
+	); err != nil {
 		return nil, err
 	}
 	cues, cueByID, err := buildCues(cueData)

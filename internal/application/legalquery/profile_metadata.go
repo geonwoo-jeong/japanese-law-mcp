@@ -19,6 +19,15 @@ var requiredQueryTieBreak = []QueryTieBreak{
 	QueryTieBreakSourcePosition,
 }
 
+// ConditionalTieBreakName は、条件付き tie-break の識別子である。
+type ConditionalTieBreakName string
+
+const (
+	ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit = ConditionalTieBreakName(
+		"lawAliasCollisionGroupsOverCandidateLimit",
+	)
+)
+
 // QueryProfileMetadataValues は、profile metadata を構築する値である。
 type QueryProfileMetadataValues struct {
 	SchemaVersion              int
@@ -32,6 +41,7 @@ type QueryProfileMetadataValues struct {
 	Score                      QueryScorePolicy
 	Selection                  QuerySelectionPolicy
 	TieBreak                   []QueryTieBreak
+	ConditionalTieBreaks       map[ConditionalTieBreakName][]QueryTieBreak
 }
 
 // QueryProfileMetadata は、profile の版付き規則を不変に保持する。
@@ -47,6 +57,7 @@ type QueryProfileMetadata struct {
 	score                      QueryScorePolicy
 	selection                  QuerySelectionPolicy
 	tieBreak                   []QueryTieBreak
+	conditionalTieBreaks       map[ConditionalTieBreakName][]QueryTieBreak
 }
 
 // NewQueryProfileMetadata は、起動時に完全検証した metadata を返す。
@@ -65,6 +76,7 @@ func NewQueryProfileMetadata(
 		score:                      values.Score,
 		selection:                  values.Selection,
 		tieBreak:                   append([]QueryTieBreak(nil), values.TieBreak...),
+		conditionalTieBreaks:       cloneConditionalTieBreaks(values.ConditionalTieBreaks),
 	}
 	if err := metadata.Validate(); err != nil {
 		return QueryProfileMetadata{}, err
@@ -116,10 +128,24 @@ func (m QueryProfileMetadata) TieBreak() []QueryTieBreak {
 	return append([]QueryTieBreak(nil), m.tieBreak...)
 }
 
+// ConditionalTieBreaks は、条件名ごとの完全順を深い複製として返す。
+func (m QueryProfileMetadata) ConditionalTieBreaks() map[ConditionalTieBreakName][]QueryTieBreak {
+	return cloneConditionalTieBreaks(m.conditionalTieBreaks)
+}
+
 // Validate は、profile ID、版、対象、score、選択および tie-break を確認する。
 func (m QueryProfileMetadata) Validate() error {
-	if m.schemaVersion != 1 {
-		return fmt.Errorf("profile schemaVersion は 1 でなければなりません")
+	switch m.schemaVersion {
+	case 1:
+		if _, present := m.selection.BranchRetentionMargin(); present {
+			return fmt.Errorf("schemaVersion 1 に branchRetentionMargin は指定できません")
+		}
+	case 2:
+		if _, present := m.selection.BranchRetentionMargin(); !present {
+			return fmt.Errorf("schemaVersion 2 には branchRetentionMargin が必須です")
+		}
+	default:
+		return fmt.Errorf("profile schemaVersion は 1 または 2 でなければなりません")
 	}
 	if err := validateQueryPlanID("profileId", m.profileID); err != nil {
 		return err
@@ -165,5 +191,50 @@ func (m QueryProfileMetadata) Validate() error {
 			return fmt.Errorf("tieBreak が定義済みの完全順と一致しません")
 		}
 	}
+	for name, values := range m.conditionalTieBreaks {
+		switch name {
+		case ConditionalTieBreakLawAliasCollisionGroupsOverCandidateLimit:
+		default:
+			return fmt.Errorf("未知の conditional tie-break %q は指定できません", name)
+		}
+		if err := validateCompleteTieBreakOrder(values); err != nil {
+			return fmt.Errorf("conditionalTieBreaks.%s: %w", name, err)
+		}
+	}
 	return nil
+}
+
+func validateCompleteTieBreakOrder(values []QueryTieBreak) error {
+	if len(values) != len(requiredQueryTieBreak) {
+		return fmt.Errorf("完全な tie-break 順が必要です")
+	}
+	seen := make(map[QueryTieBreak]struct{}, len(values))
+	for _, value := range values {
+		if _, exists := seen[value]; exists {
+			return fmt.Errorf("tie-break を重複させることはできません")
+		}
+		seen[value] = struct{}{}
+	}
+	for _, required := range requiredQueryTieBreak {
+		if _, exists := seen[required]; !exists {
+			return fmt.Errorf("必須 tie-break %q がありません", required)
+		}
+	}
+	return nil
+}
+
+func cloneConditionalTieBreaks(
+	values map[ConditionalTieBreakName][]QueryTieBreak,
+) map[ConditionalTieBreakName][]QueryTieBreak {
+	if len(values) == 0 {
+		return nil
+	}
+	cloned := make(
+		map[ConditionalTieBreakName][]QueryTieBreak,
+		len(values),
+	)
+	for name, order := range values {
+		cloned[name] = append([]QueryTieBreak(nil), order...)
+	}
+	return cloned
 }

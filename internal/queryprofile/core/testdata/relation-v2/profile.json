@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "profileId": "core",
-  "profileVersion": "core-2026-07-31-34",
-  "rankingVersion": "legal-query-ranking-2026-07-28-1",
+  "profileVersion": "core-2026-07-31-35",
+  "rankingVersion": "legal-query-ranking-2026-07-31-2",
   "cueSetVersion": "core-cues-2026-07-31-16",
   "targets": [
     {
@@ -79,7 +79,8 @@
     "singleThreshold": 85,
     "minimumExecutionThreshold": 80,
     "singleMargin": 25,
-    "hedgeMargin": 10
+    "hedgeMargin": 10,
+    "branchRetentionMargin": 12
   },
   "tieBreak": [
     "evidence_set",
