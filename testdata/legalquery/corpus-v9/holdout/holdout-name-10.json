@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-name-10",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "配偶者からの暴力の防止及び被害者の保護等に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "holdout-name-domestic-violence",
+  "request": {
+    "query": "ＤＶ防止法の法令情報はありますか。"
+  },
+  "schemaVersion": 1
+}

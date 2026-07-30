@@ -1,0 +1,47 @@
+{
+  "actions": [
+    {
+      "meaningId": "law-name",
+      "outcome": {
+        "errorCode": "source_busy",
+        "kind": "failure"
+      },
+      "releaseOrder": 2,
+      "stepOrdinal": 1
+    },
+    {
+      "meaningId": "law-provision",
+      "outcome": {
+        "errorCode": "source_unavailable",
+        "kind": "failure"
+      },
+      "releaseOrder": 1,
+      "stepOrdinal": 1
+    }
+  ],
+  "artifactKind": "execution_case",
+  "caseId": "execution-all-failed",
+  "expected": {
+    "attempts": [
+      {
+        "errorCode": "source_busy",
+        "meaningId": "law-name",
+        "outcome": "failed",
+        "stepOrdinal": 1
+      },
+      {
+        "errorCode": "source_unavailable",
+        "meaningId": "law-provision",
+        "outcome": "failed",
+        "stepOrdinal": 1
+      }
+    ],
+    "errorCode": "source_busy",
+    "terminal": "error"
+  },
+  "scenarioIds": [
+    "execution-all-failed"
+  ],
+  "schemaVersion": 1,
+  "semanticCaseId": "development-execution-all-failed"
+}

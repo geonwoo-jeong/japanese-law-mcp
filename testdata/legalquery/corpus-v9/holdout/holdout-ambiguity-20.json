@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-20",
+  "coverageIds": [
+    "ambiguity-weak-general-term"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "law-provision",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "責任"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "law-name",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "責任"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "below_execution_threshold",
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-ambiguity-weak-05",
+  "request": {
+    "query": "責任に関するものを調べてください。"
+  },
+  "schemaVersion": 1
+}

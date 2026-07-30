@@ -1,0 +1,64 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-ambiguity-provisional-law",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "disaster-recovery",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "農林水産業施設災害復旧事業費国庫補助の暫定措置に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "customs",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "関税暫定措置法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "disaster-recovery",
+      "customs"
+    ]
+  },
+  "leakageGroupId": "development-ambiguity-provisional-law",
+  "request": {
+    "query": "暫定法の候補となる法令を示してください。"
+  },
+  "schemaVersion": 1
+}

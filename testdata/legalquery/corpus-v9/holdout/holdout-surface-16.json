@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-surface-16",
+  "coverageIds": [
+    "intent-law-search",
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "こども基本法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "holdout-surface-children-basic",
+  "request": {
+    "query": "こども 基本法は法令名で見つかりますか。"
+  },
+  "schemaVersion": 1
+}

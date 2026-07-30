@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-name-06",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "不当景品類及び不当表示防止法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "holdout-name-premiums-representation",
+  "request": {
+    "query": "景表法っていう法律を検索してほしいです。"
+  },
+  "schemaVersion": 1
+}

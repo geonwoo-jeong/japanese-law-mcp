@@ -1,0 +1,54 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-13",
+  "coverageIds": [
+    "intent-law-article-read",
+    "name-official",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "419AC0000000128",
+              "location": {
+                "articleNumber": "16",
+                "paragraphNumber": 1,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-labor-contract-16-read",
+  "request": {
+    "query": "労働契約法第16条第1項を読んで"
+  },
+  "schemaVersion": 1
+}

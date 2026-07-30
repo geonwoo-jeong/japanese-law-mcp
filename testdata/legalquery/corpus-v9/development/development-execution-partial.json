@@ -1,0 +1,58 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-execution-partial",
+  "coverageIds": [
+    "intent-law-content-search",
+    "intent-law-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "特許法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "発明"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "development-execution-partial",
+  "request": {
+    "query": "実行検証用に特許法を検索し、発明を含む条文も検索してください。"
+  },
+  "schemaVersion": 1
+}
