@@ -20,15 +20,17 @@
 
 ## 必須の意図群
 
-cue セットは少なくとも次の意図群を持つ。
+対象外 cue の `intentGroup`、`value` および `signal` は次の閉じた対応とする。
 
-| 意図群 | `QueryProfileSignal` | 最低限認識する表現 |
-|---|---|---|
-| 個別事案への法的助言・法適用 | `unsupported_legal_advice` | `どうすればよいですか`、`違法ですか`、`適法か判断`、`勝てますか`、`どちらが有利` |
-| 翻訳 | `unsupported_translation` | `翻訳`、`英訳`、`和訳` |
-| 版比較・差分・追跡 | `unsupported_task_or_resource` | `比較して`、`比較してください`、`差分`、`二時点を比較`、`改正前後を比較`、`変更履歴を追う` |
-| 引用・影響関係の分析または可視化 | `unsupported_task_or_resource` | `影響グラフ`、`影響マップ`、`引用関係図`、`引用関係を可視化`、`引用する裁判例のグラフ` |
-| 未採用の情報種別または拡張 | `unsupported_task_or_resource` | `立法理由`、`国会審議`、`自治体条例`、`行政規則`、`税務相談`、`労務相談` |
+| `intentGroup` | `value` | `QueryProfileSignal` | 最低限認識する表現 |
+|---|---|---|---|
+| `legal_advice` | `legal_advice` | `unsupported_legal_advice` | `どうすればよいですか`、`違法ですか`、`適法か判断`、`勝てますか`、`どちらが有利` |
+| `translation` | `translation` | `unsupported_translation` | `翻訳`、`英訳`、`和訳`、`英語に翻訳` |
+| `version_comparison` | `task_or_resource` | `unsupported_task_or_resource` | `比較して`、`比較してください`、`差分`、`二時点を比較`、`改正前後を比較`、`変更履歴を追う` |
+| `relationship_analysis` | `task_or_resource` | `unsupported_task_or_resource` | `影響グラフ`、`影響マップ`、`引用関係図`、`引用関係を可視化`、`引用する裁判例のグラフ` |
+| `unadopted_information_or_extension` | `task_or_resource` | `unsupported_task_or_resource` | `立法理由`、`国会審議`、`行政規則`、`税務相談`、`労務相談` |
+| `external_information_source` | `task_or_resource` | `unsupported_task_or_resource` | `EDINET`、`法律事務所ブログ`、`民間判例データベース`、`未公開内部文書`、`自治体条例` |
+| `explicit_out_of_scope_task` | `task_or_resource` | `unsupported_task_or_resource` | 上表の個別群に属さない、採用範囲外であることを明示した task 表現 |
 
 表の表現は必須の回帰境界であり、同じ意図群の活用形、送り仮名、全角・半角、
 句読点および敬語差を、比較用正規化または Kagome の語境界によって追加できる。
@@ -39,17 +41,32 @@ profile を先に採用し、対象外 cue から同じ意味群を除いた新�
 `cueSetVersion` と profile version を割り当てる。pack の有効・無効だけで
 cue セットを変えない。
 
-## 照合境界
+## 構文 role と照合境界
 
 - cue は登録表現との完全一致、比較用正規化一致または Kagome が確認した
   登録語の span だけから作る。対象外 task を誤記補正で新しく作らない。
-- `queryTermMentions.kind=quoted_phrase` の内側に完全に含まれる表現は、
-  検索対象の文字列であり task ではないため、対象外 signal にしない。
-- task として使われた表現の span、または対象外の目的語と task 述語を
-  一つの節で結び付けられる表現だけを signal の根拠にする。別の引用句、
-  別の節または単なる説明語へ関係を広げない。
+- 各 cue entry は `SOT-MODEL-029` の `syntaxRole` を一つ持つ。対象外 cue は
+  `task_expression` または `task_object` とし、role が異なる登録表現を同じ
+  cue ID に混在させない。対象外の目的語へ接続する採用済み task その他の
+  構文述語は、同じ profile の別 cue として `task_predicate` にできる。
+- 対象外 cue の `CueMention` が存在するだけでは signal を作らない。その cue を
+  `subject` とする検証済み `CueTaskRelation` がある場合だけ、subject cue の
+  `intentGroup` と上表から一つの signal を作る。
+- `direct_task` は `task_expression`、`object_predicate` は
+  `task_object` と同じ節の述語、`standalone_task` は節全体に単独で現れた
+  `task_object` だけを根拠にする。
+- `queryTermMentions.kind=quoted_phrase` の内側、`という語`、
+  `という言葉`、`という表現`、`という用語`、`という文字列`若しくは
+  `という文言`への直接接続、`に関する`、`に関して`、`について`若しくは
+  `に係る`への直接接続、別の節または文末でない task 述語は
+  `SOT-MODEL-029` の relation を持たないため、対象外 signal にしない。
 - 複数の profile が同じ対象外表現を認識しても、profile set は
   `SOT-MODEL-026` の固定順で同じ signal を一件にする。
+
+`intentGroup` は cue の監査、版管理および回帰分類に使用する。単独で候補を
+保持、削除、加点または順位変更する実行時分岐に使用しない。候補の保持は
+signal、`CueTaskRelation`、候補ごとの根拠 span および `SOT-MODEL-026` だけから
+判定する。
 
 対象外 signal は、selector が実行対象を選ぶ前に適用できる入力として渡す。
 signal から `unsupported` plan、`mixed_unsupported_intent` または
@@ -61,18 +78,67 @@ signal から `unsupported` plan、`mixed_unsupported_intent` または
 ## 成果物と版
 
 cue データは profile ごとの `data/cues.json` に置き、schema version、
-profile ID、`cueSetVersion`、cue ID、意図群、signal 値および登録表現を
-閉じた JSON として保持する。配列順と cue ID は決定的にし、重複する
-正規化表現が異なる signal へ対応する場合は起動を失敗させる。
+profile ID、`cueSetVersion`、cue ID、category、value、intent group、
+signal、syntax role および登録表現を閉じた JSON として保持する。
+対象外以外の cue は intent group と signal を持たない。対象外 cue は上表の
+`intentGroup`、`value` と signal の対応、および許可された syntax role を
+完全に満たさなければならない。
 
-登録表現、照合境界または signal 対応を変更した場合は `cueSetVersion`、
-対象 profile の profile version および統合 profile set version を変更する。
+relation 対応の cue artifact は `schemaVersion=3` とする。version 3 は全 cue
+entry に `syntaxRole` を必須とし、未知の role、role の欠落および未知項目を
+拒否する。既存の version 1 と version 2 は relation 非対応の履歴 schema とし、
+欠落した role を `none` として補わない。`CueTaskRelation` を有効にする固定
+profile set は、参加する全 profile の cue artifact を同じ変更で version 3 へ
+移行し、version 1 または version 2 と混在させない。
+
+cue artifact の schema version は `cues.json` の形を表し、`profile.json` の
+schema version と独立に変更できる。両 artifact の profile ID と
+`cueSetVersion` は一致しなければならない。version 3 への移行では
+`cueSetVersion`、対象 profile の profile version および統合 profile set
+version を変更する。loader は実装済みの閉じた schema version だけを受理し、
+relation 対応の実行経路では version 3 以外を起動時に拒否する。
+
+配列順と cue ID は決定的にする。比較用正規化後に同じ登録表現は、
+`category`、`value`、`intentGroup`、signal および syntax role がすべて同じ
+場合だけ同じ意味として受理できる。異なる tuple に属する表現が同じ正規化値を
+持つ場合、または一方が他方を包含して同じ入力 span で異なる tuple の cue を
+作り得る場合は、その profile の起動を失敗させる。
+
+同じ tuple に属する長短の登録表現が同じ開始位置で重なる場合は最長 span だけを
+relation の候補にし、短い表現から二件目の signal を作らない。同じ signal でも
+異なる intent group または syntax role の衝突を許容しない。
+
+異なる profile は能力別の意味を独立に持つため、同じ正規化語または包含語を
+異なる tuple で再利用できる。固定 profile set の検証は profile 間の語彙を
+衝突として扱わず、profile ID の一意性、各 profile 内の検証成功および relation
+参照の profile ID 一致だけを確認する。異なる profile の cue mention を一つの
+relation にせず、同じ signal は `SOT-MODEL-026` の固定順で一件にする。
+
+登録表現、照合境界、syntax role または signal 対応を変更した場合は
+`cueSetVersion`、対象 profile の profile version および統合 profile set
+version を変更する。
 重み、閾値または ranking scale を変えない限り ranking version は変更しない。
 
 ## 確認
 
-少なくとも次を、外部ネットワークを使わない profile fixture と
-`SOT-ENG-024` の評価で確認する。
+少なくとも次を、外部ネットワークを使わない model test、profile fixture
+および loader test で確認する。将来、同じ例を統合評価 corpus へ追加する場合は、
+`SOT-ENG-024` と `SOT-ENG-026` の版変更規則に従い、存在しない corpus または
+baseline を現行の標準 command として先に宣言しない。
+
+次の固定 test ID を検証結果から追跡できるようにし、relation 対応 profile set を
+変更する中央品質ゲートでは `SOT-ENG-020` の全 Go test と統合評価の両方を
+成功させる。
+
+| test ID | 固定する境界 |
+|---|---|
+| `cue-relation-task-and-mention` | 実 task、引用、`という語`および topic 表現 |
+| `cue-relation-clause-scope` | 同じ節と別の節 |
+| `cue-relation-candidate-scope` | 候補・step ごとの根拠と別候補への非共有 |
+| `cue-loader-longest-same-tuple` | 同じ tuple の長短語は最長一件 |
+| `cue-loader-tuple-conflict` | 同一 profile の異なる tuple は起動失敗 |
+| `cue-loader-cross-profile-reuse` | profile 間の同語再利用と relation 非結合 |
+| `cue-loader-schema-v3` | version 3 必須項目、旧版混在および未知版の拒否 |
 
 - `民法第103条を引用する裁判例の影響グラフを作成してください。` は、
   法令または条文の候補を内部に保持できても `mixed_unsupported_intent` で
@@ -83,8 +149,35 @@ profile ID、`cueSetVersion`、cue ID、意図群、signal 値および登録表
   `unsupported` とし、曖昧な取得要求の `needs_clarification` にしない。
 - `「比較」を含む条文を検索してください。` は引用句内の `比較` を
   対象外 task にせず、通常の本文検索候補を作る。
-- cue セットの順序、重複、未知の signal、profile ID 不一致および
-  版不整合を起動時に拒否する。
+- `影響グラフという語を含む条文を検索してください。`、
+  `翻訳に関する規定を検索してください。`、
+  `差分を説明する規定を検索してください。` および
+  `英語に翻訳してくださいという文言を含む条文を検索してください。` は、
+  対象外 signal を作らず、明示された採用済み検索だけを候補にする。
+- `影響グラフを作成してください。` は
+  `unsupported_task_or_resource`、`英語に翻訳してください。` は
+  `unsupported_translation` だけを作る。
+- `影響グラフを作成してください。民法。` は別の節に裸で現れた法令名候補を
+  保持しない。`民法を検索してください。影響グラフを作成してください。` は
+  明示された民法検索候補だけを内部に保持する。
+- `民法第103条の影響グラフを作成してください。` は同じ節で独立に
+  根拠付けられた法令・条文候補を内部に保持できるが、選択または実行しない。
+- cue セットの順序、重複、未知の signal、intent group、value 若しくは
+  syntax role、閉じた対応の不一致、profile ID 不一致、同一 profile 内で
+  異なる tuple の同一正規化語若しくは包含語、および版不整合を起動時に拒否する。
+- loader fixture は、同一 profile の `英語に翻訳してください` と
+  `英語に翻訳` を異なる tuple にした包含衝突を拒否し、同じ tuple の長短語では
+  最長 span 一件だけを採用することを固定する。別 profile の `判例`、
+  `裁判例`、`取得して` および `検索してください` の再利用は許可し、
+  profile 横断 relation を作らないことも固定する。
+- relation 対応経路は version 1、version 2、`syntaxRole` が欠落した version 3、
+  profile set 内の cue schema version 混在および未知 version を拒否し、
+  全 profile が完全な version 3 の場合だけ起動する。
+- `SOT-ENG-026` の schema version 2 と `corpus-v10` は
+  `boundary-unsupported-candidate-scope`、
+  `boundary-unsupported-cue-context`、
+  `unsupported-relationship-analysis` および
+  `unsupported-version-comparison` の最小件数と safety pair を満たす。
 
 ## 関連
 
@@ -93,6 +186,8 @@ profile ID、`cueSetVersion`、cue ID、意図群、signal 値および登録表
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-MODEL-025: LegalQueryPreprocessResult](../20-model/25-legal-query-preprocess-result.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
+- [SOT-MODEL-029: CueTaskRelation](../20-model/29-cue-task-relation.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
+- [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)

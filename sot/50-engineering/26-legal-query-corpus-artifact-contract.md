@@ -19,7 +19,8 @@
 ```text
 testdata/legalquery/
 ├── schemas/
-│   └── legal-query-corpus-v1.schema.json
+│   ├── legal-query-corpus-v1.schema.json
+│   └── legal-query-corpus-v2.schema.json  # cue task relation 採用時に追加
 └── corpus-vN/
     ├── manifest.json
     ├── development/
@@ -49,7 +50,7 @@ Git checkout による checksum の差を防ぐため、`testdata/legalquery/**/
 | 項目 | 型 | 必須 | 制約 |
 |---|---|---:|---|
 | `artifactKind` | string | はい | `corpus_manifest` |
-| `schemaVersion` | integer | はい | `1` |
+| `schemaVersion` | integer | はい | 現行成果物は `1`。cue task relation 対応成果物は後述の `2` |
 | `corpusVersion` | string | はい | corpus directory の basename と一致 |
 | `seed` | integer | はい | `0` 以上 `2147483647` 以下 |
 | `holdoutDigest` | string | はい | holdout の順序付き entry 全体を固定する SHA-256 |
@@ -70,7 +71,7 @@ Git checkout による checksum の差を防ぐため、`testdata/legalquery/**/
 | 項目 | 型 | 必須 | 意味 |
 |---|---|---:|---|
 | `artifactKind` | string | はい | `semantic_case` |
-| `schemaVersion` | integer | はい | `1` |
+| `schemaVersion` | integer | はい | 現行成果物は `1`。cue task relation 対応成果物は後述の `2` |
 | `caseId` | string | はい | manifest と file 名に一致する ID |
 | `leakageGroupId` | string | はい | 同じ発話、法的対象および変形群を束ねる ID |
 | `coverageIds` | `string[]` | はい | 詳細な検証対象 |
@@ -222,7 +223,7 @@ manifest の `requiredCategoryIds` は次の十二件を昇順で持つ。これ
 | 項目 | 型 | 必須 | 意味 |
 |---|---|---:|---|
 | `artifactKind` | string | はい | `execution_case` |
-| `schemaVersion` | integer | はい | `1` |
+| `schemaVersion` | integer | はい | 現行成果物は `1`。cue task relation 対応成果物は後述の `2` |
 | `caseId` | string | はい | manifest と file 名に一致する ID |
 | `scenarioIds` | `string[]` | はい | 一件以上の実行 scenario |
 | `semanticCaseId` | string | はい | development の semantic case |
@@ -388,6 +389,42 @@ query、期待意味、集合、カテゴリ、seed または評価上の fixtur
 同じ意味と入力の case を次の corpus version へ移す場合は `caseId` を維持できる。入力または期待意味を変える場合は新しい `caseId` を割り当てる。意味を変えない整形だけの変更は同じ corpus version で checksum を更新できるが、機械 formatter で byte 表現を統一し、独立 review を受ける。
 
 holdout の期待値を変える場合は、実装へ合わせるためではなく fixture の誤りであることを独立 review で確認し、理由、新しい corpus version、holdout digest および変更前後の評価結果を同じ変更へ残す。
+
+## cue task relation 対応成果物の採用条件
+
+`SOT-MODEL-029`、`SOT-MODEL-026` および `SOT-ENG-028` の cue task relation を
+初めて実装完了とする変更は、現行の `schemaVersion=1` と `corpus-v9` を変更せず、
+次の成果物を同じ変更へ追加する。
+
+- `testdata/legalquery/schemas/legal-query-corpus-v2.schema.json`
+- schema version 2 の閉じた typed decoder
+- `schemaVersion=2` の `testdata/legalquery/corpus-v10`
+- `baselineVersion=default-2` の review 済み baseline
+
+schema version 2 の coverage ID は、version 1 の閉じた一覧へ次の四件を追加した
+一覧とする。version 1 の schema、decoder および corpus はこれらを受理せず、
+version 2 の manifest と全 fixture は schema version 2 で一致しなければならない。
+
+| coverage ID | category ID | holdout 最小件数 |
+|---|---|---:|
+| `boundary-unsupported-candidate-scope` | `safety-execution-boundary` | `2` |
+| `boundary-unsupported-cue-context` | `safety-execution-boundary` | `2` |
+| `unsupported-relationship-analysis` | `unsupported-scope` | `1` |
+| `unsupported-version-comparison` | `unsupported-scope` | `1` |
+
+上表は holdout fixture を合計六件以上追加する。
+`boundary-unsupported-candidate-scope` と
+`boundary-unsupported-cue-context` は `safetyVariant` を必須とし、
+holdout で `ordinary` と `adversarial` を一件以上ずつ持つ。
+
+cue artifact 自体の schema version 3 混在、長短語および tuple 衝突は照会ごとの
+semantic fixture ではないため coverage ID にしない。これらは `SOT-ENG-028` の
+固定 loader test とし、`SOT-ENG-020` の全 Go test gate から除外しない。
+
+上記 schema、decoder、corpus、baseline、loader test および独立 review が
+同じ変更に存在するまでは、schema version 2、`corpus-v10` または `default-2` を
+現行標準として扱わず、relation 対応 profile set を実装完了または公開既定値と
+して扱わない。
 
 ## 確認
 

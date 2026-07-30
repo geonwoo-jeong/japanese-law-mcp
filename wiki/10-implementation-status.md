@@ -63,7 +63,14 @@
 ## 未実装
 
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
-- [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) の版付き対象外 cue セット、引用句境界、および比較・影響分析・法的助言を取得意図へ縮約しない回帰 fixture
+- [SOT-MODEL-029](../sot/20-model/29-cue-task-relation.md)、
+  [SOT-MODEL-025](../sot/20-model/25-legal-query-preprocess-result.md)、
+  [SOT-MODEL-026](../sot/20-model/26-query-profile-contribution.md)、
+  [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md)、
+  [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) の
+  cue task relation と cue schema version 3、および
+  [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) の
+  relation 対応 corpus・baseline
 - [SOT-IF-052](../sot/40-interfaces/52-egov-keyword-response-contract.md) の省略可能三項目の `null` 受理と、個別応答の不正を `invalid_source_response`、一次資料で確認した契約変更を `source_contract_changed` とする共有 parser の分類
 - [SOT-IF-054](../sot/40-interfaces/54-egov-law-search-mapping-v3.md) の、`GET /laws` の個別 2xx 応答不正を `invalid_source_response`、一次資料で確認した契約変更だけを `source_contract_changed` とする分類、および現行 mapping への移行
 - [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) の、`GET /law_data` の個別 XML 応答不正を `invalid_source_response`、公式 XML 契約の確認済み変更だけを `source_contract_changed` とする分類、および XML 専用 fixture

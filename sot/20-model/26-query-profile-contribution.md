@@ -89,9 +89,28 @@ contribution を使って合成せず、元候補を通常の意味順位へ保�
 
 この判定は言語信号より先に行い、該当する場合は候補を空にして `standalone_structured_query` だけを返す。したがって ISO 日付だけのように日本語 script もない入力を `non_japanese_query` と重複させない。
 
-法的助言、翻訳または未採用 task/resource が採用済みの取得意図と混在する場合、profile は取得意図から生成できた候補を `candidates` に保持し、対象外信号も返す。`unsupported_legal_advice` または `unsupported_translation` だけを理由に候補の根拠強度を再評価してはならず、明示された取得 task と形態素文脈または一般語から生成できた候補も保持する。
+法的助言、翻訳または未採用 task/resource が採用済みの取得意図と混在する場合、
+profile は取得意図から生成できた候補を `candidates` に保持し、対象外信号も返す。
+`unsupported_legal_advice` または `unsupported_translation` だけを理由に候補の
+根拠強度を再評価してはならず、対象外 relation と別に明示された取得 task と
+形態素文脈または一般語から生成できた候補も保持する。
 
-`unsupported_task_or_resource` がある場合は、対象外 task/resource の説明中に現れただけの一般語を採用済みの取得意図とみなさない。profile は `official_identifier`、`structured_reference`、`explicit_resource`、`official_alias` または `legal_concept` のいずれかで採用済み取得対象を独立に根拠付けられる候補だけを保持し、それ以外の偶発的な候補を除く。
+`unsupported_task_or_resource` がある場合は、対象外 task/resource の説明中に
+現れただけの一般語を採用済みの取得意図とみなさない。候補の保持可否は
+contribution または照会文全体の真偽値ではなく、一候補ずつ独立に判定し、
+別候補の cue、relation または根拠を流用しない。
+
+一候補の各 step は、`official_identifier`、`structured_reference`、
+`explicit_resource`、`official_alias` または `legal_concept` のいずれかで、
+採用済み取得対象を独立に根拠付ける原文 span を持たなければならない。
+対象外 relation の subject または predicate だけから、この根拠を作らない。
+一 step でもこの条件を満たさない候補は候補全体を除き、強い step だけへ
+縮約しない。
+
+対象外 relation と同じ節にある候補は、上記の強い対象根拠が同じ節にある場合に
+内部候補として保持できる。別の節にある候補は、その節自身に採用済みの明示取得
+task と対象根拠がある場合だけ保持する。別の節に法令名、法概念、構造化値または
+一般語が裸で現れただけでは保持しない。
 
 selector は保持された候補を内部順位として保存するが選択または部分実行しない。対象外意図しかない場合は候補を空にできる。
 
@@ -138,6 +157,11 @@ selector の非実行変換と公開境界は `SOT-ARCH-027` に従う。
 
 自動選択、明確化必須、明示二候補、略称衝突、独立した概念候補、二主題、四主題、五主題、非日本語入力、決定的な構造だけの入力、対象外との混在および予約済み pack を profile test で確認する。
 
+対象外 relation と同じ節にある強い法令・条文根拠、別の節に明示した取得 task、
+別の節に裸で現れただけの法令名、一候補内の強い step と弱い step、および
+二候補の片方だけが持つ強い根拠を fixture にする。候補ごとの保持、候補全体の
+除外、別候補の根拠非共有および保持候補の非選択・非実行を確認する。
+
 存在しない候補を参照する hedge pair、自己参照、逆順重複、不正な
 composition member、`step_limit_exceeded` と候補または自動選択の併存、
 異なる ranking version、score policy
@@ -153,6 +177,7 @@ member と hedge pair の構造的な併存、および複数候補の位置 sid
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](23-legal-query-plan.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](28-query-candidate-composition-member.md)
+- [SOT-MODEL-029: CueTaskRelation](29-cue-task-relation.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)

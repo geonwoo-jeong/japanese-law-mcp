@@ -113,6 +113,15 @@ review 済みの `default-1` baseline を使用する。過去の corpus version
 holdout digest を割り当て、変更前後の結果と独立 review を同じ変更で残し、
 標準 command と baseline を同時に更新する。
 
+`SOT-MODEL-029` の cue task relation を初めて実装完了とする変更では、
+`SOT-ENG-026` が定める schema version 2、`corpus-v10`、追加 coverage、
+`default-2` baseline および `SOT-ENG-028` の固定 model・profile・loader test を
+同じ変更で完成させる。全成果物と独立 review が揃うまでは上記の
+`corpus-v9` と `default-1` を現行標準として維持し、揃った変更の中でだけ
+標準 command、baseline および中央品質ゲートの固定値を同時に切り替える。
+profile または loader の限定 test だけの成功を、relation 対応 profile set の
+採用判定にしない。
+
 command はネットワークを使用せず、固定 seed と repository 内の不変 profile・辞書・fake provider だけを使う。`default` profile set は法令コア、`judicial-cases` 有効時および無効時を manifest の指定どおり評価する。
 
 標準出力は一つの JSON object とし、少なくとも corpus version、holdout digest、profile version 一覧、baseline version、集合別・カテゴリ別件数、各指標の分子・分母・割合、予算違反件数および失敗 case ID を持つ。照会本文、辞書 entry 全体、外部 response または個人情報を出力しない。

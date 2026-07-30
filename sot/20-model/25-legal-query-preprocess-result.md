@@ -21,6 +21,7 @@
 | `paragraphMentions` | span、surface、paragraph number | 項番号 |
 | `caseNumberMentions` | span、surface、era、year、case code、serial number、search text | `SOT-MODEL-027` の完全な裁判事件番号 |
 | `queryTermMentions` | span、surface、kind | 原文で検索対象として区切られた引用句、または一回の形態素解析から文法的な検索対象として確認できた句 |
+| `cueTaskRelations` | subject、predicate、clause span、kind | `SOT-MODEL-029` に従い、一回の形態素解析から確認した cue の task 関係 |
 
 入力 `ref` は原文上の出現ではないため span を作らず、構造を検証した複製と有無を別に保持する。前処理結果は `ref` の provider、source、pack または選択した read capability との対応を決めない。
 
@@ -32,7 +33,11 @@ span は原文 UTF-8 の byte offset で、`startByte` を含み `endByte` を�
 
 同じ種別、span および識別対象に対して複数の照合方法が成立した場合は、一件へまとめた上で、`exact`、`comparison_normalized`、`registered_term`、`unique_typo_correction` の順に強い `matchKind` を保持する。
 
-法令名と条項、複数の項、日付と task の関連付けは前処理結果で確定しない。query profile は span と原文の順序から候補を組み立てる。前処理後に原文を別の規則で再解析して、失われた位置を補ってはならない。
+法令名と条項、複数の項、日付と task の意味上の関連付けは前処理結果で
+確定しない。共通前処理は `SOT-MODEL-029` の構文 relation だけを確定し、
+query profile は span、原文順および検証済み relation から候補を組み立てる。
+前処理後に原文を別の規則で再解析して、節、助詞、述語または失われた位置を
+補ってはならない。
 
 ## match kind
 
@@ -111,9 +116,9 @@ query profile は、`queryTermMentions` と cue その他の出現の位置か�
 
 ## 上限と不変性
 
-原文は `LegalQueryRequest` の上限に従う。比較用正規化値は 4096 byte 以下とする。各出現配列は六十四件以下、cue 出現は百二十八件以下、全出現の合計は二百五十六件以下とする。`caseNumberMentions` と `queryTermMentions` も各配列と全出現の上限に含める。上限を超えた場合は黙って切り捨てず、外部情報源を呼ぶ前に前処理エラーとする。
+原文は `LegalQueryRequest` の上限に従う。比較用正規化値は 4096 byte 以下とする。各出現配列は六十四件以下、cue 出現は百二十八件以下、全出現の合計は二百五十六件以下とする。`caseNumberMentions` と `queryTermMentions` も各配列と全出現の上限に含める。`cueTaskRelations` は出現件数とは別に百二十八件以下とする。上限を超えた場合は黙って切り捨てず、外部情報源を呼ぶ前に前処理エラーとする。
 
-constructor は原文、原文から決定的に導出した比較用正規化値、`ref` および全配列を複製して検証する。getter は内部配列を変更できない複製として返す。辞書、索引、Kagome tokenizer および cue 語彙は起動後に変更せず、前処理結果を照会間で保持しない。
+constructor は原文、原文から決定的に導出した比較用正規化値、`ref` および全配列を複製して検証する。`cueTaskRelations` は同じ結果の `cueMentions` だけを参照し、参照先 cue を欠く relation、relation だけを残した結果または `SOT-MODEL-029` と異なる順序を拒否する。relation の syntax role と kind の対応は relation 自身の constructor で検証し、前処理結果の constructor が cue artifact を再読込しない。getter は内部配列と relation の入れ子を変更できない複製として返す。辞書、索引、Kagome tokenizer、cue 語彙および syntax role は起動後に変更せず、前処理結果を照会間で保持しない。
 
 結果は score、confidence、task、resource、capability、required pack、候補、選択、provider ID、route、外部 DTO、検索結果または法的結論を持たない。辞書内部の候補 template と weight も保持しない。
 
@@ -135,6 +140,11 @@ nil context と cancellation を拒否またはそのまま伝播し、途中ま
 - 引用区切りを除いた検索語、内部空白、同じ語の複数 span、空・不完全・入れ子の引用および引用と辞書出現の併存を確認する
 - 文法的に接続した最大名詞句と並列句だけを抽出し、後続する自立名詞を持つ数詞修飾部は保持し、述語を越えた cue、制御語、単独数詞、事件番号、user dictionary token および保護された構造化 span を一般検索語にしない
 - query profile が一般検索語へ論理条件と task/resource を付与し、能力別 logical input の制約を満たさない原文をそのまま外部情報源へ送らない
+- cue の直接 task、目的語と述語の直接接続および単独 task を
+  `cueTaskRelations` として保持し、引用句、言及表現、別の節および中間述語を
+  task relation にしない
+- relation の cue 参照、syntax role、順序、件数上限および getter の深い複製を
+  確認し、query profile が原文から同じ関係を再解析しない
 - 件数上限、UTF-8 境界、入力不変性、getter の深い複製、決定的順序、context cancellation および共有前処理器の race 非発生を確認する
 
 ## 関連
@@ -143,6 +153,7 @@ nil context と cancellation を拒否またはそのまま伝播し、途中ま
 - [SOT-MODEL-018: LawArticleLocation](18-law-article-location.md)
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-027: JudicialCaseNumberMention](27-judicial-case-number-mention.md)
+- [SOT-MODEL-029: CueTaskRelation](29-cue-task-relation.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
