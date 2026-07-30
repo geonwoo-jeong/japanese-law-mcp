@@ -22,7 +22,12 @@
 
 `profileId`、`profileVersion` および `rankingVersion` は、profile の起動時検証済み metadata と完全に一致しなければならない。profile 固有の版は独立して変更できるが、異なる `rankingVersion` の contribution 間で `semanticScore` を比較してはならない。
 
-`candidates` は `semanticScore` の非増加順とし、同点では profile が定めた evidence、step 数、意味署名および原文位置の順をすでに確定しているものとする。selector は一 contribution 内の同点を再整列しない。
+`candidates` は `semanticScore` の非増加順とし、同点では profile が定めた
+evidence、step 数、意味署名および原文位置の順をすでに確定しているものとする。
+`SOT-ARCH-028` の法令別名衝突群が複数あり、その合計が固定候補上限を
+超える場合に限り、法令コア profile は evidence と step 数の後、
+公式別名群の原文位置を群内の意味署名より先に比較する。
+selector は一 contribution 内の同点を再整列しない。
 
 ## 選択関係
 

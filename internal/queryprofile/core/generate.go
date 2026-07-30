@@ -400,6 +400,9 @@ func (p *Profile) materializeCandidates(
 		input,
 		aggregated,
 	)
+	rankAliasCollisionGroupsBySource :=
+		rankAliasCollisionOverflow &&
+			hasMultipleLawAliasCollisionGroups(input)
 	if len(aggregated) > maximumGeneratedCandidates &&
 		!rankAliasCollisionOverflow {
 		return nil, nil, fmt.Errorf(
@@ -437,7 +440,11 @@ func (p *Profile) materializeCandidates(
 	}
 	prepared = withLawAliasCollisionRankingSignatures(prepared)
 	sort.SliceStable(prepared, func(left, right int) bool {
-		return comparePreparedDrafts(prepared[left], prepared[right]) < 0
+		return comparePreparedDrafts(
+			prepared[left],
+			prepared[right],
+			rankAliasCollisionGroupsBySource,
+		) < 0
 	})
 	if rankAliasCollisionOverflow {
 		prepared = prepared[:maximumGeneratedCandidates]
@@ -554,7 +561,11 @@ type preparedDraft struct {
 	rankingSignature string
 }
 
-func comparePreparedDrafts(left preparedDraft, right preparedDraft) int {
+func comparePreparedDrafts(
+	left preparedDraft,
+	right preparedDraft,
+	rankAliasCollisionGroupsBySource bool,
+) int {
 	if left.score != right.score {
 		return right.score - left.score
 	}
@@ -565,6 +576,14 @@ func comparePreparedDrafts(left preparedDraft, right preparedDraft) int {
 	}
 	if len(left.draft.steps) != len(right.draft.steps) {
 		return len(left.draft.steps) - len(right.draft.steps)
+	}
+	if rankAliasCollisionGroupsBySource {
+		if comparison := compareAliasCollisionGroupPositions(
+			left,
+			right,
+		); comparison != 0 {
+			return comparison
+		}
 	}
 	if left.rankingSignature != right.rankingSignature {
 		return strings.Compare(left.rankingSignature, right.rankingSignature)

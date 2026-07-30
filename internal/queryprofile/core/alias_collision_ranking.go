@@ -146,3 +146,40 @@ func withLawAliasCollisionRankingSignatures(
 	}
 	return result
 }
+
+func compareAliasCollisionGroupPositions(
+	left preparedDraft,
+	right preparedDraft,
+) int {
+	if len(left.draft.aliasRankings) != 1 ||
+		len(right.draft.aliasRankings) != 1 {
+		return 0
+	}
+	leftGroup := left.draft.aliasRankings[0].groupKey
+	rightGroup := right.draft.aliasRankings[0].groupKey
+	if leftGroup == "" || rightGroup == "" || leftGroup == rightGroup {
+		return 0
+	}
+	leftPosition := sourcePosition(left.draft)
+	rightPosition := sourcePosition(right.draft)
+	if leftPosition != rightPosition {
+		return leftPosition - rightPosition
+	}
+	return 0
+}
+
+func hasMultipleLawAliasCollisionGroups(
+	input legalquery.CandidateGenerationInput,
+) bool {
+	collisionGroupCount := 0
+	for _, group := range groupLawTargets(buildLawTargets(input)) {
+		if len(group) < 2 {
+			continue
+		}
+		collisionGroupCount++
+		if collisionGroupCount == 2 {
+			return true
+		}
+	}
+	return false
+}

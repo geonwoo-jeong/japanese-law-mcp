@@ -572,59 +572,100 @@ func TestProfileは衝突する公式略称を固定候補上限まで順位付�
 ) {
 	t.Parallel()
 
-	generation := generateQuery(
-		t,
-		"中央省庁等改革関連法か財源確保法と呼ばれる法令の本文を一つ読みたいです。",
-		nil,
-	)
-	candidates := generation.Candidates()
-	if len(candidates) != maximumGeneratedCandidates {
-		t.Fatalf(
-			"公式略称衝突の candidates = %d, want %d",
-			len(candidates),
-			maximumGeneratedCandidates,
-		)
-	}
-	if generation.SelectionMode() !=
-		legalquery.QuerySelectionModeClarificationRequired {
-		t.Fatalf(
-			"公式略称衝突の selection mode = %q",
-			generation.SelectionMode(),
-		)
+	testCases := []struct {
+		name         string
+		query        string
+		wantLeading  []string
+		wantIncluded []string
+	}{
+		{
+			name:        "原文先頭が中央省庁等改革関連法",
+			query:       "中央省庁等改革関連法か財源確保法と呼ばれる法令の本文を一つ読みたいです。",
+			wantLeading: []string{"411AC0000000089", "411AC0000000091"},
+			wantIncluded: []string{
+				"356AC0000000039",
+				"358AC0000000045",
+				"411AC0000000089",
+				"411AC0000000091",
+			},
+		},
+		{
+			name:        "原文先頭が中央省庁等改革関連法で後続が保安四法",
+			query:       "中央省庁等改革関連法か保安四法と呼ばれる法令の本文を一つ読みたいです。",
+			wantLeading: []string{"411AC0000000089", "411AC0000000091"},
+			wantIncluded: []string{
+				"323AC1000000186",
+				"326AC0000000204",
+				"411AC0000000089",
+				"411AC0000000091",
+			},
+		},
 	}
 
-	lawIDs := make([]string, 0, len(candidates))
-	for _, candidate := range candidates {
-		steps := candidate.Steps()
-		if len(steps) != 1 {
-			t.Fatalf("公式略称衝突の steps = %#v", steps)
-		}
-		input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
-		if !ok {
-			t.Fatalf(
-				"公式略称衝突の logical input = %T",
-				steps[0].LogicalInput(),
+	for _, testCase := range testCases {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generation := generateQuery(
+				t,
+				testCase.query,
+				nil,
 			)
-		}
-		lawID, exists := input.LawID()
-		if !exists {
-			t.Fatal("公式略称衝突の lawId がありません")
-		}
-		lawIDs = append(lawIDs, lawID)
-	}
-	for _, expected := range []string{
-		"356AC0000000039",
-		"358AC0000000045",
-		"411AC0000000089",
-		"411AC0000000091",
-	} {
-		if !slices.Contains(lawIDs, expected) {
-			t.Fatalf(
-				"公式略称衝突の candidates に lawId %q がありません: %#v",
-				expected,
-				lawIDs,
-			)
-		}
+			candidates := generation.Candidates()
+			if len(candidates) != maximumGeneratedCandidates {
+				t.Fatalf(
+					"公式略称衝突の candidates = %d, want %d",
+					len(candidates),
+					maximumGeneratedCandidates,
+				)
+			}
+			if generation.SelectionMode() !=
+				legalquery.QuerySelectionModeClarificationRequired {
+				t.Fatalf(
+					"公式略称衝突の selection mode = %q",
+					generation.SelectionMode(),
+				)
+			}
+
+			lawIDs := make([]string, 0, len(candidates))
+			for _, candidate := range candidates {
+				steps := candidate.Steps()
+				if len(steps) != 1 {
+					t.Fatalf("公式略称衝突の steps = %#v", steps)
+				}
+				input, ok := steps[0].LogicalInput().(legalquery.LawReadIntentV1)
+				if !ok {
+					t.Fatalf(
+						"公式略称衝突の logical input = %T",
+						steps[0].LogicalInput(),
+					)
+				}
+				lawID, exists := input.LawID()
+				if !exists {
+					t.Fatal("公式略称衝突の lawId がありません")
+				}
+				lawIDs = append(lawIDs, lawID)
+			}
+			if !slices.Equal(
+				lawIDs[:len(testCase.wantLeading)],
+				testCase.wantLeading,
+			) {
+				t.Fatalf(
+					"SOT-ARCH-028: 原文先頭の衝突群が上位ではありません: %#v",
+					lawIDs,
+				)
+			}
+			for _, expected := range testCase.wantIncluded {
+				if !slices.Contains(lawIDs, expected) {
+					t.Fatalf(
+						"公式略称衝突の candidates に lawId %q がありません: %#v",
+						expected,
+						lawIDs,
+					)
+				}
+			}
+		})
 	}
 }
 
