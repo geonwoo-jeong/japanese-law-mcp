@@ -160,6 +160,16 @@ func (p *Preprocessor) Preprocess(
 	if err != nil {
 		return legalquery.PreprocessResult{}, err
 	}
+	cueTaskRelations, err := p.buildCueTaskRelations(
+		ctx,
+		query,
+		tokens,
+		cueMentions,
+		queryTermMentions,
+	)
+	if err != nil {
+		return legalquery.PreprocessResult{}, err
+	}
 
 	values := legalquery.PreprocessResultValues{
 		Query:                query,
@@ -173,6 +183,7 @@ func (p *Preprocessor) Preprocess(
 		ParagraphMentions:    paragraphMentions,
 		CaseNumberMentions:   caseNumberMentions,
 		QueryTermMentions:    queryTermMentions,
+		CueTaskRelations:     cueTaskRelations,
 	}
 	if ref, exists := request.Ref(); exists {
 		values.Ref = &ref

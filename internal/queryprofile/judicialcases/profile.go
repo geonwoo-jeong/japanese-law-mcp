@@ -28,10 +28,11 @@ var (
 
 // Profile は、起動時に検証した不変の裁判例 profile である。
 type Profile struct {
-	metadata legalquery.QueryProfileMetadata
-	cues     []legalquery.CueVocabularyEntry
-	cueByID  map[string]cueDefinition
-	concepts map[string]conceptDefinition
+	metadata           legalquery.QueryProfileMetadata
+	cues               []legalquery.CueVocabularyEntry
+	cueByID            map[string]cueDefinition
+	concepts           map[string]conceptDefinition
+	intentEvidenceMode cueIntentEvidenceMode
 }
 
 // LoadEmbedded は、組込み profile、cue および共有辞書を検証して構築する。

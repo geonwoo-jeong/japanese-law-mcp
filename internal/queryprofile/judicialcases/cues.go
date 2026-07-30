@@ -75,10 +75,9 @@ func validateCueEntry(document cueartifact.Entry) error {
 func validateCueSyntaxRole(document cueartifact.Entry) error {
 	role := document.SyntaxRole()
 	if document.Category() == "task" {
-		if role != legalquery.CueSyntaxRoleTaskExpression &&
-			role != legalquery.CueSyntaxRoleTaskPredicate {
+		if role != legalquery.CueSyntaxRoleTaskExpression {
 			return fmt.Errorf(
-				"task cue の syntaxRole は task_expression または task_predicate でなければなりません",
+				"task cue の syntaxRole は task_expression でなければなりません",
 			)
 		}
 		return nil

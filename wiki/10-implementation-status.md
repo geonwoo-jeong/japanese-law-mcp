@@ -48,10 +48,11 @@
 - [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) および
   [SOT-ENG-030](../sot/50-engineering/30-unified-query-cue-artifact-contract.md) に従う、
   schema version 3 の共通 cue 成果物 loader、profile ごとの cue 成果物整合、
-  固定 profile set 全体での構造整合、および廃止した
-  [SOT-MODEL-029](../sot/20-model/29-cue-task-relation.md) 相当の不変な内部 model と
-  前処理結果の構造検証。`SOT-MODEL-030` の v2 role 対応、production 前処理での
-  relation 生成および profile の意味判定への利用は未実装である
+  固定 profile set 全体での構造整合、[SOT-MODEL-030](../sot/20-model/30-cue-task-relation-v2.md)
+  の不変な relation model と前処理結果の構造検証、production 共通前処理での
+  relation sidecar 生成、ならびに test が直接構成する次版 core・裁判例 profile
+  における positive task role、relation 依存の意図根拠および対象外候補 scope。
+  active profile set は relation を意味判定へ使わず、公開既定動作を維持する
 - [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md)、[SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) および [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) に従う、閉じた schema、安全な loader、意味・根拠・選択・実行指標の集計器、再現用の `corpus-v1` から `corpus-v8`、独立 review 済みの標準 `corpus-v9`、review 済みの `default-1` baseline、固定引数だけを受け付ける `legal-query-eval` および中央品質ゲートからの評価接続
 - [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md) と [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、版付きの法令コア query profile、五つの法令コア能力に対する決定的な意味候補生成、十六候補・四 step の固定上限、同じ意味を持つ辞書根拠の統合、二つ以上四つ以下の主題を原文順の独立 step にする処理、明示した `all`、`any` および `exclude` の優先、ならびに個数別の列挙をしない `とも含む` の全件指定
 - [SOT-PROD-011](../sot/00-product/11-unified-legal-query-scope.md)、[SOT-ARCH-019](../sot/30-architecture/19-extension-pack-activation-boundary.md)、[SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、法令コアから独立した版付きの裁判例 query profile、裁判例検索と検証済み `judicial-decision` 参照の読取り候補、検索 task と裁判例 resource の両 cue がある完全な事件番号から `searchText` による一つの `structured_reference` 検索候補を作り、同一 span の引用候補を重複させず read または `ref` を推測しない処理、全候補への `judicial-cases` 必須 pack の付与、最大四 step の個別検索、pack 有効時と無効時の selector 回帰試験、および development corpus の裁判例二事例との照合
@@ -70,9 +71,9 @@
 ## 未実装
 
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
-- 統合照会の positive cue role 完全対応、relation 生成、profile 内の
-  意図根拠適用、限定分岐保持、採用 manifest、relation 対応
-  corpus・baseline・検索例の原子的切替、および後続の provider 契約更新。
+- 統合照会の共有末尾 cue と evidence cluster による限定分岐保持、採用 manifest、
+  relation 対応 corpus・baseline・検索例の原子的切替、next profile set の
+  production 採用、および後続の provider 契約更新。
   現在地と着手順は
   [統合照会の意図判定導入順](30-unified-query-intent-rollout.md) で追跡する
 - [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の

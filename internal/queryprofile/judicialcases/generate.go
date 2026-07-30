@@ -58,6 +58,12 @@ func (p *Profile) Generate(
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
+	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 {
+		cues, err = p.resolveRelationV2Cues(input, cues)
+		if err != nil {
+			return legalquery.CandidateGeneration{}, err
+		}
+	}
 	if input.Language() == legalquery.QueryLanguageNonJapanese {
 		return p.newGeneration(
 			nil,

@@ -99,6 +99,7 @@ type Profile struct {
 	cueByID                          map[string]cueDefinition
 	concepts                         map[string]conceptDefinition
 	rankAliasCollisionGroupsBySource bool
+	intentEvidenceMode               cueIntentEvidenceMode
 }
 
 // LoadEmbedded は、組込み profile、cue および辞書を検証して構築する。

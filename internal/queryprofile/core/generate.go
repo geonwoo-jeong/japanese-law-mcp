@@ -55,9 +55,22 @@ func (p *Profile) Generate(
 			legalquery.QueryCompositionConstraintNone,
 		)
 	}
-	cues, err := p.resolveCues(input.CueMentions())
+	rawCues, err := p.resolveCues(input.CueMentions())
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
+	}
+	cues := rawCues
+	var relationV2ContentDrafts []candidateDraft
+	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 {
+		cues, err = p.resolveRelationV2Cues(input, cues)
+		if err != nil {
+			return legalquery.CandidateGeneration{}, err
+		}
+		relationV2ContentDrafts, err =
+			p.buildRelationV2MentionTargetDrafts(input, cues)
+		if err != nil {
+			return legalquery.CandidateGeneration{}, err
+		}
 	}
 	if err := p.validateConceptMentions(input.LegalConceptMentions()); err != nil {
 		return legalquery.CandidateGeneration{}, err
@@ -84,12 +97,25 @@ func (p *Profile) Generate(
 		)
 	}
 
-	drafts, err := p.generateDrafts(input, cues)
+	drafts, err := p.generateDrafts(input, cues, relationV2ContentDrafts)
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
 	drafts = withAsOfEvidence(drafts)
-	drafts = retainSupportedDraftsForUnsupportedRequest(drafts, cues, signals)
+	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 {
+		drafts = p.retainRelationV2SupportedDrafts(
+			input,
+			cues,
+			drafts,
+			signals,
+		)
+	} else {
+		drafts = retainSupportedDraftsForUnsupportedRequest(
+			drafts,
+			cues,
+			signals,
+		)
+	}
 	candidates, stepStartBytes, err := p.materializeCandidates(
 		input,
 		cues,
@@ -243,6 +269,7 @@ func hasGroundedRetrievalEvidence(
 func (p *Profile) generateDrafts(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
+	additionalContent []candidateDraft,
 ) ([]candidateDraft, error) {
 	targets := buildLawTargets(input, cues)
 	if reservedPackOnlyRequest(input, cues) {
@@ -255,6 +282,16 @@ func (p *Profile) generateDrafts(
 	content, err := p.buildContentCandidates(input, cues, len(targets) > 0)
 	if err != nil {
 		return nil, err
+	}
+	if len(additionalContent) > 0 {
+		content = p.withoutRelationV2MentionNounDrafts(
+			input,
+			content,
+			additionalContent,
+		)
+	}
+	for _, draft := range additionalContent {
+		content = append(content, cloneDraft(draft))
 	}
 	if (cues.has("operator", "dual_candidate") ||
 		isCoreResourceChoice(input, cues)) &&

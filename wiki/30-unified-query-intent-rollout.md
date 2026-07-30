@@ -7,11 +7,16 @@ Wiki である。公開動作または採用済み契約の定義元にはしな
 
 現行の公開既定は `corpus-v9`、`default-1` および現在の固定 profile set である。
 `SOT-MODEL-030` の `CueTaskRelation` 不変 model、`task_expression` predicate
-対応、cue schema version 3、共通 loader、共通前処理の閉じた role 入力検証および
-固定 profile の所有 ID 検証は実装済みである。一方、core の positive task cue に
-対する `SOT-ENG-032` の完全対応は未実装である。production の共通前処理も
-relation を生成せず、profile は relation 依存の signal、候補保持または decision
-を使用していない。採用 manifest も未実装である。
+対応、cue schema version 3、共通 loader、共通前処理の閉じた role 入力検証、
+固定 profile の所有 ID 検証および relation sidecar の生成は実装済みである。
+さらに、test が直接構成する次版の core と `judicial-cases` profile では、
+`SOT-ENG-032` の role 対応、relation に基づく明示 task・対象外 signal、
+言及された cue の通常検索語化および対象外候補 scope を適用する。
+
+ただし、production composition root が構成する active profile set は従来の
+意味判定を維持し、生成済み relation を signal、候補保持または decision に
+使用しない。次版 profile を CLI、設定、環境変数、MCP または transport から
+選択する入口もなく、採用 manifest は未実装である。
 
 したがって、relation 対応の意味判定、`corpus-v10`、`default-2` および対応する
 検索例カタログは、まだ現行標準ではない。
@@ -25,7 +30,7 @@ relation を生成せず、profile は relation 依存の signal、候補保持�
 | 段階 | 状態 | 目的 | 主な定義元 |
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
-| 2 | 未着手 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
+| 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
 | 3 | 未着手 | 共有末尾 cue の閉じた列挙判定と evidence cluster 単位の限定分岐保持を profile 内で完成させる | `SOT-ARCH-025`、`SOT-ARCH-032` |
 | 4 | 未着手 | 現行 `corpus-v9/default-1` の初回採用 manifest を作り、新規 holdout を含む `corpus-v10` と `default-2` の候補成果物を、profile を変えない準備変更で独立 review し、digest を固定する | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033` |
 | 5 | 未着手 | relation 対応 profile set、準備済み corpus・baseline、採用 manifest、標準 command、品質ゲートおよび検索例カタログを一変更で公開既定へ切り替える | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-029`、`SOT-ENG-033` |
@@ -37,6 +42,7 @@ relation を生成せず、profile は relation 依存の signal、候補保持�
 | 段階 | 確認日 | 独立 review | security review | blocker | 確認範囲 |
 |---:|---|---:|---:|---:|---|
 | 1 | 2026-07-31 | 9.2 / 10 | 9.1 / 10 | 0 | v2 role、relation 保持、閉じた role 入力、profile 所有 ID、active 成果物の不変 |
+| 2 | 2026-07-31 | 9.5 / 10 | 9.3 / 10 | 0 | 共通 relation 生成、positive task role、引用・言及・topic 除外、profile 内の意図根拠、対象外候補 scope、next/active 分離 |
 
 ## 段階の境界
 

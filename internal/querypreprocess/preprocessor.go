@@ -65,8 +65,9 @@ type identifierTarget struct {
 }
 
 type cueTarget struct {
-	profileID string
-	cueID     string
+	profileID  string
+	cueID      string
+	syntaxRole legalquery.CueSyntaxRole
 }
 
 // Preprocessor は、起動時の辞書と tokenizer を共有する不変な前処理器である。
@@ -251,8 +252,9 @@ func New(values Values) (*Preprocessor, error) {
 			matchGroup = entry.CueID
 		}
 		cuesByKey[key] = cueTarget{
-			profileID: entry.ProfileID,
-			cueID:     entry.CueID,
+			profileID:  entry.ProfileID,
+			cueID:      entry.CueID,
+			syntaxRole: entry.SyntaxRole,
 		}
 		for _, term := range entry.Terms {
 			if err := normalizedTerms.add(

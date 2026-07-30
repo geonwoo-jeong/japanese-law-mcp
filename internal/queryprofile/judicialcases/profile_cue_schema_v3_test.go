@@ -93,6 +93,12 @@ func TestCueLoaderSchemaV3は旧版欠落未知roleを拒否する(
 			[]byte(`"syntaxRole": "unknown"`),
 			1,
 		),
+		"task predicate": bytes.Replace(
+			embeddedCues,
+			[]byte(`"syntaxRole": "task_expression"`),
+			[]byte(`"syntaxRole": "task_predicate"`),
+			1,
+		),
 	}
 	for name, cues := range tests {
 		name, cues := name, cues
