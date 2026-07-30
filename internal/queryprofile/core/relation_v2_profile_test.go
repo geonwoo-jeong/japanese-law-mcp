@@ -81,6 +81,74 @@ func TestRelationV2ProfileはPositiveCueRoleの完全対応を固定する(
 	}
 }
 
+func TestRelationV2Inputは共有末尾列をCandidateGenerationInputへ渡す(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	profile := mustRelationV2Profile(t)
+	preprocessor, err := querypreprocess.NewEmbedded(profile.CueVocabulary())
+	if err != nil {
+		t.Fatalf("relation v2 preprocessor を構築できません: %v", err)
+	}
+	for _, query := range []string{
+		"永住許可、帰化を教えてください",
+		"永住許可と帰化について教えてください",
+	} {
+		query := query
+		t.Run(query, func(t *testing.T) {
+			t.Parallel()
+			request, requestErr := legalquery.NewRequest(
+				legalquery.RequestValues{Query: query},
+			)
+			if requestErr != nil {
+				t.Fatalf("request を構築できません: %v", requestErr)
+			}
+			preprocessed, preprocessErr := preprocessor.Preprocess(
+				context.Background(),
+				request,
+			)
+			if preprocessErr != nil {
+				t.Fatalf("Preprocess() のエラー = %v", preprocessErr)
+			}
+			input, inputErr := legalquery.NewCandidateGenerationInput(
+				preprocessed,
+			)
+			if inputErr != nil {
+				t.Fatalf(
+					"candidate generation input を構築できません: %v",
+					inputErr,
+				)
+			}
+			sequences := input.SharedTerminalSequences()
+			if len(sequences) != 1 {
+				t.Fatalf(
+					"sidecar 件数 = %d、law=%#v concept=%#v term=%#v cue=%#v relation=%#v",
+					len(sequences),
+					preprocessed.LawNameMentions(),
+					preprocessed.LegalConceptMentions(),
+					preprocessed.QueryTermMentions(),
+					preprocessed.CueMentions(),
+					preprocessed.CueTaskRelations(),
+				)
+			}
+			spans := sequences[0].TopicSpans()
+			if len(spans) != 2 ||
+				query[spans[0].StartByte():spans[0].EndByte()] != "永住許可" ||
+				query[spans[1].StartByte():spans[1].EndByte()] != "帰化" {
+				t.Fatalf("topic spans = %#v", spans)
+			}
+			if sequences[0].TerminalTaskRelation().Kind() !=
+				legalquery.CueTaskRelationDirectTask {
+				t.Fatalf(
+					"terminal relation = %#v",
+					sequences[0].TerminalTaskRelation(),
+				)
+			}
+		})
+	}
+}
+
 func TestRelationV2ProfileはTaskPredicateRoleを拒否する(
 	t *testing.T,
 ) {

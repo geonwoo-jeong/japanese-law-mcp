@@ -19,6 +19,14 @@ profile metadata については、schema version 1 と 2 の閉じた共通 loa
 test が直接構成する core・`judicial-cases` の次版 fixture だけが
 schema version 2 を使用し、active metadata は version 1 のまま維持する。
 
+共有末尾列については、既存の法令名・法概念・一般検索語 span と
+`direct_task` relation から閉じた separator、末尾接続、節および一意な最大列を
+共通 constructor が一回だけ確認し、不変な `SharedTerminalSequence` として
+全 profile へ渡す処理を実装した。sidecar は `CandidateGenerationInput` にだけ
+保持し、原文、候補、plan または公開結果へ追加しない。active core と
+`judicial-cases` はこの sidecar をまだ消費しないため、公開既定の意味判定は
+変えていない。
+
 ただし、production composition root が構成する active profile set は従来の
 意味判定を維持し、生成済み relation を signal、候補保持または decision に
 使用しない。次版 profile を CLI、設定、環境変数、MCP または transport から
@@ -43,7 +51,7 @@ profile を profile ID 順に整列しており、production composition root �
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
-| 3 | 進行中（3.1 完了） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-032`、`SOT-ENG-035` |
+| 3 | 進行中（3.2 完了） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-032`、`SOT-ENG-035` |
 | 4 | 未着手 | 現行集合の初回採用 manifest、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036` |
 | 5 | 未着手 | `SOT-ARCH-033` の全採用要素と `SOT-ENG-033` の current tuple を一変更で公開既定へ切り替える | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | e-Gov parser のエラー分類と法令検索の canonical target 優先を、意図判定変更とは別に移行する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
@@ -56,6 +64,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 1 | 2026-07-31 | 9.2 / 10 | 9.1 / 10 | 0 | v2 role、relation 保持、閉じた role 入力、profile 所有 ID、active 成果物の不変 |
 | 2 | 2026-07-31 | 9.5 / 10 | 9.3 / 10 | 0 | 共通 relation 生成、positive task role、引用・言及・topic 除外、profile 内の意図根拠、対象外候補 scope、next/active 分離 |
 | 3.1 | 2026-07-31 | 9.7 / 10（test 8.0 / 10） | 9.0 / 10 | 0 | schema version 1・2 の閉じた loader、存在状態、固定 set の共有校正と digest、active version 1 と test 専用 version 2 の分離 |
+| 3.2 | 2026-07-31 | 9.2 / 10（test 9.4 / 10） | 9.0 / 10 | 0 | 閉じた共有末尾列、bounded maximal-path 判定、実前処理の二代表例、128・256 上限、active core・裁判例の非消費 |
 
 ## 第 3・第 4 段階の SOT 文書 review
 
@@ -69,7 +78,7 @@ profile を profile ID 順に整列しており、production composition root �
 | artifact とカタログ追跡性 | 9.0 / 10 | 0 | 現行 fixture、baseline 構造、`verification_artifact` の解決 |
 
 これは文書設計の通過記録であり、第 3 段階または第 4 段階の実装完了を表さない。
-実装状態は次節のとおり 3.1 だけが完了し、3.2 以降は `未着手` とする。
+実装状態は次節のとおり 3.1 と 3.2 が完了し、3.3 以降は `未着手` とする。
 
 ## 第 3 段階の内部進捗
 
@@ -78,7 +87,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 順序 | 状態 | 変更単位 |
 |---:|---|---|
 | 3.1 | 完了 | schema version 2 の profile metadata model、loader、存在状態および固定 set 整合 |
-| 3.2 | 未着手 | production-neutral な `SharedTerminalSequence` sidecar |
+| 3.2 | 完了 | production-neutral な `SharedTerminalSequence` sidecar |
 | 3.3 | 未着手 | profile-private な根拠対応と evidence cluster |
 | 3.4 | 未着手 | core の sidecar 消費、複数主題 step および限定分岐 |
 | 3.5 | 未着手 | sidecar を消費しない `judicial-cases` 固有の限定分岐 |

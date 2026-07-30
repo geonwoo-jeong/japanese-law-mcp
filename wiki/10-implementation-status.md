@@ -59,6 +59,16 @@
   target・cue・辞書版・条件付き tie-break 検証、固定 profile set の
   schema・ranking・共有校正整合、および active version 1 を維持した
   test 専用の core・裁判例 version 2 fixture
+- [SOT-MODEL-031](../sot/20-model/31-shared-terminal-sequence.md)、
+  [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md)
+  および
+  [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md)
+  に従う、法令名・法概念・一般検索語の既存 span だけから閉じた separator、
+  末尾接続、節末 `direct_task` relation および一意な最大列を一回確認する
+  `SharedTerminalSequence`、深い複製を返す三 accessor、二百五十六 topic・
+  百二十八 sidecar の上限、ならびに全 profile へ一 request 一回だけ構築した
+  sidecar を渡す production-neutral な profile 入力。active core と
+  `judicial-cases` はまだ sidecar を候補または step へ変換しない
 - [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md)、[SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) および [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) に従う、閉じた schema、安全な loader、意味・根拠・選択・実行指標の集計器、再現用の `corpus-v1` から `corpus-v8`、独立 review 済みの標準 `corpus-v9`、review 済みの `default-1` baseline、固定引数だけを受け付ける `legal-query-eval` および中央品質ゲートからの評価接続
 - [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md) と [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、版付きの法令コア query profile、五つの法令コア能力に対する決定的な意味候補生成、十六候補・四 step の固定上限、同じ意味を持つ辞書根拠の統合、二つ以上四つ以下の主題を原文順の独立 step にする処理、明示した `all`、`any` および `exclude` の優先、ならびに個数別の列挙をしない `とも含む` の全件指定
 - [SOT-PROD-011](../sot/00-product/11-unified-legal-query-scope.md)、[SOT-ARCH-019](../sot/30-architecture/19-extension-pack-activation-boundary.md)、[SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、法令コアから独立した版付きの裁判例 query profile、裁判例検索と検証済み `judicial-decision` 参照の読取り候補、検索 task と裁判例 resource の両 cue がある完全な事件番号から `searchText` による一つの `structured_reference` 検索候補を作り、同一 span の引用候補を重複させず read または `ref` を推測しない処理、全候補への `judicial-cases` 必須 pack の付与、最大四 step の個別検索、pack 有効時と無効時の selector 回帰試験、および development corpus の裁判例二事例との照合
@@ -77,9 +87,8 @@
 ## 未実装
 
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
-- [SOT-MODEL-031](../sot/20-model/31-shared-terminal-sequence.md) と
-  [SOT-ENG-035](../sot/50-engineering/35-unified-query-profile-metadata-artifact-contract.md)
-  に従う共有末尾 cue、profile-private evidence cluster、core と
+- [SOT-ARCH-032](../sot/30-architecture/32-unified-query-bounded-branch-retention.md)
+  に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる
   test 専用 version 2 profile set、採用 manifest、
   [SOT-ENG-036](../sot/50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md)

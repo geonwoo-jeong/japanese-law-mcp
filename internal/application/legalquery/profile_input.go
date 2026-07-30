@@ -20,19 +20,20 @@ const (
 // CandidateGenerationInput は、profile が利用できる位置付き前処理事実である。
 // 原文と比較キーを公開せず、profile による再解析を構造的に防ぐ。
 type CandidateGenerationInput struct {
-	language             QueryLanguage
-	standaloneStructured bool
-	ref                  *model.SourceResourceRef
-	lawNameMentions      []LawNameMention
-	legalConceptMentions []LegalConceptMention
-	cueMentions          []CueMention
-	identifierMentions   []IdentifierMention
-	dateMentions         []DateMention
-	articleMentions      []ArticleMention
-	paragraphMentions    []ParagraphMention
-	caseNumberMentions   []JudicialCaseNumberMention
-	queryTermMentions    []QueryTermMention
-	cueTaskRelations     []CueTaskRelation
+	language                QueryLanguage
+	standaloneStructured    bool
+	ref                     *model.SourceResourceRef
+	lawNameMentions         []LawNameMention
+	legalConceptMentions    []LegalConceptMention
+	cueMentions             []CueMention
+	identifierMentions      []IdentifierMention
+	dateMentions            []DateMention
+	articleMentions         []ArticleMention
+	paragraphMentions       []ParagraphMention
+	caseNumberMentions      []JudicialCaseNumberMention
+	queryTermMentions       []QueryTermMention
+	cueTaskRelations        []CueTaskRelation
+	sharedTerminalSequences []SharedTerminalSequence
 }
 
 // NewCandidateGenerationInput は、検証済み前処理結果から profile 入力を作る。
@@ -44,6 +45,10 @@ func NewCandidateGenerationInput(
 			"前処理結果が有効ではありません: %w",
 			err,
 		)
+	}
+	sharedTerminalSequences, err := buildSharedTerminalSequences(result)
+	if err != nil {
+		return CandidateGenerationInput{}, err
 	}
 	input := CandidateGenerationInput{
 		language:             classifyQueryLanguage(result),
@@ -58,9 +63,18 @@ func NewCandidateGenerationInput(
 		caseNumberMentions:   result.CaseNumberMentions(),
 		queryTermMentions:    result.QueryTermMentions(),
 		cueTaskRelations:     result.CueTaskRelations(),
+		sharedTerminalSequences: cloneSharedTerminalSequences(
+			sharedTerminalSequences,
+		),
 	}
 	if ref, exists := result.Ref(); exists {
 		input.ref = &ref
+	}
+	if err := input.Validate(); err != nil {
+		return CandidateGenerationInput{}, fmt.Errorf(
+			"profile 入力を構築できません: %w",
+			err,
+		)
 	}
 	return input, nil
 }
@@ -131,6 +145,11 @@ func (i CandidateGenerationInput) QueryTermMentions() []QueryTermMention {
 // CueTaskRelations は、前処理で確認した cue と task の関係を深く複製して返す。
 func (i CandidateGenerationInput) CueTaskRelations() []CueTaskRelation {
 	return cloneCueTaskRelations(i.cueTaskRelations)
+}
+
+// SharedTerminalSequences は、共有末尾列 sidecar の深い複製を返す。
+func (i CandidateGenerationInput) SharedTerminalSequences() []SharedTerminalSequence {
+	return cloneSharedTerminalSequences(i.sharedTerminalSequences)
 }
 
 // Validate は、constructor で得た型付き事実の基本不変条件を確認する。
@@ -206,6 +225,15 @@ func (i CandidateGenerationInput) Validate() error {
 		if err := mention.Validate(); err != nil {
 			return fmt.Errorf("queryTermMentions[%d]: %w", index, err)
 		}
+	}
+	if err := validateSharedTerminalSequenceReferencesAndOrder(
+		i.sharedTerminalSequences,
+		i.lawNameMentions,
+		i.legalConceptMentions,
+		i.queryTermMentions,
+		i.cueTaskRelations,
+	); err != nil {
+		return err
 	}
 	return nil
 }

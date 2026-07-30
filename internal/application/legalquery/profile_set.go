@@ -143,6 +143,10 @@ func (s QueryProfileSet) Collect(
 			err,
 		)
 	}
+	input, err := NewCandidateGenerationInput(preprocessed)
+	if err != nil {
+		return QueryProfileSetResult{}, err
+	}
 	aggregate := newProfileSetAggregate()
 	for index, profile := range s.profiles {
 		currentMetadata := profile.Metadata()
@@ -167,7 +171,7 @@ func (s QueryProfileSet) Collect(
 		contribution, err := collectProfileCandidatesForMetadata(
 			profile,
 			currentMetadata,
-			preprocessed,
+			input,
 			scope,
 		)
 		if err != nil {

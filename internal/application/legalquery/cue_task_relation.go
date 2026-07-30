@@ -371,18 +371,22 @@ func cloneCueTaskRelationRef(value CueTaskRelationRef) CueTaskRelationRef {
 	}
 }
 
+func cloneCueTaskRelation(value CueTaskRelation) CueTaskRelation {
+	return CueTaskRelation{
+		subject:    cloneCueTaskRelationRef(value.subject),
+		predicate:  cloneCueTaskRelationRef(value.predicate),
+		clauseSpan: value.clauseSpan,
+		kind:       value.kind,
+	}
+}
+
 func cloneCueTaskRelations(values []CueTaskRelation) []CueTaskRelation {
 	if len(values) == 0 {
 		return nil
 	}
 	result := make([]CueTaskRelation, len(values))
 	for index, value := range values {
-		result[index] = CueTaskRelation{
-			subject:    cloneCueTaskRelationRef(value.subject),
-			predicate:  cloneCueTaskRelationRef(value.predicate),
-			clauseSpan: value.clauseSpan,
-			kind:       value.kind,
-		}
+		result[index] = cloneCueTaskRelation(value)
 	}
 	return result
 }

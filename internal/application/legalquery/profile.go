@@ -22,10 +22,20 @@ func CollectProfileCandidates(
 		return CandidateGeneration{}, fmt.Errorf("profile は必須です")
 	}
 	metadata := profile.Metadata()
+	if err := metadata.Validate(); err != nil {
+		return CandidateGeneration{}, fmt.Errorf(
+			"profile metadata が有効ではありません: %w",
+			err,
+		)
+	}
+	input, err := NewCandidateGenerationInput(preprocessed)
+	if err != nil {
+		return CandidateGeneration{}, err
+	}
 	return collectProfileCandidatesForMetadata(
 		profile,
 		metadata,
-		preprocessed,
+		input,
 		scope,
 	)
 }
@@ -33,15 +43,17 @@ func CollectProfileCandidates(
 func collectProfileCandidatesForMetadata(
 	profile QueryProfile,
 	metadata QueryProfileMetadata,
-	preprocessed PreprocessResult,
+	input CandidateGenerationInput,
 	scope CandidateIDScope,
 ) (CandidateGeneration, error) {
 	if err := metadata.Validate(); err != nil {
 		return CandidateGeneration{}, fmt.Errorf("profile metadata が有効ではありません: %w", err)
 	}
-	input, err := NewCandidateGenerationInput(preprocessed)
-	if err != nil {
-		return CandidateGeneration{}, err
+	if err := input.Validate(); err != nil {
+		return CandidateGeneration{}, fmt.Errorf(
+			"profile 入力が有効ではありません: %w",
+			err,
+		)
 	}
 	generation, err := profile.Generate(input, scope)
 	if err != nil {
