@@ -65,6 +65,11 @@ func TestProfileは不透明な略称と誤記を正式名称へ解決する(t *
 			query: "建築規準法を検索してください。",
 			want:  "建築基準法",
 		},
+		{
+			name:  "一文字を挿入した誤記補正",
+			query: "労働基礎準法を法令名で検索してください。",
+			want:  "労働基準法",
+		},
 	}
 	for _, test := range tests {
 		test := test

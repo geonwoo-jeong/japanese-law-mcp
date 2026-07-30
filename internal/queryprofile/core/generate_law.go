@@ -663,6 +663,9 @@ func querySpanDistanceAndRelation(
 
 func searchTermForLawMention(mention legalquery.LawNameMention) string {
 	canonical := normalizedCanonicalLawQuery(mention.Canonical())
+	if mention.MatchKind() == legalquery.PreprocessMatchUniqueTypoCorrection {
+		return canonical
+	}
 	surface := strings.TrimSpace(mention.Surface())
 	if shouldPreferSurfaceLawQuery(surface, canonical) {
 		return surface
