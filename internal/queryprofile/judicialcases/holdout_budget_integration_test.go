@@ -144,3 +144,37 @@ func Test裁判例の共有一般語は近接する更新日より優先する(t
 		)
 	}
 }
+
+func Test裁判例の共有一般語は個別指定なしでも更新日より優先する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const query = "労働基準法、時間外労働の条文、2026年6月29日の更新一覧、裁判例を検索してください。"
+	runtime := newMixedProfileRuntime(t)
+	request := mustMixedProfileRequest(t, query)
+	plan := selectMixedProfilePlan(
+		t,
+		runtime.collect(t, request),
+		request,
+		true,
+	)
+	candidate := assertSingleMixedSelection(
+		t,
+		plan,
+		legalquery.SelectionAvailabilityAvailable,
+	)
+	steps := candidate.Steps()
+	if len(steps) != 4 ||
+		steps[3].InputKind() !=
+			legalquery.InputKindJudicialDecisionSearch {
+		t.Fatalf("SOT-ARCH-027: shared term steps = %#v", steps)
+	}
+	judicial, ok := steps[3].LogicalInput().(legalquery.JudicialDecisionSearchIntentV1)
+	if !ok || judicial.Query() != "時間外労働" {
+		t.Fatalf(
+			"SOT-ARCH-027: shared judicial term = %#v",
+			steps[3].LogicalInput(),
+		)
+	}
+}

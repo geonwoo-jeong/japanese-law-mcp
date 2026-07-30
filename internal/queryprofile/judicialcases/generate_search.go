@@ -178,21 +178,22 @@ func explicitJudicialSubjectSelection(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 ) map[[2]int]int {
-	if cues.has("operator", "individual") {
-		foreignResources := foreignResourceSpans(input, cues)
-		if len(foreignResources) == 0 {
-			return nil
-		}
-		return individualJudicialSubjectSelection(
+	subjects := judicialSubjectSpans(input)
+	resources := judicialResourceMentions(cues)
+	foreignResources := foreignResourceSpans(input, cues)
+	if len(foreignResources) > 0 {
+		return resourceAwareJudicialSubjectSelection(
 			input,
-			judicialSubjectSpans(input),
-			judicialResourceMentions(cues),
+			subjects,
+			resources,
 			foreignResources,
 		)
 	}
-	subjects := judicialSubjectSpans(input)
+	if cues.has("operator", "individual") {
+		return nil
+	}
 	selected := make(map[[2]int]int)
-	for _, resource := range judicialResourceMentions(cues) {
+	for _, resource := range resources {
 		selectNearestJudicialSubject(
 			selected,
 			subjects,
@@ -300,7 +301,7 @@ func overlapsJudicialResource(
 	return false
 }
 
-func individualJudicialSubjectSelection(
+func resourceAwareJudicialSubjectSelection(
 	input legalquery.CandidateGenerationInput,
 	subjects []legalquery.QuerySpan,
 	resources []legalquery.CueMention,
