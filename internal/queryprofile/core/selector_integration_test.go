@@ -91,13 +91,14 @@ func Test製品前処理からCoreProfileとSelectorまで一貫した計画を�
 			wantFirstMeaningSteps: 1,
 		},
 		{
-			name:                  "口語引用直前の略称誤記は候補順位を残して明確化する",
+			name:                  "口語引用直前の略称誤記も二候補を提示して明確化する",
 			query:                 "民訴去っていう法令を検索してもらえますか。",
 			wantDecision:          legalquery.PlanDecisionNeedsClarification,
 			wantReasons:           []legalquery.ReasonCode{legalquery.ReasonCodeAmbiguousCandidates},
 			wantRanked:            2,
-			wantSelected:          0,
+			wantSelected:          2,
 			wantFirstMeaningSteps: 1,
+			wantFirstStepTasks:    []legalquery.Task{legalquery.TaskSearch},
 		},
 		{
 			name:                  "明示した独立二候補だけをhedgeする",

@@ -269,33 +269,5 @@ func clarificationDisplayCandidates(
 	if candidates[1].SemanticScore() < minimum {
 		return nil
 	}
-	display := candidates[:min(len(candidates), MaxSelectedCandidates)]
-	if shouldSuppressTypoOnlyClarificationSelection(display) {
-		return nil
-	}
-	return display
-}
-
-func shouldSuppressTypoOnlyClarificationSelection(
-	candidates []LegalQueryCandidate,
-) bool {
-	if len(candidates) < 2 {
-		return false
-	}
-	for _, candidate := range candidates {
-		if !slices.Contains(
-			candidate.EvidenceCodes(),
-			EvidenceUniqueTypoCorrection,
-		) {
-			return false
-		}
-		steps := candidate.Steps()
-		if len(steps) != 1 ||
-			steps[0].Task() != TaskSearch ||
-			steps[0].Resource() != ResourceLaw ||
-			steps[0].InputKind() != InputKindLawSearch {
-			return false
-		}
-	}
-	return true
+	return candidates[:min(len(candidates), MaxSelectedCandidates)]
 }
