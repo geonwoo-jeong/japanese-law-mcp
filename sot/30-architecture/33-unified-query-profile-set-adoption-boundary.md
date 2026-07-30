@@ -52,6 +52,11 @@ key、環境変数または hidden MCP tool によって production から選択
 準備中の実装が不完全な場合も、採用済み profile set を実行時 fallback として
 混合したり、照会ごとに二つの profile set を比較実行したりしない。
 
+test 専用の別実装は、同じ package 内の非公開 constructor、testdata または
+埋込み fixture を使って次版 profile を直接組み立ててもよい。ただし、
+production composition root、現行の埋込み metadata path、標準評価 command、
+中央品質ゲートおよび公開 MCP の到達経路と共有してはならない。
+
 準備変更は、現行標準の corpus version と baseline version、公開 decision、
 選択した meaning、step、reason、外部呼出し境界および検索例の観測結果を
 変更しない。production が使用する cue artifact、profile version または

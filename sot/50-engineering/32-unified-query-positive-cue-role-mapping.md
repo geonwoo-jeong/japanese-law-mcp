@@ -61,6 +61,11 @@ positive search を残すことを理由に対象外 relation を削除せず、
 ある。単独の mention または relation の predicate 側だけを、positive task や
 `explicit_task` evidence として使用しない。
 
+したがって現行の core と `judicial-cases` の positive task は、いずれも
+`direct_task` の subject として成立したときだけ `explicit_task` evidence を
+作る。`judicial-cases` に positive `task_predicate` を導入したり、predicate 側
+だけで search/read を確定したりしない。
+
 ## 変更
 
 現行表へ task、profile または role の対応を追加、削除または変更する場合は、

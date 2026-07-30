@@ -41,6 +41,9 @@
    constraint へ変換する。公開 decision と reason への変換は
    `SOT-ARCH-023` と `SOT-MODEL-023` に従い、この層が直接決めない。
 
+現行の固定 profile set における positive task の role 対応と relation 成立条件は
+`SOT-ENG-032` を定義元とし、本規定では profile ごとの現在値を重複して定義しない。
+
 `explicit_task_resource` がない場合でも、法概念辞書または一般検索語だけから候補を作ることはできる。ただし、その候補は明示 task/resource による候補より弱く、上位レイヤの境界を破れない。`boundary` が非実行を確定した場合でも、`SOT-MODEL-026` が許可する内部候補保持に限り、下位レイヤは監査用の `LegalQueryCandidate` を組み立てられる。これらは選択または実行の対象にせず、非実行理由を覆さない。
 
 この評価順序は profile 共通の解釈境界であり、ある profile が下位レイヤの一般語だけで明示 task/resource を捏造したり、別 profile の cue relation を借りて自分の候補を強化したりしてはならない。

@@ -18,6 +18,10 @@ relation を生成せず、profile は relation 依存の signal、候補保持�
 
 ## 推奨順序
 
+段階そのものの定義、順序および進行条件の定義元は
+[SOT-ENG-034](../sot/50-engineering/34-unified-query-rollout-stages.md) とする。
+この章の表は、現時点の進捗と確認範囲を追跡するための運用上の写像である。
+
 | 段階 | 状態 | 目的 | 主な定義元 |
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |

@@ -95,6 +95,12 @@ profile は取得意図から生成できた候補を `candidates` に保持し�
 根拠強度を再評価してはならず、対象外 relation と別に明示された取得 task と
 形態素文脈または一般語から生成できた候補も保持する。
 
+ただし、対象外 cue が `SOT-MODEL-030` の topic 除外または言及除外により
+relation を持たない場合は、その cue から対象外 signal を作らない。例えば
+`翻訳に関する規定を検索してください。` は、translation cue を監査用の
+unsupported 根拠に使わず、同じ節の positive search と検索対象から通常候補を
+生成できる。
+
 `unsupported_task_or_resource` がある場合は、対象外 task/resource の説明中に
 現れただけの一般語を採用済みの取得意図とみなさない。候補の保持可否は
 contribution または照会文全体の真偽値ではなく、一候補ずつ独立に判定し、
@@ -112,6 +118,8 @@ profile は `LegalQueryCandidate` を materialize する前の全候補 draft �
 採用済み取得対象を独立に根拠付けられなければならない。対象外 relation の
 subject、predicate または `general_term` だけからこの強い対応を作らない。
 一 step でも条件を満たさない候補は候補全体を除き、強い step だけへ縮約しない。
+したがって、同じ候補内で一つの step だけが強い根拠を持ち、別の step が
+`general_term` だけで残る混在候補を、強い step の単独候補へ読み替えて保持しない。
 
 この step ごとの対応は生成時検証と `SOT-ARCH-032` の一時的な evidence cluster
 key にだけ使用する。最終の `LegalQueryCandidate` は `SOT-ARCH-029` に従う
@@ -176,6 +184,8 @@ step ごとの位置対応、候補ごとの保持、候補全体の除外、別
 最終モデルへ位置対応を残さないこと、および保持候補の非選択・非実行を確認する。
 通常の `general_term` 候補が位置対応を持てることと、対象外 relation の説明中に
 ある `general_term` だけでは監査用候補を保持できないことを別 fixture にする。
+`翻訳に関する規定を検索してください。` が topic 除外により
+unsupported signal を作らず、通常候補だけを保持することも確認する。
 
 存在しない候補を参照する hedge pair、自己参照、逆順重複、不正な
 composition member、`step_limit_exceeded` と候補または自動選択の併存、

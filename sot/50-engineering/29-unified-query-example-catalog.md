@@ -47,7 +47,7 @@ request context の完全一致を証明する artifact として使わない。
 
 ## 各例の必須項目
 
-各行は次の項目を持つ。
+各行は、少なくとも次の共通項目を持つ。
 
 | 項目 | 内容 |
 |---|---|
@@ -57,20 +57,22 @@ request context の完全一致を証明する artifact として使わない。
 | `request_context` | `ref` の全項目、pack 状態および入力 option。省略時も明記する |
 | `verification_artifact` | `corpus-vN:semantic:{caseId}` または `corpus-vN:execution:{caseId}` |
 | `expected_plan_decision` | 対応 semantic case の `expected.decision` |
-| `expected_public_status` | execution case または非実行 plan で観測する status。該当しない実行可能 semantic 例は `—` |
 | `expected_summary` | interpretation、step または非実行理由の簡潔な説明 |
 | `related_sots` | 挙動の定義元である有効な SOT ID |
+
+加えて、`expected_public_status` は次の規則で持つ。
+
+- `10-execution.md` の全行は `expected_public_status` を持つ
+- 実行可能な `semantic` 例は `—` を入れ、公開実行 status をこの行だけで推測しない
+- `execution` 例は対応 execution fixture の `completed`、`empty` または `partial`
+  を入れる
+- `20-clarification-and-unsupported.md` の全行は、非実行 plan と同名の
+  `needs_clarification`、`capability_unavailable` または `unsupported` を入れる
 
 `expected_plan_decision` は `single`、`hedged`、`needs_clarification`、
 `capability_unavailable` または `unsupported` の一つとする。
 
-`expected_public_status` は次の閉じた対応とする。
-
-- `example_kind=execution`: 対応 execution fixture の `completed`、`empty`または
-  `partial`
-- semantic case が非実行 plan: decision と同じ `needs_clarification`、
-  `capability_unavailable` または `unsupported`
-- execution fixture を伴わない `single` または `hedged` の semantic case: `—`
+`expected_public_status` は、上記以外の値を取らない。
 
 `completed`、`empty`または`partial`を semantic case、coverage ID または
 scenario ID だけから推測しない。同じ `query` は、`request_context` が異なり、
@@ -110,6 +112,8 @@ exact fixture で確認できるようになるまで最低件数へ算入しな
 - `verification_artifact` の corpus と case が実在する
 - 各行の query、request context、plan decision および public status が
   対応 fixture と完全一致する
+- `expected_public_status=—` の行は、同じ行の `verification_artifact` だけから
+  `completed`、`empty` または `partial` を主張していない
 - execution case の `semanticCaseId` が、同じ行の query と request context を
   持つ semantic case を参照する
 - `completed`、`empty`および`partial`に、それぞれ一件以上の exact execution
