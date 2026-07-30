@@ -293,6 +293,7 @@ func (p *Profile) generateDrafts(
 		readRequested,
 		explicitRead,
 		documentRequested,
+		hasSingleTrailingReadTask(input, cues, targets),
 		asOf,
 	)
 	if err != nil {
