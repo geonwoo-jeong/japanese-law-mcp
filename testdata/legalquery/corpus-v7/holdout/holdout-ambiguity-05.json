@@ -1,0 +1,67 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-05",
+  "coverageIds": [
+    "ambiguity-alias-collision",
+    "ambiguity-three-or-more-candidates"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "us-forces",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "327AC0000000138"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "un-protocol",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "328AC0000000265"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "us-forces",
+      "un-protocol"
+    ]
+  },
+  "leakageGroupId": "holdout-ambiguity-criminal-special-read-alias",
+  "request": {
+    "query": "「刑特法」の本文を一つ読みたいです。"
+  },
+  "schemaVersion": 1
+}

@@ -65,7 +65,6 @@ func corpusV6BudgetCorrectionCaseIDs() []string {
 		"holdout-budget-12",
 		"holdout-budget-13",
 		"holdout-budget-14",
-		"holdout-budget-15",
 		"holdout-budget-16",
 	}
 }

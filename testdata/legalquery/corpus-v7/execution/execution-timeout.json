@@ -1,0 +1,47 @@
+{
+  "actions": [
+    {
+      "meaningId": "primary",
+      "outcome": {
+        "kind": "timeout"
+      },
+      "releaseOrder": 1,
+      "stepOrdinal": 1
+    },
+    {
+      "meaningId": "primary",
+      "outcome": {
+        "errorCode": "source_busy",
+        "kind": "failure"
+      },
+      "releaseOrder": 2,
+      "stepOrdinal": 2
+    }
+  ],
+  "artifactKind": "execution_case",
+  "caseId": "execution-timeout",
+  "expected": {
+    "attempts": [
+      {
+        "errorCode": "source_timeout",
+        "meaningId": "primary",
+        "outcome": "failed",
+        "stepOrdinal": 1
+      },
+      {
+        "errorCode": "source_busy",
+        "meaningId": "primary",
+        "outcome": "failed",
+        "stepOrdinal": 2
+      }
+    ],
+    "errorCode": "source_timeout",
+    "terminal": "error"
+  },
+  "scenarioIds": [
+    "execution-all-failed",
+    "execution-timeout"
+  ],
+  "schemaVersion": 1,
+  "semanticCaseId": "development-execution-timeout-commercial-code"
+}

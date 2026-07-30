@@ -1,0 +1,68 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-reference-14",
+  "coverageIds": [
+    "reference-source-resource-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "location": {
+                "articleNumber": "709",
+                "paragraphNumber": 1,
+                "provision": "main"
+              },
+              "ref": {
+                "key": {
+                  "resourceId": "129AC0000000089",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2",
+                  "versionId": "129AC0000000089_20240401_504AC0000000102"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-reference-source-ref-civil-709",
+  "request": {
+    "query": "参照で指定した法令の第709条第1項を読む",
+    "ref": {
+      "key": {
+        "resourceId": "129AC0000000089",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2",
+        "versionId": "129AC0000000089_20240401_504AC0000000102"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 1
+}
