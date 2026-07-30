@@ -194,6 +194,9 @@ func TestPreprocessRecognizesOnlyIdentifiersKnownByFixedLawSnapshot(
 	}
 
 	identifiers := result.IdentifierMentions()
+	if len(identifiers) != 3 {
+		t.Fatalf("SOT-MODEL-025: identifierMentions = %#v", identifiers)
+	}
 	assertIdentifierMention(
 		t,
 		query,
@@ -225,6 +228,81 @@ func TestPreprocessRecognizesOnlyIdentifiersKnownByFixedLawSnapshot(
 				mention,
 			)
 		}
+	}
+}
+
+func TestPreprocessRecognizesHistoricalRevisionForKnownLawID(t *testing.T) {
+	t.Parallel()
+
+	preprocessor := mustDefaultPreprocessor(t)
+	tests := map[string]string{
+		"過去の改正法令": civilLawID + "_20240401_504AC0000000102",
+		"制定時の零ID": civilLawID + "_19000101_000000000000000",
+	}
+	for name, revisionID := range tests {
+		name, revisionID := name, revisionID
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			query := "法令履歴ID " + revisionID + " の法令本文を読む"
+
+			result, err := preprocessor.Preprocess(
+				context.Background(),
+				mustRequest(t, query),
+			)
+			if err != nil {
+				t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+			}
+
+			identifiers := result.IdentifierMentions()
+			if len(identifiers) != 1 {
+				t.Fatalf("SOT-MODEL-025: identifierMentions = %#v", identifiers)
+			}
+			assertIdentifierMention(
+				t,
+				query,
+				identifiers,
+				legalquery.IdentifierMentionLawRevisionID,
+				revisionID,
+				civilLawID,
+			)
+		})
+	}
+}
+
+func TestPreprocessRejectsInvalidHistoricalRevisionWithoutLawIDFallback(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	preprocessor := mustDefaultPreprocessor(t)
+	valid := civilLawID + "_20240401_504AC0000000102"
+	tests := map[string]string{
+		"未知の法令ID":    "999AC0000009999_20240401_504AC0000000102",
+		"存在しない日付":    civilLawID + "_20240230_504AC0000000102",
+		"小文字の改正ID":   civilLawID + "_20240401_504ac0000000102",
+		"前方のASCII連結": "X" + valid,
+		"後方のASCII連結": valid + "X",
+	}
+	for name, value := range tests {
+		name, value := name, value
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			query := "法令履歴ID " + value + " の法令本文を読む"
+
+			result, err := preprocessor.Preprocess(
+				context.Background(),
+				mustRequest(t, query),
+			)
+			if err != nil {
+				t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+			}
+			if identifiers := result.IdentifierMentions(); len(identifiers) != 0 {
+				t.Fatalf(
+					"SOT-MODEL-025: 不正な履歴IDを法令IDへ縮退しました: %#v",
+					identifiers,
+				)
+			}
+		})
 	}
 }
 

@@ -15,7 +15,7 @@
 | `lawNameMentions` | span、surface、law ID、revision ID、法令番号、正式名称、match kind | 法令名辞書に登録した正式名称、読みまたは別名との一致 |
 | `legalConceptMentions` | span、surface、concept ID、正式表記、match kind | 法概念辞書との一致 |
 | `cueMentions` | span、surface、profile ID、cue ID、match kind | 起動時に query profile から渡された構文 cue との一致 |
-| `identifierMentions` | span、surface、kind、law ID、任意の revision ID または法令番号 | 辞書スナップショットで対応を確認できる公式識別子または法令番号 |
+| `identifierMentions` | span、surface、kind、law ID、任意の revision ID または法令番号 | 辞書スナップショットで法令との対応を確認できる公式識別子、構造を検証した法令履歴 ID または法令番号 |
 | `dateMentions` | span、surface、`Date` | 原文に完全な暦日として明記された日付 |
 | `articleMentions` | span、surface、provision、article number | 条番号または枝番号を含む条番号 |
 | `paragraphMentions` | span、surface、paragraph number | 項番号 |
@@ -78,7 +78,30 @@ query profile は、`queryTermMentions` と cue その他の出現の位置か�
 - `law_revision_id` は対応する law ID と revision ID を持つ。
 - `law_number` は対応する law ID と法令番号を持つ。
 
-識別子らしい未知の文字列を、形式だけから公式識別子として採用しない。法令名辞書の同じ固定スナップショットで対応を確認できた値だけを出現にする。法令番号が複数法令へ対応する場合は、同じ span に対象ごとの出現を保持する。
+`law_id` と `law_number` は、法令名辞書の同じ固定スナップショットで
+値と法令の対応を確認できる場合だけ出現にする。法令番号が複数法令へ
+対応する場合は、同じ span に対象ごとの出現を保持する。
+
+`law_revision_id` は、辞書に完全一致する値に加え、次の条件をすべて
+満たす同じ法令の別の法令履歴 ID を出現にできる。
+
+- 先頭の十五文字が固定スナップショットに存在する `law_id` と完全一致する
+- 全体が `{law_id}_YYYYMMDD_{amending_law_id}` の四十文字であり、
+  `YYYYMMDD` が実在する暦日である
+- `amending_law_id` が ASCII の大文字英字または数字十五文字である。
+  制定時を表す `000000000000000` も含む
+- 前後に ASCII の英数字または `_` が隣接せず、原文上の一つの識別子として
+  区切られている
+
+この構造は e-Gov 法令データドキュメンテーションの
+[法令履歴 ID](https://laws.e-gov.go.jp/docs/law-data-basic/da91fe9-law-revisions/)
+に従う。前処理で確認するのは既知の法令との対応、閉じた構造および暦日の
+妥当性までとし、その履歴が情報源に実在するかは外部取得結果との
+`revisionId` 完全一致で確認する。構造が不正な法令履歴 ID らしい文字列を、
+内部に含まれる `law_id` だけの出現へ縮退させない。
+
+これら以外の識別子らしい未知の文字列を、形式だけから公式識別子として
+採用しない。
 
 完全な裁判事件番号は `identifierMentions` ではなく、[SOT-MODEL-027](27-judicial-case-number-mention.md) の `caseNumberMentions` として保持する。これは入力の構造を確認した位置付き事実であり、公式情報源で存在または一意な資源対応を確認した識別子ではない。
 

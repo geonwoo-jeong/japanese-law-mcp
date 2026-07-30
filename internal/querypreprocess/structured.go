@@ -26,6 +26,9 @@ var (
 	paragraphPattern = regexp.MustCompile(
 		`第[0-9０-９〇零一二三四五六七八九十百千万]+項`,
 	)
+	lawRevisionIDPattern = regexp.MustCompile(
+		`[0-9A-Z]{15}_[0-9]{8}_[0-9A-Z]{15}`,
+	)
 )
 
 type byteSpan struct {
@@ -43,9 +46,13 @@ func (p *Preprocessor) extractIdentifiers(
 	query string,
 ) ([]legalquery.IdentifierMention, []byteSpan, error) {
 	hits := p.identifiers.find(rawRunes(query))
+	hits = append(hits, p.findStructuredLawRevisionIDs(query)...)
 	drafts := make([]identifierDraft, 0, len(hits))
 	seen := make(map[string]struct{})
 	for _, hit := range hits {
+		if !identifierHitIsDelimited(query, hit) {
+			continue
+		}
 		identity := strings.Join([]string{
 			strconv.Itoa(hit.startByte),
 			strconv.Itoa(hit.endByte),
@@ -111,6 +118,79 @@ func (p *Preprocessor) extractIdentifiers(
 		})
 	}
 	return mentions, spans, nil
+}
+
+func (p *Preprocessor) findStructuredLawRevisionIDs(
+	query string,
+) []trieHit[identifierTarget] {
+	hits := make([]trieHit[identifierTarget], 0)
+	for _, index := range lawRevisionIDPattern.FindAllStringIndex(query, -1) {
+		if hasAdjacentASCIIIdentifierPart(query, index[0], index[1]) {
+			continue
+		}
+		surface := query[index[0]:index[1]]
+		lawID := surface[:15]
+		if _, exists := p.lawsByID[lawID]; !exists {
+			continue
+		}
+		if !isRealCompactDate(surface[16:24]) {
+			continue
+		}
+		hits = append(hits, trieHit[identifierTarget]{
+			startByte: index[0],
+			endByte:   index[1],
+			value: identifierTarget{
+				kind:       legalquery.IdentifierMentionLawRevisionID,
+				lawID:      lawID,
+				revisionID: surface,
+			},
+		})
+	}
+	return hits
+}
+
+func identifierHitIsDelimited(
+	query string,
+	hit trieHit[identifierTarget],
+) bool {
+	switch hit.value.kind {
+	case legalquery.IdentifierMentionLawID:
+		return hit.endByte == len(query) || query[hit.endByte] != '_'
+	case legalquery.IdentifierMentionLawRevisionID:
+		return !hasAdjacentASCIIIdentifierPart(
+			query,
+			hit.startByte,
+			hit.endByte,
+		)
+	default:
+		return true
+	}
+}
+
+func hasAdjacentASCIIIdentifierPart(
+	query string,
+	startByte int,
+	endByte int,
+) bool {
+	return startByte > 0 && isASCIIIdentifierPart(query[startByte-1]) ||
+		endByte < len(query) && isASCIIIdentifierPart(query[endByte])
+}
+
+func isASCIIIdentifierPart(value byte) bool {
+	return value >= '0' && value <= '9' ||
+		value >= 'A' && value <= 'Z' ||
+		value >= 'a' && value <= 'z' ||
+		value == '_'
+}
+
+func isRealCompactDate(value string) bool {
+	if len(value) != 8 {
+		return false
+	}
+	_, err := model.NewDate(
+		value[:4] + "-" + value[4:6] + "-" + value[6:],
+	)
+	return err == nil
 }
 
 func suppressIdentifiersInsideRevisions(
