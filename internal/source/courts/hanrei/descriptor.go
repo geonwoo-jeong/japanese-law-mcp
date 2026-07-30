@@ -11,7 +11,7 @@ const (
 	providerID             = "courts-hanrei-html"
 	sourceID               = "courts-hanrei"
 	searchEndpoint         = "https://www.courts.go.jp/hanrei/search1/index.html"
-	adapterContractVersion = "1.0.0"
+	adapterContractVersion = "1.1.0"
 )
 
 // Descriptor は、SOT-IF-043 の provider descriptor を返す。

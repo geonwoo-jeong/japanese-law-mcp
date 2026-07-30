@@ -16,7 +16,7 @@
 | `source.publisher` | `最高裁判所` |
 | `source.authority` | `official` |
 | `source.serviceUrl` | `https://www.courts.go.jp/hanrei/search1/index.html` |
-| `adapterContractVersion` | `1.0.0` |
+| `adapterContractVersion` | `1.1.0` |
 | `upstreamSpecVersion` | 省略 |
 | `verifiedAt` | `2026-07-26` |
 | `interfaceType` | `html` |

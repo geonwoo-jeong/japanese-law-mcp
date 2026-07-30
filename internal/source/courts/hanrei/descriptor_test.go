@@ -14,7 +14,7 @@ func TestDescriptorMatchesSOTIF043(t *testing.T) {
 		descriptor.Source().Name() != "裁判所 裁判例検索" ||
 		descriptor.Source().Publisher() != "最高裁判所" ||
 		descriptor.Source().ServiceURL() != searchEndpoint ||
-		descriptor.AdapterContractVersion() != "1.0.0" ||
+		descriptor.AdapterContractVersion() != "1.1.0" ||
 		descriptor.VerifiedAt().String() != "2026-07-26" ||
 		descriptor.InterfaceType() != model.InterfaceTypeHTML ||
 		descriptor.CredentialRequired() {

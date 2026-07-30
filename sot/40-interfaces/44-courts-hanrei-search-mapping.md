@@ -22,12 +22,13 @@ https://www.courts.go.jp/hanrei/search1/index.html?query1={query}
 
 - page title が `裁判例検索` を含む
 - 結果がある場合は `table.search-result-table` の行を使用する
-- 各結果行は、`th` 内の `/hanrei/{id}/detail{2..8}/index.html` への一つの公式詳細リンクと、情報を持つ `td` を持つ
+- 各結果行は、`th` 内の `/hanrei/{id}/detail{2..8}/index.html` への一つ以上の公式詳細リンクと、情報を持つ `td` を持つ
+- 同じ結果行に複数の公式詳細リンクがある場合は、すべての `{id}` が一致し、正規化後の detail path が重複しないことを確認する。各リンクを DOM 順の別 item とし、同じ行の裁判情報と公式文書をそれぞれへ対応させる
 - 空結果は、`p#searched` に `該当する裁判例がありませんでした。` の表示が一つあり、契約を満たす結果行がない状態とする。この場合の総件数は 0 とする
 - 取得結果が 2000 件を超える場合は、表示されている一つの `ul.errorMessage` が `検索結果が2000件を超えました。「全文検索」欄の検索語を追加・変更してください。` で始まり、契約を満たす結果行と空結果表示がない状態とする。この場合は、公式情報源が検索語の絞り込みを求めた `unsupported_query` とする
 - 空結果でない総件数は、`{total}件中` の ASCII または全角数字を一つだけ解釈する
 
-同じ行に複数の異なる詳細 path がある、詳細 path を識別できない、必須の事件番号、裁判年月日若しくは裁判所名がない、件数表示と行が矛盾する、2000 件超過表示が複数ある、または表示されている `ul.errorMessage` が結果行若しくは空結果表示と併存する場合は `invalid_source_response` とする。識別子そのものがない場合は `source_contract_changed` とする。
+同じ行の詳細 path に異なる `{id}` がある、正規化後の詳細 path が重複する、詳細 path を識別できない、必須の事件番号、裁判年月日若しくは裁判所名がない、件数表示と結果行数が矛盾する、2000 件超過表示が複数ある、または表示されている `ul.errorMessage` が結果行若しくは空結果表示と併存する場合は `invalid_source_response` とする。識別子そのものがない場合は `source_contract_changed` とする。
 
 script を実行せず、CSS、非表示の選択肢、modal、analytics、画像および外部 resource を取得しない。閉じた `details` は最初の `summary` の子孫だけを表示対象とする。`ul.errorMessage`、その祖先または表示対象の子孫に inline `style` が一つでもある場合は、その内容にかかわらず CSS を実行しない条件では表示状態を確定できないものとして `invalid_source_response` とする。
 
@@ -89,13 +90,15 @@ HTML 上で位置を一意に識別できない省略可能項目は設定しな
 
 ## 件数
 
-DOM 順を変更せず、先頭から `limit` 件まで返す。`SourcePage.returnedCount` は返した item 数、`totalCount` は公式表示の総件数、`totalRelation` は `exact` とする。取得行数が `limit` より多いことだけを理由に error とせず、`nextToken` は発行しない。
+結果行の DOM 順と、同じ行にある公式詳細リンクの DOM 順を変更せず、掲載カテゴリー単位の先頭から `limit` 件まで返す。`SourcePage.returnedCount` は返した item 数とする。
+
+公式表示の総件数は結果行の件数であり、一つの結果行から複数の掲載カテゴリー item が作られ得るため、`SourcePage` と同じ単位の総件数ではない。したがって、この provider は `totalCount` と `totalRelation` を設定しない。空結果でも `returnedCount: 0` だけを設定する。取得行数または展開後の item 数が `limit` より多いことだけを理由に error とせず、`nextToken` は発行しない。
 
 この provider は現在の adapter contract では継続位置を発行しないため、空でない `continuationToken` を予約入力として外部呼出し前に `invalid_argument` とする。
 
 ## 確認
 
-六カテゴリー、知財高裁表示、空結果、2000 件超過表示、上限切詰め、総件数、欠落可能項目、複数 PDF、相対 URL、和暦境界、重複または矛盾した詳細 URL、DOM 深さ・node 数および script 非実行を fixture で確認する。
+六カテゴリー、知財高裁表示、空結果、2000 件超過表示、上限切詰め、複数カテゴリー行の DOM 順展開と総件数の省略、欠落可能項目、複数 PDF、相対 URL、和暦境界、重複または矛盾した詳細 URL、DOM 深さ・node 数および script 非実行を fixture で確認する。
 
 ## 関連
 

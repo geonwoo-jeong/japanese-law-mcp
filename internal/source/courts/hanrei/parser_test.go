@@ -109,6 +109,30 @@ func TestSearchHTMLContractErrors(t *testing.T) {
 				) + `</body></html>`,
 			model.SourceErrorCodeInvalidSourceResponse,
 		},
+		{
+			"different decision detail links",
+			`<html><head><title>裁判例検索</title></head><body><p>1件中</p>` +
+				strings.Replace(
+					validRow,
+					`<a href="./../1/detail2/index.html">最高裁判例</a>`,
+					`<a href="./../1/detail2/index.html">最高裁判例</a>`+
+						`<a href="./../2/detail3/index.html">高裁判例</a>`,
+					1,
+				) + `</body></html>`,
+			model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			"canonical duplicate detail links",
+			`<html><head><title>裁判例検索</title></head><body><p>1件中</p>` +
+				strings.Replace(
+					validRow,
+					`<a href="./../1/detail2/index.html">最高裁判例</a>`,
+					`<a href="./../1/detail2/index.html">最高裁判例</a>`+
+						`<a href="/hanrei/1/detail2/index.html">最高裁判例</a>`,
+					1,
+				) + `</body></html>`,
+			model.SourceErrorCodeInvalidSourceResponse,
+		},
 	}
 	for _, testCase := range cases {
 		testCase := testCase
@@ -293,7 +317,8 @@ func TestParseSearchResponseIgnoresClosedDetailsContent(t *testing.T) {
 		t.Fatalf("SOT-IF-044: 閉じた details の非表示内容で失敗した: %v", err)
 	}
 	if len(response.rows) != 1 ||
-		response.rows[0].detailHref != "./../1/detail2/index.html" {
+		len(response.rows[0].detailLinks) != 1 ||
+		response.rows[0].detailLinks[0].href != "./../1/detail2/index.html" {
 		t.Fatalf("SOT-IF-044: 表示された結果行 = %#v", response.rows)
 	}
 }

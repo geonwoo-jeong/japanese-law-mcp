@@ -220,7 +220,7 @@ func decodeSearchRow(
 	if len(headers) != 1 || len(informationCells) != 1 || len(fileCells) != 1 {
 		return searchResultRow{}, invalidSearchResponseError()
 	}
-	detailHref, categoryLabel, err := decodeSearchDetailLink(ctx, headers[0])
+	detailLinks, err := decodeSearchDetailLinks(ctx, headers[0])
 	if err != nil {
 		return searchResultRow{}, err
 	}
@@ -232,8 +232,7 @@ func decodeSearchRow(
 	if err != nil {
 		return searchResultRow{}, err
 	}
-	values.detailHref = detailHref
-	values.sourceCategoryLabel = categoryLabel
+	values.detailLinks = detailLinks
 	values.documents = documents
 	values.location = searchRowLocation(row)
 	return values, nil
@@ -260,41 +259,59 @@ func classifySearchCells(
 	return headers, informationCells, fileCells
 }
 
-func decodeSearchDetailLink(
+func decodeSearchDetailLinks(
 	ctx context.Context,
 	header *html.Node,
-) (string, string, error) {
+) ([]searchDetailLink, error) {
 	links, err := descendantElements(ctx, header, "a")
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	detailLinkCount := 0
-	var selectedHref string
-	var selectedLabel string
+	detailLinks := make([]searchDetailLink, 0, len(links))
+	seenPaths := make(map[string]struct{}, len(links))
+	var decisionID string
 	for _, link := range links {
 		href, exists := singleAttribute(link, "href")
 		if !exists {
 			continue
 		}
-		_, valid := canonicalDetailPath(searchEndpoint, href)
+		canonicalPath, valid := canonicalDetailPath(searchEndpoint, href)
 		if !valid {
 			continue
 		}
+		match := detailPathPattern.FindStringSubmatch(canonicalPath)
+		if match == nil {
+			return nil, invalidSearchResponseError()
+		}
+		if decisionID == "" {
+			decisionID = match[1]
+		} else if decisionID != match[1] {
+			return nil, invalidSearchResponseError()
+		}
+		if _, duplicate := seenPaths[canonicalPath]; duplicate {
+			return nil, invalidSearchResponseError()
+		}
 		labelText, textErr := nodeText(ctx, link)
 		if textErr != nil {
-			return "", "", textErr
+			return nil, textErr
 		}
 		label := normalizeDisplayText(labelText)
 		if label == "" {
-			return "", "", invalidSearchResponseError()
+			return nil, invalidSearchResponseError()
 		}
-		detailLinkCount++
-		selectedHref, selectedLabel = href, label
+		if _, categoryErr := mapPublicationCategory(label, match[2]); categoryErr != nil {
+			return nil, categoryErr
+		}
+		seenPaths[canonicalPath] = struct{}{}
+		detailLinks = append(detailLinks, searchDetailLink{
+			href:                href,
+			sourceCategoryLabel: label,
+		})
 	}
-	if detailLinkCount != 1 || selectedHref == "" {
-		return "", "", invalidSearchResponseError()
+	if len(detailLinks) == 0 {
+		return nil, invalidSearchResponseError()
 	}
-	return selectedHref, selectedLabel, nil
+	return detailLinks, nil
 }
 
 func decodeSearchInformation(

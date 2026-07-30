@@ -37,26 +37,37 @@ func mapSearchPage(
 	if err := validateSearchMappingInput(response, fetchedURL, retrievedAt, limit); err != nil {
 		return judicialdecisionsearch.Page{}, err
 	}
-	returnedCount := len(response.rows)
-	if returnedCount > limit {
-		returnedCount = limit
+	items, err := mapSearchRows(response.rows, fetchedURL, retrievedAt, limit)
+	if err != nil {
+		return judicialdecisionsearch.Page{}, err
 	}
+	return newJudicialSearchPage(items)
+}
+
+func mapSearchRows(
+	rows []searchResultRow,
+	fetchedURL string,
+	retrievedAt time.Time,
+	limit int,
+) ([]model.SourcedResource[model.JudicialDecisionSummary], error) {
 	items := make(
 		[]model.SourcedResource[model.JudicialDecisionSummary],
-		returnedCount,
+		0,
+		limit,
 	)
-	for index := 0; index < returnedCount; index++ {
-		item, err := mapSearchRow(
-			response.rows[index],
-			fetchedURL,
-			retrievedAt,
-		)
-		if err != nil {
-			return judicialdecisionsearch.Page{}, err
+	for _, row := range rows {
+		for _, detailLink := range row.detailLinks {
+			item, err := mapSearchRow(row, detailLink, fetchedURL, retrievedAt)
+			if err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+			if len(items) == limit {
+				return items, nil
+			}
 		}
-		items[index] = item
 	}
-	return newJudicialSearchPage(items, response.totalCount)
+	return items, nil
 }
 
 func validateSearchMappingInput(
@@ -75,23 +86,29 @@ func validateSearchMappingInput(
 	if len(response.rows) == 0 && response.totalCount != 0 {
 		return invalidSearchResponseError()
 	}
+	for _, row := range response.rows {
+		if len(row.detailLinks) == 0 {
+			return invalidSearchResponseError()
+		}
+	}
 	return nil
 }
 
 func mapSearchRow(
 	row searchResultRow,
+	detailLink searchDetailLink,
 	fetchedURL string,
 	retrievedAt time.Time,
 ) (model.SourcedResource[model.JudicialDecisionSummary], error) {
 	detailURL, decisionID, categoryNumber, err := decodeDetailURL(
 		fetchedURL,
-		row.detailHref,
+		detailLink.href,
 	)
 	if err != nil {
 		return model.SourcedResource[model.JudicialDecisionSummary]{}, err
 	}
 	category, err := mapPublicationCategory(
-		row.sourceCategoryLabel,
+		detailLink.sourceCategoryLabel,
 		categoryNumber,
 	)
 	if err != nil {
@@ -107,6 +124,7 @@ func mapSearchRow(
 	}
 	return buildSearchResource(searchResourceValues{
 		row:            row,
+		detailLink:     detailLink,
 		detailURL:      detailURL,
 		decisionID:     decisionID,
 		categoryNumber: categoryNumber,
@@ -120,6 +138,7 @@ func mapSearchRow(
 
 type searchResourceValues struct {
 	row            searchResultRow
+	detailLink     searchDetailLink
 	detailURL      string
 	decisionID     string
 	categoryNumber string
@@ -174,7 +193,7 @@ func newJudicialDecisionSummary(
 		model.JudicialDecisionSummaryValues{
 			DecisionID:          values.decisionID,
 			PublicationCategory: values.category,
-			SourceCategoryLabel: values.row.sourceCategoryLabel,
+			SourceCategoryLabel: values.detailLink.sourceCategoryLabel,
 			CaseNumber:          values.row.caseNumber,
 			CaseName:            optionalSearchString(values.row.caseName),
 			DecisionDate:        values.decisionDate,
@@ -235,12 +254,9 @@ func newSearchProvenance(
 
 func newJudicialSearchPage(
 	items []model.SourcedResource[model.JudicialDecisionSummary],
-	totalCount int,
 ) (judicialdecisionsearch.Page, error) {
 	sourcePage, err := model.NewSourcePage(model.SourcePageValues{
 		ReturnedCount: len(items),
-		TotalCount:    &totalCount,
-		TotalRelation: model.TotalRelationExact,
 	})
 	if err != nil {
 		return judicialdecisionsearch.Page{}, invalidSearchResponseError()

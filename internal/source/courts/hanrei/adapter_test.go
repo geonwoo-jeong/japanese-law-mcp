@@ -46,7 +46,7 @@ func TestJudicialDecisionSearchAdapterSearchMapsOfficialFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-IF-041/SOT-IF-044: Search() のエラー = %v", err)
 	}
-	assertMappedPage(t, page, 4, 12)
+	assertMappedPage(t, page, 4)
 	if calls.Load() != 1 {
 		t.Fatalf("SOT-IF-043: 外部呼出し回数 = %d、期待値 = 1", calls.Load())
 	}
@@ -103,7 +103,7 @@ func TestJudicialDecisionSearchAdapterMapsEmptyOfficialFixture(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-IF-041/SOT-IF-044: 空結果のエラー = %v", err)
 	}
-	assertMappedPage(t, page, 0, 0)
+	assertMappedPage(t, page, 0)
 	if page.Items() == nil {
 		t.Fatal("SOT-IF-041: 空結果の items が nil")
 	}
@@ -134,7 +134,7 @@ func TestJudicialDecisionSearchAdapterAcceptsDeclaredShiftJIS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-IF-043/SOT-IF-044: Shift_JIS HTML のエラー = %v", err)
 	}
-	assertMappedPage(t, page, 0, 0)
+	assertMappedPage(t, page, 0)
 }
 
 func TestJudicialDecisionSearchAdapterPreservesDOMOrderAndDuplicates(t *testing.T) {
@@ -149,7 +149,7 @@ func TestJudicialDecisionSearchAdapterPreservesDOMOrderAndDuplicates(t *testing.
 	if err != nil {
 		t.Fatalf("SOT-IF-041/SOT-IF-044: Search() のエラー = %v", err)
 	}
-	assertMappedPage(t, page, 3, 3)
+	assertMappedPage(t, page, 3)
 	items := page.Items()
 	wantIDs := []string{"00101", "00202", "00101"}
 	for index, wantID := range wantIDs {
@@ -166,7 +166,66 @@ func TestJudicialDecisionSearchAdapterPreservesDOMOrderAndDuplicates(t *testing.
 	if err != nil {
 		t.Fatalf("SOT-IF-044: limit 適用時の Search() のエラー = %v", err)
 	}
-	assertMappedPage(t, limited, 2, 3)
+	assertMappedPage(t, limited, 2)
+}
+
+func TestJudicialDecisionSearchAdapterExpandsMultiCategoryRow(t *testing.T) {
+	t.Parallel()
+	adapter := newTestAdapter(
+		t,
+		staticHTMLDoer(readFixture(t, "search_multi_category_row.html")),
+	)
+
+	page, err := adapter.Search(
+		context.Background(),
+		mustSearchRequest(t, "平成23(ネ)785", 20, ""),
+	)
+	if err != nil {
+		t.Fatalf("SOT-PROD-010/SOT-IF-044: 複数カテゴリー行のエラー = %v", err)
+	}
+	items := page.Items()
+	if len(items) != 2 || page.Page().ReturnedCount() != 2 {
+		t.Fatalf(
+			"SOT-IF-044: items/returnedCount = %d/%d",
+			len(items),
+			page.Page().ReturnedCount(),
+		)
+	}
+	wantCategories := []model.JudicialPublicationCategory{
+		model.JudicialPublicationCategoryLowerCourt,
+		model.JudicialPublicationCategoryLabor,
+	}
+	wantResourceIDs := []string{"82349/detail4", "82349/detail6"}
+	for index, item := range items {
+		if item.Data().DecisionID() != "82349" ||
+			item.Data().PublicationCategory() != wantCategories[index] ||
+			item.Ref().Key().ResourceID() != wantResourceIDs[index] {
+			t.Errorf("SOT-IF-044: items[%d] = %#v", index, item)
+		}
+	}
+	if _, hasTotal := page.Page().TotalCount(); hasTotal {
+		t.Error("SOT-IF-044: 行単位の totalCount を掲載単位の page へ公開した")
+	}
+	if _, hasRelation := page.Page().TotalRelation(); hasRelation {
+		t.Error("SOT-IF-044: totalCount のない page に totalRelation がある")
+	}
+
+	limitedAdapter := newTestAdapter(
+		t,
+		staticHTMLDoer(readFixture(t, "search_multi_category_row.html")),
+	)
+	limited, err := limitedAdapter.Search(
+		context.Background(),
+		mustSearchRequest(t, "平成23(ネ)785", 1, ""),
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-044: 複数カテゴリー行の limit 適用エラー = %v", err)
+	}
+	limitedItems := limited.Items()
+	if len(limitedItems) != 1 ||
+		limitedItems[0].Ref().Key().ResourceID() != "82349/detail4" {
+		t.Errorf("SOT-IF-044: limit 適用後の items = %#v", limitedItems)
+	}
 }
 
 func TestJudicialDecisionSearchAdapterIgnoresTheadRowsInLocation(t *testing.T) {
@@ -292,7 +351,7 @@ func TestJudicialDecisionSearchAdapterAcceptsEmptyResultTable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-IF-044: 空結果 table のエラー = %v", err)
 	}
-	assertMappedPage(t, page, 0, 0)
+	assertMappedPage(t, page, 0)
 }
 
 func TestJudicialDecisionSearchAdapterNormalizesHTTPFailures(t *testing.T) {
@@ -443,7 +502,6 @@ func assertMappedPage(
 	t *testing.T,
 	page judicialdecisionsearch.Page,
 	returned int,
-	total int,
 ) {
 	t.Helper()
 	if got := len(page.Items()); got != returned {
@@ -452,12 +510,11 @@ func assertMappedPage(
 	if got := page.Page().ReturnedCount(); got != returned {
 		t.Errorf("returnedCount = %d、期待値 = %d", got, returned)
 	}
-	gotTotal, exists := page.Page().TotalCount()
-	if !exists || gotTotal != total {
-		t.Errorf("totalCount = %d, %t、期待値 = %d, true", gotTotal, exists, total)
+	if total, exists := page.Page().TotalCount(); exists {
+		t.Errorf("SOT-IF-044: totalCount = %d, %t", total, exists)
 	}
-	if relation, exists := page.Page().TotalRelation(); !exists || relation != model.TotalRelationExact {
-		t.Errorf("totalRelation = %q, %t", relation, exists)
+	if relation, exists := page.Page().TotalRelation(); exists {
+		t.Errorf("SOT-IF-044: totalRelation = %q, %t", relation, exists)
 	}
 	if _, exists := page.Page().NextToken(); exists {
 		t.Error("SOT-IF-044: nextToken が発行された")
