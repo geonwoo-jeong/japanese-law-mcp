@@ -92,6 +92,13 @@ testdata/
 
 `queryprofile/core` は法令コアの task/resource、根拠、重み、閾値、tie-break および法概念辞書を実装する。`queryprofile/judicialcases` は裁判例固有の語彙、事件参照および plan 規則を実装する。意味認識 contribution は採用後つねに固定 profile set へ注入し、pack が有効な場合だけ裁判例の facade、request materializer、result mapper、binding および route から成る実行 contribution を注入する。
 
+同じ profile に属する複数の明示 task/resource は、その profile が
+`SOT-ARCH-025` に従って一候補の複数 step へまとめる。
+`queryprofile/judicialcases` は、検証済み入力 `ref` の
+`judicial_decision_read` と別に明示された `judicial_decision_search` を
+原文順の一候補へまとめる責務を持つ。`SOT-ARCH-027` の composer は異なる
+profile の member だけを合成し、同じ profile の search/read を組み立てない。
+
 profile が実装する interface と共通の enum は `application/legalquery` が所有する。core profile と pack profile は互いを import せず、composition root が決定的な順序で一つの不変 profile set として組み立てる。
 
 pack 無効を認識する最小 cue と、入力された `SourceResourceRef` を採用済み provider/source/resource として構造検証する metadata は、core 側の予約済み pack metadata として保持できる。無効な pack の request builder、binding、provider route または result mapper は構成しない。
@@ -143,6 +150,10 @@ package import test で `legalquery` と profile から `source` および MCP S
 
 core profile だけ、core と judicial profile、fake profile、fake ability ports および race detector を使い、pack 分離、不変性、request materialization、item 配分、決定的順序、context cancellation および既存専門ツールとの独立性を確認する。
 
+`queryprofile/judicialcases` が、入力 `ref` の read と別に明示された search を
+同じ contribution の一候補へまとめ、composer を呼ばなくても原文順の二 step を
+保持することも profile test で確認する。
+
 MCP schema の全 `oneOf` variant、状態と decision の許可された組合せ、状態ごとの interpretation 件数と availability、未知項目拒否、公開 `ref` 供給元の往復、法令専門ツールで `ref` を公開しない互換性、五専門ツールから六ツールへの core 登録、`judicial-cases` 有効時の八ツール登録、無効へ戻した場合の六ツール rollback、および stdio/HTTP の schema 一致を golden test で確認する。
 
 ## 関連
@@ -150,6 +161,7 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ARCH-007: 依存方向](../30-architecture/07-dependency-direction.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-026: 統合照会の request materialization](../30-architecture/26-unified-query-request-materialization.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)

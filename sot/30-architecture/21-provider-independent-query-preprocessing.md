@@ -21,6 +21,11 @@ query profile は位置付きの前処理結果を利用し、原文を別の to
 節分割器または独自の規則で再解析して検索語、助詞、述語若しくは task relation を
 補わない。
 
+有効な SOT が位置付き出現間の閉じた separator 集合を定める場合に限り、
+query profile は、前処理結果が保持する原文の該当 byte 列をその集合と照合できる。
+この照合は既存出現の隣接または共有範囲を確認するためだけに使い、新しい token、
+検索語、cue、節境界または task relation を作らない。
+
 前処理結果から profile 用入力を作る共通 constructor は、`SOT-MODEL-026` の `standalone_structured_query` に該当するかを、位置付きの公式識別子、事件番号、日付および区切りだけから一回だけ導出する。各 query profile はこの不変な判定結果を読み、原文または span を独自に再評価して同じ境界を実装しない。
 
 能力別プロファイルは、その能力に必要な法令名、法概念、cue の語彙および
@@ -33,8 +38,9 @@ cue の intent group、signal、採用範囲、score、task/resource または p
 共通前処理は同じ profile ID の cue だけを relation にする。query profile は
 検証済み relation を自身の採用範囲と signal へ対応させる。profile 横断の候補
 合成は `SOT-ARCH-027` の責務とし、前処理が cue の近接から意味候補を合成しない。
-relation 対応経路は `SOT-ENG-028` の cue schema version 3 だけを受理し、
-固定 profile set の一部だけを relation 対応にして旧 schema と混在させない。
+relation 対応経路は `SOT-ENG-030` が relation 対応として定める cue schema
+だけを受理し、固定 profile set の一部だけを relation 対応にして履歴 schema と
+混在させない。
 
 法令名検索プロファイルは `search_laws` のユースケースへ注入する。e-Gov その他の情報源アダプターは Kagome、法令名辞書または誤記判定へ依存せず、ユースケースが選択した検証済みの検索語だけを各情報源の入力へ対応させる。
 
@@ -74,3 +80,4 @@ Kagome、辞書および relation model の package を import しないこと�
 - [SOT-MODEL-027: JudicialCaseNumberMention](../20-model/27-judicial-case-number-mention.md)
 - [SOT-MODEL-029: CueTaskRelation](../20-model/29-cue-task-relation.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
+- [SOT-ENG-030: 統合照会の cue 成果物契約](../50-engineering/30-unified-query-cue-artifact-contract.md)

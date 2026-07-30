@@ -96,6 +96,11 @@ holdout の期待値を実装へ合わせて調整しない。fixture の誤り�
 
 新しい pack、task、resource、根拠コードまたは辞書 entry を追加する場合は、新カテゴリの fixture と既存全カテゴリの回帰を同じ変更で実行する。
 
+公開既定実装または標準評価成果物の観測挙動を変更する場合は、影響する fixture、
+baseline および `SOT-ENG-029` が定める検索例カタログを同じ変更で更新し、
+評価結果と説明文の乖離を残さない。将来の理想状態を SOT だけで採用する変更は、
+現行確認済みカタログへ先行して掲載せず、実装差分を Wiki で追跡する。
+
 この評価はローカル binary の意味判定を検証するものであり、稼働率収集、外部情報源の運用障害検知または利用者 telemetry を導入しない。
 
 ## 標準 command と成果物
@@ -113,14 +118,26 @@ review 済みの `default-1` baseline を使用する。過去の corpus version
 holdout digest を割り当て、変更前後の結果と独立 review を同じ変更で残し、
 標準 command と baseline を同時に更新する。
 
-`SOT-MODEL-029` の cue task relation を初めて実装完了とする変更では、
-`SOT-ENG-026` が定める schema version 2、`corpus-v10`、追加 coverage、
-`default-2` baseline および `SOT-ENG-028` の固定 model・profile・loader test を
-同じ変更で完成させる。全成果物と独立 review が揃うまでは上記の
-`corpus-v9` と `default-1` を現行標準として維持し、揃った変更の中でだけ
-標準 command、baseline および中央品質ゲートの固定値を同時に切り替える。
-profile または loader の限定 test だけの成功を、relation 対応 profile set の
-採用判定にしない。
+`SOT-MODEL-029` の cue task relation を公開既定の意味判定へ初めて有効化する
+変更では、次を一つの採用変更として完成させる。
+
+- `SOT-ENG-030` に従う固定 profile set 全体の relation 対応 cue schema と
+  loader test
+- `SOT-ENG-028` の relation、対象外意図および候補 scope の model・profile test
+- `SOT-ENG-026` の corpus schema version 2、`corpus-v10`、relation、
+  共有末尾 cue、単純列挙および非制限 fan-out を対象とする追加 coverage
+- `baselineVersion=default-2` の review 済み baseline
+- 標準 command、検索例カタログおよび中央品質ゲートの固定値切替
+- 変更前後の評価結果と独立 review
+
+relation を有効化しない準備変更として、固定 profile set 全体の cue artifact と
+loader を schema version 3 へそろえることはできる。この準備変更では relation
+依存の signal、候補保持または公開 decision を有効にせず、標準 command、
+`corpus-v9`、`default-1` および中央品質ゲートの固定値を変更しない。
+
+上記の採用成果物がそろうまでは `corpus-v9` と `default-1` を現行標準として
+維持する。profile または loader の限定 test だけの成功を、relation 対応
+profile set の採用判定にしない。
 
 command はネットワークを使用せず、固定 seed と repository 内の不変 profile・辞書・fake provider だけを使う。`default` profile set は法令コア、`judicial-cases` 有効時および無効時を manifest の指定どおり評価する。
 
@@ -144,3 +161,5 @@ command はネットワークを使用せず、固定 seed と repository 内の
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-023: 統合法情報照会の法概念辞書](23-unified-query-concept-lexicon.md)
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
+- [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)
+- [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)

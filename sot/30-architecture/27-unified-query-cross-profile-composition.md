@@ -171,12 +171,15 @@ active profile set の不透明な `profileVersion` は、固定順の profile m
 一候補とし、`requiredPacks=["judicial-cases"]` とする。
 
 `この裁判例参照を読み、成年後見の条文と裁判例も検索してください`は、
-検証済み `ref` の `judicial_decision_read`、`law_content_search`、
-`judicial_decision_search` を原文順に持つ一候補とする。
+`judicial-cases` profile が検証済み `ref` の `judicial_decision_read` と
+`judicial_decision_search` を一つの二 step member にし、法令コア profile が
+`law_content_search` の一 step member を作る。composer はこの二 profile の
+member を原文順の三 step を持つ一候補へ合成する。
 
 `裁判例を「駅構内転倒」で検索し、この参照を読んでください`は、検索語を
-ref 読取りの説明語として捨てず、`judicial_decision_search` と
-`judicial_decision_read` を原文順に持つ一候補とする。
+ref 読取りの説明語として捨てず、`judicial-cases` profile 自身が
+`judicial_decision_search` と `judicial_decision_read` を原文順に持つ
+一候補を作る。同じ profile 内のこの step 化は composer の処理ではない。
 
 `永住権について法情報を調べてください`のように resource を一意に指定
 しない概念候補は合成せず、法令条文と裁判例の代替解釈として明確化する。
@@ -195,8 +198,9 @@ non-member 候補を保持すること、一つの不適格または明確化 pr
 pack 有効時の `single`、無効時の同一意味による
 `capability_unavailable`、外部呼出し零回、五 step の明確化、曖昧な概念、
 hedge、弱い一般語、重複 member、不正位置の非実行、
-non-member proper subset の保持、裁判例 `ref` の検索後読取りで検索語と
-原文順を保持すること、および異なる概念資料の衝突を
+non-member proper subset の保持、`judicial-cases` profile が先にまとめた
+裁判例検索と `ref` 読取りの step・検索語・原文順を cross-profile 合成後も
+保持すること、および異なる概念資料の衝突を
 統合テストする。
 
 core と `judicial-cases` の混合 fixture、裁判例 `ref` の read と検索、

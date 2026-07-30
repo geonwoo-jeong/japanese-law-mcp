@@ -30,3 +30,5 @@
 - [28-law-alias-collision-ranking.md](28-law-alias-collision-ranking.md)
 - [29-multi-step-evidence-preservation.md](29-multi-step-evidence-preservation.md)
 - [30-canonical-law-target-priority.md](30-canonical-law-target-priority.md)
+- [31-unified-query-intent-evidence-layer.md](31-unified-query-intent-evidence-layer.md)
+- [32-unified-query-bounded-branch-retention.md](32-unified-query-bounded-branch-retention.md)

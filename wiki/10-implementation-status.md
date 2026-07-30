@@ -67,10 +67,16 @@
   [SOT-MODEL-025](../sot/20-model/25-legal-query-preprocess-result.md)、
   [SOT-MODEL-026](../sot/20-model/26-query-profile-contribution.md)、
   [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md)、
-  [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) の
+  [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md)、
+  [SOT-ENG-030](../sot/50-engineering/30-unified-query-cue-artifact-contract.md) の
   cue task relation と cue schema version 3、および
   [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) の
   relation 対応 corpus・baseline
+- [SOT-ARCH-031](../sot/30-architecture/31-unified-query-intent-evidence-layer.md)、
+  [SOT-ARCH-032](../sot/30-architecture/32-unified-query-bounded-branch-retention.md) および
+  [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md) の
+  固定した意図根拠順、共有末尾 cue の閉じた列挙判定、および evidence cluster
+  単位の限定分岐保持
 - [SOT-IF-052](../sot/40-interfaces/52-egov-keyword-response-contract.md) の省略可能三項目の `null` 受理と、個別応答の不正を `invalid_source_response`、一次資料で確認した契約変更を `source_contract_changed` とする共有 parser の分類
 - [SOT-IF-054](../sot/40-interfaces/54-egov-law-search-mapping-v3.md) の、`GET /laws` の個別 2xx 応答不正を `invalid_source_response`、一次資料で確認した契約変更だけを `source_contract_changed` とする分類、および現行 mapping への移行
 - [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) の、`GET /law_data` の個別 XML 応答不正を `invalid_source_response`、公式 XML 契約の確認済み変更だけを `source_contract_changed` とする分類、および XML 専用 fixture

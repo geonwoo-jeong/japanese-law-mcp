@@ -14,6 +14,13 @@ planner は、`SOT-PROD-011` が許可する七つの task/resource 組合せだ
 
 候補の `semanticScore`、同点規則、単独選択閾値、最低実行閾値および二候補を選ぶ margin は、版付き profile に固定する。score は確率ではなく、`SOT-MODEL-026` の同じ ranking version と校正値を持たない contribution 間で数値を比較しない。
 
+profile が一つの照会文から複数の意図仮説を内部保持できる条件、evidence
+cluster および保持上限は `SOT-ARCH-032` に従う。候補を保持したこと自体は
+実行許可ではない。selector は、score、`selectionMode`、`hedgePairs` および
+固定予算だけを使って `single`、`hedged` または `needs_clarification` を決める。
+照会文全体を広い検索語として複数 resource や複数 provider へ同時に投げ、
+後段の LLM または利用者に最終判定を委ねる fan-out は採用しない。
+
 profile は score だけでは表せない候補間の安全関係を `SOT-MODEL-026` の `selectionMode` と `hedgePairs` で返す。selector は略称衝突、弱い一般語、自動実行しない辞書候補または四 step を超える複数主題を候補の形から推測せず、profile が指定した明確化を優先する。
 
 ## 選択
@@ -64,6 +71,11 @@ profile は score だけでは表せない候補間の安全関係を `SOT-MODEL
 
 score が単独条件を満たしても `clarification_required` を実行しないこと、近接していても hedge pair でない略称衝突を実行しないこと、同じ候補内の複数主題を hedge と扱わないこと、および異なる profile の候補を即席の hedge pair にしないことも確認する。
 
+`SOT-ARCH-032` に従って複数の意図仮説を保持しても、上記の `hedged` 条件を
+満たさない限り外部検索を fan-out しないこと、照会文全体を全 resource 共通の
+広い検索語へ読み替えないこと、および後段の説明能力へ意味確定を委ねないことも
+確認する。
+
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
@@ -72,4 +84,5 @@ score が単独条件を満たしても `clarification_required` を実行しな
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](13-source-composition.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
+- [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

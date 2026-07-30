@@ -36,9 +36,11 @@ byte 長未満であり、UTF-8 rune の開始境界でなければならない�
 
 法令 ID、日付、法令名、法概念、事件番号または検索語から作る step は、
 その位置付き前処理事実の開始位置を使う。入力 `ref` から作る read step は、
-その read を単独で根拠付けられる task cue、resource cue または read 対象 cue
-のうち、最小の `sourceStartByte` を使う。同じ最小位置に複数 cue があっても、
-その最小値だけを保存する。profile が位置を一意に決められない step を
+その read 候補を実際に成立させた、同じ profile の明示 read task cue または
+明示 resource cue の位置付き `CueMention` のうち、最小の `sourceStartByte` を
+使う。入力 `ref` 自体に span を補わず、`ref` の説明中にある一般検索語、
+法令名または法概念を read cue の代用にしない。該当 cue が一件もない場合、
+または候補生成に使った cue を一意に特定できない場合は、その read step を
 composition member にしてはならない。
 
 ## `required_member`
@@ -95,8 +97,9 @@ materialized request を持たない。
 ## 確認
 
 候補と step の一対一対応、未知または重複する ID、負数、照会文の終端以上、
-UTF-8 の途中、位置を持たない `ref` read、deep copy、clarification 候補、
-および hedge 候補の構造的な保持を model test で確認する。
+UTF-8 の途中、明示 read/resource cue を持たない `ref` read、候補生成に使わない
+cue の位置流用、deep copy、clarification 候補、および hedge 候補の構造的な
+保持を model test で確認する。
 hedge と複数代替候補を合成せず合成不適格にすることは composer test で
 確認する。
 

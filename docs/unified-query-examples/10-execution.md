@@ -1,0 +1,19 @@
+# 実行される代表例
+
+`expected_public_status=—` は、意味計画を semantic fixture で確認済みだが、
+公開実行 status をこの行では推測しないことを表す。
+
+| example_id | example_kind | query | request_context | verification_artifact | expected_plan_decision | expected_public_status | expected_summary | related_sots |
+|---|---|---|---|---|---|---|---|---|
+| `law-search-alias` | `semantic` | `独禁法の正式な法令を検索してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:development-name-alias` | `single` | `—` | 公式略称を正式名称へ解決し、一つの `law_search` step を選ぶ | `SOT-PROD-011` `SOT-ARCH-031` `SOT-IF-051` |
+| `law-read-id` | `semantic` | `法令ID 345AC0000000048 の本文を取得してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:development-reference-law-id` | `single` | `—` | 公式法令 ID を対象に一つの `law_read` step を選ぶ | `SOT-MODEL-022` `SOT-ARCH-031` `SOT-IF-051` |
+| `law-article-read` | `semantic` | `商法第512条第1項を読んでください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:development-structure-article-grounded` | `single` | `—` | 商法の正式 ID と条・項を束縛した `law_article_read` step を選ぶ | `SOT-MODEL-022` `SOT-ARCH-031` `SOT-IF-051` |
+| `law-content-search` | `semantic` | `法令本文から「営業秘密」を含む条文を探してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:development-intent-content` | `single` | `—` | `営業秘密` を `allTerms` に持つ `law_content_search` step を選ぶ | `SOT-PROD-011` `SOT-ARCH-025` `SOT-IF-051` |
+| `law-updates` | `semantic` | `2026年5月15日の法令更新一覧を取得してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:development-intent-updates` | `single` | `—` | 日付を `2026-05-15` に正規化した `law_updates` step を選ぶ | `SOT-MODEL-022` `SOT-ARCH-031` `SOT-IF-051` |
+| `judicial-search` | `semantic` | `裁判例を「個人情報漏えい」で検索してください。` | `enabledPacks=[judicial-cases]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:holdout-pack-01` | `single` | `—` | 有効な裁判例 pack で一つの `judicial_decision_search` step を選ぶ | `SOT-PROD-011` `SOT-ARCH-019` `SOT-IF-051` |
+| `law-ref-read` | `semantic` | `この行政手続法の参照を読んでください。` | `enabledPacks=[]; ref={providerId:e-gov-law-api-v2,key:{sourceId:e-gov-law-api-v2,resourceType:law,resourceId:405AC0000000088,versionId:省略}}; limitPerAttempt=省略` | `corpus-v9:semantic:development-reference-ref` | `single` | `—` | 入力 `ref` と read cue から一つの `law_read` step を選ぶ | `SOT-MODEL-016` `SOT-ARCH-031` `SOT-IF-051` |
+| `judicial-ref-read` | `semantic` | `指定参照の最高裁判例を取得してください。` | `enabledPacks=[judicial-cases]; ref={providerId:courts-hanrei-html,key:{sourceId:courts-hanrei,resourceType:judicial-decision,resourceId:95878/detail3,versionId:省略}}; limitPerAttempt=省略` | `corpus-v9:semantic:development-pack-enabled` | `single` | `—` | 検証済み裁判例 `ref` から一つの `judicial_decision_read` step を選ぶ | `SOT-MODEL-016` `SOT-ARCH-019` `SOT-IF-051` |
+| `law-and-judicial-search` | `semantic` | `民法を検索し、裁判例を「工場騒音」で検索してください。` | `enabledPacks=[judicial-cases]; ref=省略; limitPerAttempt=省略` | `corpus-v9:semantic:holdout-pack-08` | `single` | `—` | 法令検索と裁判例検索を原文順の二 step に保持する | `SOT-ARCH-025` `SOT-ARCH-027` `SOT-IF-051` |
+| `execution-completed` | `execution` | `実行検証用に法令ID 323AC0000000131 を読み、勾留を含む条文も検索してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:execution:execution-nonempty` | `single` | `completed` | 法令読取りと条文検索が成功し、五 item を公開する | `SOT-MODEL-024` `SOT-ARCH-023` `SOT-IF-051` |
+| `execution-empty` | `execution` | `実行検証用に量子相続登記と月面抵当権を含む条文を個別に検索してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:execution:execution-empty` | `single` | `empty` | 二つの検索 attempt がともに正常な空結果となる | `SOT-MODEL-024` `SOT-ARCH-023` `SOT-IF-051` |
+| `execution-partial` | `execution` | `実行検証用に特許法を検索し、発明を含む条文も検索してください。` | `enabledPacks=[]; ref=省略; limitPerAttempt=省略` | `corpus-v9:execution:execution-partial-failure` | `single` | `partial` | 法令検索は成功し、条文検索の `source_timeout` を部分失敗として保持する | `SOT-MODEL-024` `SOT-ARCH-023` `SOT-IF-051` |

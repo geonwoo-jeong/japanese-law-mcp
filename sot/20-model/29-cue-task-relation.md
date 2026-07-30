@@ -50,7 +50,7 @@ provider を共通前処理へ与えない。
 query profile の cue を関係付けず、profile 横断の意味合成を行わない。
 
 relation の constructor は、subject と predicate の `CueMention`、それぞれを
-生成した検証済み cue schema version 3 entry の `syntaxRole`、`clauseSpan`
+生成した `SOT-ENG-030` の検証済み cue entry の `syntaxRole`、`clauseSpan`
 および `kind` を受ける。role は構築時の検証にだけ使い、relation へ重複して
 保存しない。`LegalQueryPreprocessResult` は、構築済み relation の cue 参照、
 span、kind および順序を再検証し、cue artifact を読み直さない。
@@ -164,3 +164,4 @@ required pack、候補、provider ID、route、外部 DTO または検索結果�
 - [SOT-MODEL-026: QueryProfileContribution](26-query-profile-contribution.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](../50-engineering/28-unified-query-unsupported-intent-cues.md)
+- [SOT-ENG-030: 統合照会の cue 成果物契約](../50-engineering/30-unified-query-cue-artifact-contract.md)

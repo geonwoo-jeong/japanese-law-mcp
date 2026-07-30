@@ -100,12 +100,24 @@ profile は取得意図から生成できた候補を `candidates` に保持し�
 contribution または照会文全体の真偽値ではなく、一候補ずつ独立に判定し、
 別候補の cue、relation または根拠を流用しない。
 
-一候補の各 step は、`official_identifier`、`structured_reference`、
-`explicit_resource`、`official_alias` または `legal_concept` のいずれかで、
-採用済み取得対象を独立に根拠付ける原文 span を持たなければならない。
-対象外 relation の subject または predicate だけから、この根拠を作らない。
-一 step でもこの条件を満たさない候補は候補全体を除き、強い step だけへ
-縮約しない。
+profile は `LegalQueryCandidate` を materialize する前の全候補 draft で、各 step と、
+その step を実際に成立させた `SOT-MODEL-022` の evidence code に対応する位置付き
+前処理出現を一時的に対応付ける。通常の候補では `legal_concept` または
+`general_term` の出現も対応に使用できるが、その根拠強度と自動選択可否を
+明示 task/resource と同等に引き上げない。
+
+`unsupported_task_or_resource` を持つ contribution で内部監査用に保持する候補は、
+各 step が `official_identifier`、`structured_reference`、`explicit_resource`、
+`official_alias` または `legal_concept` のいずれかの位置付き出現により、
+採用済み取得対象を独立に根拠付けられなければならない。対象外 relation の
+subject、predicate または `general_term` だけからこの強い対応を作らない。
+一 step でも条件を満たさない候補は候補全体を除き、強い step だけへ縮約しない。
+
+この step ごとの対応は生成時検証と `SOT-ARCH-032` の一時的な evidence cluster
+key にだけ使用する。最終の `LegalQueryCandidate` は `SOT-ARCH-029` に従う
+根拠コードの和集合を持ち、`QueryProfileContribution` はこの対応または span を
+新しい field として保存しない。`compositionMembers` が保持する位置 sidecar は
+profile 横断合成のための別契約とする。
 
 対象外 relation と同じ節にある候補は、上記の強い対象根拠が同じ節にある場合に
 内部候補として保持できる。別の節にある候補は、その節自身に採用済みの明示取得
@@ -159,8 +171,11 @@ selector の非実行変換と公開境界は `SOT-ARCH-027` に従う。
 
 対象外 relation と同じ節にある強い法令・条文根拠、別の節に明示した取得 task、
 別の節に裸で現れただけの法令名、一候補内の強い step と弱い step、および
-二候補の片方だけが持つ強い根拠を fixture にする。候補ごとの保持、候補全体の
-除外、別候補の根拠非共有および保持候補の非選択・非実行を確認する。
+二候補の片方だけが持つ強い根拠を profile fixture にする。候補 draft の
+step ごとの位置対応、候補ごとの保持、候補全体の除外、別候補の根拠非共有、
+最終モデルへ位置対応を残さないこと、および保持候補の非選択・非実行を確認する。
+通常の `general_term` 候補が位置対応を持てることと、対象外 relation の説明中に
+ある `general_term` だけでは監査用候補を保持できないことを別 fixture にする。
 
 存在しない候補を参照する hedge pair、自己参照、逆順重複、不正な
 composition member、`step_limit_exceeded` と候補または自動選択の併存、
@@ -178,6 +193,8 @@ member と hedge pair の構造的な併存、および複数候補の位置 sid
 - [SOT-MODEL-023: LegalQueryPlan](23-legal-query-plan.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](28-query-candidate-composition-member.md)
 - [SOT-MODEL-029: CueTaskRelation](29-cue-task-relation.md)
+- [SOT-ARCH-029: 複数 step 候補の根拠保持](../30-architecture/29-multi-step-evidence-preservation.md)
+- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)

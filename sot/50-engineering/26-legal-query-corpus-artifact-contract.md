@@ -390,41 +390,45 @@ query、期待意味、集合、カテゴリ、seed または評価上の fixtur
 
 holdout の期待値を変える場合は、実装へ合わせるためではなく fixture の誤りであることを独立 review で確認し、理由、新しい corpus version、holdout digest および変更前後の評価結果を同じ変更へ残す。
 
-## cue task relation 対応成果物の採用条件
+## cue task relation と意図分岐に対応する corpus schema
 
-`SOT-MODEL-029`、`SOT-MODEL-026` および `SOT-ENG-028` の cue task relation を
-初めて実装完了とする変更は、現行の `schemaVersion=1` と `corpus-v9` を変更せず、
-次の成果物を同じ変更へ追加する。
+`SOT-MODEL-029`、`SOT-MODEL-026` および `SOT-ENG-028` の cue task relation と、
+`SOT-ARCH-025`、`SOT-ARCH-032` の意図分岐境界を次の標準評価成果物へ追加する
+場合は、現行の `schemaVersion=1` と `corpus-v9` を変更せず、次の corpus 成果物を
+同じ変更へ追加する。
 
 - `testdata/legalquery/schemas/legal-query-corpus-v2.schema.json`
 - schema version 2 の閉じた typed decoder
 - `schemaVersion=2` の `testdata/legalquery/corpus-v10`
-- `baselineVersion=default-2` の review 済み baseline
 
-schema version 2 の coverage ID は、version 1 の閉じた一覧へ次の四件を追加した
+schema version 2 の coverage ID は、version 1 の閉じた一覧へ次の七件を追加した
 一覧とする。version 1 の schema、decoder および corpus はこれらを受理せず、
 version 2 の manifest と全 fixture は schema version 2 で一致しなければならない。
 
 | coverage ID | category ID | holdout 最小件数 |
 |---|---|---:|
+| `boundary-no-unbounded-fanout` | `safety-execution-boundary` | `2` |
+| `boundary-unmarked-enumeration` | `safety-execution-boundary` | `2` |
 | `boundary-unsupported-candidate-scope` | `safety-execution-boundary` | `2` |
 | `boundary-unsupported-cue-context` | `safety-execution-boundary` | `2` |
+| `structure-shared-terminal-cue` | `structured-location-and-date` | `1` |
 | `unsupported-relationship-analysis` | `unsupported-scope` | `1` |
 | `unsupported-version-comparison` | `unsupported-scope` | `1` |
 
-上表は holdout fixture を合計六件以上追加する。
-`boundary-unsupported-candidate-scope` と
-`boundary-unsupported-cue-context` は `safetyVariant` を必須とし、
-holdout で `ordinary` と `adversarial` を一件以上ずつ持つ。
+上表は holdout fixture を合計十一件以上追加する。
+`boundary-no-unbounded-fanout`、`boundary-unmarked-enumeration`、
+`boundary-unsupported-candidate-scope` および
+`boundary-unsupported-cue-context` は `safetyVariant` を必須とし、holdout で
+`ordinary` と `adversarial` を一件以上ずつ持つ。
 
 cue artifact 自体の schema version 3 混在、長短語および tuple 衝突は照会ごとの
-semantic fixture ではないため coverage ID にしない。これらは `SOT-ENG-028` の
-固定 loader test とし、`SOT-ENG-020` の全 Go test gate から除外しない。
+semantic fixture ではないため coverage ID にしない。これらは `SOT-ENG-030` の
+固定 loader test を定義元とする。
 
-上記 schema、decoder、corpus、baseline、loader test および独立 review が
-同じ変更に存在するまでは、schema version 2、`corpus-v10` または `default-2` を
-現行標準として扱わず、relation 対応 profile set を実装完了または公開既定値と
-して扱わない。
+上記 schema、decoder、corpus および独立 review がそろうまでは、
+schema version 2 または `corpus-v10` を有効な評価成果物として扱わない。
+relation 対応 profile set の実装完了、`default-2` baseline、標準 command および
+中央品質ゲートの一括切替は `SOT-ENG-024` を定義元とする。
 
 ## 確認
 
@@ -438,8 +442,11 @@ race detector で同じ corpus の並行読取りが共有状態を変更しな�
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)
+- [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
+- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
+- [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)

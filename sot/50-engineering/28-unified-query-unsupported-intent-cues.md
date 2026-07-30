@@ -55,11 +55,9 @@ cue セットを変えない。
 - `direct_task` は `task_expression`、`object_predicate` は
   `task_object` と同じ節の述語、`standalone_task` は節全体に単独で現れた
   `task_object` だけを根拠にする。
-- `queryTermMentions.kind=quoted_phrase` の内側、`という語`、
-  `という言葉`、`という表現`、`という用語`、`という文字列`若しくは
-  `という文言`への直接接続、`に関する`、`に関して`、`について`若しくは
-  `に係る`への直接接続、別の節または文末でない task 述語は
-  `SOT-MODEL-029` の relation を持たないため、対象外 signal にしない。
+- `SOT-MODEL-029` の非 task 境界により relation を持たない cue 出現は、
+  対象外 signal にしない。本規定の確認例はその境界を変更せず、対象外語彙に
+  対する回帰例を追加するだけとする。
 - 複数の profile が同じ対象外表現を認識しても、profile set は
   `SOT-MODEL-026` の固定順で同じ signal を一件にする。
 
@@ -77,47 +75,15 @@ signal から `unsupported` plan、`mixed_unsupported_intent` または
 
 ## 成果物と版
 
-cue データは profile ごとの `data/cues.json` に置き、schema version、
-profile ID、`cueSetVersion`、cue ID、category、value、intent group、
-signal、syntax role および登録表現を閉じた JSON として保持する。
-対象外以外の cue は intent group と signal を持たない。対象外 cue は上表の
-`intentGroup`、`value` と signal の対応、および許可された syntax role を
-完全に満たさなければならない。
+cue データの配置、閉じた JSON 構造、schema version、順序、正規化語の衝突、
+profile 間の語彙再利用、`profile.json` との整合および version 連動は
+`SOT-ENG-030` に従う。
 
-relation 対応の cue artifact は `schemaVersion=3` とする。version 3 は全 cue
-entry に `syntaxRole` を必須とし、未知の role、role の欠落および未知項目を
-拒否する。既存の version 1 と version 2 は relation 非対応の履歴 schema とし、
-欠落した role を `none` として補わない。`CueTaskRelation` を有効にする固定
-profile set は、参加する全 profile の cue artifact を同じ変更で version 3 へ
-移行し、version 1 または version 2 と混在させない。
-
-cue artifact の schema version は `cues.json` の形を表し、`profile.json` の
-schema version と独立に変更できる。両 artifact の profile ID と
-`cueSetVersion` は一致しなければならない。version 3 への移行では
-`cueSetVersion`、対象 profile の profile version および統合 profile set
-version を変更する。loader は実装済みの閉じた schema version だけを受理し、
-relation 対応の実行経路では version 3 以外を起動時に拒否する。
-
-配列順と cue ID は決定的にする。比較用正規化後に同じ登録表現は、
-`category`、`value`、`intentGroup`、signal および syntax role がすべて同じ
-場合だけ同じ意味として受理できる。異なる tuple に属する表現が同じ正規化値を
-持つ場合、または一方が他方を包含して同じ入力 span で異なる tuple の cue を
-作り得る場合は、その profile の起動を失敗させる。
-
-同じ tuple に属する長短の登録表現が同じ開始位置で重なる場合は最長 span だけを
-relation の候補にし、短い表現から二件目の signal を作らない。同じ signal でも
-異なる intent group または syntax role の衝突を許容しない。
-
-異なる profile は能力別の意味を独立に持つため、同じ正規化語または包含語を
-異なる tuple で再利用できる。固定 profile set の検証は profile 間の語彙を
-衝突として扱わず、profile ID の一意性、各 profile 内の検証成功および relation
-参照の profile ID 一致だけを確認する。異なる profile の cue mention を一つの
-relation にせず、同じ signal は `SOT-MODEL-026` の固定順で一件にする。
-
-登録表現、照合境界、syntax role または signal 対応を変更した場合は
-`cueSetVersion`、対象 profile の profile version および統合 profile set
-version を変更する。
-重み、閾値または ranking scale を変えない限り ranking version は変更しない。
+本規定が追加する成果物上の制約は、`category=unsupported` の entry が、上表の
+`intentGroup`、`value`、signal および許可された `syntaxRole` の対応を完全に
+満たすこととする。対象外以外の entry は、本規定を根拠に `intentGroup` または
+signal を持たせない。同じ signal を複数 profile が作った場合の集約は
+`SOT-MODEL-026` の固定順に従う。
 
 ## 確認
 
@@ -126,19 +92,16 @@ version を変更する。
 `SOT-ENG-024` と `SOT-ENG-026` の版変更規則に従い、存在しない corpus または
 baseline を現行の標準 command として先に宣言しない。
 
-次の固定 test ID を検証結果から追跡できるようにし、relation 対応 profile set を
-変更する中央品質ゲートでは `SOT-ENG-020` の全 Go test と統合評価の両方を
-成功させる。
+次の対象外意図固有の固定 test ID を検証結果から追跡できるようにする。
+cue 成果物 loader の共通 test ID は `SOT-ENG-030` を定義元とし、本規定へ
+重複して定義しない。relation 対応 profile set を変更する中央品質ゲートでは
+`SOT-ENG-020` の全 Go test と統合評価の両方を成功させる。
 
 | test ID | 固定する境界 |
 |---|---|
 | `cue-relation-task-and-mention` | 実 task、引用、`という語`および topic 表現 |
 | `cue-relation-clause-scope` | 同じ節と別の節 |
 | `cue-relation-candidate-scope` | 候補・step ごとの根拠と別候補への非共有 |
-| `cue-loader-longest-same-tuple` | 同じ tuple の長短語は最長一件 |
-| `cue-loader-tuple-conflict` | 同一 profile の異なる tuple は起動失敗 |
-| `cue-loader-cross-profile-reuse` | profile 間の同語再利用と relation 非結合 |
-| `cue-loader-schema-v3` | version 3 必須項目、旧版混在および未知版の拒否 |
 
 - `民法第103条を引用する裁判例の影響グラフを作成してください。` は、
   法令または条文の候補を内部に保持できても `mixed_unsupported_intent` で
@@ -162,22 +125,11 @@ baseline を現行の標準 command として先に宣言しない。
   明示された民法検索候補だけを内部に保持する。
 - `民法第103条の影響グラフを作成してください。` は同じ節で独立に
   根拠付けられた法令・条文候補を内部に保持できるが、選択または実行しない。
-- cue セットの順序、重複、未知の signal、intent group、value 若しくは
-  syntax role、閉じた対応の不一致、profile ID 不一致、同一 profile 内で
-  異なる tuple の同一正規化語若しくは包含語、および版不整合を起動時に拒否する。
-- loader fixture は、同一 profile の `英語に翻訳してください` と
-  `英語に翻訳` を異なる tuple にした包含衝突を拒否し、同じ tuple の長短語では
-  最長 span 一件だけを採用することを固定する。別 profile の `判例`、
-  `裁判例`、`取得して` および `検索してください` の再利用は許可し、
-  profile 横断 relation を作らないことも固定する。
-- relation 対応経路は version 1、version 2、`syntaxRole` が欠落した version 3、
-  profile set 内の cue schema version 混在および未知 version を拒否し、
-  全 profile が完全な version 3 の場合だけ起動する。
-- `SOT-ENG-026` の schema version 2 と `corpus-v10` は
-  `boundary-unsupported-candidate-scope`、
-  `boundary-unsupported-cue-context`、
-  `unsupported-relationship-analysis` および
-  `unsupported-version-comparison` の最小件数と safety pair を満たす。
+- 対象外 entry の未知 signal、intent group、value、syntax role、および上表の
+  閉じた対応との不一致を起動時に拒否する。共通の schema、語彙衝突、
+  profile 間再利用および版不整合は `SOT-ENG-030` の固定 test で確認する。
+- relation 対応 corpus の coverage ID、最小件数および safety pair は
+  `SOT-ENG-026` だけを定義元とし、本規定の確認例と対応する fixture を含める。
 
 ## 関連
 
@@ -191,3 +143,4 @@ baseline を現行の標準 command として先に宣言しない。
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
+- [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
