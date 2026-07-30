@@ -1,6 +1,7 @@
 package core
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -100,6 +101,141 @@ func TestProfileは明示検索と識別子読取りを同一候補に保持す�
 	lawID, hasLawID := read.LawID()
 	if !ok || !hasLawID || lawID != "129AC0000000089" {
 		t.Fatalf("法令読取り入力 = %#v", steps[1].LogicalInput())
+	}
+	if got := candidates[0].EvidenceCodes(); !slices.Equal(
+		got,
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceOfficialIdentifier,
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+			legalquery.EvidenceOfficialAlias,
+		},
+	) {
+		t.Fatalf("SOT-ARCH-029: 複数 step の根拠 = %#v", got)
+	}
+}
+
+func TestProfileは同一読取りStepの識別子と別名を重複保持しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"法令ID 129AC0000000089 の民法を読む",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Steps()) != 1 {
+		t.Fatalf("SOT-ARCH-029: 同一 step の候補 = %#v", candidates)
+	}
+	if got := candidates[0].EvidenceCodes(); !slices.Equal(
+		got,
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceOfficialIdentifier,
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+		},
+	) {
+		t.Fatalf("SOT-ARCH-029: 同一 step の根拠 = %#v", got)
+	}
+}
+
+func TestProfileは法令名検索と識別子付き条文読取りの根拠を併存させる(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"刑法を検索し、法令ID 140AC0000000045 の刑法第199条も読む",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1", len(candidates))
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindLawSearch ||
+		steps[1].InputKind() != legalquery.InputKindLawArticleRead {
+		t.Fatalf("SOT-ARCH-029: steps = %#v", steps)
+	}
+	if got := candidates[0].EvidenceCodes(); !slices.Equal(
+		got,
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceOfficialIdentifier,
+			legalquery.EvidenceStructuredReference,
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+			legalquery.EvidenceOfficialAlias,
+		},
+	) {
+		t.Fatalf("SOT-ARCH-029: 識別子付き条文読取りの根拠 = %#v", got)
+	}
+}
+
+func TestProfileは同一条文読取りStepの識別子と別名を重複保持しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"法令ID 140AC0000000045 の刑法第199条を読む",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1", len(candidates))
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawArticleRead {
+		t.Fatalf("SOT-ARCH-029: steps = %#v", steps)
+	}
+	if got := candidates[0].EvidenceCodes(); !slices.Equal(
+		got,
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceOfficialIdentifier,
+			legalquery.EvidenceStructuredReference,
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+		},
+	) {
+		t.Fatalf("SOT-ARCH-029: 同一条文読取り step の根拠 = %#v", got)
+	}
+}
+
+func TestProfileは法令履歴IDを版なし条文読取りの根拠に流用しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"法令履歴ID 140AC0000000045_20260521_507AC0000000039 の刑法第199条を読む",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1", len(candidates))
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawArticleRead {
+		t.Fatalf("SOT-ARCH-029: steps = %#v", steps)
+	}
+	if got := candidates[0].EvidenceCodes(); !slices.Equal(
+		got,
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceStructuredReference,
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+			legalquery.EvidenceOfficialAlias,
+		},
+	) {
+		t.Fatalf("SOT-ARCH-029: 版なし条文読取りの根拠 = %#v", got)
 	}
 }
 

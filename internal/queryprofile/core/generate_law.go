@@ -309,6 +309,13 @@ func buildReadCandidates(
 		for _, target := range group {
 			draft := newCandidateDraft()
 			addTargetEvidence(&draft, target, asOf != nil)
+			addAdjacentIdentifierEvidence(
+				&draft,
+				groups,
+				groupIndex,
+				target,
+				len(locations) > 0,
+			)
 			if explicitTask {
 				draft.evidence[legalquery.EvidenceExplicitTask] = struct{}{}
 			}
@@ -457,6 +464,32 @@ func addTargetEvidence(
 			draft.aliasRankings,
 			[]lawAliasRankingFact{target.aliasRank},
 		)
+	}
+}
+
+func addAdjacentIdentifierEvidence(
+	draft *candidateDraft,
+	groups [][]lawTarget,
+	groupIndex int,
+	target lawTarget,
+	hasArticleLocation bool,
+) {
+	if !hasArticleLocation ||
+		groupIndex == 0 ||
+		target.viaRef != nil ||
+		target.evidence != legalquery.EvidenceOfficialAlias ||
+		target.lawID == "" {
+		return
+	}
+	for _, previous := range groups[groupIndex-1] {
+		if previous.viaRef != nil ||
+			previous.evidence != legalquery.EvidenceOfficialIdentifier ||
+			previous.revisionID != "" ||
+			previous.lawID != target.lawID {
+			continue
+		}
+		draft.evidence[legalquery.EvidenceOfficialIdentifier] = struct{}{}
+		return
 	}
 }
 

@@ -28,3 +28,4 @@
 - [26-unified-query-request-materialization.md](26-unified-query-request-materialization.md)
 - [27-unified-query-cross-profile-composition.md](27-unified-query-cross-profile-composition.md)
 - [28-law-alias-collision-ranking.md](28-law-alias-collision-ranking.md)
+- [29-multi-step-evidence-preservation.md](29-multi-step-evidence-preservation.md)

@@ -19,6 +19,7 @@ type candidateDraft struct {
 	requiredPacks                []string
 	steps                        []stepDraft
 	aliasRankings                []lawAliasRankingFact
+	preserveOfficialAlias        bool
 	preserveMorphologicalContext bool
 	implicitResourceWeakGeneral  bool
 }
@@ -416,6 +417,25 @@ func mergeUpdateIntoDrafts(
 }
 
 func mergeDraft(target *candidateDraft, source candidateDraft) {
+	target.preserveOfficialAlias =
+		target.preserveOfficialAlias ||
+			source.preserveOfficialAlias ||
+			(hasDraftEvidence(
+				*target,
+				legalquery.EvidenceOfficialIdentifier,
+			) &&
+				hasDraftEvidence(
+					source,
+					legalquery.EvidenceOfficialAlias,
+				)) ||
+			(hasDraftEvidence(
+				*target,
+				legalquery.EvidenceOfficialAlias,
+			) &&
+				hasDraftEvidence(
+					source,
+					legalquery.EvidenceOfficialIdentifier,
+				))
 	target.steps = append(target.steps, source.steps...)
 	for code := range source.evidence {
 		target.evidence[code] = struct{}{}
@@ -445,6 +465,7 @@ func cloneDraft(value candidateDraft) candidateDraft {
 		requiredPacks:                append([]string(nil), value.requiredPacks...),
 		steps:                        append([]stepDraft(nil), value.steps...),
 		aliasRankings:                append([]lawAliasRankingFact(nil), value.aliasRankings...),
+		preserveOfficialAlias:        value.preserveOfficialAlias,
 		preserveMorphologicalContext: value.preserveMorphologicalContext,
 		implicitResourceWeakGeneral:  value.implicitResourceWeakGeneral,
 	}
@@ -507,6 +528,7 @@ func (p *Profile) materializeCandidates(
 	for _, current := range aggregated {
 		evidence := normalizeEvidence(
 			current.draft.evidence,
+			current.draft.preserveOfficialAlias,
 			preservesLegalConceptForDistinctStep(current.draft),
 			current.draft.preserveMorphologicalContext,
 		)
@@ -632,6 +654,9 @@ func mergeEquivalentDraft(target *candidateDraft, source candidateDraft) {
 		target.aliasRankings,
 		source.aliasRankings,
 	)
+	target.preserveOfficialAlias =
+		target.preserveOfficialAlias ||
+			source.preserveOfficialAlias
 	target.preserveMorphologicalContext =
 		target.preserveMorphologicalContext ||
 			source.preserveMorphologicalContext
@@ -686,6 +711,7 @@ func comparePreparedDrafts(
 
 func normalizeEvidence(
 	values map[legalquery.EvidenceCode]struct{},
+	preserveOfficialAlias bool,
 	preserveLegalConcept bool,
 	preserveMorphologicalContext bool,
 ) []legalquery.EvidenceCode {
@@ -694,7 +720,9 @@ func normalizeEvidence(
 		result[code] = struct{}{}
 	}
 	if _, exists := result[legalquery.EvidenceOfficialIdentifier]; exists {
-		delete(result, legalquery.EvidenceOfficialAlias)
+		if !preserveOfficialAlias {
+			delete(result, legalquery.EvidenceOfficialAlias)
+		}
 		if !preserveLegalConcept {
 			delete(result, legalquery.EvidenceLegalConcept)
 		}
