@@ -340,13 +340,13 @@ func buildUpdateCandidate(
 		!cues.has("resource", "updates") {
 		return nil, nil
 	}
-	dates := input.DateMentions()
-	if len(dates) == 0 {
+	date, exists := selectedUpdateDate(input, cues)
+	if !exists {
 		return nil, nil
 	}
 	updateInput, err := legalquery.NewLawUpdateListIntentV1(
 		legalquery.LawUpdateListIntentV1Values{
-			Date: dates[0].Date(),
+			Date: date.Date(),
 		},
 	)
 	if err != nil {
@@ -357,7 +357,7 @@ func buildUpdateCandidate(
 	draft.evidence[legalquery.EvidenceExplicitTask] = struct{}{}
 	draft.evidence[legalquery.EvidenceExplicitResource] = struct{}{}
 	draft.steps = append(draft.steps, stepDraft{
-		startByte: dates[0].Span().StartByte(),
+		startByte: date.Span().StartByte(),
 		input:     updateInput,
 	})
 	return &draft, nil

@@ -114,8 +114,75 @@ func selectedAsOfDate(
 		!cues.has("operator", "as_of") {
 		return nil
 	}
-	date := dates[0].Date()
+	selected, _ := closestDateMention(
+		dates,
+		cues.mentions[cueMeaningKey("operator", "as_of")],
+	)
+	date := selected.Date()
 	return &date
+}
+
+func selectedUpdateDate(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) (legalquery.DateMention, bool) {
+	updateCues := append(
+		[]legalquery.CueMention(nil),
+		cues.mentions[cueMeaningKey("task", "list_updates")]...,
+	)
+	updateCues = append(
+		updateCues,
+		cues.mentions[cueMeaningKey("resource", "updates")]...,
+	)
+	return closestDateMention(input.DateMentions(), updateCues)
+}
+
+func closestDateMention(
+	dates []legalquery.DateMention,
+	cues []legalquery.CueMention,
+) (legalquery.DateMention, bool) {
+	if len(dates) == 0 {
+		return legalquery.DateMention{}, false
+	}
+	if len(cues) == 0 {
+		return dates[0], true
+	}
+
+	bestDate := dates[0]
+	bestDistance := -1
+	bestPrecedesCue := false
+	for _, date := range dates {
+		for _, cue := range cues {
+			distance, precedesCue := dateCueDistance(
+				date.Span(),
+				cue.Span(),
+			)
+			if bestDistance < 0 ||
+				distance < bestDistance ||
+				(distance == bestDistance &&
+					precedesCue &&
+					!bestPrecedesCue) {
+				bestDate = date
+				bestDistance = distance
+				bestPrecedesCue = precedesCue
+			}
+		}
+	}
+	return bestDate, true
+}
+
+func dateCueDistance(
+	date legalquery.QuerySpan,
+	cue legalquery.QuerySpan,
+) (int, bool) {
+	switch {
+	case date.EndByte() <= cue.StartByte():
+		return cue.StartByte() - date.EndByte(), true
+	case cue.EndByte() <= date.StartByte():
+		return date.StartByte() - cue.EndByte(), false
+	default:
+		return 0, true
+	}
 }
 
 func withAsOfEvidence(values []candidateDraft) []candidateDraft {
