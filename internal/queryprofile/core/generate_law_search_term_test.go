@@ -1,6 +1,7 @@
 package core
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -122,5 +123,157 @@ func TestProfileは空白だけが異なる法令名を正式名称へ正規化�
 			search.Query(),
 			"消費者契約法",
 		)
+	}
+}
+
+func TestProfileは長い法令名の誤記に含まれる短い誤記候補を検索しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"行政事件等訴訟法の法令情報を見つけたいです。",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1: %#v", len(candidates), candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 {
+		t.Fatalf("step 数 = %d, want 1", len(steps))
+	}
+	search, ok := steps[0].LogicalInput().(legalquery.LawSearchIntentV1)
+	if !ok {
+		t.Fatalf("logical input = %T", steps[0].LogicalInput())
+	}
+	if search.Query() != "行政事件訴訟法" {
+		t.Fatalf(
+			"SOT-ARCH-021: 法令検索語 = %q, want %q",
+			search.Query(),
+			"行政事件訴訟法",
+		)
+	}
+	if !slices.Equal(
+		candidates[0].EvidenceCodes(),
+		[]legalquery.EvidenceCode{
+			legalquery.EvidenceExplicitTask,
+			legalquery.EvidenceExplicitResource,
+			legalquery.EvidenceOfficialAlias,
+			legalquery.EvidenceUniqueTypoCorrection,
+		},
+	) {
+		t.Fatalf("根拠 = %#v", candidates[0].EvidenceCodes())
+	}
+}
+
+func Test包含誤記候補の抑制は同一Spanの衝突と別位置の候補を保つ(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	values := []lawTarget{
+		{
+			startByte: 0,
+			endByte:   24,
+			lawID:     "outer-a",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+		{
+			startByte: 0,
+			endByte:   24,
+			lawID:     "outer-b",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+		{
+			startByte: 15,
+			endByte:   24,
+			lawID:     "contained-typo",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+		{
+			startByte: 15,
+			endByte:   24,
+			lawID:     "contained-exact",
+			evidence:  legalquery.EvidenceOfficialAlias,
+		},
+		{
+			startByte: 30,
+			endByte:   42,
+			lawID:     "separate",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+	}
+
+	got := suppressContainedTypoLawTargets(values)
+	gotIDs := make([]string, 0, len(got))
+	for _, target := range got {
+		gotIDs = append(gotIDs, target.lawID)
+	}
+	wantIDs := []string{
+		"outer-a",
+		"outer-b",
+		"contained-exact",
+		"separate",
+	}
+	if !slices.Equal(gotIDs, wantIDs) {
+		t.Fatalf("抑制後の law IDs = %#v, want %#v", gotIDs, wantIDs)
+	}
+}
+
+func Test包含誤記候補の抑制は内側の複数法令候補を消さない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	values := []lawTarget{
+		{
+			startByte: 0,
+			endByte:   30,
+			lawID:     "outer",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+		{
+			startByte: 0,
+			endByte:   9,
+			lawID:     "child-a",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+		{
+			startByte: 18,
+			endByte:   30,
+			lawID:     "child-b",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+		{
+			startByte: 27,
+			endByte:   36,
+			lawID:     "partial-overlap",
+			evidence:  legalquery.EvidenceOfficialAlias,
+			typo:      true,
+		},
+	}
+
+	got := suppressContainedTypoLawTargets(values)
+	gotIDs := make([]string, 0, len(got))
+	for _, target := range got {
+		gotIDs = append(gotIDs, target.lawID)
+	}
+	wantIDs := []string{
+		"outer",
+		"child-a",
+		"child-b",
+		"partial-overlap",
+	}
+	if !slices.Equal(gotIDs, wantIDs) {
+		t.Fatalf("抑制後の law IDs = %#v, want %#v", gotIDs, wantIDs)
 	}
 }

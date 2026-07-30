@@ -89,7 +89,9 @@ func buildMentionLawTargets(
 		return evidenceIndex(targets[left].evidence) <
 			evidenceIndex(targets[right].evidence)
 	})
-	return withLawAliasCollisionRanks(dedupeLawTargets(targets))
+	return withLawAliasCollisionRanks(
+		suppressContainedTypoLawTargets(dedupeLawTargets(targets)),
+	)
 }
 
 func dedupeLawTargets(values []lawTarget) []lawTarget {
@@ -109,6 +111,81 @@ func dedupeLawTargets(values []lawTarget) []lawTarget {
 		}
 	}
 	return result
+}
+
+func suppressContainedTypoLawTargets(values []lawTarget) []lawTarget {
+	multiSubjectContainers := make([]bool, len(values))
+	for index := range values {
+		multiSubjectContainers[index] =
+			hasDisjointContainedLawTargets(values, index)
+	}
+	result := make([]lawTarget, 0, len(values))
+	for index, value := range values {
+		if value.typo &&
+			isContainedByLongerLawName(
+				values,
+				index,
+				multiSubjectContainers,
+			) {
+			continue
+		}
+		result = append(result, value)
+	}
+	return result
+}
+
+func isContainedByLongerLawName(
+	values []lawTarget,
+	targetIndex int,
+	multiSubjectContainers []bool,
+) bool {
+	target := values[targetIndex]
+	for index, candidate := range values {
+		if index == targetIndex ||
+			candidate.evidence != legalquery.EvidenceOfficialAlias ||
+			multiSubjectContainers[index] {
+			continue
+		}
+		if strictlyContainsLawTarget(candidate, target) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasDisjointContainedLawTargets(
+	values []lawTarget,
+	containerIndex int,
+) bool {
+	container := values[containerIndex]
+	for leftIndex, left := range values {
+		if leftIndex == containerIndex ||
+			left.evidence != legalquery.EvidenceOfficialAlias ||
+			!strictlyContainsLawTarget(container, left) {
+			continue
+		}
+		for rightIndex := leftIndex + 1; rightIndex < len(values); rightIndex++ {
+			right := values[rightIndex]
+			if rightIndex == containerIndex ||
+				right.evidence != legalquery.EvidenceOfficialAlias ||
+				!strictlyContainsLawTarget(container, right) {
+				continue
+			}
+			if left.endByte <= right.startByte ||
+				right.endByte <= left.startByte {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func strictlyContainsLawTarget(container lawTarget, target lawTarget) bool {
+	strictlyLonger := container.startByte < target.startByte ||
+		target.endByte < container.endByte
+	return strictlyLonger &&
+		container.startByte <= target.startByte &&
+		target.endByte <= container.endByte
 }
 
 func buildLawSearchCandidates(
