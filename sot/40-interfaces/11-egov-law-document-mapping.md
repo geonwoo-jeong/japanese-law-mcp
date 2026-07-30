@@ -18,7 +18,8 @@ e-Gov 法令 API Version 2 の法令本文取得は `GET /law_data/{law_id_or_nu
 
 ## レスポンス
 
-`law_info` と `revision_info` は `SOT-IF-050` と同じフィールド対応で `LawSummary` に変換する。
+`law_info` と `revision_info` は `SOT-IF-054` と同じフィールド対応で
+`LawSummary` に変換する。
 
 法令本文の `Law` 要素を UTF-8 XML として内容を変更せずにシリアライズし、`LawDocumentRepresentation.content` に設定する。`LawDocumentRepresentation.format` は `xml` とする。入力に `asOf` がある場合だけ `LawDocumentRepresentation.asOf` に設定する。
 
@@ -45,12 +46,42 @@ https://laws.e-gov.go.jp/law/{lawId}/{revisionPart}
 ## エラー
 
 - 対象法令または指定日以前のリビジョンが存在しない場合は `not_found` とする。
-- その他の情報源エラーは `SOT-IF-050` と同じ規則で変換する。
+- HTTP status と transport error の変換は `SOT-IF-054` と同じ規則を使用する。
+- 一件の 2xx 応答で XML を解析できない場合、`law_info`、`revision_info`
+  若しくは `Law` 要素が欠落している場合、共通モデルの必須項目を作れない場合、
+  または入力と応答の法令 ID 若しくはリビジョン ID が一致しない場合は
+  `invalid_source_response` とする。
+- DTD、entity declaration、外部 entity または解析中の外部参照は受理せず、
+  `unsafe_source_content` とする。
+- 現在の公式 OpenAPI、法令 XML 資料または公式例を provider contract 検証で
+  確認し、記録済みの必須構造または型が変更された場合だけ
+  `source_contract_changed` とする。個別応答の malformed XML、欠落または
+  型不一致を同 code へ読み替えない。
+- 応答または展開後の byte 上限超過、構造上限および解析時間上限は
+  `SOT-ENG-016` に従う。
+
+## 確認
+
+正常な公式 XML 例、対象なし、`law_info`、`revision_info` または `Law` の欠落、
+malformed XML、DTD、entity declaration、法令 ID とリビジョン ID の不一致、
+byte・構造・解析時間の各上限、および外部本文を公開 error に含めない case を
+固定 fixture で確認する。
+
+個別 2xx 応答の必須項目の欠落、`null` 相当の空要素、型不一致または
+malformed XML は `invalid_source_response`、DTD と entity は
+`unsafe_source_content` とする。
+保存した公式 schema または公式 XML 構造を意図的に変更する provider contract
+fixture だけで `source_contract_changed` を確認する。外部ネットワークを使う
+確認は `SOT-ENG-013` に従う任意の定期確認へ分離し、fixture test の代わりに
+しない。
 
 ## 関連
 
 - [SOT-IF-031: MCP `get_law`](31-mcp-get-law.md)
-- [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
+- [SOT-IF-054: e-Gov 法令名検索マッピング v3](54-egov-law-search-mapping-v3.md)
 - [SOT-IF-024: law.document.read capability v1](24-law-document-read-capability.md)
 - [SOT-MODEL-002: LawDocument](../20-model/02-law-document.md)
 - [SOT-MODEL-017: LawDocumentRepresentation](../20-model/17-law-document-representation.md)
+- [SOT-ENG-013: プロバイダー契約の検証](../50-engineering/13-provider-contract-verification.md)
+- [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)
+- [法令の条文構造と法令 XML](https://laws.e-gov.go.jp/docs/law-data-basic/8ebd8bc-law-structure-and-xml/)

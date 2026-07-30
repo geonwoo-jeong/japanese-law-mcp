@@ -21,7 +21,7 @@
 |---|---|---|
 | `needs_clarification` | `clarification.reasonCodes` と `clarification.questions` | task、resource、対象法令・条番号・裁判例、または四件以下への分割 |
 | `capability_unavailable` | `notices` と `interpretations[].requiredPacks` | 必要な採用済み拡張パックと、その現在の無効状態 |
-| `unsupported` | `notices` | 非日本語、構造化値だけの入力、対象外との混在、または未採用 task/resource |
+| `unsupported` | `notices` | 非日本語、構造化値だけの入力、法的助言・翻訳だけの要求、対象外との混在、または未採用 task/resource |
 
 `needs_clarification` の行動案内の定義元は `SOT-MODEL-024` の
 `clarification.questions` とし、`notices` が空であることを案内欠落と
@@ -39,9 +39,10 @@
 - `capability_unavailable` では、利用者が必要な pack を起動時設定で有効にするか、
   pack を必要としない別の取得要求を新しく指定する。システムが照会中に pack を
   自動有効化しない。
-- `unsupported` では、法的助言、翻訳、比較、影響分析その他の対象外 task と、
-  法令または裁判例の取得要求を別の照会へ分ける。対象外部分を言い換えて
-  暗黙実行させない。
+- `unsupported` では、法的助言、翻訳、比較、影響分析その他の対象外 task を
+  実行させず、採用済みの法令または裁判例の取得要求だけを新しい照会として
+  入力する。混在する場合は対象外部分を除いて取得要求だけを再照会し、
+  対象外部分を言い換えて暗黙実行させない。
 
 再照会は新しい独立リクエストとし、前回の候補、質問への回答、pack 状態、
 入力本文または結果を server が session state として保持しない。MCP client は
@@ -67,7 +68,10 @@
 - 取得要求と比較または影響グラフが混在する場合は `unsupported` とし、
   要求を分ける固定 notice を返す。
 - `賃金が支払われません。どうすればよいですか。` は対象外の法的助言として
-  `unsupported` とし、空の案内を持つ `needs_clarification` にしない。
+  `unsupported` とし、`SOT-MODEL-024` の八番目の固定 notice を返して、
+  空の案内を持つ `needs_clarification` にしない。
+- `民法を英語に翻訳してください。` は対象外の翻訳として `unsupported` とし、
+  同じ八番目の固定 notice および外部呼出し零回とする。
 - 三状態の `content` は `SOT-IF-007` に従い、同じ
   `structuredContent` の JSON を変更せず表す。
 

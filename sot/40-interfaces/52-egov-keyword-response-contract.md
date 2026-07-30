@@ -34,9 +34,9 @@ top-level は一つの JSON object とし、次を検証する。
 
 | 位置 | 必須 | 受理する値 |
 |---|---:|---|
-| `total_count` | はい | `0` 以上で実装の安全な integer 範囲内の整数 |
-| `sentence_count` | はい | `0` 以上で実装の安全な integer 範囲内の整数 |
-| `next_offset` | いいえ | `null` または安全な integer 範囲内の整数 |
+| `total_count` | はい | `0` 以上 9223372036854775807 以下の整数 |
+| `sentence_count` | はい | `0` 以上 9223372036854775807 以下の整数 |
+| `next_offset` | いいえ | `null` または 0 以上 2147483647 以下の整数 |
 | `items` | はい | `null` ではない JSON array |
 
 `items` の各要素は object とし、`law_info`、`revision_info` および
@@ -111,9 +111,11 @@ runtime parser と、公式一次資料を確認する provider contract 検証�
 公式仕様の変更を確認した場合は、受理範囲を推測で広げず、本規定と fixture を
 更新するまで fail closed とする。
 
-- 2xx で error object、trailing JSON、壊れた圧縮 body または安全上限を
-  満たさない body を成功結果へ変換しない。公開 code は
-  `SOT-IF-017` と `SOT-IF-027` に従う。
+- 2xx で error object、trailing JSON または壊れた圧縮 body を受け取った場合は
+  `invalid_source_response` とし、成功結果へ変換しない。応答または展開後の
+  byte 上限超過は `source_response_too_large`、構造上の危険または処理時間上限は
+  `SOT-ENG-016` に従い `unsafe_source_content` または
+  `source_processing_limit` とする。
 
 外部応答本文、検索語、URL query、内部 decoder error および未知項目の値を
 公開 error details に含めない。
@@ -129,7 +131,14 @@ runtime parser と、公式一次資料を確認する provider contract 検証�
 省略可能三項目の欠落と `null` は同じ共通モデルとなることを確認する。
 単一 object への配列縮約、空の必須文字列、空の `sentences`、件数不一致、
 limit 超過、残件がある `next_offset` の欠落・`null`、非前進、範囲外および
-int32 上限超過を `invalid_source_response` として固定する。
+int32 上限超過を `invalid_source_response` として固定する。三つの件数項目は
+各上限値と上限値を一つ超える値を fixture にし、`total_count` と
+`sentence_count` の int64 上限超過も `invalid_source_response` とする。
+
+2xx の非 JSON media type、error object、trailing JSON および壊れた圧縮 body は
+個別 fixture で `invalid_source_response` とする。`responseBytes` と
+`decompressedBytes` を一 byte 超える fixture は
+`source_response_too_large` とし、途中まで解析した item を返さない。
 
 provider contract 検証では、保存した公式 schema と取得した公式 schema の
 必須構造または型を意図的に変えた fixture を使い、個別応答の失敗とは別に
@@ -153,3 +162,4 @@ provider contract 検証では、保存した公式 schema と取得した公式
 - [SOT-IF-028: e-Gov 構造化本文検索マッピング](28-egov-structured-content-search-mapping.md)
 - [SOT-IF-033: MCP `search_law_content`](33-mcp-search-law-content.md)
 - [SOT-ENG-013: プロバイダー契約の検証](../50-engineering/13-provider-contract-verification.md)
+- [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)

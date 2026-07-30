@@ -74,8 +74,11 @@ provider 順の page をそのまま返す。安定優先は page 内の item �
 現在の page の `items` が空でも `totalCount` が 1 以上なら、確認検索へ
 切り替えない。
 
-すべての検索は一つの公開リクエスト期限と context cancellation に従い、
-原検索と確認検索を合わせて最大二回だけ情報源を呼び出す。
+すべての検索は一つの公開リクエスト期限と context cancellation に従う。
+二回上限の単位は、原検索と確認検索として facade が provider port へ渡す
+論理検索 operation とし、合わせて最大二回とする。一つの論理検索 operation
+内で e-Gov client が行う HTTP の自動再試行は `SOT-IF-004` に従い、この
+二回へ数え直さない。実際の HTTP attempt の上限は同 SOT だけを定義元とする。
 
 ## 出力
 
@@ -83,7 +86,7 @@ provider 順の page をそのまま返す。安定優先は page 内の item �
 `totalCount: 0` と空の `items` を返す。
 
 `nextOffset` は 0 以上 2147483647 以下で、選択した一つの検索条件に対して
-e-Gov が `next_offset` として返した場合、または `SOT-IF-050` に従い
+e-Gov が `next_offset` として返した場合、または `SOT-IF-054` に従い
 e-Gov が返した `count` と `total_count` から `offset + count` を導出できる
 場合だけ返す。法令名解決または page 内安定優先から `nextOffset` を作らない。
 
@@ -117,11 +120,30 @@ e-Gov が返した `count` と `total_count` から `offset + count` を導出�
 `ResolvedLawTarget` または誤記規則を持ち込まない。無設定起動の選択済み
 provider は e-Gov 法令 API Version 2 とする。
 
+## 公開 schema
+
+`inputSchema` は `type: object`、`additionalProperties: false` とし、
+property は `query`、`asOf`、`limit` および `offset` の四つだけとする。
+`required` は `query` だけとし、各 property の型、範囲および既定値は
+本規定の入力表に一致させる。byte 数、実在する暦日および制御文字のように
+JSON Schema だけで完全に表せない制約も handler の入力検証から省略しない。
+
+`outputSchema` は `type: object`、`additionalProperties: false` とし、
+`totalCount` と `items` を必須、`nextOffset` を省略可能とする。
+各項目の型と制約は `SOT-MODEL-006`、各 item は `SOT-MODEL-001`、
+item の `source` は `SOT-MODEL-003` に従う。これらの object も
+各モデルが定義する項目だけを持ち、`additionalProperties: false` とする。
+省略可能な値は `null` にせず、`SOT-MODEL-009` に従い property 自体を省略する。
+
+順位以外の公開項目を追加、削除または改名せず、stdio と Streamable HTTP は
+同じ `inputSchema`、`outputSchema` および結果形を使用する。
+
 ## 確認
 
 原検索の error を保存すること、正常な空結果だけが確認検索を許すこと、
-二回の呼出し上限、および原検索と確認検索を集約しないことを fake provider で
-確認する。
+二回の論理検索 operation 上限、および原検索と確認検索を集約しないことを
+fake provider で確認する。HTTP の自動再試行回数は e-Gov client の契約 test で
+別に確認し、facade の論理検索回数へ加算しない。
 
 正式名称、公式略称、補足略称、自然文、互換表記、挿入、削除、置換、
 隣接文字の転置、短い語、衝突する略称、同率候補および複数法令を含む文を
@@ -133,21 +155,24 @@ fixture にする。原検索または確認検索の三件目に解決済み la
 `著作権法` の law ID を優先する。対象 law ID が page にない場合は結果を
 捏造せず、別 page を取得しないことも確認する。
 
-MCP 契約 test では、`SOT-IF-049` の `inputSchema` と `outputSchema` に対して
-構造的な完全一致を確認する。入力の四項目と制約、出力の `totalCount`、
-`items`、任意の `nextOffset`、各 item の `LawSummary` および
-`additionalProperties` の扱いを変更せず、順位以外の公開項目を追加、削除
-または改名しない。stdio と Streamable HTTP で同じ schema と結果形を
-使用することも確認する。
+MCP 契約 test では、本規定の公開 schema に対して構造的な完全一致を確認する。
+入力の四項目、required、型、範囲、既定値および未知項目の拒否と、出力の
+`totalCount`、`items`、任意の `nextOffset`、各 item の `LawSummary`、
+`LegalSource` および全 object の `additionalProperties: false` を固定する。
+stdio と Streamable HTTP で同じ schema と結果形を使用することも確認する。
 
 ## 関連
 
 - [SOT-SCN-001: 法令名から法令を検索する](../10-scenarios/01-search-laws.md)
 - [SOT-SCN-011: 解決済み法令を検索結果で優先する](../10-scenarios/11-prioritize-resolved-law-search-result.md)
+- [SOT-MODEL-001: LawSummary](../20-model/01-law-summary.md)
+- [SOT-MODEL-003: LegalSource](../20-model/03-legal-source.md)
 - [SOT-MODEL-006: LawSearchResult](../20-model/06-law-search-result.md)
+- [SOT-MODEL-009: JSON シリアライズ](../20-model/09-json-serialization.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-030: 解決済み法令対象の検索結果優先順位](../30-architecture/30-canonical-law-target-priority.md)
 - [SOT-IF-022: law.search capability v1](22-law-search-capability.md)
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
-- [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
+- [SOT-IF-004: e-Gov 法令 API Version 2](04-source-egov-law-api-v2.md)
+- [SOT-IF-054: e-Gov 法令名検索マッピング v3](54-egov-law-search-mapping-v3.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)

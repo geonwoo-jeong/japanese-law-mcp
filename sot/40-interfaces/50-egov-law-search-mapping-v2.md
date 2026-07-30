@@ -1,8 +1,15 @@
 # SOT-IF-050: e-Gov 法令名検索マッピング v2
 
-- 状態: 有効
+- 状態: 廃止
+- 後継: [SOT-IF-054: e-Gov 法令名検索マッピング v3](54-egov-law-search-mapping-v3.md)
 
 ## 規定
+
+個別の 2xx 応答で必須項目または型が不正な場合を、公式一次資料による
+契約変更の確認なしでも `source_contract_changed` としていたため、
+本規定を `SOT-IF-054` に置き換えた。
+
+以下は廃止時点の履歴であり、現行の provider mapping には適用しない。
 
 e-Gov 法令 API Version 2 による法令名検索は `GET /laws` を呼び出し、法令名検索ユースケースが選択した一つの検証済み検索語を e-Gov の検索条件へ変換し、レスポンスを `LawSearchResult` または `law.search@1` の情報源ページへ変換する。
 

@@ -45,7 +45,7 @@
 | 5 | `日本語の法情報取得要求を入力してください。` | `status=unsupported` で plan の理由が `non_japanese_query` |
 | 6 | `事件番号、識別子または日付だけを指定する場合は、対応する専門ツールを使用してください。` | `status=unsupported` で plan の理由が `standalone_structured_query` |
 | 7 | `法情報の取得要求と法的助言、翻訳または対象外の要求を分けて入力してください。` | `status=unsupported` で plan の理由が `mixed_unsupported_intent` |
-| 8 | `指定した task または resource は統合照会の採用範囲外です。対応する専門ツールを確認してください。` | `status=unsupported` で plan の理由が `unsupported_task_or_resource` |
+| 8 | `指定した法的助言、翻訳、task または resource は統合照会の採用範囲外です。採用済みの法情報取得要求だけを入力してください。` | `status=unsupported` で plan の理由が `unsupported_task_or_resource` |
 
 `completed` と `empty` は一番目と二番目だけを条件付きで持つ。`partial` は三番目を必ず持ち、一番目と二番目も条件に従って持てる。`needs_clarification` は空配列、`capability_unavailable` は四番目だけ、`unsupported` は plan の理由に対応する五番目から八番目を一件以上三件以下持つ。`standalone_structured_query` の場合は六番目だけを持つ。
 

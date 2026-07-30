@@ -51,12 +51,12 @@ cue セットを変えない。
 - 複数の profile が同じ対象外表現を認識しても、profile set は
   `SOT-MODEL-026` の固定順で同じ signal を一件にする。
 
-対象外 signal が一件でもある場合は、selector が score、候補順位、pack 状態
-および provider route を評価して実行対象を選ぶ前に適用する。採用済みの
-取得候補が同じ照会文にあれば `mixed_unsupported_intent`、なければ
-`unsupported_task_or_resource` を含む `unsupported` plan とし、外部情報源を
-呼び出さない。法的助言または翻訳の signal 名を、公開 reason code として
-新しく追加しない。
+対象外 signal は、selector が実行対象を選ぶ前に適用できる入力として渡す。
+signal から `unsupported` plan、`mixed_unsupported_intent` または
+`unsupported_task_or_resource` への対応、内部候補の保持および外部呼出しの
+禁止は `SOT-MODEL-023` を定義元とする。公開する固定 notice は
+`SOT-MODEL-024` を定義元とし、本規定では plan reason または notice の対応を
+重ねて定義しない。
 
 ## 成果物と版
 
@@ -89,6 +89,8 @@ profile ID、`cueSetVersion`、cue ID、意図群、signal 値および登録表
 ## 関連
 
 - [SOT-PROD-011: 統合法情報照会の製品範囲](../00-product/11-unified-legal-query-scope.md)
+- [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
+- [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-MODEL-025: LegalQueryPreprocessResult](../20-model/25-legal-query-preprocess-result.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)

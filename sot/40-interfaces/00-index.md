@@ -53,3 +53,4 @@
 - [51-mcp-query-legal-information.md](51-mcp-query-legal-information.md)
 - [52-egov-keyword-response-contract.md](52-egov-keyword-response-contract.md)
 - [53-mcp-search-laws-v3.md](53-mcp-search-laws-v3.md)
+- [54-egov-law-search-mapping-v3.md](54-egov-law-search-mapping-v3.md)

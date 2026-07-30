@@ -70,7 +70,7 @@ Japanese Law MCP は、次の利用目的に必要な操作だけを使用する
 
 | e-Gov operation | 利用目的 | マッピング SOT |
 |---|---|---|
-| `GET /laws` | 法令名検索 | `SOT-IF-050` |
+| `GET /laws` | 法令名検索 | `SOT-IF-054` |
 | `GET /keyword` | 法令本文検索 | `SOT-IF-010`、`SOT-IF-028` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 法令本文取得 | `SOT-IF-011` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 条文取得 | `SOT-IF-012` |
@@ -95,7 +95,9 @@ Japanese Law MCP は、次の利用目的に必要な操作だけを使用する
 
 - 一つのプロセスで同時に実行する e-Gov 呼び出しは一件までとし、完了した呼び出しの履歴を保存しない。
 - 一つの MCP リクエストが複数の e-Gov 呼び出しを順に行う場合は、呼び出しの開始間隔を一秒以上とする。
-- `Retry-After` が返された場合はその値を優先し、現在のリクエスト期限を超える場合は再試行しない。
+- 有効な `Retry-After` が返された場合は指数 backoff に代えてその値を使用するが、
+  呼出し開始間隔の一秒を下限とする。現在のリクエスト期限を超える場合は
+  再試行しない。
 - `429`、`500`、`502`、`503` および `504` だけを自動再試行の候補とし、一秒から始めて最大八秒までの指数 backoff を使用し、同じ MCP リクエスト内で最大三回までとする。
 - その他の `4xx`、構造不一致、形式不一致および安全上の上限超過を再試行しない。
 - User-Agent には製品名と実行中の版を含め、検索語、法令識別子、認証情報または利用主体を含めない。
@@ -116,6 +118,30 @@ HTTP content coding による展開がない場合も `decompressedBytes` は解
 
 公式条件に新しい制限または要件が示された場合は、この SOT と契約 fixture を更新してから適用する。原文 URL、取得時点および変換方法は `Provenance` として返し、公式資料で確認できない再配布権または完全性を応答で主張しない。
 
+## 確認
+
+外部ネットワークを使わない fake transport と制御可能な時計を使い、
+`429`、`500`、`502`、`503` および `504` だけを再試行候補とすること、
+初回一回と最大三回の再試行を合わせた HTTP attempt が四回を超えないこと、
+再試行開始間隔が一秒、二秒、四秒であり八秒を上限とすることを確認する。
+有効な `Retry-After` は指数 backoff に代えて使用し、一秒未満なら一秒へ
+引き上げることを確認する。request deadline を超える待機、その他の `4xx`、
+構造不一致、形式不一致および安全上限超過では再試行しないことも確認する。
+
+`laws-json`、`keyword-json` および `law-data-xml` は、各 byte、構造および
+解析時間の上限値を受理し、一単位または一 byte 超過したときに部分結果を
+返さないことを fixture で確認する。三 operation を同じ `egov-http`
+concurrency group へ接続し、一つが外部呼出しから解析まで枠を保持している間に
+別 operation を開始すると、後の処理が外部呼出しへ到達せず `source_busy` と
+なることを確認する。cancel、timeout および parser failure の全経路で枠を
+解放する。
+
+これらを `SOT-ENG-017` の `outbound-request`、`error-normalization`、
+`response-bytes-limit`、`decompressed-bytes-limit`、
+`entries-or-objects-limit`、`depth-limit`、`parse-timeout`、
+`concurrency-limit` および `cancellation` に接続し、operation ごとの
+provider contract test と共通 conformance test の両方から到達可能にする。
+
 ## 関連
 
 - [SOT-PROD-003: 法情報の採用基準](../00-product/03-legal-source-eligibility.md)
@@ -125,3 +151,4 @@ HTTP content coding による展開がない場合も `decompressedBytes` は解
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-ENG-005: SOT と変更の整合](../50-engineering/05-sot-change-unit.md)
 - [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)
+- [SOT-ENG-017: プロバイダー適合性 matrix](../50-engineering/17-provider-conformance-matrix.md)

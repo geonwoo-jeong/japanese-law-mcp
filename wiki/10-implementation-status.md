@@ -38,7 +38,7 @@
 - [SOT-MODEL-020](../sot/20-model/20-judicial-decision-summary.md)、[SOT-MODEL-021](../sot/20-model/21-judicial-decision-details.md)、[SOT-IF-041](../sot/40-interfaces/41-judicial-decision-search-capability.md) および [SOT-IF-042](../sot/40-interfaces/42-judicial-decision-read-capability.md) に従う、不変な裁判例概要・詳細・公式文書リンク、型付き検索・詳細取得 request、page、port、service、参照元 provider の解決、および既存の法令 route を必須のまま維持する任意の `judicial-decision.*` binding・route
 - [SOT-IF-043](../sot/40-interfaces/43-source-courts-hanrei-html.md)、[SOT-IF-044](../sot/40-interfaces/44-courts-hanrei-search-mapping.md)、[SOT-IF-045](../sot/40-interfaces/45-courts-hanrei-read-mapping.md) および [SOT-IF-046](../sot/40-interfaces/46-courts-hanrei-built-in-adoption.md) に従う、固定 HTTPS origin、共有同時実行枠、HTML 資源予算、安全な DOM 解析、六カテゴリー・和暦・公式 PDF・出典の共通モデル対応、同一裁判例の複数掲載カテゴリーを DOM 順の別 item として保持する検索、検索から詳細への参照往復、fixture、二能力 binding factory、ならびに `judicial-cases` 有効時だけ内部 registry へ加える二つの primary route
 - [SOT-IF-047](../sot/40-interfaces/47-mcp-search-judicial-cases.md) と [SOT-IF-048](../sot/40-interfaces/48-mcp-get-judicial-case.md) に従う、固定された収録範囲の注意、共通モデルの `ref`・provenance・page・詳細を変更しない出力、検索結果の canonical ref の往復、正確な整数入力、空結果、`not_found` および公開情報源エラーを扱う `search_judicial_cases` と `get_judicial_case` の MCP handler・契約テスト、ならびに二つを同時にだけ登録する公開依存性
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-050](../sot/40-interfaces/50-egov-law-search-mapping-v2.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.search@1` binding、固定 HTTP 要求、応答 parser、共通モデル mapping、fixture および continuation
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と、廃止時点の [SOT-IF-050](../sot/40-interfaces/50-egov-law-search-mapping-v2.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.search@1` binding、固定 HTTP 要求、応答 parser、共通モデル mapping、fixture および continuation。後継の `SOT-IF-054` との差分は未実装欄で追跡する
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.document.read@1` binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.article.read@1` binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md) および [SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.content.search@1` binding、構造化条件からの決定的な検索式生成、安全な JSON 解析、一致位置単位の共通モデル mapping、fixture および continuation。`SOT-IF-052` の `null` と error 分類への移行差分は未実装欄で追跡する
@@ -62,10 +62,13 @@
 
 ## 未実装
 
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
 - [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) の版付き対象外 cue セット、引用句境界、および比較・影響分析・法的助言を取得意図へ縮約しない回帰 fixture
 - [SOT-IF-052](../sot/40-interfaces/52-egov-keyword-response-contract.md) の省略可能三項目の `null` 受理と、個別応答の不正を `invalid_source_response`、一次資料で確認した契約変更を `source_contract_changed` とする共有 parser の分類
+- [SOT-IF-054](../sot/40-interfaces/54-egov-law-search-mapping-v3.md) の、`GET /laws` の個別 2xx 応答不正を `invalid_source_response`、一次資料で確認した契約変更だけを `source_contract_changed` とする分類、および現行 mapping への移行
+- [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) の、`GET /law_data` の個別 XML 応答不正を `invalid_source_response`、公式 XML 契約の確認済み変更だけを `source_contract_changed` とする分類、および XML 専用 fixture
 - [SOT-ARCH-030](../sot/30-architecture/30-canonical-law-target-priority.md)、[SOT-SCN-011](../sot/10-scenarios/11-prioritize-resolved-law-search-result.md) および [SOT-IF-053](../sot/40-interfaces/53-mcp-search-laws-v3.md) の application 層 law-target resolver、原検索と確認検索の page 内安定優先、および v2 と同一の公開 schema を固定する契約 test
-- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の状態別再照会シナリオは既存の `SOT-MODEL-024` と `SOT-IF-051` の公開値で表現できるが、五つ以上の主題、無効 pack、比較・影響分析との混在および法的助言をまとめて確認するシナリオ契約 test は未追加
+- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の状態別再照会シナリオは既存の `SOT-MODEL-024` と `SOT-IF-051` の公開値で表現できるが、法的助言・翻訳だけの要求へ対応する `SOT-MODEL-024` の八番目の固定 notice、および五つ以上の主題、無効 pack、比較・影響分析との混在、法的助言・翻訳をまとめて確認するシナリオ契約 test は未実装
 
 ## 現在の起動面
 

@@ -39,7 +39,9 @@
 返された各 item は公式情報源が実際に返した `LawSummary` であり、解決済み
 法令の優先は現在の一 page の順序だけに影響する。
 
-情報源呼出しは原検索と、正常な空結果後の確認検索を合わせて二回以下である。
+facade が provider port へ渡す論理検索 operation は、原検索と正常な空結果後の
+確認検索を合わせて二回以下である。一つの operation 内の HTTP 自動再試行は
+`SOT-IF-004` に従い、論理検索回数へ加算しない。
 対象 item が現在の page にない場合も、別 page の取得または item の生成を
 行わない。
 
@@ -60,4 +62,5 @@ provider 順と page 境界を変更しないことを確認する。
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-030: 解決済み法令対象の検索結果優先順位](../30-architecture/30-canonical-law-target-priority.md)
 - [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)
+- [SOT-IF-004: e-Gov 法令 API Version 2](../40-interfaces/04-source-egov-law-api-v2.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
