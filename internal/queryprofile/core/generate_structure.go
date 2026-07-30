@@ -240,7 +240,7 @@ func explicitDocumentReadRequested(
 ) bool {
 	ref, hasRef := input.Ref()
 	if !hasRef {
-		return true
+		return namedLawHasDirectRead(input, cues)
 	}
 	if ref.Key().ResourceType() != "law" {
 		return false
@@ -291,6 +291,84 @@ func explicitDocumentReadRequested(
 	return false
 }
 
+func namedLawHasDirectRead(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) bool {
+	readCues := cues.mentions[cueMeaningKey("task", "read")]
+	searchCues := cues.mentions[cueMeaningKey("task", "search")]
+	for _, law := range input.LawNameMentions() {
+		if spanHasDirectRead(law.Span(), input, cues, readCues, searchCues) {
+			return true
+		}
+	}
+	for _, identifier := range input.IdentifierMentions() {
+		if spanHasDirectRead(identifier.Span(), input, cues, readCues, searchCues) {
+			return true
+		}
+	}
+	return false
+}
+
+func spanHasDirectRead(
+	span legalquery.QuerySpan,
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+	readCues []legalquery.CueMention,
+	searchCues []legalquery.CueMention,
+) bool {
+	for _, read := range readCues {
+		if span.EndByte() <= read.Span().StartByte() &&
+			!cueStartsBetween(
+				searchCues,
+				span.EndByte(),
+				read.Span().StartByte(),
+			) &&
+			!hasInterveningRefSubject(
+				input,
+				cues,
+				span.EndByte(),
+				read.Span().StartByte(),
+			) &&
+			!hasInterveningNonDocumentReadCue(
+				cues,
+				span.EndByte(),
+				read.Span().StartByte(),
+			) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasInterveningNonDocumentReadCue(
+	cues resolvedCues,
+	startByte int,
+	endByte int,
+) bool {
+	if cueStartsBetween(
+		cues.mentions[cueMeaningKey("resource", "updates")],
+		startByte,
+		endByte,
+	) || cueStartsBetween(
+		cues.mentions[cueMeaningKey("task", "list_updates")],
+		startByte,
+		endByte,
+	) {
+		return true
+	}
+	for _, resource := range cues.mentions[cueMeaningKey("resource", "law_provision")] {
+		if strings.Contains(resource.Surface(), "本文") {
+			continue
+		}
+		start := resource.Span().StartByte()
+		if startByte <= start && start < endByte {
+			return true
+		}
+	}
+	return false
+}
+
 func refTermHasDirectRead(
 	term legalquery.QueryTermMention,
 	input legalquery.CandidateGenerationInput,
@@ -298,23 +376,13 @@ func refTermHasDirectRead(
 	readCues []legalquery.CueMention,
 	searchCues []legalquery.CueMention,
 ) bool {
-	for _, read := range readCues {
-		if term.Span().EndByte() <= read.Span().StartByte() &&
-			!cueStartsBetween(
-				searchCues,
-				term.Span().EndByte(),
-				read.Span().StartByte(),
-			) &&
-			!hasInterveningRefSubject(
-				input,
-				cues,
-				term.Span().EndByte(),
-				read.Span().StartByte(),
-			) {
-			return true
-		}
-	}
-	return false
+	return spanHasDirectRead(
+		term.Span(),
+		input,
+		cues,
+		readCues,
+		searchCues,
+	)
 }
 
 func hasInterveningRefSubject(

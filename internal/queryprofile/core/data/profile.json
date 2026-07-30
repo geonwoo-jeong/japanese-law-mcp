@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "profileVersion": "core-2026-07-30-15",
+  "profileVersion": "core-2026-07-30-16",
   "rankingVersion": "legal-query-ranking-2026-07-28-1",
   "cueSetVersion": "core-cues-2026-07-30-8",
   "targets": [
