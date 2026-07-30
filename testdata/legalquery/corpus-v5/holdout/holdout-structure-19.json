@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-19",
+  "coverageIds": [
+    "intent-law-article-read",
+    "intent-law-content-search",
+    "name-official",
+    "structure-article",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "322AC0000000049",
+              "location": {
+                "articleNumber": "32",
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "休憩"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-labor-article-content",
+  "request": {
+    "query": "労働基準法第32条を読み、法令本文から「休憩」を検索して"
+  },
+  "schemaVersion": 1
+}

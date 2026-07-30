@@ -1,0 +1,68 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-05",
+  "coverageIds": [
+    "budget-item-limit",
+    "budget-page-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "会社法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "取締役"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2026-06-30"
+            },
+            "resource": "law",
+            "task": "list_updates"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-company-three-collections",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "会社法を検索し、取締役の条文と2026年6月30日の更新一覧も確認してください。"
+  },
+  "schemaVersion": 1
+}

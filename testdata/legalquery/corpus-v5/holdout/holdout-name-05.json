@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-name-05",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "出入国管理及び難民認定法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "holdout-name-immigration-control",
+  "request": {
+    "query": "入管法を探してください。"
+  },
+  "schemaVersion": 1
+}

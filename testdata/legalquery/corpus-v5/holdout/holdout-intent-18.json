@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-intent-18",
+  "coverageIds": [
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "著作権 演奏権"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-intent-judicial-search-copyright",
+  "request": {
+    "limitPerAttempt": 4,
+    "query": "公表裁判例で「著作権 演奏権」を検索する"
+  },
+  "schemaVersion": 1
+}

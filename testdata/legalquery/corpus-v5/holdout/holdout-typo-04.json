@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-typo-04",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official",
+    "typo-insertion"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "消費者契約法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-typo-consumer-contract-search",
+  "request": {
+    "query": "消費者間契約法という法律を探してもらえますか。"
+  },
+  "schemaVersion": 1
+}

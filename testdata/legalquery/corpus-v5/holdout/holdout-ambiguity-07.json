@@ -1,0 +1,78 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-07",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "hedged",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "childcare-leave"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept",
+          "morphological_context"
+        ],
+        "meaningId": "leave-system",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "育児休業"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+          "childcare-leave-benefit"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept",
+          "morphological_context"
+        ],
+        "meaningId": "leave-benefit",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "育児休業給付"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "hedged_close_candidates"
+    ],
+    "selectedMeaningIds": [
+      "leave-system",
+      "leave-benefit"
+    ]
+  },
+  "leakageGroupId": "holdout-ambiguity-childcare-leave-concept",
+  "request": {
+    "query": "育休について法情報を調べてください。"
+  },
+  "schemaVersion": 1
+}

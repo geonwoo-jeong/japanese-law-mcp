@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-10",
+  "coverageIds": [
+    "intent-law-article-read",
+    "name-official-abbreviation",
+    "structure-article"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "415AC0000000057",
+              "location": {
+                "articleNumber": "27",
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-privacy-27-read",
+  "request": {
+    "query": "個人情報保護法第27条を読んで"
+  },
+  "schemaVersion": 1
+}

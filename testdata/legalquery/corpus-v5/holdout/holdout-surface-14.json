@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-surface-14",
+  "coverageIds": [
+    "intent-law-search",
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "障害を理由とする差別の解消の推進に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "holdout-surface-disability-discrimination",
+  "request": {
+    "query": "障害者差別 解消法を法令名で探してください。"
+  },
+  "schemaVersion": 1
+}
