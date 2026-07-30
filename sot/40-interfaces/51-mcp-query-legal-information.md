@@ -26,6 +26,14 @@ transport 非依存 request の作成時には、共通構造と `law` または
 
 欠落、`null`、型不一致、上限超過、未知の入力項目、整数へ正確に変換できない number および不正な `ref` は、外部情報源を呼び出す前に `invalid_argument` とする。
 
+`arguments` 全体の byte 上限と JSON object の構造を検証した後、個別入力値は
+`query`、`limitPerAttempt`、`ref` の順で検証する。`query` の必須性と型を
+確認した直後に、共通 request constructor で trim 後の空、UTF-8 byte 上限
+および制御文字を検証する。次に `limitPerAttempt` を含む ref なし request を
+構築し、それが成功した場合だけ `ref` を構造化して最終 request を構築する。
+複数項目の違反が同時にある場合、公開する `details.field` はこの順で最初の
+違反とする。
+
 task、resource、score 閾値、候補数、pack、offset、continuation、`asOf` または任意の filter を追加の入力項目として受け付けない。決定的な指定や継続取得には既存専門ツールを使用する。
 
 ## 公開 `ref` の供給元

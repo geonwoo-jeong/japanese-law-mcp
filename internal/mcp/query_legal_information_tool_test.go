@@ -271,6 +271,82 @@ func TestQueryLegalInformationToolRejectsInvalidInputBeforeApplication(
 	}
 }
 
+func TestQueryLegalInformationToolは複数の入力違反を固定順で返す(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const invalidRef = `"ref":{` +
+		`"providerId":"E-Gov-Law-Api-V2",` +
+		`"key":{` +
+		`"sourceId":"e-gov-law-api-v2",` +
+		`"resourceType":"law",` +
+		`"resourceId":"405AC0000000088"` +
+		`}}`
+	tests := []struct {
+		name          string
+		arguments     json.RawMessage
+		expectedField string
+	}{
+		{
+			name: "query は limit と ref より先",
+			arguments: json.RawMessage(
+				`{"query":"   ","limitPerAttempt":0,` +
+					invalidRef + `}`,
+			),
+			expectedField: "query",
+		},
+		{
+			name: "limit は ref より先",
+			arguments: json.RawMessage(
+				`{"query":"行政手続法を検索","limitPerAttempt":0,` +
+					invalidRef + `}`,
+			),
+			expectedField: "limitPerAttempt",
+		},
+		{
+			name: "query と limit が有効なら ref",
+			arguments: json.RawMessage(
+				`{"query":"行政手続法を検索","limitPerAttempt":1,` +
+					invalidRef + `}`,
+			),
+			expectedField: "ref",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			port := &recordingQueryLegalInformationPort{}
+			result, err := callQueryLegalInformation(
+				context.Background(),
+				port,
+				test.arguments,
+			)
+			if err != nil {
+				t.Fatalf("入力エラーを protocol error にしました: %v", err)
+			}
+			payload := assertQueryLegalInformationError(
+				t,
+				result,
+				model.ErrorCodeInvalidArgument,
+			)
+			if payload.Details["field"] != test.expectedField {
+				t.Fatalf(
+					"details.field = %#v, want %q",
+					payload.Details["field"],
+					test.expectedField,
+				)
+			}
+			calls, _, _ := port.snapshot()
+			if calls != 0 {
+				t.Fatalf("不正入力で application を %d 回呼びました", calls)
+			}
+		})
+	}
+}
+
 func TestQueryLegalInformationToolMapsApplicationErrors(t *testing.T) {
 	t.Parallel()
 

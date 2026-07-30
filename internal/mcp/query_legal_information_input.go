@@ -45,6 +45,9 @@ func decodeQueryLegalInformationInput(
 		return legalquery.Request{}, err
 	}
 	values := legalquery.RequestValues{Query: query}
+	if _, err := legalquery.NewRequest(values); err != nil {
+		return legalquery.Request{}, err
+	}
 	if raw, exists := fields["limitPerAttempt"]; exists {
 		if queryLegalInformationJSONNull(raw) {
 			return legalquery.Request{}, newQueryLegalInformationInputError(
@@ -61,19 +64,25 @@ func decodeQueryLegalInformationInput(
 		}
 		values.LimitPerAttempt = &limit
 	}
-	if raw, exists := fields["ref"]; exists {
-		if queryLegalInformationJSONNull(raw) {
-			return legalquery.Request{}, newQueryLegalInformationInputError(
-				"ref",
-				"に null は使用できません",
-			)
-		}
-		ref, refErr := decodeQueryLegalInformationRef(raw)
-		if refErr != nil {
-			return legalquery.Request{}, refErr
-		}
-		values.Ref = &ref
+	base, err := legalquery.NewRequest(values)
+	if err != nil {
+		return legalquery.Request{}, err
 	}
+	rawRef, hasRef := fields["ref"]
+	if !hasRef {
+		return base, nil
+	}
+	if queryLegalInformationJSONNull(rawRef) {
+		return legalquery.Request{}, newQueryLegalInformationInputError(
+			"ref",
+			"に null は使用できません",
+		)
+	}
+	ref, refErr := decodeQueryLegalInformationRef(rawRef)
+	if refErr != nil {
+		return legalquery.Request{}, refErr
+	}
+	values.Ref = &ref
 	return legalquery.NewRequest(values)
 }
 

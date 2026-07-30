@@ -141,13 +141,19 @@ func productRequest(
 	if limit, exists := raw.LimitPerAttempt(); exists {
 		values.LimitPerAttempt = &limit
 	}
-	if rawRef, exists := raw.Ref(); exists {
-		ref, err := productRef(rawRef)
-		if err != nil {
-			return legalquery.Request{}, err
-		}
-		values.Ref = &ref
+	base, err := legalquery.NewRequest(values)
+	if err != nil {
+		return legalquery.Request{}, err
 	}
+	rawRef, exists := raw.Ref()
+	if !exists {
+		return base, nil
+	}
+	ref, err := productRef(rawRef)
+	if err != nil {
+		return legalquery.Request{}, err
+	}
+	values.Ref = &ref
 	return legalquery.NewRequest(values)
 }
 
