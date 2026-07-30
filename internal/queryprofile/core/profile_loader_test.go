@@ -110,8 +110,8 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 			profile: embeddedProfile,
 			cues: bytes.Replace(
 				embeddedCues,
-				[]byte(`core-cues-2026-07-30-8`),
-				[]byte(`core-cues-2026-07-28-9`),
+				[]byte(`"cueSetVersion": "`),
+				[]byte(`"cueSetVersion": "mismatch-`),
 				1,
 			),
 		},
