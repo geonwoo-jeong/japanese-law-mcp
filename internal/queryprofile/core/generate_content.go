@@ -259,18 +259,9 @@ func (p *Profile) buildConceptCandidates(
 			cues,
 			mention,
 		)
-		definition, exists := p.concepts[mention.ConceptID()]
-		if !exists {
-			return nil, fmt.Errorf(
-				"core profile に未登録の conceptId %q があります",
-				mention.ConceptID(),
-			)
-		}
-		if mention.Canonical() != definition.entry.Canonical {
-			return nil, fmt.Errorf(
-				"conceptId %q の canonical が profile snapshot と一致しません",
-				mention.ConceptID(),
-			)
+		definition, err := p.conceptDefinitionForMention(mention)
+		if err != nil {
+			return nil, err
 		}
 		for _, candidate := range definition.entry.Candidates {
 			if !isCoreConceptCandidate(candidate) {
@@ -319,6 +310,36 @@ func (p *Profile) buildConceptCandidates(
 		}
 	}
 	return result, nil
+}
+
+func (p *Profile) validateConceptMentions(
+	mentions []legalquery.LegalConceptMention,
+) error {
+	for _, mention := range mentions {
+		if _, err := p.conceptDefinitionForMention(mention); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Profile) conceptDefinitionForMention(
+	mention legalquery.LegalConceptMention,
+) (conceptDefinition, error) {
+	definition, exists := p.concepts[mention.ConceptID()]
+	if !exists {
+		return conceptDefinition{}, fmt.Errorf(
+			"core profile に未登録の conceptId %q があります",
+			mention.ConceptID(),
+		)
+	}
+	if mention.Canonical() != definition.entry.Canonical {
+		return conceptDefinition{}, fmt.Errorf(
+			"conceptId %q の canonical が profile snapshot と一致しません",
+			mention.ConceptID(),
+		)
+	}
+	return definition, nil
 }
 
 func buildSeparatedContentCandidates(

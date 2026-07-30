@@ -58,6 +58,9 @@ func (p *Profile) Generate(
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
+	if err := p.validateConceptMentions(input.LegalConceptMentions()); err != nil {
+		return legalquery.CandidateGeneration{}, err
+	}
 	signals := p.generationSignals(input, cues)
 	if input.Language() == legalquery.QueryLanguageNonJapanese {
 		return p.newGeneration(
@@ -128,7 +131,8 @@ func retainSupportedDraftsForUnsupportedRequest(
 	}
 	result := make([]candidateDraft, 0, len(drafts))
 	for _, draft := range drafts {
-		if !hasDraftEvidence(draft, legalquery.EvidenceExplicitTask) {
+		if !hasDraftEvidence(draft, legalquery.EvidenceExplicitTask) &&
+			!hasDeterministicRetrievalEvidence(draft.evidence) {
 			continue
 		}
 		if hasUnsupportedTaskOrResourceSignal(signals) &&
@@ -178,6 +182,20 @@ func hasDraftEvidence(
 ) bool {
 	_, exists := draft.evidence[code]
 	return exists
+}
+
+func hasDeterministicRetrievalEvidence(
+	evidence map[legalquery.EvidenceCode]struct{},
+) bool {
+	for _, code := range []legalquery.EvidenceCode{
+		legalquery.EvidenceOfficialIdentifier,
+		legalquery.EvidenceStructuredReference,
+	} {
+		if _, exists := evidence[code]; exists {
+			return true
+		}
+	}
+	return false
 }
 
 func hasTaskCueAtOrAfterDraft(
@@ -281,9 +299,11 @@ func (p *Profile) generateDrafts(
 		return nil, err
 	}
 	searchTargets := targets
+	groundedSearchBeforeRead := false
 	if explicitSearch && explicitRead {
 		if preceding := refPrecedingLawSearchTargets(input, cues); len(preceding) > 0 {
 			searchTargets = preceding
+			groundedSearchBeforeRead = true
 		}
 	}
 	search, err := buildLawSearchCandidates(
@@ -314,7 +334,7 @@ func (p *Profile) generateDrafts(
 	}
 
 	switch {
-	case explicitSearch && explicitRead &&
+	case groundedSearchBeforeRead &&
 		len(search) == 1 && len(read) > 0:
 		searchAndRead := combineDraftSets(search, read, nil)
 		return combineDraftSets(searchAndRead, content, update), nil
