@@ -44,6 +44,16 @@ func (p *Profile) buildContentCandidates(
 		return separated, nil
 	}
 	if len(terms) == 0 {
+		literalDraft, literalErr := buildExplicitContentLiteralDraft(
+			input,
+			cues,
+		)
+		if literalErr != nil {
+			return nil, literalErr
+		}
+		if literalDraft != nil {
+			return append(conceptDrafts, *literalDraft), nil
+		}
 		return conceptDrafts, nil
 	}
 	if hasLawTargets && !cues.has("resource", "law_provision") {
@@ -663,6 +673,37 @@ func buildTermContentDraft(
 			cues,
 		),
 		input: contentInput,
+	})
+	return &draft, nil
+}
+
+func buildExplicitContentLiteralDraft(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) (*candidateDraft, error) {
+	if !cues.has("task", "search") || !cues.has("resource", "law_provision") {
+		return nil, nil
+	}
+	resultUnits := cues.mentions[cueMeaningKey("syntax", "content_result_unit")]
+	if len(resultUnits) != 1 {
+		return nil, nil
+	}
+	asOf := selectedAsOfDate(input, cues, false)
+	contentInput, err := newContentInput(
+		[]string{resultUnits[0].Surface()},
+		nil,
+		nil,
+		asOf,
+	)
+	if err != nil {
+		return nil, err
+	}
+	draft := newCandidateDraft()
+	addExplicitSearchEvidence(&draft, cues, true)
+	draft.evidence[legalquery.EvidenceMorphologicalContext] = struct{}{}
+	draft.steps = append(draft.steps, stepDraft{
+		startByte: contentSubjectStartByte(resultUnits[0].Span(), cues),
+		input:     contentInput,
 	})
 	return &draft, nil
 }
