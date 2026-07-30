@@ -40,12 +40,16 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	) {
 		t.Fatalf("courts capabilityId = %v", got)
 	}
+	wantCourtsParserVersions := map[string]string{
+		"judicial-decision.read":   "1.0.0",
+		"judicial-decision.search": "1.1.0",
+	}
 	for _, row := range courtsRows {
 		if row.MajorVersion != 1 ||
 			row.BudgetSOTID != "SOT-IF-043" ||
 			row.ConcurrencyGroup != "courts-hanrei-html" ||
 			row.ArtifactType != "HTML" ||
-			row.ParserContractVersion != "1.0.0" ||
+			row.ParserContractVersion != wantCourtsParserVersions[row.CapabilityID] ||
 			row.ImplementedBy !=
 				"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei" ||
 			row.ConformanceTarget != "./internal/source/courts/hanrei" ||

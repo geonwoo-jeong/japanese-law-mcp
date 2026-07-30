@@ -127,7 +127,7 @@ rows:
       - source_response_too_large
       - source_processing_limit
       - unsafe_source_content
-    parserContractVersion: "1.0.0"
+    parserContractVersion: "1.1.0"
     implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei
     conformanceTarget: ./internal/source/courts/hanrei
     status: implemented
