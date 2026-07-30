@@ -445,65 +445,110 @@ func shouldIgnoreReservedPackTypoLawMention(
 	if mention.MatchKind() != legalquery.PreprocessMatchUniqueTypoCorrection {
 		return false
 	}
-	reservedStartByte, exists := firstCueStartAfter(
-		cues.mentions[cueMeaningKey("reserved_pack", "judicial-cases")],
-		mention.Span().EndByte(),
-	)
-	if !exists {
+	if _, quoted := containingQuotedQueryTerm(input, mention.Span()); quoted {
 		return false
 	}
-	if hasCoreResourceCueBefore(
+	evidence := collectTypoLawContext(
+		input,
+		mention.Span(),
 		cues,
-		mention.Span().EndByte(),
-		reservedStartByte,
-	) {
-		return false
-	}
-	nextStartByte, exists := nextFactStartAfter(input, mention.Span().EndByte())
-	if !exists {
-		return false
-	}
-	return nextStartByte == reservedStartByte
+		false,
+	)
+	return evidence.prefersJudicial()
 }
 
-func firstCueStartAfter(
-	values []legalquery.CueMention,
-	endByte int,
-) (int, bool) {
-	startByte := 0
-	exists := false
-	for _, current := range values {
-		start := current.Span().StartByte()
-		if start <= endByte {
-			continue
-		}
-		if !exists || start < startByte {
-			startByte = start
-			exists = true
-		}
-	}
-	return startByte, exists
+type typoLawContextRelation uint8
+
+const (
+	typoLawContextBefore typoLawContextRelation = 1 << iota
+	typoLawContextAfter
+	typoLawContextOverlap
+)
+
+type typoLawContextEvidence struct {
+	bestDistance      int
+	coreRelations     typoLawContextRelation
+	judicialRelations typoLawContextRelation
 }
 
-func hasCoreResourceCueBefore(
+func newTypoLawContextEvidence() typoLawContextEvidence {
+	return typoLawContextEvidence{bestDistance: -1}
+}
+
+// prefersJudicial は、最短の文脈が裁判例だけの場合に加え、
+// 直前の裁判例 resource と直後の task が同距離なら日本語の
+// 「resource・対象・task」の並びを優先する。
+func (e typoLawContextEvidence) prefersJudicial() bool {
+	if e.judicialRelations == 0 {
+		return false
+	}
+	if e.coreRelations == 0 {
+		return true
+	}
+	return e.judicialRelations&typoLawContextBefore != 0 &&
+		e.coreRelations == typoLawContextAfter
+}
+
+func (e typoLawContextEvidence) withContext(
+	subject legalquery.QuerySpan,
+	context legalquery.QuerySpan,
+	judicial bool,
+) typoLawContextEvidence {
+	distance, relation := querySpanDistanceAndRelation(subject, context)
+	if e.bestDistance >= 0 && distance > e.bestDistance {
+		return e
+	}
+	result := e
+	if e.bestDistance < 0 || distance < e.bestDistance {
+		result = newTypoLawContextEvidence()
+		result.bestDistance = distance
+	}
+	if judicial {
+		result.judicialRelations |= relation
+	} else {
+		result.coreRelations |= relation
+	}
+	return result
+}
+
+func collectTypoLawContext(
+	input legalquery.CandidateGenerationInput,
+	subject legalquery.QuerySpan,
 	cues resolvedCues,
-	startByte int,
-	limitByte int,
-) bool {
-	keys := []string{
-		cueMeaningKey("resource", "law"),
-		cueMeaningKey("resource", "law_provision"),
-		cueMeaningKey("resource", "updates"),
-	}
-	for _, key := range keys {
-		for _, current := range cues.mentions[key] {
-			start := current.Span().StartByte()
-			if startByte < start && start < limitByte {
-				return true
+	includePrecedingTasks bool,
+) typoLawContextEvidence {
+	// profile は原文を再解析せず、共通前処理が位置付きで渡した
+	// resource・task・条項 fact のうち最短の文脈だけを採用する。
+	result := newTypoLawContextEvidence()
+	for _, category := range []string{"law", "law_provision", "updates"} {
+		for _, cue := range cues.mentions[cueMeaningKey("resource", category)] {
+			if overlapsReservedJudicialCue(cue, cues) {
+				continue
 			}
+			result = result.withContext(subject, cue.Span(), false)
 		}
 	}
-	return false
+	for _, task := range []string{"search", "read", "list_updates"} {
+		for _, cue := range cues.mentions[cueMeaningKey("task", task)] {
+			// 通常の法令名では直前 task を前節の操作として除外する。
+			// 引用句では resource・引用句・task の両側を比較する。
+			if !includePrecedingTasks &&
+				cue.Span().StartByte() < subject.EndByte() {
+				continue
+			}
+			result = result.withContext(subject, cue.Span(), false)
+		}
+	}
+	for _, mention := range input.ArticleMentions() {
+		result = result.withContext(subject, mention.Span(), false)
+	}
+	for _, mention := range input.ParagraphMentions() {
+		result = result.withContext(subject, mention.Span(), false)
+	}
+	for _, cue := range contentJudicialResources(cues) {
+		result = result.withContext(subject, cue.Span(), true)
+	}
+	return result
 }
 
 func shouldIgnoreQuotedJudicialTypoLawMention(
@@ -514,69 +559,42 @@ func shouldIgnoreQuotedJudicialTypoLawMention(
 	if mention.MatchKind() != legalquery.PreprocessMatchUniqueTypoCorrection {
 		return false
 	}
-	if !cues.has("reserved_pack", "judicial-cases") {
+	quoted, exists := containingQuotedQueryTerm(input, mention.Span())
+	if !exists {
 		return false
 	}
-	if cues.has("resource", "law") ||
-		cues.has("resource", "law_provision") ||
-		cues.has("resource", "updates") {
-		return false
-	}
+	evidence := collectTypoLawContext(input, quoted, cues, true)
+	return evidence.prefersJudicial()
+}
+
+func containingQuotedQueryTerm(
+	input legalquery.CandidateGenerationInput,
+	span legalquery.QuerySpan,
+) (legalquery.QuerySpan, bool) {
 	for _, term := range input.QueryTermMentions() {
 		if term.Kind() != legalquery.QueryTermMentionQuotedPhrase {
 			continue
 		}
-		if term.Span().StartByte() <= mention.Span().StartByte() &&
-			mention.Span().EndByte() <= term.Span().EndByte() {
-			return true
+		if term.Span().StartByte() <= span.StartByte() &&
+			span.EndByte() <= term.Span().EndByte() {
+			return term.Span(), true
 		}
 	}
-	return false
+	return legalquery.QuerySpan{}, false
 }
 
-func nextFactStartAfter(
-	input legalquery.CandidateGenerationInput,
-	endByte int,
-) (int, bool) {
-	startByte := 0
-	exists := false
-	record := func(value int) {
-		if value <= endByte {
-			return
-		}
-		if !exists || value < startByte {
-			startByte = value
-			exists = true
-		}
+func querySpanDistanceAndRelation(
+	subject legalquery.QuerySpan,
+	context legalquery.QuerySpan,
+) (int, typoLawContextRelation) {
+	switch {
+	case context.EndByte() <= subject.StartByte():
+		return subject.StartByte() - context.EndByte(), typoLawContextBefore
+	case subject.EndByte() <= context.StartByte():
+		return context.StartByte() - subject.EndByte(), typoLawContextAfter
+	default:
+		return 0, typoLawContextOverlap
 	}
-	for _, mention := range input.CueMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.LawNameMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.LegalConceptMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.IdentifierMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.DateMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.ArticleMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.ParagraphMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.CaseNumberMentions() {
-		record(mention.Span().StartByte())
-	}
-	for _, mention := range input.QueryTermMentions() {
-		record(mention.Span().StartByte())
-	}
-	return startByte, exists
 }
 
 func searchTermForLawMention(mention legalquery.LawNameMention) string {

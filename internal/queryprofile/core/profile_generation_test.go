@@ -383,6 +383,31 @@ func TestProfileは裁判例resource直結の法令誤記補正を候補化し�
 	}
 }
 
+func TestProfileは後続の法令resourceがあっても裁判所法誤記候補を復活させない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"裁判所の裁判例から「解雇権濫用」を探し、民法の法律も検索する",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("SOT-ARCH-021: candidates = %#v", candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawSearch {
+		t.Fatalf("SOT-ARCH-021: steps = %#v", steps)
+	}
+	law, ok := steps[0].LogicalInput().(legalquery.LawSearchIntentV1)
+	if !ok || law.Query() != "民法" {
+		t.Fatalf("SOT-ARCH-021: law input = %#v", steps[0].LogicalInput())
+	}
+}
+
 func TestProfileは同じ意味へ解決した全ての法概念出典を保持する(
 	t *testing.T,
 ) {
