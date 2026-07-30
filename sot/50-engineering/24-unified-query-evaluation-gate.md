@@ -103,10 +103,15 @@ holdout の期待値を実装へ合わせて調整しない。fixture の誤り�
 repository root から実行する標準 command を導入する場合、その固定引数は次とする。
 
 ```text
-go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v4 --profile-set=default --baseline=./testdata/legalquery/baselines/default.json --format=json
+go run ./cmd/legal-query-eval --corpus=./testdata/legalquery/corpus-v9 --profile-set=default --baseline=./testdata/legalquery/baselines/default.json --format=json
 ```
 
-command と初期 baseline が未実装の段階では全評価ゲートを通過したと扱わず、corpus 成果物だけを変更する場合は `SOT-ENG-026` の loader、checksum、固定 digest および入力根拠を検証する。初回 profile set の採用時に command と baseline を追加し、`corpus-v4` に対する全指標を確定する。
+標準 command は、独立 review で期待値を訂正した現行の `corpus-v9` と
+review 済みの `default-1` baseline を使用する。過去の corpus version は
+再現用成果物として保持するが、標準 command の採用判定へ使用しない。
+標準 corpus を更新する場合は、過去版を変更せず新しい corpus version と
+holdout digest を割り当て、変更前後の結果と独立 review を同じ変更で残し、
+標準 command と baseline を同時に更新する。
 
 command はネットワークを使用せず、固定 seed と repository 内の不変 profile・辞書・fake provider だけを使う。`default` profile set は法令コア、`judicial-cases` 有効時および無効時を manifest の指定どおり評価する。
 

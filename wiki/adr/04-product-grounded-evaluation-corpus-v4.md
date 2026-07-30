@@ -37,7 +37,10 @@
 | seed | `20260727` | `20260727` |
 | holdout digest | `25b06db5e29ada2922e970a8c569ee9d2e73ce22fae4ffe3ce5880043d3543b8` | `25b06db5e29ada2922e970a8c569ee9d2e73ce22fae4ffe3ce5880043d3543b8` |
 
-初回 profile set と評価 command の既定 corpus は`corpus-v4`とする。過去三版も loader の再現性試験を残す。
+この決定時点では初回 profile set と評価 command の既定 corpus を
+`corpus-v4` とした。過去三版も loader の再現性試験を残す。後に
+[ADR-005](05-reviewed-evaluation-corpus-v9.md) が既定 corpus の指定だけを
+`corpus-v9` へ置き換えた。
 
 ## 検証結果
 

@@ -88,6 +88,7 @@ func buildPrePushPlan(input planInput) []step {
 func buildCIPlan(input planInput) []step {
 	steps := buildSnapshotPlan(input.snapshot, ciCachePolicySteps(input.repository), true)
 	steps = append(steps,
+		legalQueryEvaluationStep(input.snapshot),
 		productVulnerabilityStep(input.snapshot),
 		commonToolVulnerabilityStep(input.snapshot),
 		gitleaksVulnerabilityStep(input.snapshot),
@@ -103,6 +104,24 @@ func buildCIPlan(input planInput) []step {
 		),
 	)
 	return steps
+}
+
+func legalQueryEvaluationStep(snapshot string) step {
+	return commandStep(
+		"legal-query-eval",
+		"統合照会の固定評価",
+		"SOT-ENG-024",
+		goCommand(
+			snapshot,
+			false,
+			"run",
+			"./cmd/legal-query-eval",
+			"--corpus=./testdata/legalquery/corpus-v9",
+			"--profile-set=default",
+			"--baseline=./testdata/legalquery/baselines/default.json",
+			"--format=json",
+		),
+	)
 }
 
 func buildSnapshotPlan(snapshot string, cachePolicy []step, network bool) []step {
