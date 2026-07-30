@@ -74,6 +74,16 @@ func TestPreprocessExtractsOnlyGrammaticallyAnchoredMorphologicalPhrases(
 			want:  []string{"供託制度"},
 		},
 		{
+			name:  "task cue の手段を表す名詞句",
+			query: "民法を最大件数で検索",
+			want:  []string{"最大件数"},
+		},
+		{
+			name:  "上限語を含む手段句",
+			query: "上限内で検索してください。",
+			want:  []string{"上限内"},
+		},
+		{
 			name:  "法概念の後続文脈",
 			query: "育休の給付について調べて",
 			want:  []string{"給付"},
@@ -466,6 +476,11 @@ func mustQueryTermPreprocessor(t *testing.T) legalquery.QueryPreprocessor {
 		testLawEntries(),
 		concepts,
 		[]legalquery.CueVocabularyEntry{
+			{
+				ProfileID: "query-term-test",
+				CueID:     "operator-dual-candidate",
+				Terms:     []string{"二候補"},
+			},
 			{
 				ProfileID: "query-term-test",
 				CueID:     "task-search",

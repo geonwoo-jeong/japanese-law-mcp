@@ -7,6 +7,7 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querynormalization"
 )
 
 type lawTarget struct {
@@ -608,6 +609,10 @@ func searchTermForLawMention(mention legalquery.LawNameMention) string {
 
 func shouldPreferSurfaceLawQuery(surface string, canonical string) bool {
 	if surface == "" || canonical == "" || surface == canonical {
+		return false
+	}
+	if querynormalization.ComparisonKey(surface) ==
+		querynormalization.ComparisonKey(canonical) {
 		return false
 	}
 	if surface == contractedCanonicalLawQuery(canonical) {

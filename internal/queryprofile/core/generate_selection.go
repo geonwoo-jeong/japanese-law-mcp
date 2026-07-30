@@ -29,7 +29,9 @@ func (p *Profile) selectionMode(
 		return legalquery.QuerySelectionModeClarificationRequired
 	case hasTooManySeparatedSubjects(input, cues):
 		return legalquery.QuerySelectionModeClarificationRequired
-	case len(candidates) == 0 && hasSeparatedSubjectEvidence(input, cues):
+	case len(candidates) == 0 &&
+		hasSeparatedSubjectEvidence(input, cues) &&
+		hasCoreSubjectEvidence(input, cues):
 		return legalquery.QuerySelectionModeClarificationRequired
 	default:
 		return legalquery.QuerySelectionModeAutomatic
@@ -210,4 +212,19 @@ func hasSeparatedSubjectEvidence(
 		return false
 	}
 	return separatedSubjectCount(input) >= 2
+}
+
+func hasCoreSubjectEvidence(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) bool {
+	if len(buildLawTargets(input, cues)) > 0 ||
+		len(coreContentQueryTerms(input, cues)) > 0 ||
+		len(input.ArticleMentions()) > 0 ||
+		len(input.LegalConceptMentions()) > 0 {
+		return true
+	}
+	return cues.has("resource", "law") ||
+		cues.has("resource", "law_provision") ||
+		cues.has("resource", "updates")
 }

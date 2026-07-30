@@ -94,3 +94,28 @@ func TestProfileは不透明な略称と誤記を正式名称へ解決する(t *
 		})
 	}
 }
+
+func TestProfileは空白だけが異なる法令名を正式名称へ正規化する(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(t, "消費者 契約法を探してください。", nil)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1", len(candidates))
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 {
+		t.Fatalf("step 数 = %d, want 1", len(steps))
+	}
+	search, ok := steps[0].LogicalInput().(legalquery.LawSearchIntentV1)
+	if !ok {
+		t.Fatalf("logical input = %T", steps[0].LogicalInput())
+	}
+	if search.Query() != "消費者契約法" {
+		t.Fatalf(
+			"SOT-ARCH-021: 法令検索語 = %q, want %q",
+			search.Query(),
+			"消費者契約法",
+		)
+	}
+}

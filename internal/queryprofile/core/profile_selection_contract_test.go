@@ -627,6 +627,30 @@ func TestProfileContributionは対象外資源だけの弱い候補を除去す�
 	}
 }
 
+func TestProfileContributionは裁判例専用の複数主題で明確化を強制しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	contribution := generateSelectionContribution(
+		t,
+		"裁判例を「工場騒音」と「駅構内転倒」でそれぞれ検索してください。",
+	)
+	if contribution.SelectionMode() != legalquery.QuerySelectionModeAutomatic {
+		t.Fatalf(
+			"SOT-ARCH-025: selection mode = %q, want %q",
+			contribution.SelectionMode(),
+			legalquery.QuerySelectionModeAutomatic,
+		)
+	}
+	if len(contribution.Candidates()) != 0 {
+		t.Fatalf(
+			"SOT-ARCH-025: core profile candidates = %#v, want 0 件",
+			contribution.Candidates(),
+		)
+	}
+}
+
 func generateSelectionContribution(
 	t *testing.T,
 	query string,

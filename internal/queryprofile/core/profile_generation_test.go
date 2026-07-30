@@ -714,6 +714,32 @@ func TestProfileは公式識別子検索と別法概念検索の出典を併存�
 	}
 }
 
+func TestProfileは最大件数指定語を法令検索語へ混入させない(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"行政手続法を最大件数で検索",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("candidates = %#v", candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawSearch {
+		t.Fatalf("steps = %#v", steps)
+	}
+	search, ok := steps[0].LogicalInput().(legalquery.LawSearchIntentV1)
+	if !ok {
+		t.Fatalf("logical input = %T", steps[0].LogicalInput())
+	}
+	if got, want := search.Query(), "行政手続法"; got != want {
+		t.Fatalf("search query = %q, want %q", got, want)
+	}
+}
+
 func TestProfileはmentionがない原文を再解析して候補を補わない(t *testing.T) {
 	t.Parallel()
 

@@ -78,6 +78,7 @@ func TestCandidateGenerationInputは非日本語を型付き事実にする(t *t
 		"search Japanese statutes",
 		"Civil Code を read",
 		"请阅读日本民法",
+		"请民法を検索",
 	} {
 		result, err := NewPreprocessResult(PreprocessResultValues{
 			Query:         query,

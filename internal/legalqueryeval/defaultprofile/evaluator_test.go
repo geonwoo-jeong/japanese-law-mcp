@@ -30,6 +30,7 @@ func TestEvaluatorは内蔵DefaultProfileで代表Holdoutを評価する(t *test
 	}
 	caseIDs := []string{
 		"holdout-input-01",
+		"holdout-input-17",
 		"holdout-input-18",
 		"holdout-intent-01",
 		"holdout-intent-04",

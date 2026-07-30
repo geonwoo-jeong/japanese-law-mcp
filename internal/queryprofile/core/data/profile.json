@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "profileVersion": "core-2026-07-30-25",
+  "profileVersion": "core-2026-07-30-26",
   "rankingVersion": "legal-query-ranking-2026-07-28-1",
-  "cueSetVersion": "core-cues-2026-07-30-11",
+  "cueSetVersion": "core-cues-2026-07-30-12",
   "targets": [
     {
       "task": "search",

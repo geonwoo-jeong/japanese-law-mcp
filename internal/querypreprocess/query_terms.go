@@ -435,7 +435,23 @@ func hasForwardPhraseAnchor(
 			cues,
 		)
 	}
+	if strings.HasPrefix(query[anchorStart:], "で") &&
+		isProcedureLimitPhrase(query[phrase.startByte:phrase.endByte]) {
+		afterParticle := skipUnicodeSpaceForward(query, anchorStart+len("で"))
+		return hasCueBeforeClauseBoundary(
+			query,
+			tokens,
+			afterParticle,
+			cues,
+		)
+	}
 	return false
+}
+
+func isProcedureLimitPhrase(surface string) bool {
+	comparisonKey := string(querynormalization.ComparisonKey(surface))
+	return strings.Contains(comparisonKey, "件数") ||
+		strings.Contains(comparisonKey, "上限")
 }
 
 func hasCueBeforeClauseBoundary(
