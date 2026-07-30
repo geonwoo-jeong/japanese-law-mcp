@@ -163,5 +163,6 @@ pool 内の step に二種類以上の task があれば一番目、二種類以
 - [SOT-MODEL-016: SourceResourceRef](16-source-resource-ref.md)
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](23-legal-query-plan.md)
+- [SOT-SCN-010: 統合照会の非実行案内を使って再照会する](../10-scenarios/10-use-non-execution-guidance.md)
 - [SOT-IF-007: MCP ツール結果](../40-interfaces/07-mcp-tool-result.md)
 - [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)

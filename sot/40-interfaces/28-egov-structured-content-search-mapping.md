@@ -34,6 +34,9 @@ e-Gov の公式検索文法で表現できない完全一致、近接検索、�
 
 ## レスポンス
 
+`GET /keyword` の JSON 応答は `SOT-IF-052` の共有 parser で受理してから、
+次の共通 capability model へ変換する。
+
 レスポンスの各 `sentences` を一件の `SourcedResource<LawContentMatch>` へ変換する。
 
 - `ref.providerId` と `ref.key.sourceId` は `e-gov-law-api-v2` とする。
@@ -51,8 +54,7 @@ e-Gov の公式検索文法で表現できない完全一致、近接検索、�
 
 - `429` は `rate_limited` とし、外部情報源が示した場合だけ `retryAfter` を保持する。
 - 期限超過は `source_timeout`、接続失敗、公式 OpenAPI が server 内部の失敗と定義する `500`、または一時的な `502`、`503`、`504` は `source_unavailable` とする。
-- 公式スキーマの必須項目または型が確認済み fixture と一致しない場合は `source_contract_changed` とする。
-- 値が契約を満たさないが公式スキーマ自体の変更と確認できない場合は `invalid_source_response` とする。
+- `GET /keyword` の個別応答と公式契約変更の分類は `SOT-IF-052` に従う。
 - 資源予算の超過は `SOT-ENG-016` に従う。
 
 ## 確認
@@ -69,4 +71,5 @@ e-Gov の公式例と固定 fixture を使用し、入力語が意図しない�
 - [SOT-IF-016: 情報源の継続取得](16-source-continuation-contract.md)
 - [SOT-IF-017: 情報源エラーの正規化](17-source-error-normalization.md)
 - [SOT-IF-023: law.content.search capability v1](23-law-content-search-capability.md)
+- [SOT-IF-052: e-Gov キーワード検索 JSON 応答の受理契約](52-egov-keyword-response-contract.md)
 - [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)

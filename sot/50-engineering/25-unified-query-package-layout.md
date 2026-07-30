@@ -157,3 +157,4 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
 - [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
+- [SOT-ENG-028: 統合照会の対象外意図 cue セット](28-unified-query-unsupported-intent-cues.md)

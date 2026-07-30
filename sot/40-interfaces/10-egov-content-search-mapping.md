@@ -21,6 +21,11 @@
 
 ## レスポンス
 
+`GET /keyword` の JSON 構造、必須項目、省略可能項目の `null`、未知項目、
+個別応答の不正および公式契約変更の分類は `SOT-IF-052` を定義元とする。
+以下の mapping と page 不変条件は、同 SOT を満たした一つの parser 結果へ
+適用する。
+
 `items` 内の各法令を `LawSummary` に変換し、その法令の `sentences` を一件ずつ次のように `LawContentMatch` へ展開する。
 
 | e-Gov | Japanese Law MCP |
@@ -41,7 +46,6 @@ e-Gov の公式 OpenAPI では、`limit` は応答内の `sentences[].position` 
 
 したがって、次のすべてを検証してから公開結果を作る。
 
-- `total_count`、`sentence_count` および `items` が存在する。
 - 全 `items[].sentences` を展開した件数が `sentence_count` と一致する。
 - `sentence_count` は 0 以上で、要求した `limit` 以下である。
 - `total_count` と `sentence_count` は 0 以上である。
@@ -49,7 +53,10 @@ e-Gov の公式 OpenAPI では、`limit` は応答内の `sentences[].position` 
 - `next_offset` が非 `null` の場合は `offset + sentence_count` と一致し、現在の `offset` より大きく、0 以上 2147483647 以下かつ `total_count` 以下であり、`offset + sentence_count < total_count` である。
 - `next_offset` が欠落または `null` の場合は、`offset + sentence_count >= total_count` でなければならない。
 
-各 `items` は `law_info`、`revision_info` および一件以上の `sentences` を持ち、各 sentence は `position` と `text` を持たなければならない。公開契約に必要な項目の欠落または上記の値の不変条件への違反は `invalid_source_response` とし、公式 schema の必須項目または型自体が確認済み仕様から変わった場合だけ `source_contract_changed` とする。全 `sentences` の一部を `limit` に合わせて切り捨てず、一つの法令 item を一件として数え直さない。
+JSON 構造と項目値の受理および error code は `SOT-IF-052` に従う。
+上記の page 不変条件への違反は `invalid_source_response` とする。
+全 `sentences` の一部を `limit` に合わせて切り捨てず、一つの法令 item を
+一件として数え直さない。
 
 `LawContentSearchResult.items` の件数は `sentence_count`、`totalCount` は `total_count` とする。`nextOffset` は検証済みの `next_offset` だけを使用し、独自に加算して作らない。
 
@@ -65,6 +72,7 @@ e-Gov の公式 OpenAPI では、`limit` は応答内の `sentences[].position` 
 
 - [SOT-IF-033: MCP `search_law_content`](33-mcp-search-law-content.md)
 - [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
+- [SOT-IF-052: e-Gov キーワード検索 JSON 応答の受理契約](52-egov-keyword-response-contract.md)
 - [SOT-IF-011: e-Gov 法令本文取得マッピング](11-egov-law-document-mapping.md)
 - [SOT-MODEL-008: LawContentSearchResult](../20-model/08-law-content-search-result.md)
 - [e-Gov 法令 API Version 2 OpenAPI](https://laws.e-gov.go.jp/api/2/swagger-ui/lawapi-v2.yaml)

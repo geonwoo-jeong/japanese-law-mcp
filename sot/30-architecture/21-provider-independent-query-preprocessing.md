@@ -38,11 +38,12 @@
 
 ## 関連
 
-- [SOT-SCN-008: 法令名検索語を解決する](../10-scenarios/08-resolve-law-name-query.md)
+- [SOT-SCN-011: 解決済み法令を検索結果で優先する](../10-scenarios/11-prioritize-resolved-law-search-result.md)
 - [SOT-ARCH-005: 一時的なリクエスト処理](05-ephemeral-request-lifecycle.md)
 - [SOT-ARCH-010: プロバイダーの分離](10-provider-isolation.md)
 - [SOT-ARCH-018: 拡張パック単位の正規化境界](18-pack-scoped-normalization-boundary.md)
 - [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
+- [SOT-ARCH-030: 解決済み法令対象の検索結果優先順位](30-canonical-law-target-priority.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
 - [SOT-ENG-023: 統合法情報照会の法概念辞書](../50-engineering/23-unified-query-concept-lexicon.md)
 - [SOT-MODEL-027: JudicialCaseNumberMention](../20-model/27-judicial-case-number-mention.md)

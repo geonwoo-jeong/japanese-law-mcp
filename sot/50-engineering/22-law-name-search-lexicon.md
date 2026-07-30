@@ -35,7 +35,8 @@
 
 ## 関連
 
-- [SOT-SCN-008: 法令名検索語を解決する](../10-scenarios/08-resolve-law-name-query.md)
+- [SOT-SCN-011: 解決済み法令を検索結果で優先する](../10-scenarios/11-prioritize-resolved-law-search-result.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
+- [SOT-ARCH-030: 解決済み法令対象の検索結果優先順位](../30-architecture/30-canonical-law-target-priority.md)
 - [SOT-IF-004: e-Gov 法令 API Version 2](../40-interfaces/04-source-egov-law-api-v2.md)
-- [SOT-IF-049: MCP `search_laws` v2](../40-interfaces/49-mcp-search-laws-v2.md)
+- [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)

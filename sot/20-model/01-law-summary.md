@@ -28,4 +28,4 @@
 
 - [SOT-MODEL-003: LegalSource](03-legal-source.md)
 - [SOT-MODEL-009: JSON シリアライズ](09-json-serialization.md)
-- [SOT-IF-049: MCP `search_laws` v2](../40-interfaces/49-mcp-search-laws-v2.md)
+- [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)

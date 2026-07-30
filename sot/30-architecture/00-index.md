@@ -29,3 +29,4 @@
 - [27-unified-query-cross-profile-composition.md](27-unified-query-cross-profile-composition.md)
 - [28-law-alias-collision-ranking.md](28-law-alias-collision-ranking.md)
 - [29-multi-step-evidence-preservation.md](29-multi-step-evidence-preservation.md)
+- [30-canonical-law-target-priority.md](30-canonical-law-target-priority.md)

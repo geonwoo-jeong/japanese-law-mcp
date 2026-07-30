@@ -41,8 +41,8 @@
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-050](../sot/40-interfaces/50-egov-law-search-mapping-v2.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.search@1` binding、固定 HTTP 要求、応答 parser、共通モデル mapping、fixture および continuation
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.document.read@1` binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.article.read@1` binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md) および [SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.content.search@1` binding、構造化条件からの決定的な検索式生成、安全な JSON 解析、一致位置単位の共通モデル mapping、fixture および continuation
-- [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md)、[SOT-IF-049](../sot/40-interfaces/49-mcp-search-laws-v2.md) および [SOT-ENG-022](../sot/50-engineering/22-law-name-search-lexicon.md) に従う、e-Gov 全 9,536 法令と 3,363 略称の組込みスナップショット、出典付き補足略称、Kagome user dictionary、比較用 Unicode 正規化、一意な誤記候補、および原検索の正常な空結果だけを正式名称で再検索するプロバイダー非依存の法令名検索語前処理
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md) および [SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.content.search@1` binding、構造化条件からの決定的な検索式生成、安全な JSON 解析、一致位置単位の共通モデル mapping、fixture および continuation。`SOT-IF-052` の `null` と error 分類への移行差分は未実装欄で追跡する
+- [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) および [SOT-ENG-022](../sot/50-engineering/22-law-name-search-lexicon.md) に従う、e-Gov 全 9,536 法令と 3,363 略称の組込みスナップショット、出典付き補足略称、Kagome user dictionary、比較用 Unicode 正規化および一意な誤記候補。現在の `search_laws` は廃止した [SOT-IF-049](../sot/40-interfaces/49-mcp-search-laws-v2.md) の、原検索が正常な空結果の場合だけ正式名称で再検索する動作までを実装している
 - [SOT-MODEL-025](../sot/20-model/25-legal-query-preprocess-result.md)、[SOT-MODEL-027](../sot/20-model/27-judicial-case-number-mention.md) および [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) に従う、統合法情報照会の原文 byte span、法令名・法概念・profile cue・公式識別子・日付・条・項・完全な裁判事件番号・明示引用句・文法的に接続した最大名詞句の出現、事件番号から決定的に導出する検索語、四種類の照合根拠、一回の Kagome 解析結果の再利用、能力別に差し替えられる任意の語彙、曖昧な辞書対応の保持、および provider や実行能力を選択しない共通前処理
 - [SOT-ENG-023](../sot/50-engineering/23-unified-query-concept-lexicon.md) に従う、育休の制度・給付、永住権の一般・条文意図およびネット中傷を含む十一概念について、公式語、出典付き同義表記、衝突群、検索対象 resource、pack および確認日を不変に保持する辞書スナップショット
 - [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md)、[SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) および [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) に従う、閉じた schema、安全な loader、意味・根拠・選択・実行指標の集計器、再現用の `corpus-v1` から `corpus-v8`、独立 review 済みの標準 `corpus-v9`、review 済みの `default-1` baseline、固定引数だけを受け付ける `legal-query-eval` および中央品質ゲートからの評価接続
@@ -62,7 +62,10 @@
 
 ## 未実装
 
-- 現在有効な SOT の採用範囲に、既知の未実装差分はない。
+- [SOT-ENG-028](../sot/50-engineering/28-unified-query-unsupported-intent-cues.md) の版付き対象外 cue セット、引用句境界、および比較・影響分析・法的助言を取得意図へ縮約しない回帰 fixture
+- [SOT-IF-052](../sot/40-interfaces/52-egov-keyword-response-contract.md) の省略可能三項目の `null` 受理と、個別応答の不正を `invalid_source_response`、一次資料で確認した契約変更を `source_contract_changed` とする共有 parser の分類
+- [SOT-ARCH-030](../sot/30-architecture/30-canonical-law-target-priority.md)、[SOT-SCN-011](../sot/10-scenarios/11-prioritize-resolved-law-search-result.md) および [SOT-IF-053](../sot/40-interfaces/53-mcp-search-laws-v3.md) の application 層 law-target resolver、原検索と確認検索の page 内安定優先、および v2 と同一の公開 schema を固定する契約 test
+- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の状態別再照会シナリオは既存の `SOT-MODEL-024` と `SOT-IF-051` の公開値で表現できるが、五つ以上の主題、無効 pack、比較・影響分析との混在および法的助言をまとめて確認するシナリオ契約 test は未追加
 
 ## 現在の起動面
 

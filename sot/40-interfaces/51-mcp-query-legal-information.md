@@ -129,6 +129,7 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 
 - [SOT-PROD-011: 統合法情報照会の製品範囲](../00-product/11-unified-legal-query-scope.md)
 - [SOT-SCN-009: 日本語の法情報を統合照会する](../10-scenarios/09-query-legal-information.md)
+- [SOT-SCN-010: 統合照会の非実行案内を使って再照会する](../10-scenarios/10-use-non-execution-guidance.md)
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)

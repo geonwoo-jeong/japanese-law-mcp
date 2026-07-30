@@ -30,6 +30,7 @@
 
 ## 関連
 
-- [SOT-IF-049: MCP `search_laws` v2](../40-interfaces/49-mcp-search-laws-v2.md)
+- [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)
+- [SOT-SCN-011: 解決済み法令を検索結果で優先する](11-prioritize-resolved-law-search-result.md)
 - [SOT-MODEL-006: LawSearchResult](../20-model/06-law-search-result.md)
 - [SOT-ARCH-005: リクエスト情報の一時性](../30-architecture/05-ephemeral-request-lifecycle.md)

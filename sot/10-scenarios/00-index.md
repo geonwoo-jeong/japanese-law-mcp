@@ -9,3 +9,5 @@
 - [07-get-judicial-case.md](07-get-judicial-case.md)
 - [08-resolve-law-name-query.md](08-resolve-law-name-query.md)
 - [09-query-legal-information.md](09-query-legal-information.md)
+- [10-use-non-execution-guidance.md](10-use-non-execution-guidance.md)
+- [11-prioritize-resolved-law-search-result.md](11-prioritize-resolved-law-search-result.md)

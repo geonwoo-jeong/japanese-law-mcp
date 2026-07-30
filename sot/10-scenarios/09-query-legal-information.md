@@ -52,6 +52,7 @@
 ## 関連
 
 - [SOT-PROD-011: 統合法情報照会の製品範囲](../00-product/11-unified-legal-query-scope.md)
+- [SOT-SCN-010: 統合照会の非実行案内を使って再照会する](10-use-non-execution-guidance.md)
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)

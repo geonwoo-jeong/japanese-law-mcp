@@ -39,5 +39,5 @@
 - [SOT-MODEL-014: SourcePage](../20-model/14-source-page.md)
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-PROD-005: 加工情報の区別](../00-product/05-derived-information.md)
-- [SOT-IF-049: MCP `search_laws` v2](../40-interfaces/49-mcp-search-laws-v2.md)
+- [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)
 - [SOT-IF-033: MCP `search_law_content`](../40-interfaces/33-mcp-search-law-content.md)

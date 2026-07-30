@@ -134,7 +134,7 @@
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-ARCH-017: 採用可能な能力群](../30-architecture/17-approved-capability-families.md)
 - [SOT-ARCH-013: 情報源の選択と組合せ](../30-architecture/13-source-composition.md)
-- [SOT-IF-049: MCP `search_laws` v2](49-mcp-search-laws-v2.md)
+- [SOT-IF-053: MCP `search_laws` v3](53-mcp-search-laws-v3.md)
 - [SOT-IF-050: e-Gov 法令名検索マッピング v2](50-egov-law-search-mapping-v2.md)
 - [SOT-IF-004: e-Gov 法令 API Version 2](04-source-egov-law-api-v2.md)
 - [SOT-IF-015: 情報源操作の共通契約](15-source-operation-contract.md)

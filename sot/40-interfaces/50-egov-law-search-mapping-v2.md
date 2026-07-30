@@ -60,7 +60,7 @@ e-Gov 法令 API Version 2 のアダプターが `law.search@1` を実装する�
 
 `law.search@1` の入力は `SOT-IF-022` に従う。既存 `search_laws` の `offset` は、公開 facade に限ってこの mapping の外部取得位置へ直接対応させる。
 
-`law_title` は、値の先頭と末尾が `/` の場合に正規表現として解釈される。`law.search@1` は該当値を外部呼出し前に `unsupported_query` とし、正規表現として送信、escape または近似しない。`SOT-IF-049` の公開 facade は同じ値を公開入力検証で `invalid_argument` とする。
+`law_title` は、値の先頭と末尾が `/` の場合に正規表現として解釈される。`law.search@1` は該当値を外部呼出し前に `unsupported_query` とし、正規表現として送信、escape または近似しない。`SOT-IF-053` の公開 facade は同じ値を公開入力検証で `invalid_argument` とする。
 
 `law.search@1` の `asOf` が `2017-04-01` より前の場合は、外部呼出し前に `unsupported_query` とする。初回取得で `asOf` がない場合に限り、リクエスト開始時点を `Asia/Tokyo` で暦日にした値を実効 `asof` として送る。継続トークンの `snapshot` は `{"asOf":"YYYY-MM-DD"}`、`sort` は `{"order":"+law_info.law_id"}`、`position` は `{"offset":<next_offset>}` とし、再開時に変更しない。
 
@@ -86,6 +86,6 @@ e-Gov 法令 API Version 2 のアダプターが `law.search@1` を実装する�
 - [SOT-IF-011: e-Gov 法令本文マッピング](11-egov-law-document-mapping.md)
 - [SOT-IF-016: 情報源の継続取得](16-source-continuation-contract.md)
 - [SOT-IF-022: law.search capability v1](22-law-search-capability.md)
-- [SOT-IF-049: MCP `search_laws` v2](49-mcp-search-laws-v2.md)
+- [SOT-IF-053: MCP `search_laws` v3](53-mcp-search-laws-v3.md)
 - [SOT-MODEL-006: LawSearchResult](../20-model/06-law-search-result.md)
 - [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)
