@@ -53,6 +53,7 @@ func TestEvaluatorは内蔵DefaultProfileで代表Holdoutを評価する(t *test
 		"holdout-reference-08",
 		"holdout-structure-16",
 		"holdout-structure-18",
+		"holdout-typo-02",
 	}
 	for _, caseID := range caseIDs {
 		semanticCase, exists := holdoutByID[caseID]

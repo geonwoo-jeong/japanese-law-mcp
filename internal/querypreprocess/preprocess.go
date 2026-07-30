@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	maxTypoTokenWindow = 6
+	maxTypoTokenWindow = 8
 	maxTypoRunes       = 24
-	maxTypoCandidates  = 512
+	// 六 token 窓で受理した最大八十七 token を八 token 窓でも保持する。
+	maxTypoCandidates = 668
 )
 
 type lawDraft struct {

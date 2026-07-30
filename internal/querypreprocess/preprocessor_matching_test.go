@@ -116,6 +116,55 @@ func TestNewEmbeddedは法令略称の文字幅差を誤記にしない(t *testi
 	}
 }
 
+func TestNewEmbeddedは自然文中の長い正式法令名の一意な誤記を補正する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	preprocessor, err := querypreprocess.NewEmbedded(nil)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-021: NewEmbedded() のエラー = %v", err)
+	}
+	query := "個人情報の保護に関係する法律という名前で法令を探して。"
+	result, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, query),
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-025: Preprocess() のエラー = %v", err)
+	}
+	mentions := result.LawNameMentions()
+	if len(mentions) != 1 ||
+		mentions[0].LawID() != "415AC0000000057" ||
+		mentions[0].Canonical() != "個人情報の保護に関する法律" ||
+		mentions[0].Surface() != "個人情報の保護に関係する法律" ||
+		mentions[0].MatchKind() !=
+			legalquery.PreprocessMatchUniqueTypoCorrection {
+		t.Fatalf(
+			"SOT-MODEL-025: 長い正式法令名の誤記 = %#v",
+			mentions,
+		)
+	}
+}
+
+func TestPreprocessは誤記候補窓の拡張前に受理した入力境界を維持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	preprocessor := mustDefaultPreprocessor(t)
+	query := strings.Repeat("法令", 87)
+	if _, err := preprocessor.Preprocess(
+		context.Background(),
+		mustRequest(t, query),
+	); err != nil {
+		t.Fatalf(
+			"SOT-ARCH-021: 旧六 token 窓で受理できた照会のエラー = %v",
+			err,
+		)
+	}
+}
+
 func TestPreprocessDoesNotCorrectPostpositionEndedPhraseToLawName(
 	t *testing.T,
 ) {
