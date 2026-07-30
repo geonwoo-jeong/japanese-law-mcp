@@ -19,6 +19,7 @@ import (
 const (
 	supportedProfileSchemaVersion = 1
 	maxProfileBytes               = 64 << 10
+	profileID                     = "core"
 )
 
 var (
@@ -140,6 +141,10 @@ func Load(
 	}
 	if profileData.SchemaVersion != supportedProfileSchemaVersion {
 		return nil, fmt.Errorf("profile data の schemaVersion が未対応です")
+	}
+	if profileData.ProfileID != profileID ||
+		cueData.ProfileID() != profileID {
+		return nil, fmt.Errorf("profileId は %q でなければなりません", profileID)
 	}
 	if err := cueData.MatchProfile(
 		profileData.ProfileID,

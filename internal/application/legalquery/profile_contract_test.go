@@ -133,7 +133,7 @@ func TestCandidateGenerationInputはCueTaskRelationを複製する(t *testing.T)
 	}
 	relations[0] = CueTaskRelation{}
 	if input.CueTaskRelations()[0].Subject().CueID() != "task-graph" {
-		t.Fatal("SOT-MODEL-029: getter から generation input を変更できました")
+		t.Fatal("SOT-MODEL-030: getter から generation input を変更できました")
 	}
 	if err := input.Validate(); err != nil {
 		t.Fatalf("candidate generation input の Validate() エラー = %v", err)

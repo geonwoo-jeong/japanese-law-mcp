@@ -98,14 +98,16 @@ func testConceptEntries() []legalconceptlexicon.Entry {
 func testCueEntries() []legalquery.CueVocabularyEntry {
 	return []legalquery.CueVocabularyEntry{
 		{
-			ProfileID: testCueProfileID,
-			CueID:     "task-read",
-			Terms:     []string{"読む", "読んで"},
+			ProfileID:  testCueProfileID,
+			CueID:      "task-read",
+			SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+			Terms:      []string{"読む", "読んで"},
 		},
 		{
-			ProfileID: testCueProfileID,
-			CueID:     "task-search",
-			Terms:     []string{"検索", "探して"},
+			ProfileID:  testCueProfileID,
+			CueID:      "task-search",
+			SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+			Terms:      []string{"検索", "探して"},
 		},
 	}
 }

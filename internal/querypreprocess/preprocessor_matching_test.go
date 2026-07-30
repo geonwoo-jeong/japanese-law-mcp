@@ -190,14 +190,16 @@ func TestPreprocessDoesNotCorrectPostpositionEndedPhraseToLawName(
 		nil,
 		[]legalquery.CueVocabularyEntry{
 			{
-				ProfileID: testCueProfileID,
-				CueID:     "task-search",
-				Terms:     []string{"検索"},
+				ProfileID:  testCueProfileID,
+				CueID:      "task-search",
+				SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+				Terms:      []string{"検索"},
 			},
 			{
-				ProfileID: testCueProfileID,
-				CueID:     "resource-provision",
-				Terms:     []string{"条文"},
+				ProfileID:  testCueProfileID,
+				CueID:      "resource-provision",
+				SyntaxRole: legalquery.CueSyntaxRoleNone,
+				Terms:      []string{"条文"},
 			},
 		},
 	)
@@ -451,9 +453,10 @@ func TestPreprocessUsesInjectedProfileCuesWithoutTypoCorrection(t *testing.T) {
 
 	cues := []legalquery.CueVocabularyEntry{
 		{
-			ProfileID: "judicial-cases-test",
-			CueID:     "decision-read",
-			Terms:     []string{"裁判例を読む"},
+			ProfileID:  "judicial-cases-test",
+			CueID:      "decision-read",
+			SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+			Terms:      []string{"裁判例を読む"},
 		},
 	}
 	preprocessor := mustNewPreprocessor(t, testLawEntries(), nil, cues)
@@ -501,12 +504,14 @@ func TestPreprocessKeepsLongestCueMentionForSameMatchGroup(t *testing.T) {
 				ProfileID:  testCueProfileID,
 				CueID:      "task-search-short",
 				MatchGroup: matchGroup,
+				SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
 				Terms:      []string{"検索"},
 			},
 			{
 				ProfileID:  testCueProfileID,
 				CueID:      "task-search-long",
 				MatchGroup: matchGroup,
+				SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
 				Terms:      []string{"検索してください"},
 			},
 		},
@@ -543,12 +548,14 @@ func TestPreprocessDoesNotCombineSameMatchGroupAcrossProfiles(t *testing.T) {
 				ProfileID:  "core-test",
 				CueID:      "task-search",
 				MatchGroup: "cue-tuple-test-search",
+				SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
 				Terms:      []string{"検索"},
 			},
 			{
 				ProfileID:  "judicial-test",
 				CueID:      "task-search",
 				MatchGroup: "cue-tuple-test-search",
+				SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
 				Terms:      []string{"検索してください"},
 			},
 		},
@@ -576,9 +583,10 @@ func TestNewEmbeddedLoadsOneImmutableSharedVocabulary(t *testing.T) {
 
 	preprocessor, err := querypreprocess.NewEmbedded([]legalquery.CueVocabularyEntry{
 		{
-			ProfileID: testCueProfileID,
-			CueID:     "task-search",
-			Terms:     []string{"検索"},
+			ProfileID:  testCueProfileID,
+			CueID:      "task-search",
+			SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+			Terms:      []string{"検索"},
 		},
 	})
 	if err != nil {

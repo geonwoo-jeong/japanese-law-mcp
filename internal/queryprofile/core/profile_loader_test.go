@@ -136,6 +136,20 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 				1,
 			),
 		},
+		"profile と cue の所有 ID がともに不一致": {
+			profile: bytes.Replace(
+				embeddedProfile,
+				[]byte(`"profileId": "core",`),
+				[]byte(`"profileId": "other",`),
+				1,
+			),
+			cues: bytes.Replace(
+				embeddedCues,
+				[]byte(`"profileId": "core",`),
+				[]byte(`"profileId": "other",`),
+				1,
+			),
+		},
 		"cue ID 順序不一致": {
 			profile: embeddedProfile,
 			cues: bytes.Replace(

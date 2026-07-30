@@ -11,9 +11,10 @@ import (
 func BenchmarkPreprocessEmbedded(b *testing.B) {
 	preprocessor, err := querypreprocess.NewEmbedded(
 		[]legalquery.CueVocabularyEntry{{
-			ProfileID: "benchmark-core",
-			CueID:     "task-search",
-			Terms:     []string{"検索"},
+			ProfileID:  "benchmark-core",
+			CueID:      "task-search",
+			SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+			Terms:      []string{"検索"},
 		}},
 	)
 	if err != nil {

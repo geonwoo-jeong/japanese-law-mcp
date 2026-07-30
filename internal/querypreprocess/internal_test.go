@@ -61,9 +61,10 @@ func TestNewSupportsCueOnlyProfileWithoutLawVocabulary(t *testing.T) {
 	preprocessor, err := New(Values{
 		Analyzer: analyzer,
 		Cues: []legalquery.CueVocabularyEntry{{
-			ProfileID: "judicial-cases",
-			CueID:     "decision-read",
-			Terms:     []string{"裁判例を読む"},
+			ProfileID:  "judicial-cases",
+			CueID:      "decision-read",
+			SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+			Terms:      []string{"裁判例を読む"},
 		}},
 	})
 	if err != nil {
@@ -357,9 +358,10 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 	validLaws := validInternalLawEntries()
 	validConcept := validInternalConceptEntries()[0]
 	validCue := legalquery.CueVocabularyEntry{
-		ProfileID: "core",
-		CueID:     "read",
-		Terms:     []string{"読む"},
+		ProfileID:  "core",
+		CueID:      "read",
+		SyntaxRole: legalquery.CueSyntaxRoleTaskExpression,
+		Terms:      []string{"読む"},
 	}
 	tests := []struct {
 		name   string
@@ -420,9 +422,10 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 				Analyzer: emptyOccurrenceAnalyzer{},
 				LawNames: validLaws,
 				Cues: []legalquery.CueVocabularyEntry{{
-					ProfileID: "Core",
-					CueID:     validCue.CueID,
-					Terms:     validCue.Terms,
+					ProfileID:  "Core",
+					CueID:      validCue.CueID,
+					SyntaxRole: validCue.SyntaxRole,
+					Terms:      validCue.Terms,
 				}},
 			},
 		},
@@ -432,9 +435,10 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 				Analyzer: emptyOccurrenceAnalyzer{},
 				LawNames: validLaws,
 				Cues: []legalquery.CueVocabularyEntry{{
-					ProfileID: validCue.ProfileID,
-					CueID:     "Read_Value",
-					Terms:     validCue.Terms,
+					ProfileID:  validCue.ProfileID,
+					CueID:      "Read_Value",
+					SyntaxRole: validCue.SyntaxRole,
+					Terms:      validCue.Terms,
 				}},
 			},
 		},
@@ -447,6 +451,7 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 					ProfileID:  validCue.ProfileID,
 					CueID:      validCue.CueID,
 					MatchGroup: "Invalid_Group",
+					SyntaxRole: validCue.SyntaxRole,
 					Terms:      validCue.Terms,
 				}},
 			},
@@ -460,6 +465,32 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 					ProfileID:  validCue.ProfileID,
 					CueID:      validCue.CueID,
 					MatchGroup: strings.Repeat("a", maxCueMatchGroupBytes+1),
+					SyntaxRole: validCue.SyntaxRole,
+					Terms:      validCue.Terms,
+				}},
+			},
+		},
+		{
+			name: "cue 構文 role 欠落",
+			values: Values{
+				Analyzer: emptyOccurrenceAnalyzer{},
+				LawNames: validLaws,
+				Cues: []legalquery.CueVocabularyEntry{{
+					ProfileID: validCue.ProfileID,
+					CueID:     validCue.CueID,
+					Terms:     validCue.Terms,
+				}},
+			},
+		},
+		{
+			name: "cue 構文 role が未知",
+			values: Values{
+				Analyzer: emptyOccurrenceAnalyzer{},
+				LawNames: validLaws,
+				Cues: []legalquery.CueVocabularyEntry{{
+					ProfileID:  validCue.ProfileID,
+					CueID:      validCue.CueID,
+					SyntaxRole: legalquery.CueSyntaxRole("unknown"),
 					Terms:      validCue.Terms,
 				}},
 			},
@@ -470,8 +501,9 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 				Analyzer: emptyOccurrenceAnalyzer{},
 				LawNames: validLaws,
 				Cues: []legalquery.CueVocabularyEntry{{
-					ProfileID: validCue.ProfileID,
-					CueID:     validCue.CueID,
+					ProfileID:  validCue.ProfileID,
+					CueID:      validCue.CueID,
+					SyntaxRole: validCue.SyntaxRole,
 				}},
 			},
 		},
@@ -481,9 +513,10 @@ func TestNewRejectsInvalidVocabularyEntries(t *testing.T) {
 				Analyzer: emptyOccurrenceAnalyzer{},
 				LawNames: validLaws,
 				Cues: []legalquery.CueVocabularyEntry{{
-					ProfileID: validCue.ProfileID,
-					CueID:     validCue.CueID,
-					Terms:     []string{"読む", "読む"},
+					ProfileID:  validCue.ProfileID,
+					CueID:      validCue.CueID,
+					SyntaxRole: validCue.SyntaxRole,
+					Terms:      []string{"読む", "読む"},
 				}},
 			},
 		},

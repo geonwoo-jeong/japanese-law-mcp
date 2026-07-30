@@ -283,9 +283,10 @@ func validateCueTaskRelationRoles(
 		}
 	case CueTaskRelationObjectPredicate:
 		if subjectRole != CueSyntaxRoleTaskObject ||
-			predicateRole != CueSyntaxRoleTaskPredicate {
+			(predicateRole != CueSyntaxRoleTaskPredicate &&
+				predicateRole != CueSyntaxRoleTaskExpression) {
 			return fmt.Errorf(
-				"object_predicate は task_object と task_predicate を必要とします",
+				"object_predicate は task_object と task_predicate または task_expression を必要とします",
 			)
 		}
 	case CueTaskRelationStandaloneTask:

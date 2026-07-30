@@ -253,6 +253,71 @@ func TestPreprocessResultKeepsCueTaskRelationsAndCopiesInput(t *testing.T) {
 	}
 }
 
+func TestPreprocessResultは同じ述語を共有する二つのRelationを保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	query := "EDINETを検索してください"
+	object := mustCueMention(
+		t,
+		spanForSurface(t, query, "EDINET"),
+		"EDINET",
+		"core",
+		"unsupported-external-information-object",
+	)
+	search := mustCueMention(
+		t,
+		spanForSurface(t, query, "検索してください"),
+		"検索してください",
+		"core",
+		"task-search",
+	)
+	clause := mustQuerySpan(t, 0, len(query))
+	objectPredicate := mustCueTaskRelation(
+		t,
+		query,
+		object,
+		search,
+		legalquery.CueSyntaxRoleTaskObject,
+		legalquery.CueSyntaxRoleTaskExpression,
+		clause,
+		legalquery.CueTaskRelationObjectPredicate,
+	)
+	directTask := mustCueTaskRelation(
+		t,
+		query,
+		search,
+		search,
+		legalquery.CueSyntaxRoleTaskExpression,
+		legalquery.CueSyntaxRoleTaskExpression,
+		clause,
+		legalquery.CueTaskRelationDirectTask,
+	)
+
+	result, err := legalquery.NewPreprocessResult(
+		legalquery.PreprocessResultValues{
+			Query:         query,
+			ComparisonKey: querynormalization.ComparisonKey(query),
+			CueMentions:   []legalquery.CueMention{object, search},
+			CueTaskRelations: []legalquery.CueTaskRelation{
+				objectPredicate,
+				directTask,
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("SOT-MODEL-030: 二つの relation を拒否しました: %v", err)
+	}
+	relations := result.CueTaskRelations()
+	if len(relations) != 2 ||
+		relations[0].Kind() != legalquery.CueTaskRelationObjectPredicate ||
+		relations[1].Kind() != legalquery.CueTaskRelationDirectTask ||
+		relations[0].Predicate() != relations[1].Predicate() {
+		t.Fatalf("SOT-MODEL-030: cueTaskRelations = %#v", relations)
+	}
+}
+
 func TestPreprocessResultRejectsInvalidCueTaskRelationSequence(t *testing.T) {
 	t.Parallel()
 
@@ -301,7 +366,7 @@ func TestPreprocessResultRejectsInvalidCueTaskRelationSequence(t *testing.T) {
 		},
 	)
 	if err != nil || len(valid.CueTaskRelations()) != 2 {
-		t.Fatalf("SOT-MODEL-029: 正規順の relation を拒否しました: %v", err)
+		t.Fatalf("SOT-MODEL-030: 正規順の relation を拒否しました: %v", err)
 	}
 
 	tests := map[string]legalquery.PreprocessResultValues{
@@ -342,7 +407,7 @@ func TestPreprocessResultRejectsInvalidCueTaskRelationSequence(t *testing.T) {
 			t.Parallel()
 
 			if _, err := legalquery.NewPreprocessResult(values); err == nil {
-				t.Fatal("SOT-MODEL-029: 不正な relation sequence を受理しました")
+				t.Fatal("SOT-MODEL-030: 不正な relation sequence を受理しました")
 			}
 		})
 	}
@@ -359,7 +424,7 @@ func TestPreprocessResultRejectsInvalidCueTaskRelationSequence(t *testing.T) {
 			CueTaskRelations: tooMany,
 		},
 	); err == nil {
-		t.Fatal("SOT-MODEL-029: 百二十九件の relation を受理しました")
+		t.Fatal("SOT-MODEL-030: 百二十九件の relation を受理しました")
 	}
 
 	longerQuery := "検索してください "
@@ -388,7 +453,7 @@ func TestPreprocessResultRejectsInvalidCueTaskRelationSequence(t *testing.T) {
 			CueTaskRelations: []legalquery.CueTaskRelation{outOfRangeRelation},
 		},
 	); err == nil {
-		t.Fatal("SOT-MODEL-029: query の範囲外にある clause span を受理しました")
+		t.Fatal("SOT-MODEL-030: query の範囲外にある clause span を受理しました")
 	}
 }
 
@@ -433,12 +498,12 @@ func TestPreprocessResultは同じ開始位置の異なるRelationを保持す�
 		},
 	)
 	if err != nil {
-		t.Fatalf("SOT-MODEL-029: 異なる clause span の relation を拒否しました: %v", err)
+		t.Fatalf("SOT-MODEL-030: 異なる clause span の relation を拒否しました: %v", err)
 	}
 	got := result.CueTaskRelations()
 	if len(got) != 2 ||
 		got[0].ClauseSpan() == got[1].ClauseSpan() {
-		t.Fatalf("SOT-MODEL-029: cueTaskRelations = %#v", got)
+		t.Fatalf("SOT-MODEL-030: cueTaskRelations = %#v", got)
 	}
 }
 

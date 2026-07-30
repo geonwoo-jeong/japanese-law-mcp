@@ -334,6 +334,9 @@ func validateCueEntry(entry legalquery.CueVocabularyEntry) error {
 			maxCueMatchGroupBytes,
 		)
 	}
+	if err := validateCueSyntaxRole(entry.SyntaxRole); err != nil {
+		return err
+	}
 	if len(entry.Terms) == 0 || len(entry.Terms) > maxCueTermsPerEntry {
 		return fmt.Errorf(
 			"terms は 1 件以上 %d 件以下でなければなりません",
@@ -351,6 +354,18 @@ func validateCueEntry(entry legalquery.CueVocabularyEntry) error {
 		seen[term] = struct{}{}
 	}
 	return nil
+}
+
+func validateCueSyntaxRole(role legalquery.CueSyntaxRole) error {
+	switch role {
+	case legalquery.CueSyntaxRoleNone,
+		legalquery.CueSyntaxRoleTaskExpression,
+		legalquery.CueSyntaxRoleTaskObject,
+		legalquery.CueSyntaxRoleTaskPredicate:
+		return nil
+	default:
+		return fmt.Errorf("syntaxRole が定義されていません")
+	}
 }
 
 func validateTerm(field string, value string) error {

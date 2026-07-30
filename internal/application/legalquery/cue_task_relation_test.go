@@ -34,6 +34,14 @@ func TestCueTaskRelationConstructorKeepsValidatedImmutableValues(t *testing.T) {
 			predicateRole: legalquery.CueSyntaxRoleTaskPredicate,
 			kind:          legalquery.CueTaskRelationObjectPredicate,
 		},
+		"目的語と完結した task 表現": {
+			query:         "EDINETを検索してください",
+			subjectText:   "EDINET",
+			predicateText: "検索してください",
+			subjectRole:   legalquery.CueSyntaxRoleTaskObject,
+			predicateRole: legalquery.CueSyntaxRoleTaskExpression,
+			kind:          legalquery.CueTaskRelationObjectPredicate,
+		},
 		"短縮された単独 task": {
 			query:         " 比較 ",
 			subjectText:   "比較",
@@ -79,7 +87,7 @@ func TestCueTaskRelationConstructorKeepsValidatedImmutableValues(t *testing.T) {
 				},
 			)
 			if err != nil {
-				t.Fatalf("SOT-MODEL-029: relation のエラー = %v", err)
+				t.Fatalf("SOT-MODEL-030: relation のエラー = %v", err)
 			}
 
 			subjectRef := relation.Subject()
@@ -92,10 +100,10 @@ func TestCueTaskRelationConstructorKeepsValidatedImmutableValues(t *testing.T) {
 				predicateRef.Span() != predicate.Span() ||
 				relation.ClauseSpan() != clauseSpan ||
 				relation.Kind() != test.kind {
-				t.Fatalf("SOT-MODEL-029: relation = %#v", relation)
+				t.Fatalf("SOT-MODEL-030: relation = %#v", relation)
 			}
 			if err := relation.Validate(); err != nil {
-				t.Fatalf("SOT-MODEL-029: Validate() のエラー = %v", err)
+				t.Fatalf("SOT-MODEL-030: Validate() のエラー = %v", err)
 			}
 
 			subjectRef = legalquery.CueTaskRelationRef{}
@@ -104,7 +112,7 @@ func TestCueTaskRelationConstructorKeepsValidatedImmutableValues(t *testing.T) {
 				predicateRef.CueID() != "" ||
 				relation.Subject().CueID() != "subject" ||
 				relation.Predicate().CueID() != predicate.CueID() {
-				t.Fatal("SOT-MODEL-029: getter の参照から relation を変更できました")
+				t.Fatal("SOT-MODEL-030: getter の参照から relation を変更できました")
 			}
 		})
 	}
@@ -121,12 +129,12 @@ func TestCueTaskRelationRefConstructorRejectsInvalidValues(t *testing.T) {
 	}
 	ref, err := legalquery.NewCueTaskRelationRef(validValues)
 	if err != nil {
-		t.Fatalf("SOT-MODEL-029: relation ref のエラー = %v", err)
+		t.Fatalf("SOT-MODEL-030: relation ref のエラー = %v", err)
 	}
 	if ref.ProfileID() != validValues.ProfileID ||
 		ref.CueID() != validValues.CueID ||
 		ref.Span() != validSpan {
-		t.Fatalf("SOT-MODEL-029: relation ref = %#v", ref)
+		t.Fatalf("SOT-MODEL-030: relation ref = %#v", ref)
 	}
 
 	tests := map[string]legalquery.CueTaskRelationRefValues{
@@ -150,7 +158,7 @@ func TestCueTaskRelationRefConstructorRejectsInvalidValues(t *testing.T) {
 			t.Parallel()
 
 			if _, err := legalquery.NewCueTaskRelationRef(values); err == nil {
-				t.Fatal("SOT-MODEL-029: 不正な relation ref を受理しました")
+				t.Fatal("SOT-MODEL-030: 不正な relation ref を受理しました")
 			}
 		})
 	}
@@ -216,7 +224,7 @@ func TestCueTaskRelationConstructorRejectsInvalidRoleKindAndSpans(t *testing.T) 
 		},
 		"object_predicate の role 不一致": func() legalquery.CueTaskRelationValues {
 			values := valid
-			values.PredicateRole = legalquery.CueSyntaxRoleTaskExpression
+			values.PredicateRole = legalquery.CueSyntaxRoleTaskObject
 			return values
 		},
 		"異なる profile": func() legalquery.CueTaskRelationValues {
@@ -292,7 +300,7 @@ func TestCueTaskRelationConstructorRejectsInvalidRoleKindAndSpans(t *testing.T) 
 			t.Parallel()
 
 			if _, err := legalquery.NewCueTaskRelation(makeValues()); err == nil {
-				t.Fatal("SOT-MODEL-029: 不正な relation を受理しました")
+				t.Fatal("SOT-MODEL-030: 不正な relation を受理しました")
 			}
 		})
 	}
@@ -355,7 +363,7 @@ func TestCueTaskRelationGetterは並行呼出しで共有状態を変更しな�
 	close(errors)
 
 	for message := range errors {
-		t.Fatalf("SOT-MODEL-029: %s", message)
+		t.Fatalf("SOT-MODEL-030: %s", message)
 	}
 }
 
@@ -435,7 +443,7 @@ func TestCueTaskRelationConstructorRejectsInvalidDirectAndStandaloneTask(t *test
 			t.Parallel()
 
 			if _, err := legalquery.NewCueTaskRelation(values); err == nil {
-				t.Fatal("SOT-MODEL-029: 不正な direct/standalone relation を受理しました")
+				t.Fatal("SOT-MODEL-030: 不正な direct/standalone relation を受理しました")
 			}
 		})
 	}
