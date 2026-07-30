@@ -414,7 +414,8 @@ func shouldIgnoreLawMention(
 	cues resolvedCues,
 ) bool {
 	if !shouldIgnoreTypoLawMention(mention) &&
-		!shouldIgnoreReservedPackTypoLawMention(input, mention, cues) {
+		!shouldIgnoreReservedPackTypoLawMention(input, mention, cues) &&
+		!shouldIgnoreQuotedJudicialTypoLawMention(input, mention, cues) {
 		return false
 	}
 	return true
@@ -444,18 +445,89 @@ func shouldIgnoreReservedPackTypoLawMention(
 	if mention.MatchKind() != legalquery.PreprocessMatchUniqueTypoCorrection {
 		return false
 	}
-	if cues.has("resource", "law") ||
-		cues.has("resource", "law_provision") ||
-		cues.has("resource", "updates") {
+	reservedStartByte, exists := firstCueStartAfter(
+		cues.mentions[cueMeaningKey("reserved_pack", "judicial-cases")],
+		mention.Span().EndByte(),
+	)
+	if !exists {
+		return false
+	}
+	if hasCoreResourceCueBefore(
+		cues,
+		mention.Span().EndByte(),
+		reservedStartByte,
+	) {
 		return false
 	}
 	nextStartByte, exists := nextFactStartAfter(input, mention.Span().EndByte())
 	if !exists {
 		return false
 	}
-	reserved := cues.mentions[cueMeaningKey("reserved_pack", "judicial-cases")]
-	for _, current := range reserved {
-		if current.Span().StartByte() == nextStartByte {
+	return nextStartByte == reservedStartByte
+}
+
+func firstCueStartAfter(
+	values []legalquery.CueMention,
+	endByte int,
+) (int, bool) {
+	startByte := 0
+	exists := false
+	for _, current := range values {
+		start := current.Span().StartByte()
+		if start <= endByte {
+			continue
+		}
+		if !exists || start < startByte {
+			startByte = start
+			exists = true
+		}
+	}
+	return startByte, exists
+}
+
+func hasCoreResourceCueBefore(
+	cues resolvedCues,
+	startByte int,
+	limitByte int,
+) bool {
+	keys := []string{
+		cueMeaningKey("resource", "law"),
+		cueMeaningKey("resource", "law_provision"),
+		cueMeaningKey("resource", "updates"),
+	}
+	for _, key := range keys {
+		for _, current := range cues.mentions[key] {
+			start := current.Span().StartByte()
+			if startByte < start && start < limitByte {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func shouldIgnoreQuotedJudicialTypoLawMention(
+	input legalquery.CandidateGenerationInput,
+	mention legalquery.LawNameMention,
+	cues resolvedCues,
+) bool {
+	if mention.MatchKind() != legalquery.PreprocessMatchUniqueTypoCorrection {
+		return false
+	}
+	if !cues.has("reserved_pack", "judicial-cases") {
+		return false
+	}
+	if cues.has("resource", "law") ||
+		cues.has("resource", "law_provision") ||
+		cues.has("resource", "updates") {
+		return false
+	}
+	for _, term := range input.QueryTermMentions() {
+		if term.Kind() != legalquery.QueryTermMentionQuotedPhrase {
+			continue
+		}
+		if term.Span().StartByte() <= mention.Span().StartByte() &&
+			mention.Span().EndByte() <= term.Span().EndByte() {
 			return true
 		}
 	}
