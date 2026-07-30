@@ -209,6 +209,7 @@ func buildReadCandidates(
 	readRequested bool,
 	explicitTask bool,
 	documentRequested bool,
+	combineArticleReads bool,
 	asOf *model.Date,
 ) ([]candidateDraft, error) {
 	if !readRequested || len(targets) == 0 {
@@ -266,7 +267,69 @@ func buildReadCandidates(
 			}
 		}
 	}
-	return result, nil
+	return combineUnambiguousArticleReadDrafts(
+		groups,
+		result,
+		combineArticleReads,
+	), nil
+}
+
+func combineUnambiguousArticleReadDrafts(
+	groups [][]lawTarget,
+	drafts []candidateDraft,
+	combineArticleReads bool,
+) []candidateDraft {
+	if !combineArticleReads ||
+		len(groups) < 2 ||
+		len(drafts) != len(groups) ||
+		!allGroupsUnique(groups) {
+		return drafts
+	}
+	combined := newCandidateDraft()
+	for _, draft := range drafts {
+		if len(draft.steps) == 0 ||
+			len(combined.steps)+len(draft.steps) > 4 {
+			return drafts
+		}
+		for _, step := range draft.steps {
+			if _, ok := step.input.(legalquery.LawArticleReadIntentV1); !ok {
+				return drafts
+			}
+		}
+		mergeDraft(&combined, draft)
+	}
+	return []candidateDraft{combined}
+}
+
+func hasSingleTrailingReadTask(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+	targets []lawTarget,
+) bool {
+	readCues := cues.mentions[cueMeaningKey("task", "read")]
+	taskCount := len(readCues) +
+		len(cues.mentions[cueMeaningKey("task", "search")]) +
+		len(cues.mentions[cueMeaningKey("task", "list_updates")])
+	if taskCount != 1 || len(readCues) != 1 || len(targets) < 2 {
+		return false
+	}
+	lastTargetEnd := targets[0].endByte
+	for _, target := range targets[1:] {
+		if target.endByte > lastTargetEnd {
+			lastTargetEnd = target.endByte
+		}
+	}
+	for _, article := range input.ArticleMentions() {
+		if article.Span().EndByte() > lastTargetEnd {
+			lastTargetEnd = article.Span().EndByte()
+		}
+	}
+	for _, paragraph := range input.ParagraphMentions() {
+		if paragraph.Span().EndByte() > lastTargetEnd {
+			lastTargetEnd = paragraph.Span().EndByte()
+		}
+	}
+	return readCues[0].Span().StartByte() >= lastTargetEnd
 }
 
 func buildUpdateCandidate(
