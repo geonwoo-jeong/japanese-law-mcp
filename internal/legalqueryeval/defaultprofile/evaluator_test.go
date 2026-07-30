@@ -44,6 +44,7 @@ func TestEvaluatorは内蔵DefaultProfileで代表Holdoutを評価する(t *test
 		"holdout-pack-01",
 		"holdout-pack-11",
 		"holdout-pack-08",
+		"holdout-name-19",
 		"holdout-structure-16",
 		"holdout-structure-18",
 	}

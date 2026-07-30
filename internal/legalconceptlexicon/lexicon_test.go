@@ -257,7 +257,7 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-ENG-023: LoadEmbedded() error = %v", err)
 	}
-	if lexicon.Version() != "legal-concept-2026-07-28-2" {
+	if lexicon.Version() != "legal-concept-2026-07-30-1" {
 		t.Fatalf("SOT-ENG-023: embedded version = %q", lexicon.Version())
 	}
 	entries := lexicon.Entries()
@@ -298,7 +298,7 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 		},
 		{
 			conceptID: "child-support",
-			term:      "養育費",
+			term:      "離婚後の子どもの生活費",
 			policy:    SelectionPolicyAmbiguousNoAutoExecute,
 			candidates: []expectedCandidate{
 				{

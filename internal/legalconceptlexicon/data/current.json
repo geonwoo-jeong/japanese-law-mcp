@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "lexiconVersion": "legal-concept-2026-07-28-2",
-  "generatedAt": "2026-07-28T04:31:05Z",
+  "lexiconVersion": "legal-concept-2026-07-30-1",
+  "generatedAt": "2026-07-30T06:52:19Z",
   "entries": [
     {
       "conceptId": "adult-guardianship",
@@ -53,12 +53,12 @@
     {
       "conceptId": "child-support",
       "canonical": "養育費",
-      "terms": ["養育費"],
-      "comparisonTerms": ["養育費"],
+      "terms": ["離婚後の子どもの生活費", "養育費"],
+      "comparisonTerms": ["離婚後の子どもの生活費", "養育費"],
       "sourceName": "裁判所 養育費に関する手続",
       "sourceUrl": "https://www.courts.go.jp/saiban/syurui/syurui_kazi/youikuhi-tetsuzuki/index.html",
-      "confirmedAt": "2026-07-28",
-      "mappingNote": "一般概念としての養育費から、条文検索と裁判例検索の両候補を作る。",
+      "confirmedAt": "2026-07-30",
+      "mappingNote": "裁判所が、養育費を子どもの成長に必要な費用とし、離婚後も父母が分担すると説明しているため、「離婚後の子どもの生活費」を養育費へ対応付ける。一般概念としては条文検索と裁判例検索の両候補を作る。",
       "selectionPolicy": "ambiguous_no_auto_execute",
       "candidates": [
         {
