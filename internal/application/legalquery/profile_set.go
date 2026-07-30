@@ -28,6 +28,16 @@ type QueryProfileSetResult struct {
 	selection             QuerySelectionPolicy
 }
 
+// ProfileVersion は、active profile set 全体の不透明な版を返す。
+func (s QueryProfileSet) ProfileVersion() string {
+	return s.profileVersion
+}
+
+// RankingVersion は、profile set 全体が共有する順位校正版を返す。
+func (s QueryProfileSet) RankingVersion() string {
+	return s.rankingVersion
+}
+
 // NewQueryProfileSet は、同じ ranking 校正を持つ profile を固定順で保持する。
 func NewQueryProfileSet(profiles []QueryProfile) (QueryProfileSet, error) {
 	if len(profiles) == 0 || len(profiles) > maximumProfileOrdinal {

@@ -16,8 +16,9 @@ const JudicialCasesPackID = "judicial-cases"
 
 // Dependencies は、起動時に固定した前処理器と default profile set を保持する。
 type Dependencies struct {
-	preprocessor legalquery.QueryPreprocessor
-	profiles     legalquery.QueryProfileSet
+	preprocessor    legalquery.QueryPreprocessor
+	profiles        legalquery.QueryProfileSet
+	profileMetadata []legalquery.QueryProfileMetadata
 }
 
 // Preprocessor は、製品と評価で共有する不変な前処理器を返す。
@@ -28,6 +29,14 @@ func (d Dependencies) Preprocessor() legalquery.QueryPreprocessor {
 // Profiles は、core と judicial-cases の固定 profile set を返す。
 func (d Dependencies) Profiles() legalquery.QueryProfileSet {
 	return d.profiles
+}
+
+// ProfileMetadata は、profile ID 順の個別 profile 版情報を返す。
+func (d Dependencies) ProfileMetadata() []legalquery.QueryProfileMetadata {
+	return append(
+		[]legalquery.QueryProfileMetadata{},
+		d.profileMetadata...,
+	)
 }
 
 var loadEmbedded = sync.OnceValues(
@@ -69,6 +78,10 @@ var loadEmbedded = sync.OnceValues(
 		return Dependencies{
 			preprocessor: preprocessor,
 			profiles:     profiles,
+			profileMetadata: []legalquery.QueryProfileMetadata{
+				core.Metadata(),
+				judicialCases.Metadata(),
+			},
 		}, nil
 	},
 )

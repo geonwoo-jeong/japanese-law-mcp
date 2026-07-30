@@ -1,0 +1,83 @@
+package defaultprofile
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval"
+)
+
+// BuildStandardReport は、default profile set の意味・再現性・実行測定を集約する。
+func (e *Evaluator) BuildStandardReport(
+	ctx context.Context,
+	corpus legalquerycorpus.Corpus,
+	baselineVersion string,
+) (legalqueryeval.StandardReport, error) {
+	if e == nil {
+		return legalqueryeval.StandardReport{},
+			fmt.Errorf("default profile evaluator は nil にできません")
+	}
+	semantic, reproducibility, err :=
+		legalqueryeval.EvaluateSemanticHoldoutReproducibility(
+			ctx,
+			corpus,
+			e.EvaluateWithPlan,
+		)
+	if err != nil {
+		return legalqueryeval.StandardReport{}, err
+	}
+	derivedObservations, err := legalqueryeval.EvaluateDerivedObservations(
+		corpus.Holdout(),
+		semantic,
+	)
+	if err != nil {
+		return legalqueryeval.StandardReport{}, err
+	}
+	execution, err := e.EvaluateExecution(ctx, corpus)
+	if err != nil {
+		return legalqueryeval.StandardReport{}, err
+	}
+
+	metadata := e.planning.ProfileMetadata()
+	profileVersions := make(
+		[]legalqueryeval.ProfileVersionReport,
+		0,
+		len(metadata),
+	)
+	for _, profile := range metadata {
+		report, reportErr := legalqueryeval.NewProfileVersionReport(
+			legalqueryeval.ProfileVersionReportValues{
+				ProfileID:      profile.ProfileID(),
+				ProfileVersion: profile.ProfileVersion(),
+				RankingVersion: profile.RankingVersion(),
+			},
+		)
+		if reportErr != nil {
+			return legalqueryeval.StandardReport{}, reportErr
+		}
+		profileVersions = append(profileVersions, report)
+	}
+	holdoutCaseIDs := make([]string, 0, len(corpus.Holdout()))
+	for _, semanticCase := range corpus.Holdout() {
+		holdoutCaseIDs = append(holdoutCaseIDs, semanticCase.CaseID())
+	}
+	manifest := corpus.Manifest()
+	return legalqueryeval.NewStandardReport(
+		legalqueryeval.StandardReportValues{
+			CorpusVersion:        manifest.CorpusVersion(),
+			HoldoutDigest:        manifest.HoldoutDigest(),
+			ProfileSetID:         "default",
+			ProfileSetVersion:    e.planning.Profiles().ProfileVersion(),
+			RankingVersion:       e.planning.Profiles().RankingVersion(),
+			ProfileVersions:      profileVersions,
+			BaselineVersion:      baselineVersion,
+			DevelopmentCaseCount: len(corpus.Development()),
+			HoldoutCaseIDs:       holdoutCaseIDs,
+			Semantic:             semantic,
+			Execution:            execution,
+			Reproducibility:      reproducibility,
+			DerivedObservations:  derivedObservations,
+		},
+	)
+}

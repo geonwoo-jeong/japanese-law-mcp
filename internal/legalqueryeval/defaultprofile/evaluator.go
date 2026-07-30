@@ -32,39 +32,79 @@ func (e *Evaluator) Evaluate(
 	ctx context.Context,
 	semanticCase legalquerycorpus.SemanticCase,
 ) (legalqueryeval.SemanticCaseEvaluation, error) {
+	evaluation, _, _, err := e.EvaluateWithPlan(ctx, semanticCase)
+	return evaluation, err
+}
+
+// EvaluateWithPlan は、plan case の評価値と再現性検査用 plan を同時に返す。
+func (e *Evaluator) EvaluateWithPlan(
+	ctx context.Context,
+	semanticCase legalquerycorpus.SemanticCase,
+) (
+	legalqueryeval.SemanticCaseEvaluation,
+	legalquery.LegalQueryPlan,
+	bool,
+	error,
+) {
 	if e == nil {
-		return legalqueryeval.SemanticCaseEvaluation{}, fmt.Errorf(
-			"default profile evaluator は nil にできません",
-		)
+		return legalqueryeval.SemanticCaseEvaluation{},
+			legalquery.LegalQueryPlan{},
+			false,
+			fmt.Errorf(
+				"default profile evaluator は nil にできません",
+			)
 	}
 	if ctx == nil {
-		return legalqueryeval.SemanticCaseEvaluation{}, fmt.Errorf(
-			"context は nil にできません",
-		)
+		return legalqueryeval.SemanticCaseEvaluation{},
+			legalquery.LegalQueryPlan{},
+			false,
+			fmt.Errorf(
+				"context は nil にできません",
+			)
 	}
 	if err := semanticCase.Validate(); err != nil {
-		return legalqueryeval.SemanticCaseEvaluation{}, fmt.Errorf(
-			"semantic case が有効ではありません: %w",
-			err,
-		)
+		return legalqueryeval.SemanticCaseEvaluation{},
+			legalquery.LegalQueryPlan{},
+			false,
+			fmt.Errorf(
+				"semantic case が有効ではありません: %w",
+				err,
+			)
 	}
 
 	request, err := productRequest(semanticCase.Request())
 	if err != nil {
-		return evaluateRequestError(semanticCase, err)
+		evaluation, evaluationErr := evaluateRequestError(semanticCase, err)
+		return evaluation, legalquery.LegalQueryPlan{}, false, evaluationErr
 	}
 	if semanticCase.Expected().Kind() ==
 		legalquerycorpus.SemanticExpectedKindRequestError {
-		return legalqueryeval.SemanticCaseEvaluation{}, fmt.Errorf(
-			"request_error を期待する入力が製品 request に受理されました",
-		)
+		return legalqueryeval.SemanticCaseEvaluation{},
+			legalquery.LegalQueryPlan{},
+			false,
+			fmt.Errorf(
+				"request_error を期待する入力が製品 request に受理されました",
+			)
 	}
 
 	plan, err := e.selectPlan(ctx, semanticCase, request)
 	if err != nil {
-		return legalqueryeval.SemanticCaseEvaluation{}, err
+		return legalqueryeval.SemanticCaseEvaluation{},
+			legalquery.LegalQueryPlan{},
+			false,
+			err
 	}
-	return legalqueryeval.EvaluateSemanticPlanCase(semanticCase, plan)
+	evaluation, err := legalqueryeval.EvaluateSemanticPlanCase(
+		semanticCase,
+		plan,
+	)
+	if err != nil {
+		return legalqueryeval.SemanticCaseEvaluation{},
+			legalquery.LegalQueryPlan{},
+			false,
+			err
+	}
+	return evaluation, plan, true, nil
 }
 
 func (e *Evaluator) selectPlan(
