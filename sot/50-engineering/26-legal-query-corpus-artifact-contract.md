@@ -392,7 +392,7 @@ holdout の期待値を変える場合は、実装へ合わせるためではな
 
 ## cue task relation と意図分岐に対応する corpus schema
 
-`SOT-MODEL-029`、`SOT-MODEL-026` および `SOT-ENG-028` の cue task relation と、
+`SOT-MODEL-030`、`SOT-MODEL-026` および `SOT-ENG-028` の cue task relation と、
 `SOT-ARCH-025`、`SOT-ARCH-032` の意図分岐境界を次の標準評価成果物へ追加する
 場合は、現行の `schemaVersion=1` と `corpus-v9` を変更せず、次の corpus 成果物を
 同じ変更へ追加する。

@@ -29,3 +29,4 @@
 - [27-judicial-case-number-mention.md](27-judicial-case-number-mention.md)
 - [28-query-candidate-composition-member.md](28-query-candidate-composition-member.md)
 - [29-cue-task-relation.md](29-cue-task-relation.md)
+- [30-cue-task-relation-v2.md](30-cue-task-relation-v2.md)

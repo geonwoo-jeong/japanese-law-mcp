@@ -192,7 +192,7 @@ member と hedge pair の構造的な併存、および複数候補の位置 sid
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](23-legal-query-plan.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](28-query-candidate-composition-member.md)
-- [SOT-MODEL-029: CueTaskRelation](29-cue-task-relation.md)
+- [SOT-MODEL-030: CueTaskRelation v2](30-cue-task-relation-v2.md)
 - [SOT-ARCH-029: 複数 step 候補の根拠保持](../30-architecture/29-multi-step-evidence-preservation.md)
 - [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)

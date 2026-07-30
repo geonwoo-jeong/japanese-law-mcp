@@ -33,9 +33,12 @@ CLI、環境変数、設定ファイル、MCP 引数または transport の違�
 採用前の準備状態として repository に置ける。
 
 1. production 経路でも構造を検証または sidecar を生成するが、その値を候補、
-   signal、selection、plan、外部呼出しまたは公開結果の変更に使用しない
+   signal、selection、plan、外部呼出しまたは公開結果の変更に使用せず、
+   現行の active cue artifact、profile metadata および profile set version も
+   変更しない
 2. test が明示的に直接構成する別の内部実装であり、production composition root、
-   標準評価 command および中央品質ゲートの既定 profile set へ登録しない
+   標準評価 command および中央品質ゲートの既定 profile set へ登録せず、
+   次版の cue artifact と profile metadata を現行成果物とは別に保持する
 3. 次版の corpus、baseline または検索例の候補成果物であり、現行標準または
    確認済みの現行カタログとして参照しない
 
@@ -51,8 +54,18 @@ key、環境変数または hidden MCP tool によって production から選択
 
 準備変更は、現行標準の corpus version と baseline version、公開 decision、
 選択した meaning、step、reason、外部呼出し境界および検索例の観測結果を
-変更しない。cue 成果物その他の検証済み metadata を変更した場合に、不透明な
-profile version または profile set version を更新する義務は維持する。
+変更しない。production が使用する cue artifact、profile version または
+profile set version も変更せず、`SOT-ENG-033` の current tuple と完全一致させる。
+
+次版の cue 成果物その他の検証済み metadata を変更した場合に、次版の不透明な
+profile version または profile set version を更新する義務は維持する。ただし
+それらは test が直接構成する別の profile set に属し、原子的な採用まで
+production の active artifact を上書きしない。
+
+production が使用する profile version、cue set version または profile set
+version を変更する場合は、意味計画の観測結果が同じであっても準備変更ではなく、
+`SOT-ENG-033` の新しい tuple、baseline version と digest を含む原子的な
+採用変更として扱う。
 
 ## 原子的な採用
 
@@ -66,6 +79,7 @@ profile version または profile set version を更新する義務は維持す�
   および変更前後の評価
 - 中央品質ゲートの固定値
 - `SOT-ENG-029` の現行検索例カタログ
+- `SOT-ENG-033` の current adoption tuple と履歴 manifest
 - Wiki の実装済み範囲
 
 一部だけを先に公開既定値へ切り替えず、旧 corpus で新 profile を採用したり、
@@ -79,10 +93,19 @@ profile set version で構成されなければならない。
 
 ## rollback
 
-採用後に rollback する場合は、production composition root、profile metadata、
-標準 corpus、baseline、標準 command、中央品質ゲートおよび検索例カタログを、
-相互に整合する直前の採用済み集合へ戻す。意味判定の一層、特定 profile の
-relation 規則または corpus だけを戻して混在状態を作らない。
+採用後に rollback する場合は、「原子的な採用」に列挙した全要素と Wiki の
+実装済み範囲を、相互に整合する直前の採用済み集合へ戻す。production
+composition root、共通前処理、planner、profile 実装と metadata、cue artifact
+と loader、標準 corpus、baseline、標準 command、中央品質ゲートおよび
+検索例カタログの一部だけを戻して混在状態を作らない。
+
+直前の採用前から準備状態にあった relation sidecar、test 専用実装または候補成果物
+だけを残す場合は、本規定の「準備状態」の全条件を再び満たし、production の
+decision、reason、selection、meaning、step および外部呼出し境界に使われない
+ことを確認する。
+
+採用済み集合と直前の集合を機械的に特定する tuple、固定 test ID および
+準備中成果物との分離は `SOT-ENG-033` に従う。
 
 ## 確認
 
@@ -108,3 +131,4 @@ relation 規則または corpus だけを戻して混在状態を作らない。
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](../50-engineering/26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](../50-engineering/29-unified-query-example-catalog.md)
+- [SOT-ENG-033: 統合照会 profile set 採用 manifest](../50-engineering/33-unified-query-profile-set-adoption-manifest.md)

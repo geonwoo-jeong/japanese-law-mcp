@@ -45,17 +45,18 @@ cue セットを変えない。
 
 - cue は登録表現との完全一致、比較用正規化一致または Kagome が確認した
   登録語の span だけから作る。対象外 task を誤記補正で新しく作らない。
-- 各 cue entry は `SOT-MODEL-029` の `syntaxRole` を一つ持つ。対象外 cue は
+- 各 cue entry は `SOT-MODEL-030` の `syntaxRole` を一つ持つ。対象外 cue は
   `task_expression` または `task_object` とし、role が異なる登録表現を同じ
   cue ID に混在させない。対象外の目的語へ接続する採用済み task その他の
-  構文述語は、同じ profile の別 cue として `task_predicate` にできる。
+  構文述語は、`SOT-MODEL-030` に従い、同じ profile の positive
+  `task_expression` または別の `task_predicate` cue を使用できる。
 - 対象外 cue の `CueMention` が存在するだけでは signal を作らない。その cue を
   `subject` とする検証済み `CueTaskRelation` がある場合だけ、subject cue の
   `intentGroup` と上表から一つの signal を作る。
 - `direct_task` は `task_expression`、`object_predicate` は
   `task_object` と同じ節の述語、`standalone_task` は節全体に単独で現れた
   `task_object` だけを根拠にする。
-- `SOT-MODEL-029` の非 task 境界により relation を持たない cue 出現は、
+- `SOT-MODEL-030` の非 task 境界により relation を持たない cue 出現は、
   対象外 signal にしない。本規定の確認例はその境界を変更せず、対象外語彙に
   対する回帰例を追加するだけとする。
 - 複数の profile が同じ対象外表現を認識しても、profile set は
@@ -120,6 +121,9 @@ cue 成果物 loader の共通 test ID は `SOT-ENG-030` を定義元とし、�
 - `影響グラフを作成してください。` は
   `unsupported_task_or_resource`、`英語に翻訳してください。` は
   `unsupported_translation` だけを作る。
+- `EDINETを検索してください。` は positive search の `direct_task` と
+  `EDINET` を subject とする `object_predicate` を両方持つが、
+  `unsupported_task_or_resource` により外部呼出しを零回とする。
 - `影響グラフを作成してください。民法。` は別の節に裸で現れた法令名候補を
   保持しない。`民法を検索してください。影響グラフを作成してください。` は
   明示された民法検索候補だけを内部に保持する。
@@ -138,7 +142,7 @@ cue 成果物 loader の共通 test ID は `SOT-ENG-030` を定義元とし、�
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-MODEL-025: LegalQueryPreprocessResult](../20-model/25-legal-query-preprocess-result.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
-- [SOT-MODEL-029: CueTaskRelation](../20-model/29-cue-task-relation.md)
+- [SOT-MODEL-030: CueTaskRelation v2](../20-model/30-cue-task-relation-v2.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)

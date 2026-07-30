@@ -68,7 +68,10 @@ cluster key を再計算しない。
 
 保持 margin と分岐順は、`SOT-ENG-024` の評価で受け入れた校正値とする。profile 固有の候補保持規則だけを変える場合は profile version に属し、profile 横断の score policy と同じ尺度を変える場合は ranking version に属する。重みは順位付けのための内部値であり、確率、再試行優先度または公開 confidence そのものではない。文書化していない一時的なヒューリスティクス、実行時の観測件数または provider 固有の fallback 成否で分岐保持を増減させない。
 
-本規定の「追加分岐」は、実行適格な代替候補だけを指す。`SOT-MODEL-026` が `unsupported` または `mixed_unsupported_intent` の監査用に保持する内部候補は、条件 2 と保持 margin の対象外とし、選択または実行しない。
+本規定の「追加分岐」は、実行適格な代替候補だけを指す。
+`SOT-MODEL-026` の対象外 signal を持つ contribution から
+`SOT-MODEL-023` の `decision=unsupported` plan を組み立てるために保持する
+監査用候補は、条件 2 と保持 margin の対象外とし、選択または実行しない。
 
 ## 上限
 
@@ -99,7 +102,9 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 - 保持した全候補をそのまま並列検索すること
 - `hedgePairs` がない候補同士を「念のため」で二件実行すること
 - pack 無効の候補を、利用可能な下位候補へ静かに置き換えて実行すること
-- `unsupported` または `needs_clarification` の候補を内部実行すること
+- `SOT-MODEL-023` の `decision=unsupported` で監査用に保持した候補、または
+  `SOT-MODEL-026` の `selectionMode=clarification_required` で非実行とした
+  contribution の候補を内部実行すること
 
 ## 多義語と列挙
 

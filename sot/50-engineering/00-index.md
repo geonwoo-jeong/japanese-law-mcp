@@ -31,3 +31,5 @@
 - [29-unified-query-example-catalog.md](29-unified-query-example-catalog.md)
 - [30-unified-query-cue-artifact-contract.md](30-unified-query-cue-artifact-contract.md)
 - [31-unified-query-adopted-intent-cues.md](31-unified-query-adopted-intent-cues.md)
+- [32-unified-query-positive-cue-role-mapping.md](32-unified-query-positive-cue-role-mapping.md)
+- [33-unified-query-profile-set-adoption-manifest.md](33-unified-query-profile-set-adoption-manifest.md)

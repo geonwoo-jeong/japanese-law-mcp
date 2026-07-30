@@ -84,9 +84,15 @@ high-confidence の分母が零件の場合は基準を満たしたと扱わず�
 
 score の重み、閾値、margin、tie-break、根拠コード、辞書、誤記規則、selection mode または hedge pair の生成規則を変更する場合は、新しい profile version を割り当てる。複数 profile 間の score scale、confidence、閾値、margin または tie-break を変更する場合は、新しい ranking version も割り当てる。
 
-重みと閾値は開発用集合で調整し、holdout 集合は採用判定にだけ使用する。公開 repository の holdout は秘密試験ではなく、固定 digest と変更履歴で過適合を監査する集合とする。profile、重み、閾値、辞書または誤記規則を変更する変更では holdout fixture を同時に変更しない。
+重みと閾値は開発用集合で調整し、holdout 集合は採用判定にだけ使用する。公開 repository の holdout は秘密試験ではなく、固定 digest と変更履歴で過適合を監査する集合とする。profile、重み、閾値、辞書または誤記規則を変更する変更では、既存 holdout fixture の request、期待値、coverage、`leakageGroupId` または集合所属を同時に変更しない。
 
 holdout の期待値を実装へ合わせて調整しない。fixture の誤りであることを独立 review で確認した場合だけ、理由、新しい corpus version および holdout digest を同じ変更へ残す。その変更では profile を変更せず、変更前後の corpus に対する評価結果を残す。
+
+新しい有効な SOT が要求する未収録 coverage は、profile の採用変更より前の
+corpus 準備変更で、新しい case と新しい corpus version へ追加する。この準備変更
+では profile、重み、閾値、辞書および誤記規則を変更せず、既存 holdout case を
+書き換えない。新規 case の正解、集合分離および coverage を独立 review し、
+holdout digest を固定してから、その holdout を採用判定に一回だけ使用する。
 
 候補 score の数値自体を品質指標または確率として扱わない。意味判定の評価と、provider fixture を使う実行予算、partial error および結果順序の評価を分ける。
 
@@ -122,8 +128,10 @@ review 済みの `default-1` baseline を使用する。過去の corpus version
 holdout digest を割り当て、変更前後の結果と独立 review を同じ変更で残し、
 標準 command と baseline を同時に更新する。
 
-`SOT-MODEL-029` の cue task relation を公開既定の意味判定へ初めて有効化する
-変更では、次を一つの採用変更として完成させる。
+`SOT-MODEL-030` の cue task relation を公開既定の意味判定へ初めて有効化する
+変更では、次を一つの整合した採用集合として完成させ、同じ採用変更で
+production、標準 command、中央品質ゲートおよび検索例カタログの参照先を
+切り替える。
 
 - `SOT-ENG-030` に従う固定 profile set 全体の relation 対応 cue schema と
   loader test
@@ -131,15 +139,28 @@ holdout digest を割り当て、変更前後の結果と独立 review を同じ
 - `SOT-ENG-026` の corpus schema version 2、`corpus-v10`、relation、
   共有末尾 cue、単純列挙および非制限 fan-out を対象とする追加 coverage
 - `baselineVersion=default-2` の review 済み baseline
+- `SOT-ENG-033` の current adoption tuple と履歴 manifest
 - 標準 command、検索例カタログおよび中央品質ゲートの固定値切替
 - 変更前後の評価結果と独立 review
+
+corpus schema version 2、`corpus-v10` および `default-2` の候補成果物は、
+`SOT-ARCH-033` の準備状態として採用変更より前に repository へ追加できる。
+特に新しい holdout case は前項の corpus 準備変更で独立 review と digest 固定を
+終える。採用変更は準備済み成果物を現行標準として選ぶ参照先を原子的に
+切り替えるものであり、profile の結果へ合わせて同じ変更で holdout を
+書き換えることを許可しない。
+
+候補 `default-2` は `SOT-ENG-033` に従い、test が直接構成する次版 profile set で
+生成する。現行標準 command の `default` から次版を選択できるようにせず、
+採用変更では候補 baseline の byte と digest を変更しない。
 
 `SOT-ARCH-033` の準備状態として、固定 profile set 全体の cue artifact と
 loader を schema version 3 へそろえることはできる。この準備変更では relation
 依存の signal、候補保持または公開 decision を有効にせず、標準 command、
 `corpus-v9`、`default-1` および中央品質ゲートの corpus・baseline 固定値を
-変更しない。profile metadata の変更に伴う不透明な profile version と
-profile set version の更新は妨げない。
+変更しない。test が直接構成する次版 profile set の metadata を変更した場合に、
+その次版の不透明な profile version と profile set version を更新する義務は
+妨げない。production の active version は `SOT-ARCH-033` に従い維持する。
 
 上記の採用成果物がそろうまでは `corpus-v9` と `default-1` を現行標準として
 維持する。profile または loader の限定 test だけの成功を、relation 対応
@@ -170,3 +191,4 @@ command はネットワークを使用せず、固定 seed と repository 内の
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
+- [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)

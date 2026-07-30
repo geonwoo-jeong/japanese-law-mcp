@@ -15,9 +15,10 @@ profile との対応を起動時に検証する。
 意味、task/resource への対応、score、signal および採用範囲は、それを所有する
 profile または領域別 SOT を定義元とし、本規定へ集約しない。
 
-採用済み意図の positive cue の閉じた所有範囲は `SOT-ENG-031`、対象外意図の
+採用済み意図の positive cue の閉じた所有範囲は `SOT-ENG-031`、現行
+profile set の positive cue role 完全対応は `SOT-ENG-032`、対象外意図の
 閉じた対応は `SOT-ENG-028`、`syntaxRole` の意味と `CueTaskRelation` の
-構築規則は `SOT-MODEL-029` を定義元とする。
+構築規則は `SOT-MODEL-030` を定義元とする。
 
 ## 配置と最上位構造
 
@@ -40,7 +41,7 @@ profile または領域別 SOT を定義元とし、本規定へ集約しない�
 | `value` | string | はい | category に対応する閉じた値 |
 | `intentGroup` | string | 条件付き | 領域別 SOT が必要とする場合だけ |
 | `signal` | string | 条件付き | 領域別 SOT が必要とする場合だけ |
-| `syntaxRole` | string | schema version 3 では必須 | `SOT-MODEL-029` の閉じた値 |
+| `syntaxRole` | string | schema version 3 では必須 | `SOT-MODEL-030` の閉じた値 |
 | `terms` | `string[]` | はい | 一件以上、比較用正規化値の昇順 |
 
 `profileId`、`cueId` および `cueSetVersion` は、一 byte 以上百二十八 byte 以下の
@@ -59,8 +60,8 @@ ASCII 小文字英数字を、単一の `-` で連結した正規形とする。
 relation を有効にする固定 profile set は、参加する全 profile の cue 成果物を
 version 3 へそろえる。一部だけを version 3 にした profile set、または
 version 1、version 2 と version 3 が混在する profile set を relation 対応として
-起動しない。relation をまだ有効にしない準備変更の採用境界と、標準評価の切替は
-`SOT-ENG-024` に従う。
+起動しない。relation をまだ有効にしない準備状態と production からの到達性は
+`SOT-ARCH-033`、標準評価成果物と受入基準の切替は `SOT-ENG-024` に従う。
 
 cue 成果物の schema version は `profile.json` の schema version と独立する。
 ただし、同じ profile の二成果物は `profileId` と `cueSetVersion` が一致しなければ
@@ -82,7 +83,7 @@ cue 成果物の schema version は `profile.json` の schema version と独立�
 
 異なる profile は、能力別の意味を独立して持つため、同じ正規化表現または包含語を
 別の tuple で再利用できる。profile set は profile 間の語彙を衝突として扱わず、
-`SOT-MODEL-029` に従って異なる `profileId` の cue mention を一つの relation に
+`SOT-MODEL-030` に従って異なる `profileId` の cue mention を一つの relation に
 結び付けない。
 
 ## 順序と版の連動
@@ -134,9 +135,11 @@ schema version 3 の全 entry に `syntaxRole` があること、version 1 ま�
 ## 関連
 
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
-- [SOT-MODEL-029: CueTaskRelation](../20-model/29-cue-task-relation.md)
+- [SOT-MODEL-030: CueTaskRelation v2](../20-model/30-cue-task-relation-v2.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
+- [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](28-unified-query-unsupported-intent-cues.md)
 - [SOT-ENG-031: 統合照会の採用済み意図 cue セット](31-unified-query-adopted-intent-cues.md)
+- [SOT-ENG-032: 統合照会の positive cue role 対応](32-unified-query-positive-cue-role-mapping.md)

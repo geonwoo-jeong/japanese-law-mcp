@@ -69,14 +69,15 @@ selection mode、composition member および constraint だけを検証する�
 
 ## 実行適格な同じ語の複数解釈
 
-同じ原文表記が複数の採用済み意味へ対応し得る場合は、次の条件を満たすときだけ、実行適格な複数候補を保持できる。
+同じ原文表記が複数の採用済み意味へ対応し得る場合も、profile は意味ごとに
+五層を独立して適用し、ある意味の `target_anchor` または
+`semantic_expansion` を別の意味へ流用しない。
 
-- 異なる意味ごとに独立した `target_anchor` または `semantic_expansion` の根拠がある
-- その意味が `SOT-PROD-011` の採用済み task/resource に属する
-- `boundary` が対象外または非日本語として先に拒否していない
+五層の評価後に、複数の候補 draft のうちどれを実行適格な分岐として保持するかは
+`SOT-ARCH-032` を定義元とする。本規定は保持 margin、保持件数、
+`selectionMode` または実行可否を重複して定義しない。
 
-この三条件は、`SOT-MODEL-026` が対象外との混在を監査するために保持できる
-内部候補へ適用しない。非実行境界が立った後に保持する内部候補は、同 SOT の
+`SOT-MODEL-026` が対象外との混在を監査するために保持できる内部候補は、同 SOT の
 候補・step ごとの強い根拠条件を満たすものに限り、選択または実行の候補へ
 戻さない。
 
@@ -124,3 +125,4 @@ task/resource に適用できる `SOT-ARCH-025` の複数主題分離を前提�
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](../50-engineering/28-unified-query-unsupported-intent-cues.md)
 - [SOT-ENG-031: 統合照会の採用済み意図 cue セット](../50-engineering/31-unified-query-adopted-intent-cues.md)
+- [SOT-ENG-032: 統合照会の positive cue role 対応](../50-engineering/32-unified-query-positive-cue-role-mapping.md)

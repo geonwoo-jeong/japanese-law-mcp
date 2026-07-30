@@ -1,14 +1,8 @@
-# SOT-MODEL-029: CueTaskRelation
+# SOT-MODEL-030: CueTaskRelation v2
 
-- 状態: 廃止
-- 後継: [SOT-MODEL-030: CueTaskRelation v2](30-cue-task-relation-v2.md)
+- 状態: 有効
 
 ## 規定
-
-positive task の `task_expression` を、対象外 `task_object` と直接接続する
-predicate として同時に使用できないため、本規定を `SOT-MODEL-030` に置き換えた。
-
-以下は廃止時点の履歴であり、現行の内部モデルには適用しない。
 
 `CueTaskRelation` は、一回の共通前処理で得た構文 cue の出現が、同じ節で
 利用者の task として使われたことを表す、provider 非依存で不変な内部
@@ -28,7 +22,7 @@ sidecar モデルとする。
 | `none` | task relation の構成要素にしない |
 | `task_expression` | 登録表現自体が完結した task 表現である |
 | `task_object` | task の対象を表し、述語との関係または単独 task が確認された場合だけ task として扱える |
-| `task_predicate` | 先行する `task_object` と結び付ける述語であり、単独では task signal の根拠にしない |
+| `task_predicate` | 先行する `task_object` と結び付ける構文述語であり、単独では task signal の根拠にしない |
 
 `syntaxRole` は構文上の役割だけを表す。採用済みか対象外か、task または
 resource の意味、signal、intent group、score、capability、pack および
@@ -36,6 +30,11 @@ provider を共通前処理へ与えない。
 
 一つの cue entry の登録表現に複数の `syntaxRole` を混在させない。役割が異なる
 表現は cue ID を分ける。
+
+`task_expression` は登録表現自体の `direct_task` subject になれると同時に、
+先行する `task_object` と直接接続する `object_predicate` の predicate にも
+なれる。この二用途は同じ cue 出現から別の relation を作ることで表し、
+entry、mention または role を複製しない。
 
 ## 構造
 
@@ -74,7 +73,7 @@ Unicode White_Space だけである場合に限り作る。依頼の活用形、
 ### `object_predicate`
 
 `subject.syntaxRole` は `task_object`、`predicate.syntaxRole` は
-`task_predicate` とする。
+`task_predicate` または `task_expression` とする。
 
 `subject` は `predicate` より前にあり、両者は同じ `clauseSpan` に含まれ、
 次の token 列で直接接続する。
@@ -89,6 +88,12 @@ subject と predicate の間に上記以外の byte または token がある場
 作らない。predicate span より後の `clauseSpan` も Unicode White_Space だけで
 なければならない。したがって、述語の後に名詞、別の目的語または別の task が
 続く連体修飾を relation にしない。
+
+predicate が `task_expression` の場合、同じ出現が `direct_task` の条件も満たせば、
+共通前処理は `task_object` を subject とする `object_predicate` と、
+その predicate 出現自身を subject とする `direct_task` の両方を保持する。
+profile は前者を対象外 task/object の signal、後者を採用済み positive task の
+根拠として独立に評価し、どちらか一方を存在しなかったことにしない。
 
 ### `standalone_task`
 
@@ -123,18 +128,24 @@ Unicode White_Space だけである場合に限り、短縮された単独 task 
 
 例えば、`影響グラフを作成してください。` は、登録済みの subject と predicate
 が直接接続する場合に `object_predicate` を作れる。
+`EDINETを検索してください。` は、`EDINET` を subject、
+positive search の `task_expression` を predicate とする `object_predicate` と、
+同じ search cue の `direct_task` を作れる。
 `影響グラフという語を含む条文を検索してください。`、
 `比較という言葉の定義を検索してください。`、
 `「影響グラフ」を含む条文を検索してください。` および
-`翻訳に関する規定を検索してください。` は上記の除外条件により relation を
-作らない。`差分を説明する規定を検索してください。` は predicate が節末に
-ないため relation を作らない。
+`翻訳に関する規定を検索してください。` は上記の除外条件により、対象外
+`task_object` の relation を作らない。末尾の positive search cue 自体が条件を
+満たす場合は、その `direct_task` まで削除しない。
+`差分を説明する規定を検索してください。` は、対象外 predicate が節末に
+ないため、その対象外 relation を作らない。
 
 ## 順序、上限および不変性
 
 relation は `clauseSpan.startByte`、`subject.span.startByte`、
 `predicate.span.startByte`、`profileId`、`subject.cueId`、
 `predicate.cueId` および `kind` の昇順とする。同じ値の重複を除き、
+同じ predicate を共有する `direct_task` と `object_predicate` を含め、
 重なる複数の関係を近接だけで一件へ統合しない。
 
 一つの前処理結果が持つ relation は百二十八件以下とする。上限を超えた場合は
@@ -155,10 +166,16 @@ required pack、候補、provider ID、route、外部 DTO または検索結果�
 ネットワークを使わない model test と共通前処理 test で、少なくとも次を
 確認する。
 
-- `task_expression` の直接 task、`task_object` と述語の直接接続、および
+- `task_expression` の直接 task、`task_object` と
+  `task_predicate` または `task_expression` の直接接続、および
   `task_object` だけの短縮 task を各 kind にする
+- `EDINETを検索してください。` から positive search の `direct_task` と
+  unsupported object の `object_predicate` を両方作り、profile test では
+  `unsupported_task_or_resource` と外部呼出し零件にする
+- `翻訳に関する規定を検索してください。` では topic 除外により translation
+  relation を作らず、positive search の `direct_task` だけを保持する
 - 引用句、閉じた言及表現、`に関する`などの閉じた topic 表現、別の節、
-  文末でない述語および未接続の裸語から relation を作らない
+  文末でない述語および未接続の裸語から対象 relation を作らない
 - 存在しない cue、異なる profile、role と kind の不一致、範囲外 span、
   UTF-8 の途中、逆順、重複および百二十九件を拒否する
 - 同じ入力と cue 語彙から同じ順序の relation を返し、getter の変更と
@@ -171,3 +188,4 @@ required pack、候補、provider ID、route、外部 DTO または検索結果�
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](../50-engineering/28-unified-query-unsupported-intent-cues.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](../50-engineering/30-unified-query-cue-artifact-contract.md)
+- [SOT-ENG-032: 統合照会の positive cue role 対応](../50-engineering/32-unified-query-positive-cue-role-mapping.md)

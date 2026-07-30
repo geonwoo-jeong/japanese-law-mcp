@@ -11,9 +11,9 @@
 共通前処理は、Unicode の比較用正規化、日本語の形態素解析、辞書語の抽出、編集距離、候補の一意性判定、provider に依存せず採用済みの情報モデル SOT が定義した構造化表記を抽出する型付き parser、および原文位置を持つ一般検索語の抽出を提供する。法令、裁判例その他の能力に固有の正式名称、採用する別名または資源対応は共通前処理へ埋め込まず、能力別プロファイルまたは辞書から渡す。事件番号 parser は `SOT-MODEL-027` の構文だけを実装し、裁判所が公開する符号一覧の allowlist または一意な裁判例との対応を持たない。
 
 一つの照会文に対する Kagome の解析は一回だけ行い、その token 列を辞書出現、
-誤記候補、形態素検索語および `SOT-MODEL-029` の cue task relation で共有する。
+誤記候補、形態素検索語および `SOT-MODEL-030` の cue task relation で共有する。
 引用句と `SOT-MODEL-027` の事件番号も同じ前処理呼出しの中で原文から抽出する。
-節 span は `SOT-MODEL-029` の固定境界文字を原文 byte 列から一回だけ走査して
+節 span は `SOT-MODEL-030` の固定境界文字を原文 byte 列から一回だけ走査して
 作り、token の byte span、Kagome の品詞、引用句 span および cue span から
 同 SOT の閉じた手順で relation を作る。「説明らしい」などの意味推定や、
 未登録の述語を補う規則を加えない。
@@ -29,7 +29,7 @@ query profile は、前処理結果が保持する原文の該当 byte 列をそ
 前処理結果から profile 用入力を作る共通 constructor は、`SOT-MODEL-026` の `standalone_structured_query` に該当するかを、位置付きの公式識別子、事件番号、日付および区切りだけから一回だけ導出する。各 query profile はこの不変な判定結果を読み、原文または span を独自に再評価して同じ境界を実装しない。
 
 能力別プロファイルは、その能力に必要な法令名、法概念、cue の語彙および
-`SOT-MODEL-029` の閉じた `syntaxRole` だけを個別に注入できる。共通前処理は
+`SOT-MODEL-030` の閉じた `syntaxRole` だけを個別に注入できる。共通前処理は
 role、原文 span、一回の token 列および引用境界から構文 relation を作るが、
 cue の intent group、signal、採用範囲、score、task/resource または pack を
 解釈しない。法令名辞書を持たない profile も同じ共通前処理を利用できるものとし、
@@ -78,6 +78,6 @@ Kagome、辞書および relation model の package を import しないこと�
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
 - [SOT-ENG-023: 統合法情報照会の法概念辞書](../50-engineering/23-unified-query-concept-lexicon.md)
 - [SOT-MODEL-027: JudicialCaseNumberMention](../20-model/27-judicial-case-number-mention.md)
-- [SOT-MODEL-029: CueTaskRelation](../20-model/29-cue-task-relation.md)
+- [SOT-MODEL-030: CueTaskRelation v2](../20-model/30-cue-task-relation-v2.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](../50-engineering/30-unified-query-cue-artifact-contract.md)
