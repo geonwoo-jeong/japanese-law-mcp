@@ -191,6 +191,18 @@ func (p *Profile) generateDrafts(
 			return mergeUpdateIntoDrafts(alternatives, update), nil
 		}
 	}
+	explicitResources, handled, err :=
+		buildExplicitLawAndContentSearchCandidate(
+			cues,
+			len(targets) > 0,
+			content,
+		)
+	if err != nil {
+		return nil, err
+	}
+	if handled {
+		return mergeUpdateIntoDrafts(explicitResources, update), nil
+	}
 
 	explicitRead := cues.has("task", "read")
 	explicitSearch := cues.has("task", "search")
