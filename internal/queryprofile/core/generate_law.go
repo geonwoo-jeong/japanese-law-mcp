@@ -26,13 +26,19 @@ type lawTarget struct {
 func buildLawTargets(
 	input legalquery.CandidateGenerationInput,
 ) []lawTarget {
-	targets := make([]lawTarget, 0)
 	if ref, exists := input.Ref(); exists && ref.Key().ResourceType() == "law" {
 		return []lawTarget{{
 			viaRef:   &ref,
 			evidence: legalquery.EvidenceOfficialIdentifier,
 		}}
 	}
+	return buildMentionLawTargets(input)
+}
+
+func buildMentionLawTargets(
+	input legalquery.CandidateGenerationInput,
+) []lawTarget {
+	targets := make([]lawTarget, 0)
 	for _, mention := range input.IdentifierMentions() {
 		revisionID, _ := mention.RevisionID()
 		evidence := legalquery.EvidenceOfficialIdentifier
@@ -116,6 +122,20 @@ func buildLawSearchCandidates(
 		len(input.ArticleMentions()) > 0 {
 		return nil, nil
 	}
+	return buildLawSearchDrafts(
+		targets,
+		explicitTask,
+		individual,
+		asOf,
+	)
+}
+
+func buildLawSearchDrafts(
+	targets []lawTarget,
+	explicitTask bool,
+	individual bool,
+	asOf *model.Date,
+) ([]candidateDraft, error) {
 	groups := groupLawTargets(targets)
 	if individual && len(groups) > 4 {
 		return nil, nil

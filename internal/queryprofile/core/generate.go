@@ -234,6 +234,20 @@ func (p *Profile) generateDrafts(
 	if err != nil {
 		return nil, err
 	}
+	refFollowup, handled, err := buildRefFollowupLawSearchDrafts(
+		input,
+		cues,
+		read,
+		content,
+		update,
+		asOf,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if handled {
+		return refFollowup, nil
+	}
 
 	switch {
 	case len(read) > 0:
