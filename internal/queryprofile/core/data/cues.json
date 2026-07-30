@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-9",
+  "cueSetVersion": "core-cues-2026-07-30-10",
   "cues": [
     {
       "cueId": "operator-all",
@@ -85,7 +85,7 @@
       "cueId": "syntax-content-result-unit",
       "category": "syntax",
       "value": "content_result_unit",
-      "terms": ["箇所"]
+      "terms": ["一覧", "箇所"]
     },
     {
       "cueId": "syntax-related-law-scope",

@@ -86,6 +86,55 @@ func TestProfileは一般的な更新操作を法令更新一覧へ変換しな�
 	}
 }
 
+func TestProfileは更新された法令一覧を本文検索語へ分割しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"2025年4月1日に更新された法令一覧を取得する",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1: %#v", len(candidates), candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawUpdates {
+		t.Fatalf("SOT-MODEL-025: 更新一覧の step = %#v", steps)
+	}
+	update, ok := steps[0].LogicalInput().(legalquery.LawUpdateListIntentV1)
+	if !ok || update.Date().String() != "2025-04-01" {
+		t.Fatalf("更新一覧入力 = %#v", steps[0].LogicalInput())
+	}
+}
+
+func TestProfileは引用した一覧を本文検索語として維持する(t *testing.T) {
+	t.Parallel()
+
+	generation := generateQuery(
+		t,
+		"法令本文から「一覧」を検索する",
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1: %#v", len(candidates), candidates)
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 1 ||
+		steps[0].InputKind() != legalquery.InputKindLawContentSearch {
+		t.Fatalf("SOT-MODEL-025: 本文検索の step = %#v", steps)
+	}
+	content, ok := steps[0].LogicalInput().(legalquery.LawContentSearchIntentV1)
+	if !ok ||
+		!slices.Equal(content.AllTerms(), []string{"一覧"}) {
+		t.Fatalf("本文検索入力 = %#v", steps[0].LogicalInput())
+	}
+}
+
 func TestProfileは同じ条の複数項を独立stepに保持する(t *testing.T) {
 	t.Parallel()
 
