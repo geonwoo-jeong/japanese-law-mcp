@@ -10,9 +10,10 @@ import (
 	"slices"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querynormalization"
 )
 
-const supportedSchemaVersion = 1
+const supportedSchemaVersion = 2
 
 var (
 	//go:embed data/current.json
@@ -31,11 +32,29 @@ const (
 
 // Candidate は、法概念一致から作る provider 非依存候補である。
 type Candidate struct {
-	Task          legalquery.Task
-	Resource      legalquery.Resource
-	InputKind     legalquery.LogicalInputKind
-	OfficialTerm  string
-	RequiredPacks []string
+	Task                  legalquery.Task
+	Resource              legalquery.Resource
+	InputKind             legalquery.LogicalInputKind
+	OfficialTerm          string
+	TermOfficialOverrides []TermOfficialOverride
+	RequiredPacks         []string
+}
+
+// TermOfficialOverride は、登録表記に対応する公式検索語を表す。
+type TermOfficialOverride struct {
+	Term         string
+	OfficialTerm string
+}
+
+// OfficialTermFor は、登録表記に個別指定があればその公式検索語を返す。
+func (c Candidate) OfficialTermFor(surface string) string {
+	key := querynormalization.ComparisonKey(surface)
+	for _, override := range c.TermOfficialOverrides {
+		if querynormalization.ComparisonKey(override.Term) == key {
+			return override.OfficialTerm
+		}
+	}
+	return c.OfficialTerm
 }
 
 // Entry は、一つの法概念 entry の複製である。
@@ -102,11 +121,17 @@ func (l *Lexicon) Entries() []Entry {
 		candidates := make([]Candidate, len(entry.Candidates))
 		for candidateIndex, candidate := range entry.Candidates {
 			candidates[candidateIndex] = Candidate{
-				Task:          candidate.Task,
-				Resource:      candidate.Resource,
-				InputKind:     candidate.InputKind,
-				OfficialTerm:  candidate.OfficialTerm,
-				RequiredPacks: append([]string(nil), candidate.RequiredPacks...),
+				Task:         candidate.Task,
+				Resource:     candidate.Resource,
+				InputKind:    candidate.InputKind,
+				OfficialTerm: candidate.OfficialTerm,
+				TermOfficialOverrides: cloneTermOfficialOverrides(
+					candidate.TermOfficialOverrides,
+				),
+				RequiredPacks: append(
+					[]string(nil),
+					candidate.RequiredPacks...,
+				),
 			}
 		}
 		entries[index] = Entry{
@@ -167,11 +192,17 @@ func buildLexicon(value dataset) *Lexicon {
 		candidates := make([]Candidate, 0, len(current.Candidates))
 		for _, candidate := range current.Candidates {
 			candidates = append(candidates, Candidate{
-				Task:          legalquery.Task(candidate.Task),
-				Resource:      legalquery.Resource(candidate.Resource),
-				InputKind:     legalquery.LogicalInputKind(candidate.InputKind),
-				OfficialTerm:  candidate.OfficialTerm,
-				RequiredPacks: append([]string(nil), (*candidate.RequiredPacks)...),
+				Task:         legalquery.Task(candidate.Task),
+				Resource:     legalquery.Resource(candidate.Resource),
+				InputKind:    legalquery.LogicalInputKind(candidate.InputKind),
+				OfficialTerm: candidate.OfficialTerm,
+				TermOfficialOverrides: buildTermOfficialOverrides(
+					candidate.TermOfficialOverrides,
+				),
+				RequiredPacks: append(
+					[]string(nil),
+					(*candidate.RequiredPacks)...,
+				),
 			})
 		}
 		entries = append(entries, Entry{
@@ -210,4 +241,23 @@ func buildLexicon(value dataset) *Lexicon {
 		terms:           terms,
 		comparisonTerms: comparisonTerms,
 	}
+}
+
+func buildTermOfficialOverrides(
+	values []datasetTermOfficialOverride,
+) []TermOfficialOverride {
+	result := make([]TermOfficialOverride, len(values))
+	for index, value := range values {
+		result[index] = TermOfficialOverride{
+			Term:         value.Term,
+			OfficialTerm: value.OfficialTerm,
+		}
+	}
+	return result
+}
+
+func cloneTermOfficialOverrides(
+	values []TermOfficialOverride,
+) []TermOfficialOverride {
+	return append([]TermOfficialOverride(nil), values...)
 }

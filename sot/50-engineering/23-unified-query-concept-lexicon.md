@@ -38,6 +38,13 @@ resource を明示した場合でも、公開結果へ投影する `conceptSourc
 - capability request へ渡せる確認済みの正式語
 - 複数候補、優先関係または自動実行禁止を表す衝突情報
 
+候補の `officialTerm` は既定の公式検索語とする。同じ概念でも、登録済みの
+表記によって公的資料上の公式検索語が異なる場合に限り、候補はその表記と
+公式検索語の組を `termOfficialOverrides` として持つことができる。
+override の表記は同じ entry の `terms` に存在しなければならず、比較用正規化で
+一致した表記にだけ適用する。誤記、未知の表記または実行時の推測から override
+を作らず、一致しない場合は候補の `officialTerm` を使用する。
+
 entry が生成できる候補は `SOT-MODEL-022` の七つの step variant に限定する。provider ID、外部 query parameter、HTML selector、任意の JSON request または法的結論を格納しない。
 
 ## 採用しない根拠

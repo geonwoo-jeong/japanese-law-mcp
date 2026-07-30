@@ -269,8 +269,10 @@ func (p *Profile) buildConceptCandidates(
 			}
 			contentInput, err := legalquery.NewLawContentSearchIntentV1(
 				legalquery.LawContentSearchIntentV1Values{
-					AllTerms: []string{candidate.OfficialTerm},
-					AsOf:     asOf,
+					AllTerms: []string{
+						candidate.OfficialTermFor(mention.Surface()),
+					},
+					AsOf: asOf,
 				},
 			)
 			if err != nil {

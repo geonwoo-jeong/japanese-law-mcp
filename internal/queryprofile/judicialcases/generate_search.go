@@ -746,7 +746,7 @@ func (p *Profile) buildConceptSearchSubjects(
 			}
 			searchInput, err := legalquery.NewJudicialDecisionSearchIntentV1(
 				legalquery.JudicialDecisionSearchIntentV1Values{
-					Query: candidate.OfficialTerm,
+					Query: candidate.OfficialTermFor(mention.Surface()),
 				},
 			)
 			if err != nil {

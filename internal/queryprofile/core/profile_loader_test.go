@@ -19,14 +19,14 @@ func TestLoadEmbeddedは法令コア五能力と辞書版を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "core" ||
-		metadata.ProfileVersion() != "core-2026-07-30-27" ||
+		metadata.ProfileVersion() != "core-2026-07-30-28" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "core-cues-2026-07-30-12" {
 		t.Fatalf("metadata = %#v", metadata)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
 	if metadata.LawNameLexiconVersion() != lawVersion ||
-		metadata.LegalConceptLexiconVersion() != "legal-concept-2026-07-30-1" {
+		metadata.LegalConceptLexiconVersion() != "legal-concept-2026-07-30-2" {
 		t.Fatalf(
 			"lexicon versions = %q, %q",
 			metadata.LawNameLexiconVersion(),
@@ -119,7 +119,7 @@ func TestLoadは未知項目trailing値辞書版不一致を拒否する(t *test
 		"法概念辞書版不一致": {
 			profile: bytes.Replace(
 				embeddedProfile,
-				[]byte(`legal-concept-2026-07-30-1`),
+				[]byte(`legal-concept-2026-07-30-2`),
 				[]byte(`legal-concept-2026-07-30-9`),
 				1,
 			),

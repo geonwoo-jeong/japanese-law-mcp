@@ -1,17 +1,17 @@
 {
-  "schemaVersion": 1,
-  "lexiconVersion": "legal-concept-2026-07-30-1",
-  "generatedAt": "2026-07-30T06:52:19Z",
+  "schemaVersion": 2,
+  "lexiconVersion": "legal-concept-2026-07-30-2",
+  "generatedAt": "2026-07-30T07:11:58Z",
   "entries": [
     {
       "conceptId": "adult-guardianship",
       "canonical": "成年後見",
-      "terms": ["成年後見"],
-      "comparisonTerms": ["成年後見"],
+      "terms": ["判断能力が低下した人の法的支援", "成年後見"],
+      "comparisonTerms": ["判断能力が低下した人の法的支援", "成年後見"],
       "sourceName": "裁判所 成年後見制度（後見・保佐・補助）の概要を知りたい方へ",
       "sourceUrl": "https://www.courts.go.jp/saiban/koukenp00/koukenp1/index.html",
-      "confirmedAt": "2026-07-28",
-      "mappingNote": "一般概念としての成年後見から、条文検索と裁判例検索の両候補を作る。",
+      "confirmedAt": "2026-07-30",
+      "mappingNote": "裁判所が、成年後見制度を判断能力が十分ではない人を法律的に支援する制度と説明しているため、「判断能力が低下した人の法的支援」を成年後見制度へ対応付ける。一般概念としては条文検索と裁判例検索の両候補を作る。",
       "selectionPolicy": "ambiguous_no_auto_execute",
       "candidates": [
         {
@@ -19,6 +19,12 @@
           "resource": "law_provision",
           "inputKind": "law_content_search",
           "officialTerm": "成年後見",
+          "termOfficialOverrides": [
+            {
+              "term": "判断能力が低下した人の法的支援",
+              "officialTerm": "成年後見制度"
+            }
+          ],
           "requiredPacks": []
         },
         {
@@ -26,6 +32,12 @@
           "resource": "judicial_decision",
           "inputKind": "judicial_decision_search",
           "officialTerm": "成年後見",
+          "termOfficialOverrides": [
+            {
+              "term": "判断能力が低下した人の法的支援",
+              "officialTerm": "成年後見制度"
+            }
+          ],
           "requiredPacks": ["judicial-cases"]
         }
       ]

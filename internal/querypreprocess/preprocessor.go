@@ -371,6 +371,10 @@ func cloneConceptEntry(entry legalconceptlexicon.Entry) legalconceptlexicon.Entr
 		entry.Candidates...,
 	)
 	for index := range copied.Candidates {
+		copied.Candidates[index].TermOfficialOverrides = append(
+			[]legalconceptlexicon.TermOfficialOverride(nil),
+			entry.Candidates[index].TermOfficialOverrides...,
+		)
 		copied.Candidates[index].RequiredPacks = append(
 			[]string(nil),
 			entry.Candidates[index].RequiredPacks...,

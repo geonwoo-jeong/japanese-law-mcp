@@ -22,9 +22,15 @@ type datasetEntry struct {
 }
 
 type datasetCandidate struct {
-	Task          string    `json:"task"`
-	Resource      string    `json:"resource"`
-	InputKind     string    `json:"inputKind"`
-	OfficialTerm  string    `json:"officialTerm"`
-	RequiredPacks *[]string `json:"requiredPacks"`
+	Task                  string                        `json:"task"`
+	Resource              string                        `json:"resource"`
+	InputKind             string                        `json:"inputKind"`
+	OfficialTerm          string                        `json:"officialTerm"`
+	TermOfficialOverrides []datasetTermOfficialOverride `json:"termOfficialOverrides,omitempty"`
+	RequiredPacks         *[]string                     `json:"requiredPacks"`
+}
+
+type datasetTermOfficialOverride struct {
+	Term         string `json:"term"`
+	OfficialTerm string `json:"officialTerm"`
 }

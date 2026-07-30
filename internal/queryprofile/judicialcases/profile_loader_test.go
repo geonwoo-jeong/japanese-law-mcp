@@ -17,14 +17,14 @@ func TestLoadEmbeddedは裁判例二能力と共有校正を固定する(t *test
 	}
 	metadata := profile.Metadata()
 	if metadata.ProfileID() != "judicial-cases" ||
-		metadata.ProfileVersion() != "judicial-cases-2026-07-30-7" ||
+		metadata.ProfileVersion() != "judicial-cases-2026-07-30-8" ||
 		metadata.RankingVersion() != "legal-query-ranking-2026-07-28-1" ||
 		metadata.CueSetVersion() != "judicial-cases-cues-2026-07-30-3" {
 		t.Fatalf("metadata = %#v", metadata)
 	}
 	const lawVersion = "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27"
 	if metadata.LawNameLexiconVersion() != lawVersion ||
-		metadata.LegalConceptLexiconVersion() != "legal-concept-2026-07-30-1" {
+		metadata.LegalConceptLexiconVersion() != "legal-concept-2026-07-30-2" {
 		t.Fatalf(
 			"lexicon versions = %q, %q",
 			metadata.LawNameLexiconVersion(),
@@ -141,7 +141,7 @@ func TestLoadは閉じたJSONと共有校正を厳格に検証する(t *testing.
 		"法概念辞書版不一致": {
 			profile: bytes.Replace(
 				embeddedProfile,
-				[]byte(`legal-concept-2026-07-30-1`),
+				[]byte(`legal-concept-2026-07-30-2`),
 				[]byte(`legal-concept-2026-07-30-9`),
 				1,
 			),

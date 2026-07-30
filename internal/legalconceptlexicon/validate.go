@@ -18,6 +18,7 @@ const (
 	maxEntryCount     = 256
 	maxStringBytes    = 2048
 	maxCandidateCount = 4
+	maxTermOverrides  = 16
 )
 
 var identifierPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
@@ -151,7 +152,7 @@ func validateEntry(value datasetEntry) error {
 	}
 	seenCandidates := make(map[string]struct{}, len(value.Candidates))
 	for index, candidate := range value.Candidates {
-		if err := validateCandidate(candidate); err != nil {
+		if err := validateCandidate(candidate, value.Terms); err != nil {
 			return fmt.Errorf("candidates[%d]: %w", index, err)
 		}
 		key := candidateKey(candidate)
@@ -163,8 +164,15 @@ func validateEntry(value datasetEntry) error {
 	return nil
 }
 
-func validateCandidate(value datasetCandidate) error {
+func validateCandidate(value datasetCandidate, terms []string) error {
 	if err := validateText("officialTerm", value.OfficialTerm); err != nil {
+		return err
+	}
+	if err := validateTermOfficialOverrides(
+		value.TermOfficialOverrides,
+		terms,
+		value.OfficialTerm,
+	); err != nil {
 		return err
 	}
 	if value.RequiredPacks == nil {
@@ -190,6 +198,54 @@ func validateCandidate(value datasetCandidate) error {
 		}
 	default:
 		return fmt.Errorf("未採用の task/resource/inputKind 候補です")
+	}
+	return nil
+}
+
+func validateTermOfficialOverrides(
+	values []datasetTermOfficialOverride,
+	terms []string,
+	defaultOfficialTerm string,
+) error {
+	if len(values) > maxTermOverrides {
+		return fmt.Errorf(
+			"termOfficialOverrides は %d 件以下でなければなりません",
+			maxTermOverrides,
+		)
+	}
+	previous := ""
+	for index, value := range values {
+		if err := validateText(
+			fmt.Sprintf("termOfficialOverrides[%d].term", index),
+			value.Term,
+		); err != nil {
+			return err
+		}
+		if !slices.Contains(terms, value.Term) {
+			return fmt.Errorf(
+				"termOfficialOverrides[%d].term は terms の登録表記でなければなりません",
+				index,
+			)
+		}
+		if err := validateText(
+			fmt.Sprintf("termOfficialOverrides[%d].officialTerm", index),
+			value.OfficialTerm,
+		); err != nil {
+			return err
+		}
+		if value.OfficialTerm == defaultOfficialTerm {
+			return fmt.Errorf(
+				"termOfficialOverrides[%d] は既定の officialTerm と異ならなければなりません",
+				index,
+			)
+		}
+		key := querynormalization.ComparisonKey(value.Term)
+		if previous != "" && previous >= key {
+			return fmt.Errorf(
+				"termOfficialOverrides は比較用表記の昇順で重複なく保持しなければなりません",
+			)
+		}
+		previous = key
 	}
 	return nil
 }

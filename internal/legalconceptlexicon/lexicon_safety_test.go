@@ -21,7 +21,7 @@ func TestLoadRejectsNormalizedCollisionWithoutConflictGroup(t *testing.T) {
 	t.Parallel()
 
 	value := `{
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "lexiconVersion": "collision-test",
   "generatedAt": "2026-07-28T00:00:00Z",
   "entries": [

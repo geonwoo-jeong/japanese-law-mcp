@@ -7,7 +7,7 @@ import (
 )
 
 const validFixture = `{
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "lexiconVersion": "legal-concept-2026-07-28",
   "generatedAt": "2026-07-28T00:00:00Z",
   "entries": [
@@ -144,6 +144,88 @@ func TestLoadAcceptsEquivalentSurfaceFormsWithOneComparisonTerm(t *testing.T) {
 	}
 }
 
+func TestCandidateOfficialTermForUsesOnlyRegisteredSurfaceOverride(t *testing.T) {
+	t.Parallel()
+
+	candidate := Candidate{
+		OfficialTerm: "成年後見",
+		TermOfficialOverrides: []TermOfficialOverride{
+			{
+				Term:         "判断能力が低下した人の法的支援",
+				OfficialTerm: "成年後見制度",
+			},
+		},
+	}
+
+	tests := map[string]struct {
+		surface string
+		want    string
+	}{
+		"登録表記": {
+			surface: "判断能力が低下した人の法的支援",
+			want:    "成年後見制度",
+		},
+		"比較用正規化で一致する表記": {
+			surface: "判断能力が低下した人の「法的支援」",
+			want:    "成年後見制度",
+		},
+		"既定表記": {
+			surface: "成年後見",
+			want:    "成年後見",
+		},
+		"未知の表記": {
+			surface: "法的支援",
+			want:    "成年後見",
+		},
+	}
+	for name, test := range tests {
+		name, test := name, test
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if got := candidate.OfficialTermFor(test.surface); got != test.want {
+				t.Fatalf(
+					"SOT-ENG-023: OfficialTermFor(%q) = %q、期待値は %q です",
+					test.surface,
+					got,
+					test.want,
+				)
+			}
+		})
+	}
+}
+
+func TestLoadBuildsImmutableTermOfficialOverrides(t *testing.T) {
+	t.Parallel()
+
+	value := replaceOnce(
+		t,
+		validFixture,
+		`"officialTerm": "永住許可",
+          "requiredPacks": []`,
+		`"officialTerm": "永住許可",
+          "termOfficialOverrides": [
+            {"term": "永住権", "officialTerm": "永住許可申請"}
+          ],
+          "requiredPacks": []`,
+	)
+	lexicon, err := Load([]byte(value))
+	if err != nil {
+		t.Fatalf("SOT-ENG-023: override を読み込めません: %v", err)
+	}
+
+	entries := lexicon.Entries()
+	candidate := entries[0].Candidates[0]
+	if got := candidate.OfficialTermFor("永住権"); got != "永住許可申請" {
+		t.Fatalf("SOT-ENG-023: override = %q", got)
+	}
+	entries[0].Candidates[0].TermOfficialOverrides[0].OfficialTerm = "変更後"
+
+	reloaded := lexicon.Entries()
+	if got := reloaded[0].Candidates[0].OfficialTermFor("永住権"); got != "永住許可申請" {
+		t.Fatalf("SOT-ENG-023: override が変更されました: %q", got)
+	}
+}
+
 func TestLoadRejectsMalformedDataset(t *testing.T) {
 	t.Parallel()
 
@@ -153,7 +235,7 @@ func TestLoadRejectsMalformedDataset(t *testing.T) {
 	}{
 		{
 			name:  "unknown schema version",
-			value: replaceOnce(t, validFixture, `"schemaVersion": 1`, `"schemaVersion": 2`),
+			value: replaceOnce(t, validFixture, `"schemaVersion": 2`, `"schemaVersion": 1`),
 		},
 		{
 			name: "unknown field",
@@ -229,6 +311,20 @@ func TestLoadRejectsMalformedDataset(t *testing.T) {
 			),
 		},
 		{
+			name: "override term is not registered",
+			value: replaceOnce(
+				t,
+				validFixture,
+				`"officialTerm": "永住許可",
+          "requiredPacks": []`,
+				`"officialTerm": "永住許可",
+          "termOfficialOverrides": [
+            {"term": "未登録表記", "officialTerm": "永住許可申請"}
+          ],
+          "requiredPacks": []`,
+			),
+		},
+		{
 			name: "term collision without group",
 			value: replaceOnce(
 				t,
@@ -257,7 +353,7 @@ func TestLoadEmbeddedContainsExpectedOfficialConcepts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-ENG-023: LoadEmbedded() error = %v", err)
 	}
-	if lexicon.Version() != "legal-concept-2026-07-30-1" {
+	if lexicon.Version() != "legal-concept-2026-07-30-2" {
 		t.Fatalf("SOT-ENG-023: embedded version = %q", lexicon.Version())
 	}
 	entries := lexicon.Entries()

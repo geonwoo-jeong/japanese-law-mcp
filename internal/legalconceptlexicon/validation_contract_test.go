@@ -166,7 +166,7 @@ func TestLoadRejectsMissingOversizedAndTrailingDatasets(t *testing.T) {
 		"invalid UTF-8": {0xff},
 		"trailing JSON": append(append([]byte{}, []byte(validFixture)...), []byte(` {}`)...),
 		"empty entries": []byte(`{
-		  "schemaVersion": 1,
+		  "schemaVersion": 2,
 		  "lexiconVersion": "legal-concept-2026-07-28",
 		  "generatedAt": "2026-07-28T00:00:00Z",
 		  "entries": []
