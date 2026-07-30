@@ -568,6 +568,39 @@ func TestProfileContributionは翻訳信号と法令検索候補を併存させ�
 	}
 }
 
+func TestProfileContributionは第一件の暗黙読取りを自動実行しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	contribution := generateSelectionContribution(
+		t,
+		"行政処分を含む法令を検索して、先頭の法令本文も読む",
+	)
+	if contribution.SelectionMode() !=
+		legalquery.QuerySelectionModeClarificationRequired {
+		t.Fatalf(
+			"SOT-ENG-024: selection mode = %q, want %q",
+			contribution.SelectionMode(),
+			legalquery.QuerySelectionModeClarificationRequired,
+		)
+	}
+	candidates := contribution.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf(
+			"SOT-ENG-024: candidates = %#v, want 1 件",
+			candidates,
+		)
+	}
+	content, ok := candidates[0].Steps()[0].LogicalInput().(legalquery.LawContentSearchIntentV1)
+	if !ok || !slices.Equal(content.AllTerms(), []string{"行政処分"}) {
+		t.Fatalf(
+			"SOT-ENG-024: 安全に残した検索条件 = %#v",
+			candidates[0].Steps()[0].LogicalInput(),
+		)
+	}
+}
+
 func TestProfileContributionは対象外資源だけの弱い候補を除去する(
 	t *testing.T,
 ) {

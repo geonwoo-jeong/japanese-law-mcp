@@ -292,7 +292,8 @@ func containsQuerySpan(values []QuerySpan, target QuerySpan) bool {
 func classifyQueryLanguage(result PreprocessResult) QueryLanguage {
 	query := result.Query()
 	for _, character := range query {
-		if unicode.In(character, unicode.Hiragana, unicode.Katakana) {
+		if unicode.In(character, unicode.Katakana) ||
+			isSubstantiveHiragana(character) {
 			return QueryLanguageJapanese
 		}
 	}
@@ -327,13 +328,16 @@ func classifyQueryLanguage(result PreprocessResult) QueryLanguage {
 		mark(mention.Span())
 	}
 	for _, mention := range result.QueryTermMentions() {
-		mark(mention.Span())
+		if containsSubstantiveJapaneseTerm(mention.Surface()) {
+			mark(mention.Span())
+		}
 	}
 	factFound := false
 	for start, character := range query {
 		if unicode.IsSpace(character) ||
 			unicode.IsPunct(character) ||
-			unicode.IsSymbol(character) {
+			unicode.IsSymbol(character) ||
+			isJapaneseParticleHiragana(character) {
 			continue
 		}
 		if !covered[start] {
@@ -345,4 +349,30 @@ func classifyQueryLanguage(result PreprocessResult) QueryLanguage {
 		return QueryLanguageJapanese
 	}
 	return QueryLanguageNonJapanese
+}
+
+func containsSubstantiveJapaneseTerm(value string) bool {
+	for _, character := range value {
+		if unicode.In(character, unicode.Han, unicode.Katakana) ||
+			isSubstantiveHiragana(character) {
+			return true
+		}
+	}
+	return false
+}
+
+func isSubstantiveHiragana(character rune) bool {
+	if !unicode.In(character, unicode.Hiragana) {
+		return false
+	}
+	return !isJapaneseParticleHiragana(character)
+}
+
+func isJapaneseParticleHiragana(character rune) bool {
+	switch character {
+	case 'は', 'が', 'を', 'に', 'へ', 'と', 'で', 'の', 'も', 'や', 'か', 'ね', 'よ':
+		return true
+	default:
+		return false
+	}
 }

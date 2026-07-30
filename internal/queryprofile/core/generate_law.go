@@ -120,8 +120,8 @@ func buildLawSearchCandidates(
 	asOf *model.Date,
 ) ([]candidateDraft, error) {
 	if !searchRequested ||
-		documentRequested ||
-		len(input.ArticleMentions()) > 0 {
+		(!explicitTask &&
+			(documentRequested || len(input.ArticleMentions()) > 0)) {
 		return nil, nil
 	}
 	return buildLawSearchDrafts(

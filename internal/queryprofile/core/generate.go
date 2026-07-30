@@ -85,7 +85,7 @@ func (p *Profile) Generate(
 		return legalquery.CandidateGeneration{}, err
 	}
 	drafts = withAsOfEvidence(drafts)
-	drafts = retainGroundedDraftsForUnsupportedResource(drafts, signals)
+	drafts = retainSupportedDraftsForUnsupportedRequest(drafts, cues, signals)
 	candidates, stepStartBytes, err := p.materializeCandidates(
 		input,
 		cues,
@@ -118,20 +118,46 @@ func (p *Profile) Generate(
 	)
 }
 
-func retainGroundedDraftsForUnsupportedResource(
+func retainSupportedDraftsForUnsupportedRequest(
 	drafts []candidateDraft,
+	cues resolvedCues,
 	signals []legalquery.CandidateGenerationSignal,
 ) []candidateDraft {
-	if !hasUnsupportedTaskOrResourceSignal(signals) {
+	if !hasUnsupportedSignal(signals) {
 		return drafts
 	}
 	result := make([]candidateDraft, 0, len(drafts))
 	for _, draft := range drafts {
-		if hasGroundedRetrievalEvidence(draft.evidence) {
-			result = append(result, draft)
+		if !hasDraftEvidence(draft, legalquery.EvidenceExplicitTask) {
+			continue
 		}
+		if hasUnsupportedTaskOrResourceSignal(signals) &&
+			(!hasGroundedRetrievalEvidence(draft.evidence) ||
+				hasDraftEvidence(
+					draft,
+					legalquery.EvidenceUniqueTypoCorrection,
+				) ||
+				!hasTaskCueAtOrAfterDraft(draft, cues)) {
+			continue
+		}
+		result = append(result, draft)
 	}
 	return result
+}
+
+func hasUnsupportedSignal(
+	signals []legalquery.CandidateGenerationSignal,
+) bool {
+	for _, signal := range signals {
+		switch signal {
+		case legalquery.CandidateSignalUnsupportedLegalAdvice,
+			legalquery.CandidateSignalUnsupportedTranslation,
+			legalquery.CandidateSignalUnsupportedTaskOrResource:
+			return true
+		default:
+		}
+	}
+	return false
 }
 
 func hasUnsupportedTaskOrResourceSignal(
@@ -141,6 +167,37 @@ func hasUnsupportedTaskOrResourceSignal(
 		if signal ==
 			legalquery.CandidateSignalUnsupportedTaskOrResource {
 			return true
+		}
+	}
+	return false
+}
+
+func hasDraftEvidence(
+	draft candidateDraft,
+	code legalquery.EvidenceCode,
+) bool {
+	_, exists := draft.evidence[code]
+	return exists
+}
+
+func hasTaskCueAtOrAfterDraft(
+	draft candidateDraft,
+	cues resolvedCues,
+) bool {
+	if len(draft.steps) == 0 {
+		return false
+	}
+	startByte := draft.steps[0].startByte
+	for _, step := range draft.steps[1:] {
+		if step.startByte < startByte {
+			startByte = step.startByte
+		}
+	}
+	for _, value := range []string{"search", "read", "list_updates"} {
+		for _, mention := range cues.mentions[cueMeaningKey("task", value)] {
+			if mention.Span().StartByte() >= startByte {
+				return true
+			}
 		}
 	}
 	return false
@@ -223,9 +280,15 @@ func (p *Profile) generateDrafts(
 	if err != nil {
 		return nil, err
 	}
+	searchTargets := targets
+	if explicitSearch && explicitRead {
+		if preceding := refPrecedingLawSearchTargets(input, cues); len(preceding) > 0 {
+			searchTargets = preceding
+		}
+	}
 	search, err := buildLawSearchCandidates(
 		input,
-		targets,
+		searchTargets,
 		searchRequested,
 		explicitSearch,
 		documentRequested,
@@ -251,6 +314,10 @@ func (p *Profile) generateDrafts(
 	}
 
 	switch {
+	case explicitSearch && explicitRead &&
+		len(search) == 1 && len(read) > 0:
+		searchAndRead := combineDraftSets(search, read, nil)
+		return combineDraftSets(searchAndRead, content, update), nil
 	case len(read) > 0:
 		return combineDraftSets(read, content, update), nil
 	case len(search) > 0:

@@ -71,6 +71,38 @@ func TestProfileは法令名に直結した読取り語を維持する(t *testin
 	}
 }
 
+func TestProfileは明示検索と識別子読取りを同一候補に保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	const query = "民法を検索し、法令ID 129AC0000000089 の民法の全文も読む"
+	generation := generateQuery(
+		t,
+		query,
+		nil,
+	)
+	candidates := generation.Candidates()
+	if len(candidates) != 1 {
+		t.Fatalf("候補数 = %d, want 1", len(candidates))
+	}
+	steps := candidates[0].Steps()
+	if len(steps) != 2 ||
+		steps[0].InputKind() != legalquery.InputKindLawSearch ||
+		steps[1].InputKind() != legalquery.InputKindLawRead {
+		t.Fatalf("SOT-ENG-024: 明示検索と読取りの step = %#v", steps)
+	}
+	search, ok := steps[0].LogicalInput().(legalquery.LawSearchIntentV1)
+	if !ok || search.Query() != "民法" {
+		t.Fatalf("法令検索入力 = %#v", steps[0].LogicalInput())
+	}
+	read, ok := steps[1].LogicalInput().(legalquery.LawReadIntentV1)
+	lawID, hasLawID := read.LawID()
+	if !ok || !hasLawID || lawID != "129AC0000000089" {
+		t.Fatalf("法令読取り入力 = %#v", steps[1].LogicalInput())
+	}
+}
+
 func TestProfileは更新資源の後続確認語を法令読取りへ適用しない(t *testing.T) {
 	t.Parallel()
 

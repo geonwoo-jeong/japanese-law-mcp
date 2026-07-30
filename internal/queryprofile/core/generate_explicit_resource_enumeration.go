@@ -62,6 +62,7 @@ func explicitLawAndContentResourcesRequested(cues resolvedCues) bool {
 	return cues.has("task", "search") &&
 		cues.has("resource", "law") &&
 		cues.has("resource", "law_provision") &&
+		!cues.has("safety", "implicit_first_read") &&
 		!cues.has("operator", "dual_candidate") &&
 		!cues.has("operator", "resource_choice") &&
 		!cues.has("operator", "any") &&

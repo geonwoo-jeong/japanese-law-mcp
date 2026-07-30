@@ -5,6 +5,44 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
+func refPrecedingLawSearchTargets(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+) []lawTarget {
+	ref, hasRef := input.Ref()
+	if (!hasRef || ref.Key().ResourceType() != "law") &&
+		len(input.IdentifierMentions()) == 0 {
+		return nil
+	}
+	searchCues := cues.mentions[cueMeaningKey("task", "search")]
+	readCues := cues.mentions[cueMeaningKey("task", "read")]
+	result := make([]lawTarget, 0, 1)
+	for _, target := range buildMentionLawTargets(input, cues) {
+		if targetPrecedesSearchAndRead(target, searchCues, readCues) {
+			result = append(result, target)
+		}
+	}
+	return result
+}
+
+func targetPrecedesSearchAndRead(
+	target lawTarget,
+	searchCues []legalquery.CueMention,
+	readCues []legalquery.CueMention,
+) bool {
+	for _, search := range searchCues {
+		if target.endByte > search.Span().StartByte() {
+			continue
+		}
+		for _, read := range readCues {
+			if search.Span().EndByte() <= read.Span().StartByte() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func buildRefFollowupLawSearchDrafts(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,

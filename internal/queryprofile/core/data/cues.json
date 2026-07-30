@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-30-10",
+  "cueSetVersion": "core-cues-2026-07-30-11",
   "cues": [
     {
       "cueId": "operator-all",
@@ -82,6 +82,12 @@
       "terms": ["の更新", "更新された法令", "更新一覧", "更新情報", "更新法令", "法令更新一覧", "法令改正一覧"]
     },
     {
+      "cueId": "safety-implicit-first-read",
+      "category": "safety",
+      "value": "implicit_first_read",
+      "terms": ["候補確認を省略", "先頭", "第一件", "最も関連度が高い結果"]
+    },
+    {
       "cueId": "syntax-content-result-unit",
       "category": "syntax",
       "value": "content_result_unit",
@@ -115,13 +121,13 @@
       "cueId": "unsupported-legal-advice",
       "category": "unsupported",
       "value": "legal_advice",
-      "terms": ["どちらが有利", "勝てますか", "法的に判断", "署名すべき", "適法ですか", "違法ですか"]
+      "terms": ["どちらが有利", "予測してください", "判断してください", "勝てますか", "勝てるか", "当たるか", "有効か", "法的に判断", "法的結論", "署名すべき", "適法か判断", "適法ですか", "違法ですか", "違法なら"]
     },
     {
       "cueId": "unsupported-resource",
       "category": "unsupported",
       "value": "task_or_resource",
-      "terms": ["EDINET", "内部文書", "未公開内部文書", "自治体文書", "都道府県資料"]
+      "terms": ["EDINET", "一般ウェブ記事", "労働通達", "勝てるか", "国税不服審判所の裁決", "国税庁の通達", "内部文書", "未公開内部文書", "法律事務所ブログ", "民間判例データベース", "英語に翻訳", "自治体文書", "自治体条例", "都道府県資料"]
     },
     {
       "cueId": "unsupported-translation",
@@ -133,7 +139,7 @@
       "cueId": "unsupported-unadopted-pack",
       "category": "unsupported",
       "value": "task_or_resource",
-      "terms": ["労務相談", "国会審議", "立法沿革", "立法経緯", "税務相談"]
+      "terms": ["legislative-history", "労務相談", "国会会議録", "国会審議", "立法沿革", "立法理由", "立法経緯", "税務相談"]
     }
   ]
 }

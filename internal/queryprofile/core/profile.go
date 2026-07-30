@@ -446,6 +446,8 @@ func validCueMeaning(category string, value string) bool {
 	case "syntax":
 		return value == "content_result_unit" ||
 			value == "related_law_scope"
+	case "safety":
+		return value == "implicit_first_read"
 	case "unsupported":
 		return value == "legal_advice" ||
 			value == "translation" ||

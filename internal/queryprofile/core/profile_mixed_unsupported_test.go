@@ -76,3 +76,24 @@ func TestProfileは翻訳または法的助言と混在する弱い取得候補�
 		})
 	}
 }
+
+func TestProfileは対象外要求に従属する取得候補を保持しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	for _, query := range []string{
+		"賃貸借契約の解除は適法ですか。私が今すぐ解除してよいか判断してください。",
+		"国会会議録を検索し、民法改正の立法理由を追跡してください。",
+		"一般ウェブ記事と法律事務所ブログを検索して要約してください。",
+	} {
+		generation := generateQuery(t, query, nil)
+		if len(generation.Candidates()) != 0 {
+			t.Errorf(
+				"SOT-MODEL-026: 対象外要求 %q の candidates = %#v, want 0 件",
+				query,
+				generation.Candidates(),
+			)
+		}
+	}
+}
