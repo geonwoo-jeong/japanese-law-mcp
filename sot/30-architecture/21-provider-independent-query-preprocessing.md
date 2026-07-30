@@ -22,9 +22,18 @@ query profile は位置付きの前処理結果を利用し、原文を別の to
 補わない。
 
 有効な SOT が位置付き出現間の閉じた separator 集合を定める場合に限り、
-query profile は、前処理結果が保持する原文の該当 byte 列をその集合と照合できる。
-この照合は既存出現の隣接または共有範囲を確認するためだけに使い、新しい token、
-検索語、cue、節境界または task relation を作らない。
+前処理結果から profile 用入力を作る共通 constructor は、検証済み原文の該当
+byte 列をその集合と照合できる。profile へ渡すのは、既存 span の列が閉じた
+条件を満たした `SOT-MODEL-031` の `SharedTerminalSequence` だけとし、
+原文全体、任意の部分文字列、比較用正規化値または token 列を渡さない。
+
+この検証は既存出現の隣接または共有範囲を確認するためだけに使い、新しい token、
+検索語、cue、節境界または task relation を作らない。profile は任意の
+separator 集合を実行時に注入せず、有効な SOT が構造を固定した検証だけを
+利用する。共通 constructor は task/resource、演算子、score または候補を決めず、
+profile が検証結果と自身の採用済み cue 対応から意味を確定する。この検証結果は、
+`SOT-MODEL-031` が定める一 request 限定の application-internal sidecar であり、
+前処理結果、profile contribution、永続成果物または公開 field へ追加しない。
 
 前処理結果から profile 用入力を作る共通 constructor は、`SOT-MODEL-026` の `standalone_structured_query` に該当するかを、位置付きの公式識別子、事件番号、日付および区切りだけから一回だけ導出する。各 query profile はこの不変な判定結果を読み、原文または span を独自に再評価して同じ境界を実装しない。
 
@@ -63,7 +72,8 @@ relation 対応経路は `SOT-ENG-030` が relation 対応として定める cue
 共通前処理の単体テストを外部ネットワークなしで実行し、能力別辞書と
 syntax role を差し替えられること、完全な事件番号を型付き出現として一度だけ
 抽出して一般検索語から除外すること、同じ token 列から cue task relation を
-決定的に作ること、query profile が原文を再解析しないこと、e-Gov アダプターが
+決定的に作ること、閉じた separator 検証が原文または任意の byte 列を profile へ
+公開しないこと、query profile が原文を再解析しないこと、e-Gov アダプターが
 Kagome、辞書および relation model の package を import しないこと、および
 並行リクエストで共有する不変オブジェクトに data race がないことを確認する。
 
@@ -74,10 +84,12 @@ Kagome、辞書および relation model の package を import しないこと�
 - [SOT-ARCH-010: プロバイダーの分離](10-provider-isolation.md)
 - [SOT-ARCH-018: 拡張パック単位の正規化境界](18-pack-scoped-normalization-boundary.md)
 - [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
+- [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-030: 解決済み法令対象の検索結果優先順位](30-canonical-law-target-priority.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
 - [SOT-ENG-023: 統合法情報照会の法概念辞書](../50-engineering/23-unified-query-concept-lexicon.md)
 - [SOT-MODEL-027: JudicialCaseNumberMention](../20-model/27-judicial-case-number-mention.md)
 - [SOT-MODEL-030: CueTaskRelation v2](../20-model/30-cue-task-relation-v2.md)
+- [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](../50-engineering/30-unified-query-cue-artifact-contract.md)

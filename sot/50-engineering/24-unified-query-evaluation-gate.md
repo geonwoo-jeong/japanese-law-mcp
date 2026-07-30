@@ -82,7 +82,16 @@ high-confidence の分母が零件の場合は基準を満たしたと扱わず�
 
 ## profile の校正
 
-score の重み、閾値、margin、tie-break、根拠コード、辞書、誤記規則、selection mode または hedge pair の生成規則を変更する場合は、新しい profile version を割り当てる。複数 profile 間の score scale、confidence、閾値、margin または tie-break を変更する場合は、新しい ranking version も割り当てる。
+score の重み、閾値、margin、tie-break、根拠コード、辞書、誤記規則、
+selection mode または hedge pair の生成規則を変更する場合は、新しい profile
+version を割り当てる。`branchRetentionMargin` の校正と version 所有境界は
+`SOT-ARCH-032` を定義元とし、開発用集合では同じ cluster の二件目・三件目、
+境界値の直内外、四件目および `SOT-ARCH-028` の公式別名衝突を別 case として
+評価する。`SOT-ARCH-025` の共有末尾 cue では、有効 separator、未知 separator、
+separator の反復、`を` と `について` の連結、同じ span の複数意味、有効列の
+部分列、異なる span に反復した同じ意味、四つの異なる意味、五つの異なる意味
+および五件以上のうち同じ意味を含む列に加え、重なりによって非同一の最大列が
+二件成立する入力を、別々の development case として持つ。
 
 重みと閾値は開発用集合で調整し、holdout 集合は採用判定にだけ使用する。公開 repository の holdout は秘密試験ではなく、固定 digest と変更履歴で過適合を監査する集合とする。profile、重み、閾値、辞書または誤記規則を変更する変更では、既存 holdout fixture の request、期待値、coverage、`leakageGroupId` または集合所属を同時に変更しない。
 
@@ -128,43 +137,18 @@ review 済みの `default-1` baseline を使用する。過去の corpus version
 holdout digest を割り当て、変更前後の結果と独立 review を同じ変更で残し、
 標準 command と baseline を同時に更新する。
 
-`SOT-MODEL-030` の cue task relation を公開既定の意味判定へ初めて有効化する
-変更では、次を一つの整合した採用集合として完成させ、同じ採用変更で
-production、標準 command、中央品質ゲートおよび検索例カタログの参照先を
-切り替える。
+relation 依存の意味判定、共有末尾 cue、限定分岐保持または profile set の
+公開既定動作を変更する採用では、`SOT-ARCH-033`、`SOT-ENG-033` および
+`SOT-ENG-034` が定める current adoption tuple、標準 corpus、baseline、
+検索例カタログ、中央品質ゲートおよび標準 command の参照先を、同じ採用変更で
+切り替える。特定の corpus version、baseline version、schema version または
+一回限りの導入束は本規定へ固定せず、current adoption tuple を定義元とする。
 
-- `SOT-ENG-030` に従う固定 profile set 全体の relation 対応 cue schema と
-  loader test
-- `SOT-ENG-028` の relation、対象外意図および候補 scope の model・profile test
-- `SOT-ENG-026` の corpus schema version 2、`corpus-v10`、relation、
-  共有末尾 cue、単純列挙および非制限 fan-out を対象とする追加 coverage
-- `baselineVersion=default-2` の review 済み baseline
-- `SOT-ENG-033` の current adoption tuple と履歴 manifest
-- 標準 command、検索例カタログおよび中央品質ゲートの固定値切替
-- 変更前後の評価結果と独立 review
-
-corpus schema version 2、`corpus-v10` および `default-2` の候補成果物は、
-`SOT-ARCH-033` の準備状態として採用変更より前に repository へ追加できる。
-特に新しい holdout case は前項の corpus 準備変更で独立 review と digest 固定を
-終える。採用変更は準備済み成果物を現行標準として選ぶ参照先を原子的に
-切り替えるものであり、profile の結果へ合わせて同じ変更で holdout を
-書き換えることを許可しない。
-
-候補 `default-2` は `SOT-ENG-033` に従い、test が直接構成する次版 profile set で
-生成する。現行標準 command の `default` から次版を選択できるようにせず、
-採用変更では候補 baseline の byte と digest を変更しない。
-
-`SOT-ARCH-033` の準備状態として、固定 profile set 全体の cue artifact と
-loader を schema version 3 へそろえることはできる。この準備変更では relation
-依存の signal、候補保持または公開 decision を有効にせず、標準 command、
-`corpus-v9`、`default-1` および中央品質ゲートの corpus・baseline 固定値を
-変更しない。test が直接構成する次版 profile set の metadata を変更した場合に、
-その次版の不透明な profile version と profile set version を更新する義務は
-妨げない。production の active version は `SOT-ARCH-033` に従い維持する。
-
-上記の採用成果物がそろうまでは `corpus-v9` と `default-1` を現行標準として
-維持する。profile または loader の限定 test だけの成功を、relation 対応
-profile set の採用判定にしない。
+次版の corpus、baseline、cue artifact、loader または検索例は、`SOT-ARCH-033`
+の準備状態として採用前に repository へ追加できる。ただし、その準備成果物を
+現行標準 command、中央品質ゲートまたは production 既定動作から選択可能にしては
+ならない。新しい holdout case は corpus 準備変更で独立 review と digest 固定を
+終え、採用変更では準備済み成果物への参照先だけを原子的に切り替える。
 
 command はネットワークを使用せず、固定 seed と repository 内の不変 profile・辞書・fake provider だけを使う。`default` profile set は法令コア、`judicial-cases` 有効時および無効時を manifest の指定どおり評価する。
 
@@ -183,11 +167,14 @@ command はネットワークを使用せず、固定 seed と repository 内の
 ## 関連
 
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
+- [SOT-ARCH-028: 法令別名衝突の基本法優先順位](../30-architecture/28-law-alias-collision-ranking.md)
+- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-ENG-023: 統合法情報照会の法概念辞書](23-unified-query-concept-lexicon.md)
+- [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)

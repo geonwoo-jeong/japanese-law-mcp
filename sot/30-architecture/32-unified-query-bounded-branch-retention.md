@@ -66,7 +66,22 @@ cluster key を再計算しない。
 
 弱い一般語だけ、対象外 relation の subject/predicate だけ、または別候補から流用した根拠だけでは追加分岐を保持できない。
 
-保持 margin と分岐順は、`SOT-ENG-024` の評価で受け入れた校正値とする。profile 固有の候補保持規則だけを変える場合は profile version に属し、profile 横断の score policy と同じ尺度を変える場合は ranking version に属する。重みは順位付けのための内部値であり、確率、再試行優先度または公開 confidence そのものではない。文書化していない一時的なヒューリスティクス、実行時の観測件数または provider 固有の fallback 成否で分岐保持を増減させない。
+保持 margin は、`singleMargin` および `hedgeMargin` と異なる
+`branchRetentionMargin` とする。同じ cluster の首位候補との
+`semanticScore` の差がこの値以下である候補だけを、条件 1 から 3 と合わせて
+追加分岐にできる。既存二 margin から値を推測し、どちらかを代用し、または
+候補数に応じて動的に変えない。
+
+`branchRetentionMargin` と分岐順は `SOT-ENG-024` の評価で受け入れ、
+`SOT-ENG-025` の検証済み profile metadata から取得する。これは同じ
+ranking version の profile set が共有する score policy の一部とし、値を
+変更する場合は全 profile の profile version と ranking version を更新する。
+profile 固有の候補生成、根拠対応または cluster key の規則だけを変え、
+共通の校正値を変えない場合は、その profile version だけを更新する。
+
+重みは順位付けのための内部値であり、確率、再試行優先度または公開 confidence
+そのものではない。文書化していない一時的なヒューリスティクス、実行時の
+観測件数または provider 固有の fallback 成否で分岐保持を増減させない。
 
 本規定の「追加分岐」は、実行適格な代替候補だけを指す。
 `SOT-MODEL-026` の対象外 signal を持つ contribution から
@@ -86,10 +101,25 @@ cluster key を再計算しない。
 それがない場合は最初の `target_anchor` span、それもない場合は、その step を
 実際に生成した最初の `semantic_expansion` の法概念または一般検索語 span とする。
 別候補の span を流用せず、一 step でもこの span を持たない候補は追加分岐に
-できない。この key は候補 draft の校正にだけ使い、
+できない。同じ evidence cluster 内で同じ意味署名を持つ候補 draft が複数ある
+場合は、保持件数、四件目判定および margin 適用の前に、根拠を決定的に統合して
+一件へ縮約する。同じ意味を複数の生成経路で作った件数を別分岐として数えない。
+この統合では、同じ profile の完全順序で最初の draft を代表として、その
+`semanticScore`、confidence、logical step 列および順序を保つ。ほかの同値 draft
+からは根拠集合だけを決定的に和集合する。和集合後に `legal_concept` の根拠を
+持つ場合は、対応する `conceptSources` も `conceptId` の順で和集合する。同じ
+`conceptId` に異なる source tuple がある draft 群は profile 構成エラーとし、
+一方を選ばない。別意味への昇格、新しい score の再計算または追加分岐の捏造に
+使わない。
+この key は候補 draft の校正にだけ使い、
 `LegalQueryCandidate` または `QueryProfileContribution` へ保存しない。
 別 cluster の候補は互いの三件上限へ含めないが、contribution 構築前と
 profile 横断合成後のいずれも、全体の十六候補上限を超えてはならない。
+
+`SOT-ARCH-028` の公式別名衝突群から保持する clarification 候補は、
+同じ原文位置の official alias 候補を利用者へ提示するための非実行候補であり、
+本規定の追加分岐、三件上限または `branchRetentionMargin` の対象に含めない。
+それらの順位と十六候補上限内での保持順は同 SOT を定義元とする。
 
 一つの主題から law、law_provision、judicial_decision など複数 resource へ自動展開した全組合せを cluster として保持することはできない。cluster は独立根拠のまとまりであり、resource の総当たり集合ではない。条件 1 から 4 を満たす四件目の代替候補を同じ cluster で検出した場合、profile は同じ profile の完全順序による上位三件だけを clarification 用候補として保持し、`selectionMode=clarification_required`、`hedgePairs=[]` とする。四件目以降は実行候補へ含めない。selector はこの入力を通常の候補不足または内部エラーにせず、`SOT-MODEL-023` の `ambiguous_candidates` を持つ `needs_clarification` へ変換する。
 
@@ -125,6 +155,11 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 - `民法を検索してください。裁判例も検索してください。` は、明示主題の分離として保持し、照会全体を一検索へ広げない
 - `民法第103条を引用する裁判例の影響グラフを作成してください。` は、対象外との混在により実行分岐を零件とする
 - 同じ evidence cluster から四件目の代替候補を黙って保持せず、上位三件を clarification 用候補として残したまま `selectionMode=clarification_required` にする
+- 同じ意味署名の draft を複数経路から生成しても、同値縮約後の一件として数え、
+  四件目の誤検出により明確化へ落とさず、`conceptSources` を欠落させない。同じ
+  `conceptId` の source tuple が競合する場合は contribution を構築しない
+- 公式別名衝突群は `SOT-ARCH-028` の完全順序と十六候補上限を維持し、
+  `branchRetentionMargin` または三件上限で切り捨てない
 
 ## 関連
 
@@ -134,6 +169,9 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 - [SOT-MODEL-028: QueryCandidateCompositionMember](../20-model/28-query-candidate-composition-member.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
+- [SOT-ARCH-028: 法令別名衝突の基本法優先順位](28-law-alias-collision-ranking.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](31-unified-query-intent-evidence-layer.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)
+- [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)
+- [SOT-ENG-025: 統合照会のパッケージ構成](../50-engineering/25-unified-query-package-layout.md)

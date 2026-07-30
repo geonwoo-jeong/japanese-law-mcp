@@ -33,19 +33,46 @@
 
 1. 同じ節に、法令名、法概念または一般検索語の位置付き出現が二件以上あり、
    原文順に重ならない
-2. 隣接する主題間の byte 列は、Unicode White_Space と、`、`、`,`、`，`、
-   `と`、`及び`、`および`、`並びに`または`ならびに`だけからなる
-3. 最後の主題と末尾 cue の間は、Unicode White_Space と、任意の一つの
-   `を`または`について`だけからなる
-4. 末尾 cue は節末にあり、法令コア profile で一つの
+2. 隣接する主題間の byte 列は、零個以上の Unicode White_Space、一つの
+   separator、および零個以上の Unicode White_Space の順である。separator は
+   `、`、`,`、`，`、`と`、`及び`、`および`、`並びに`または`ならびに`の
+   いずれか一つに限定し、空、反復、連結または未知の表現を許可しない
+3. 最後の主題と末尾 cue の間は、零個以上の Unicode White_Space、任意の一つの
+   `を`または`について`、および零個以上の Unicode White_Space の順である。
+   `を`と`について`の連結または反復を許可しない
+4. 末尾 cue は、同じ節を持つ `SOT-MODEL-030` の `direct_task` relation が
+   存在する節末 cue であり、法令コア profile で一つの
    `law_content_search` task/resource に対応する
 5. 列挙全体に `all`、`any`または`exclude`の明示 cue がなく、途中に別の
    task/resource cue または節境界がない
 
-この確認は、共通前処理が返した原文、一回の token 列および位置付き出現の間を
-閉じた separator 集合と照合するだけとする。新しい検索語、cue または relation を
-発見する再 tokenization にはしない。条件を満たす場合は、`含む` の有無に
-かかわらず列挙各項を同じ取得意図群として扱う。例えば
+構造上の一主題は、separator で区切られた一つの範囲と完全に一致する法令名、
+法概念または一般検索語の span とする。同じ span に複数の意味候補がある場合も
+構造上は一主題と数え、意味候補を一件へ縮約しない。閉じた条件で前後へさらに
+主題を追加できる列の部分列を、別の共有末尾列として重複生成しない。一つの
+節末 `direct_task` relation について、条件を満たす最大の span 列が構造上
+ただ一件に定まる場合だけ、`SOT-MODEL-031` の `SharedTerminalSequence` へ
+保持する。非同一の最大列が二件以上成立する場合は、共通 constructor で
+出現種別、長さまたは配列順から一件を選ばず、この共有末尾規則を適用しない。
+異なる span が同じ意味署名へ到達しても、共通 constructor は位置を失わせない。
+
+この確認は `SOT-ARCH-021` に従い、profile 用入力を作る共通 constructor が
+検証済み原文と位置付き出現の間を閉じた separator 集合と一回だけ照合する。
+profile は原文、任意の部分文字列または token 列を受け取らず、検証済みの
+`SOT-MODEL-031` の `SharedTerminalSequence` を、自身の cue 対応、演算子および
+採用済み task/resource と照合する。共通 constructor は共有末尾列から
+`law_content_search`、演算子、候補または score を生成しない。
+
+法令コア profile は各構造上の主題を型付き logical input へ対応させた後、
+異なる span から同じ意味署名の logical input が反復して得られた場合に限り、
+根拠 span を決定的に和集合し、原文上で最初の span の位置へ一件として縮約する。
+同じ span または異なる span から得た異なる意味候補は縮約せず、代替候補として
+評価する。独立 step の原文順と四件上限は、この同値縮約後の logical input に
+適用する。
+
+新しい検索語、cue または relation を発見する再 tokenization にはしない。
+条件を満たす場合は、`含む` の有無にかかわらず列挙各項を同じ取得意図群として
+扱う。例えば
 `永住許可、帰化を教えてください`は、共有された検索 task の cue を根拠に
 二つの独立した `law_content_search` step とする。一条件でも満たさない単純列挙は、
 同数の検索へ無条件に fan-out しない。
@@ -72,7 +99,7 @@
 ## 上限と結果
 
 一つの意味候補に保持できる独立 step は `SOT-MODEL-022` に従い四件以下とする。
-五つ以上の主題を黙って切り捨てず、
+同値縮約後に五つ以上の異なる logical input が残る場合は黙って切り捨てず、
 `compositionConstraint=step_limit_exceeded` を持つ
 `QueryProfileContribution` として外部情報源を呼ばない明確化へ渡す。
 selector は通常の候補不足または曖昧性へ読み替えず、
@@ -89,8 +116,9 @@ selector は、同じ照会文で明示された複数主題を、近接する�
 `について`による法令本文の個別主題、明示的な`個別に`、`all`、`any`および
 `exclude`を fixture にし、型が対応する明示演算子が個別分離より優先すること、
 型が対応しない演算子を削除して別 step にしないこと、五主題を切り詰めず
-`step_limit_exceeded` にすること、および executor が完了順で結果順を変えない
-ことを確認する。
+保持した後、五つの異なる意味署名は `step_limit_exceeded` にし、異なる span に
+反復した同じ意味署名は根拠を統合した一 step にすること、および executor が
+完了順で結果順を変えないことを確認する。
 
 `二つとも含む`と`三つとも含む`が同じ `all` 規則になること、演算子の検索語上限を超えた場合に切捨てまたは広い検索へ変換しないことも確認する。
 
@@ -98,7 +126,11 @@ selector は、同じ照会文で明示された複数主題を、近接する�
 `永住許可と帰化について教えてください`は共有された末尾 cue により二 step に
 分離する。一方、末尾 cue がない単純列挙、途中に別 task cue がある列挙、
 未知の接続表現を挟む列挙および明示 `all` cue がある列挙は、この規則で
-fan-out しないことも確認する。
+fan-out しないことも確認する。同じ span の複数意味を主題数へ重複加算せず、
+有効な列の部分列を別の共有末尾列として生成しないこと、非同一の最大列が
+複数ある場合に一件を推測して選ばないこと、ならびに原文、
+任意の部分文字列または token 列を profile へ渡さずに同じ判定になることも
+確認する。
 
 裁判例 profile では、二つから四つの独立検索対象と明示的な`それぞれ`または
 `個別に`がある場合に、各対象を `judicial_decision_search` の別 step とする。
@@ -114,8 +146,10 @@ profile の組合せだけを、各 profile の step 化後に同 SOT で合成�
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-MODEL-025: LegalQueryPreprocessResult](../20-model/25-legal-query-preprocess-result.md)
+- [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-IF-023: `law.content.search` capability v1](../40-interfaces/23-law-content-search-capability.md)
+- [SOT-ENG-025: 統合照会のパッケージ構成](../50-engineering/25-unified-query-package-layout.md)

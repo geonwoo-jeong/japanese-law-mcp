@@ -38,6 +38,13 @@ positive task cue の role をそろえ、共通前処理で relation を生成�
 
 `SOT-ARCH-025` と `SOT-ARCH-032` が定める、共有末尾 cue による主題分離と
 evidence cluster 単位の限定分岐保持を、profile 内の規則として完成させる。
+共有末尾 cue の構造確認は `SOT-ARCH-021` の閉じた separator 検証を使い、
+`SOT-MODEL-031` の `SharedTerminalSequence` だけを profile へ渡し、
+原文または token 列を公開しない。限定分岐は
+`SOT-ENG-025` の独立した `branchRetentionMargin` を使い、`singleMargin`
+または `hedgeMargin` を代用しない。この段階の `branchRetentionMargin` は
+test 専用 set の暫定値に限り、active metadata、標準 command または baseline を
+更新しない。
 この段階は意味規則そのものを再定義せず、それらの採用順序上の変更単位だけを
 固定する。
 
@@ -46,6 +53,17 @@ evidence cluster 単位の限定分岐保持を、profile 内の規則として�
 現行採用済み profile set を変えずに、現行採用 manifest の初回固定、
 次版 corpus、baseline 候補および必要な holdout を独立成果物として準備し、
 現行標準と混在させない。
+
+まず profile、辞書および期待値を変更しない独立変更で新しい corpus と holdout を
+review し、digest を固定する。次に holdout の内容または結果を参照せず、
+development 集合だけで `branchRetentionMargin` を含む次版 profile set を校正し、
+profile version と ranking version を固定する。最後に固定した holdout を
+採用判定に一回だけ使う。holdout の結果を見て同じ候補 profile set の値、辞書、
+規則または期待値を調整しない。受入基準を満たさない場合は第 5 段階へ進まず、
+失敗した候補を採用対象から外して、新しい準備変更として第 3 段階以降をやり直す。
+失敗結果を後続候補の変更判断に利用した場合、その holdout digest を再び採用判定へ
+使わない。失敗した holdout は履歴成果物として保存し、同じ `leakageGroupId` を
+含まない新しい holdout を独立 review してから、次の第 4 段階を行う。
 
 ### 第 5 段階: 原子的採用
 
@@ -79,6 +97,8 @@ production composition root、標準 corpus、baseline および検索例カタ�
 
 - 第 2 段階または第 3 段階で、未採用の next profile set を CLI、設定、環境変数、MCP または transport から選択可能にすること
 - 第 4 段階で、次版 corpus や baseline 候補を標準 command や中央品質ゲートの現行参照先へ切り替えること
+- 第 4 段階で、holdout の内容または結果を `branchRetentionMargin`、重み、閾値、
+  辞書、規則若しくは期待値の調整へ使用すること
 - 第 5 段階で、profile set・corpus・baseline・採用 manifest・検索例カタログの一部だけを先行採用すること
 - 第 6 段階の provider parser 変更を、第 5 段階の meaning 変更に便乗させること
 - 第 7 段階より前に、将来の案内文や scenario を現行確認済みのように記載すること
@@ -99,11 +119,14 @@ production composition root、標準 corpus、baseline および検索例カタ�
 
 ## 関連
 
+- [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](../30-architecture/31-unified-query-intent-evidence-layer.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
+- [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-027: 資源制約を踏まえた検証段階](27-resource-aware-verification-stages.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)

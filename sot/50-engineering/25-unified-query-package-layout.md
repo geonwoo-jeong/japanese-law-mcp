@@ -55,15 +55,7 @@ cmd/
 testdata/
 └── legalquery/
     ├── schemas/
-    ├── corpus-v1/
-    ├── corpus-v2/
-    ├── corpus-v3/
-    ├── corpus-v4/
-    ├── corpus-v5/
-    ├── corpus-v6/
-    ├── corpus-v7/
-    ├── corpus-v8/
-    ├── corpus-v9/
+    ├── corpus-v*/
     └── baselines/
 ```
 
@@ -100,6 +92,19 @@ signal、task/resource、score または採用範囲を共通 loader で決め�
 `querypreprocess` は、注入された検証済み語彙と一回の Kagome 解析から
 `SOT-MODEL-025` の provider 非依存事実を作り、profile の意味候補を生成しない。
 
+`application/legalquery` が前処理結果から profile 用入力を作る共通 constructor
+は、原文全体、任意の部分文字列、比較用正規化値または token 列を profile
+interface へ公開しない。`SOT-ARCH-021` と `SOT-ARCH-025` が定める閉じた
+separator 検証については、既存の位置付き出現と `direct_task` relation を入力に、
+条件を満たした `SOT-MODEL-031` の `SharedTerminalSequence` だけを不変な値として
+渡せる。
+profile 固有の task/resource、演算子、score または候補を共通 constructor で
+決めない。
+
+`CandidateGenerationInput` と `SharedTerminalSequence` の getter、要素 accessor、
+上限および深い複製は `SOT-MODEL-031` を定義元とする。profile は sidecar を
+再構築せず、検証済み値を読むだけとする。
+
 同じ profile に属する複数の明示 task/resource は、その profile が
 `SOT-ARCH-025` に従って一候補の複数 step へまとめる。
 `queryprofile/judicialcases` は、検証済み入力 `ref` の
@@ -116,7 +121,53 @@ evidence cluster を、候補 draft の生成中だけ使う profile-private な
 
 pack 無効を認識する最小 cue と、入力された `SourceResourceRef` を採用済み provider/source/resource として構造検証する metadata は、core 側の予約済み pack metadata として保持できる。無効な pack の request builder、binding、provider route または result mapper は構成しない。
 
-各 profile directory は `data/profile.json` に profile ID、schema version、profile version、ranking version、対象 task/resource、weight set、閾値、margin、tie-break および参照する辞書 version を持つ。profile version は固有の規則と辞書を、ranking version は profile set 内で共有する score scale、confidence、閾値、margin および tie-break の校正を識別する。`data/cues.json` は出典不要の構文 cue と予約語だけを持ち、法概念と法令名の出典付きデータを混在させない。
+各 profile directory は `data/profile.json` に profile ID、schema version、
+profile version、ranking version、対象 task/resource、weight set、閾値、
+margin、tie-break および参照する辞書 version を持つ。profile version は固有の
+規則と辞書を、ranking version は profile set 内で共有する score scale、
+confidence、閾値、margin および tie-break の校正を識別する。
+
+`SOT-ARCH-032` の限定分岐を使用する profile metadata は、
+`selection.branchRetentionMargin` を必須の整数として持つ。値は零以上かつ
+`score.maximum - score.minimum` 以下とし、`singleMargin` または
+`hedgeMargin` と別に検証する。loader、共通 metadata model または profile が、
+欠落値を既存 margin、零若しくは固定定数から補わない。
+
+`profile.json` の `schemaVersion=2` を
+`selection.branchRetentionMargin` を持つ最初の版とする。
+`schemaVersion=1` は、`SOT-ARCH-033` の現行 active profile set、変更不能な
+履歴成果物の再現および直前の採用済み集合への原子的 rollback のために
+loader が受理し続ける。ただし、本規定の限定分岐へ対応した profile と
+みなさない。
+次版 profile set の一部だけを schema version 2 にせず、限定分岐を検証する固定
+set は全 profile を schema version 2 にそろえる。
+
+共通 metadata model と loader は、`schemaVersion=1` と `schemaVersion=2` を
+明示的に区別する閉じた版型として表す。`schemaVersion=1` を読んだときに
+`branchRetentionMargin` へ零、既存 margin または暫定定数を補って同じ型へ
+平坦化しない。限定分岐を使う profile interface は `schemaVersion=2` の検証済み
+metadata だけを受け取る。
+
+共通 metadata model の accessor は
+`BranchRetentionMargin() (value int, present bool)` とする。
+`schemaVersion=1` は `(0, false)` を返し、この零を設定値として扱わない。
+`schemaVersion=2` は検証済み値と `true` を返すため、零の有効値と欠落を
+区別できる。同じ固定 profile set で version 1 と version 2 を混在させた場合、
+または限定分岐を使う profile が `present=false` を受けた場合は構成を失敗させる。
+`schemaVersion=1` が `selection.branchRetentionMargin` を持つ場合、
+`schemaVersion=2` が同 field を欠く場合、および未知の schema version は
+loader error とする。
+
+同じ固定 profile set の全 profile は、同じ `branchRetentionMargin` と
+ranking version を持たなければならない。この値は metadata の不変性検証、
+profile set の校正値照合および不透明な profile set version の入力に含める。
+値を追加または変更する version の責務は `SOT-ARCH-032` を定義元とする。
+準備、校正、holdout 判定および原子的採用の順序は `SOT-ENG-034` だけを
+定義元とし、本規定では再定義しない。共通 loader は、その各段階で渡された
+一つの固定 profile set に対して本節の schema、値一致および不変性だけを検証する。
+
+`data/cues.json` は出典不要の構文 cue と予約語だけを持ち、法概念と法令名の
+出典付きデータを混在させない。
 
 profile は `SOT-MODEL-026` の contribution として候補、信号、selection
 mode、hedge pair および `SOT-MODEL-028` の composition member を返す。
@@ -163,6 +214,16 @@ package import test で `legalquery` と profile から `source` および MCP S
 
 core profile だけ、core と judicial profile、fake profile、fake ability ports および race detector を使い、pack 分離、不変性、request materialization、item 配分、決定的順序、context cancellation および既存専門ツールとの独立性を確認する。
 
+profile metadata の確認では、`branchRetentionMargin` の欠落、負数、score 範囲
+超過、version 1 での field 混入、version 2 での field 欠落、未知 version、
+schema version の混在、`present` の誤判定、固定 set 内の値不一致、
+ranking version 非更新および既存 margin からの暗黙補完を拒否する。完全な
+version 1 の履歴 set は再現と rollback のために読めるが、限定分岐を
+有効にしないことも確認する。
+閉じた separator 検証では、原文または任意の byte 列を
+profile interface へ公開せず、同じ span の複数意味を重複主題にせず、検証済み
+`SharedTerminalSequence` だけを深く複製して渡すことを確認する。
+
 `queryprofile/judicialcases` が、入力 `ref` の read と別に明示された search を
 同じ contribution の一候補へまとめ、composer を呼ばなくても原文順の二 step を
 保持することも profile test で確認する。
@@ -182,6 +243,7 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](../20-model/28-query-candidate-composition-member.md)
+- [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ENG-001: Go パッケージ構成](01-go-package-layout.md)
 - [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
