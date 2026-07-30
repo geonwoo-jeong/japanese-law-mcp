@@ -248,10 +248,7 @@ func buildTermOfficialOverrides(
 ) []TermOfficialOverride {
 	result := make([]TermOfficialOverride, len(values))
 	for index, value := range values {
-		result[index] = TermOfficialOverride{
-			Term:         value.Term,
-			OfficialTerm: value.OfficialTerm,
-		}
+		result[index] = TermOfficialOverride(value)
 	}
 	return result
 }
