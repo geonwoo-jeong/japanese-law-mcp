@@ -26,7 +26,11 @@ func buildJudicialEvidenceReadDraft(
 	if err != nil || !ok {
 		return nil, err
 	}
-	if !judicialClauseResourceCompatible(cues, relation.ClauseSpan()) {
+	if !judicialClauseResourceCompatible(
+		input,
+		cues,
+		relation.ClauseSpan(),
+	) {
 		return nil, nil
 	}
 	readInput, err := legalquery.NewJudicialDecisionReadIntentV1(
@@ -212,12 +216,17 @@ func singleJudicialReadRelation(
 }
 
 func judicialClauseResourceCompatible(
+	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
 	clause legalquery.QuerySpan,
 ) bool {
-	for _, mention := range cues.mentions[cueMeaningKey("resource", "judicial_decision")] {
+	compatible := make(map[cueRelationRefKey]struct{})
+	for _, mention := range cues.mentions[cueMeaningKey(
+		"resource",
+		"judicial_decision",
+	)] {
 		if querySpanContains(clause, mention.Span()) {
-			return true
+			compatible[cueRelationRefKeyFromMention(mention)] = struct{}{}
 		}
 	}
 	for meaning, mentions := range cues.mentions {
@@ -226,10 +235,30 @@ func judicialClauseResourceCompatible(
 			continue
 		}
 		for _, mention := range mentions {
-			if querySpanContains(clause, mention.Span()) {
+			if !querySpanContains(clause, mention.Span()) {
+				continue
+			}
+			if _, exists := compatible[cueRelationRefKeyFromMention(mention)]; !exists {
 				return false
 			}
 		}
+	}
+	for _, mention := range input.CueMentions() {
+		if !querySpanContains(clause, mention.Span()) ||
+			!strings.HasPrefix(mention.CueID(), "resource-") {
+			continue
+		}
+		if mention.ProfileID() == profileID &&
+			mention.CueID() == "resource-legal-information" {
+			continue
+		}
+		if mention.CueID() != "resource-judicial-decision" {
+			return false
+		}
+		if _, exists := compatible[cueRelationRefKeyFromMention(mention)]; exists {
+			continue
+		}
+		return false
 	}
 	return true
 }

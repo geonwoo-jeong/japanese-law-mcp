@@ -272,6 +272,107 @@ func TestJudicialEvidenceMappingは主題とRefの位置根拠を分ける(
 			)
 		}
 	})
+
+	t.Run("broadな法情報cueだけならresource根拠に昇格させない", func(t *testing.T) {
+		ref := mustJudicialEvidenceRef(
+			t,
+			"provider-one",
+			"source-one",
+			"95878/detail3",
+		)
+		candidate := mustSingleJudicialEvidenceCandidate(
+			t,
+			generateJudicialEvidenceQuery(
+				t,
+				profile,
+				"この参照を法情報として読んでください。",
+				&ref,
+				judicialEvidenceMappingRefNoSpanID,
+			),
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		if slices.Contains(
+			candidate.EvidenceCodes(),
+			legalquery.EvidenceExplicitResource,
+		) {
+			t.Fatalf(
+				"%s: broad cue を明示resourceへ昇格しました",
+				judicialEvidenceMappingRefNoSpanID,
+			)
+		}
+	})
+
+	t.Run("同じ節の競合resource cueはread全体を拒否する", func(t *testing.T) {
+		ref := mustJudicialEvidenceRef(
+			t,
+			"provider-one",
+			"source-one",
+			"95878/detail3",
+		)
+		preprocessed := preprocessJudicialEvidenceQuery(
+			t,
+			profile,
+			"この参照を読んでください。",
+			&ref,
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		input := addJudicialEvidenceCue(
+			t,
+			preprocessed,
+			"参照",
+			"core",
+			"resource-law",
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		generation := generateJudicialEvidenceInput(
+			t,
+			profile,
+			input,
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		if generationHasJudicialRead(generation) {
+			t.Fatalf(
+				"%s: 競合resource cueからreadを作りました",
+				judicialEvidenceMappingRefNoSpanID,
+			)
+		}
+	})
+
+	t.Run("別節のresource cueはread relationへ借用しない", func(t *testing.T) {
+		ref := mustJudicialEvidenceRef(
+			t,
+			"provider-one",
+			"source-one",
+			"95878/detail3",
+		)
+		preprocessed := preprocessJudicialEvidenceQuery(
+			t,
+			profile,
+			"この参照を読んでください。民法",
+			&ref,
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		input := addJudicialEvidenceCue(
+			t,
+			preprocessed,
+			"民法",
+			"core",
+			"resource-law",
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		generation := generateJudicialEvidenceInput(
+			t,
+			profile,
+			input,
+			judicialEvidenceMappingRefNoSpanID,
+		)
+		if !generationHasJudicialRead(generation) {
+			t.Fatalf(
+				"%s: 別節のresource cueでreadを拒否しました",
+				judicialEvidenceMappingRefNoSpanID,
+			)
+		}
+	})
 }
 
 func TestJudicialEvidenceProfileは共有末尾とPackProviderを意味根拠にしない(
