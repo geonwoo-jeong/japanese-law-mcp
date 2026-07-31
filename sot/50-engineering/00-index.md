@@ -37,3 +37,5 @@
 - [35-unified-query-profile-metadata-artifact-contract.md](35-unified-query-profile-metadata-artifact-contract.md)
 - [36-unified-query-evaluation-baseline-artifact-contract.md](36-unified-query-evaluation-baseline-artifact-contract.md)
 - [37-unified-query-candidate-evaluation-handoff.md](37-unified-query-candidate-evaluation-handoff.md)
+- [38-content-bound-candidate-evaluation-handoff.md](38-content-bound-candidate-evaluation-handoff.md)
+- [39-content-bound-unified-query-rollout-stages.md](39-content-bound-unified-query-rollout-stages.md)

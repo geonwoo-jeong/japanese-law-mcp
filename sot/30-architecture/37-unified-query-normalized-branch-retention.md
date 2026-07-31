@@ -1,9 +1,6 @@
-# SOT-ARCH-032: 統合照会の限定分岐保持
+# SOT-ARCH-037: 統合照会の正規化済み限定分岐保持
 
-- 状態: 廃止
-- 廃止理由: 同じ意味署名の draft を統合した後も代表 draft の旧 score を保持し、
-  最終根拠集合と `semanticScore` を一致させられなかったため
-- 後継: [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](37-unified-query-normalized-branch-retention.md)
+- 状態: 有効
 
 ## 規定
 
@@ -122,12 +119,14 @@ ordinal を共有し、異なる主題は原文順に一ずつ増やす。複数
 場合は、保持件数、四件目判定および margin 適用の前に、根拠を決定的に統合して
 一件へ縮約する。同じ意味を複数の生成経路で作った件数を別分岐として数えない。
 この統合では、同じ profile の完全順序で最初の draft を代表として、その
-`semanticScore`、confidence、logical step 列および順序を保つ。ほかの同値 draft
-からは根拠集合だけを決定的に和集合する。和集合後に `legal_concept` の根拠を
-持つ場合は、対応する `conceptSources` も `conceptId` の順で和集合する。同じ
-`conceptId` に異なる source tuple がある draft 群は profile 構成エラーとし、
-一方を選ばない。別意味への昇格、新しい score の再計算または追加分岐の捏造に
-使わない。
+logical step 列と順序を保ち、ほかの同値 draft から private evidence mapping
+だけを決定的に和集合する。その後、`SOT-ARCH-036` の step 内正規化を一回適用し、
+最終 `evidenceCodes` と同じ集合だけから `semanticScore` と confidence を確定する。
+和集合後に `legal_concept` の根拠を持つ場合は、対応する `conceptSources` も
+同規定に従って統合する。同じ `conceptId` に異なる source tuple がある draft 群は
+profile 構成エラーとし、一方を選ばない。生成経路数を score 加点、別意味への昇格
+または追加分岐の捏造に使わず、候補確定後に根拠だけを追加して score と不一致に
+しない。
 この key は候補 draft の校正にだけ使い、
 `LegalQueryCandidate` または `QueryProfileContribution` へ保存しない。
 別 cluster の候補は互いの三件上限へ含めないが、contribution 構築前と
@@ -172,7 +171,7 @@ clarification 用候補として保持し、`selectionMode=clarification_require
 その一主題だけの topic-local draft として比較して確定する。topic-local draft は、
 その主題へ束縛した step と位置付き事実、および profile 固有 SOT が当該主題へ
 共有できると明示した task/resource 根拠だけを持つ。別主題の事実を含めない。
-まず同じ完全な意味署名の経路を一件へ縮約し、`SOT-ARCH-029` に従って
+まず同じ完全な意味署名の経路を一件へ縮約し、`SOT-ARCH-036` に従って
 step 内正規化後の根拠 code 集合から、同じ profile metadata で
 `semanticScore` を計算する。`semanticScore` の非増加順とし、同点では
 `SOT-ENG-035` の通常の `tieBreak` を適用する。
@@ -213,7 +212,9 @@ logical input の文字列が同じという理由だけで限定代替列を作
 - 同じ evidence cluster から四件目の代替候補を黙って保持せず、上位三件を clarification 用候補として残したまま `selectionMode=clarification_required` にする
 - 同じ意味署名の draft を複数経路から生成しても、同値縮約後の一件として数え、
   四件目の誤検出により明確化へ落とさず、`conceptSources` を欠落させない。同じ
-  `conceptId` の source tuple が競合する場合は contribution を構築しない
+  `conceptId` の source tuple が競合する場合は contribution を構築しない。
+  同値 draft の根拠和集合後に step 内正規化した最終集合と score が一致し、
+  生成経路数または代表 draft の旧 score を残さない
 - 複数主題と複数意味を許可する各 profile の固有固定検証 ID で、基準 draft と
   一主題ずつの置換だけを原文順で評価し、二主題以上の同時置換を作らないことを
   確認する。各主題の topic-local draft を step 内正規化後の score と通常

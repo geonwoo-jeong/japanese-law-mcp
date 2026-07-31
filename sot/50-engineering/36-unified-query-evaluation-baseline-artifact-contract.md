@@ -61,7 +61,7 @@ current tuple へ結び付ける。
 
 この初回 bootstrap は、次版 baseline 候補の生成を許可するものではない。次版の
 候補 profile set を直接構成する内部評価入口、次の `baselineVersion` および候補
-writer は、`SOT-ENG-034` 第 4 段階の後続番号で別に準備する。候補 writer を
+writer は、`SOT-ENG-039` 第 4 段階の後続番号で別に準備する。候補 writer を
 標準 command、中央品質ゲート、CLI、設定、MCP または transport から呼び出せる
 ようにしない。
 
@@ -262,7 +262,7 @@ memory 上に構築し、検証後に一回だけ JSON byte へ直列化する�
 
 第 4 段階の候補 evaluator は、合否にかかわらず同じ typed report を本規定へ
 一回だけ直列化する。保存先、result、logical one-time use および CI handoff は
-`SOT-ENG-037` を定義元とする。候補 baseline writer は
+`SOT-ENG-038` を定義元とする。候補 baseline writer は
 `outcome=passed` の同じ report byte だけを受け取り、request が予約した
 `baselines/versions/{baselineVersion}.json` へ exclusive create する。
 `outcome=failed` の report を baseline path へ置かない。既存 file、symlink、
@@ -313,7 +313,7 @@ byte 一致と切替単位は `SOT-ENG-033` に従う。本規定の loader は�
   adoption 基準 command が同じ corpus と production profile set を指す。次版候補
   writer または候補 profile set は標準経路から到達できない
 - `evaluation-baseline-candidate-isolation`: 候補 version file は準備済み target
-  corpus、profile set、`SOT-ENG-037` の passed result および予約版に一致し、
+  corpus、profile set、`SOT-ENG-038` の passed result および予約版に一致し、
   採用前に history manifest、current tuple、`default.json` または標準 command
   から到達できない。failed report は baseline path に存在しない
 - `evaluation-baseline-structure`: top-level、profile set、三集合、category、
@@ -340,5 +340,5 @@ byte 一致と切替単位は `SOT-ENG-033` に従う。本規定の loader は�
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
-- [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
-- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)
+- [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)
+- [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)

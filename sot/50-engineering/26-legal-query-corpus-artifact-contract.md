@@ -75,7 +75,7 @@ schema version 2 以降の `holdoutLeakageGroupDigests` は、各 holdout fixtur
 SHA-256 を小文字十六進六十四桁で表し、重複を除いて byte 昇順に並べる。
 一件以上四百件以下とし、loader は全 holdout fixture から同じ一覧を再計算して
 manifest と完全一致させる。raw `leakageGroupId` の一覧を manifest へ複製しない。
-schema version 1 は同 field を受理せず、`SOT-ENG-037` の新しい candidate 評価には
+schema version 1 は同 field を受理せず、`SOT-ENG-038` の新しい candidate 評価には
 使用しない。
 
 同じ checksum を異なる `caseId` へ登録しない。manifest の宣言、fixture file 名、fixture 内の `caseId`、所属集合および実在 file 集合は完全に一致しなければならない。
@@ -421,7 +421,7 @@ baseline、adoption manifest または検索例カタログのいずれからも
 参照された corpus は、manifest、fixture、schema version、file 名、directory 構造
 および全 byte を変更、移動、削除または再生成しない。意味を変えない整形、
 checksum だけの訂正または typo 修正も新しい `corpusVersion` で行い、
-`SOT-ENG-037` の既存 request、result、report、baseline および adoption history を
+`SOT-ENG-038` の既存 request、result、report、baseline および adoption history を
 書き換えない。
 
 holdout の期待値を変える場合は、実装へ合わせるためではなく fixture の誤りであることを独立 review で確認し、理由、新しい corpus version、holdout digest および変更前後の評価結果を同じ変更へ残す。
@@ -429,7 +429,7 @@ holdout の期待値を変える場合は、実装へ合わせるためではな
 ## cue task relation と意図分岐に対応する corpus schema
 
 `SOT-MODEL-030`、`SOT-MODEL-026` および `SOT-ENG-028` の cue task relation と、
-`SOT-ARCH-025`、`SOT-ARCH-032` の意図分岐境界を次の標準評価成果物へ追加する
+`SOT-ARCH-025`、`SOT-ARCH-037` の意図分岐境界を次の標準評価成果物へ追加する
 場合は、現行の `schemaVersion=1` と `corpus-v9` を変更せず、次の corpus 成果物を
 同じ変更へ追加する。
 
@@ -495,7 +495,7 @@ semantic fixture ではないため coverage ID にしない。これらは `SOT
 schema version 2 または `corpus-v10` を有効な評価成果物として扱わない。
 relation 対応 profile set の実装完了、`default-2` baseline、標準 command および
 中央品質ゲートの一括切替は `SOT-ARCH-033`、`SOT-ENG-024`、
-`SOT-ENG-033`、`SOT-ENG-034` および `SOT-ENG-036` に従う。
+`SOT-ENG-033`、`SOT-ENG-039` および `SOT-ENG-036` に従う。
 
 ## 確認
 
@@ -520,7 +520,7 @@ race detector で同じ corpus の並行読取りが共有状態を変更しな�
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](../30-architecture/37-unified-query-normalized-branch-retention.md)
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
@@ -528,6 +528,6 @@ race detector で同じ corpus の並行読取りが共有状態を変更しな�
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
-- [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
+- [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)

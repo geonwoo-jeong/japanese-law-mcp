@@ -56,7 +56,7 @@ test 専用の別実装は、同じ package 内の非公開 constructor、testda
 production composition root、現行の埋込み metadata path、標準評価 command、
 中央品質ゲートおよび公開 MCP の到達経路と共有してはならない。
 
-この非到達性の例外は、`SOT-ENG-037` が固定する CI handoff 専用 command
+この非到達性の例外は、`SOT-ENG-038` が固定する CI handoff 専用 command
 一つだけとする。同 command は利用者の query、任意の profile/corpus 選択または
 production request を受け取らず、固定 pointer が指す一件の test 専用 set を
 holdout 評価する repository verification 入口である。製品 binary、標準評価
@@ -64,7 +64,7 @@ command、中央品質ゲート、利用者向け CLI、MCP または transport 
 登録しない。同 command 自身は追跡済み source tree を変更せず、未追跡の固定
 output root へ report/result 候補を出すだけとする。追跡済み成果物への反映は、
 `SOT-ENG-033` が定める初回 bootstrap、原子的採用若しくは rollback の変更、または
-`SOT-ENG-037` が定める review 済み handoff commit だけで行い、各変更単位が
+`SOT-ENG-038` が定める review 済み handoff commit だけで行い、各変更単位が
 所有しない adoption pointer、history、baseline 若しくは failed report を
 同時に変更しない。
 
@@ -147,11 +147,11 @@ decision、reason、selection、meaning、step および外部呼出し境界に
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-024: 統合照会の内部境界と公開境界](24-unified-query-internal-public-boundary.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](31-unified-query-intent-evidence-layer.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](37-unified-query-normalized-branch-retention.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)
 - [SOT-ENG-026: 統合照会の評価コーパス成果物契約](../50-engineering/26-legal-query-corpus-artifact-contract.md)
 - [SOT-ENG-029: 統合照会の検索例カタログ](../50-engineering/29-unified-query-example-catalog.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](../50-engineering/33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](../50-engineering/35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](../50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md)
-- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](../50-engineering/37-unified-query-candidate-evaluation-handoff.md)
+- [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](../50-engineering/38-content-bound-candidate-evaluation-handoff.md)

@@ -93,7 +93,7 @@ member を持つ照会では、その profile 内の通常の single または h
 ## 同一主題の profile 横断代替
 
 同一の一主題が法令コアと `judicial-cases` の両 profile で意味候補になり得る
-場合、各 profile は `SOT-ARCH-034` または `SOT-ARCH-035` の自身の根拠対応だけで、
+場合、各 profile は `SOT-ARCH-039` または `SOT-ARCH-038` の自身の根拠対応だけで、
 独立した正の根拠を満たす contribution を生成する。公的根拠を持つ法概念または
 当該 profile の明示 resource cue がない裸の名詞から、別 profile の task、
 resource または候補を補わない。
@@ -241,6 +241,6 @@ core と `judicial-cases` の混合 fixture、裁判例 `ref` の read と検索
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
-- [SOT-ARCH-034: 法令コア query profile の根拠対応](34-core-query-profile-evidence-mapping.md)
-- [SOT-ARCH-035: 裁判例 query profile の根拠対応](35-judicial-query-profile-evidence-mapping.md)
+- [SOT-ARCH-039: 法令コア query profile の ref 忠実な根拠対応と採用境界](39-core-query-profile-evidence-mapping-v2.md)
+- [SOT-ARCH-038: 裁判例 query profile の ref 忠実な根拠対応](38-judicial-query-profile-evidence-mapping-v2.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

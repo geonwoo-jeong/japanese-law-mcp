@@ -1,9 +1,6 @@
-# SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序
+# SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序
 
-- 状態: 廃止
-- 廃止理由: profile version tuple だけを候補識別子とする段階順序では、意味判定内容と
-  独立 review を同じ候補へ固定して採用判断できなかったため
-- 後継: [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)
+- 状態: 有効
 
 ## 規定
 
@@ -48,7 +45,7 @@ syntax role を閉じた成果物から読むところまでとし、`CueTaskRel
 
 ### 第 3 段階: 限定分岐と列挙境界
 
-`SOT-ARCH-025` と `SOT-ARCH-032` が定める、共有末尾 cue による主題分離と
+`SOT-ARCH-025` と `SOT-ARCH-037` が定める、共有末尾 cue による主題分離と
 evidence cluster 単位の限定分岐保持を、profile 内の規則として完成させる。
 共有末尾 cue の構造確認は `SOT-ARCH-021` の閉じた separator 検証を使い、
 `SOT-MODEL-031` の `SharedTerminalSequence` だけを profile へ渡し、
@@ -67,10 +64,10 @@ test 専用 set の暫定値に限り、active metadata、標準 command また�
 3. `SOT-ARCH-031` の共通対応に従う private evidence mapping の寿命、step
    対応、`topicOrdinal` および cluster key の共通骨格を構築する。profile 固有の
    許可事実はこの番号で推測しない
-4. `SOT-ARCH-029`、`SOT-ARCH-032` および `SOT-ARCH-034` に従い、core profile
+4. `SOT-ARCH-036`、`SOT-ARCH-037` および `SOT-ARCH-039` に従い、core profile
    だけが sidecar を消費して共有末尾 cue の複数主題 step、input kind ごとの
    根拠対応および限定分岐を作る test 専用経路を完成させる
-5. `SOT-ARCH-029`、`SOT-ARCH-032` および `SOT-ARCH-035` に従い、
+5. `SOT-ARCH-036`、`SOT-ARCH-037` および `SOT-ARCH-038` に従い、
    `judicial-cases` profile は sidecar を消費せず、自身の位置付き出現による
    input kind ごとの根拠対応と cluster だけで限定分岐を適用する
 6. core と `judicial-cases` を production と同じ固定順で組み立て、全 profile が
@@ -95,6 +92,7 @@ test 専用 set の暫定値に限り、active metadata、標準 command また�
    四 step 上限および cluster 単位の三件保持を確定する。ここでいう四 step
    上限は、五件目を黙って切り捨てず `step_limit_exceeded` とする境界を含む
 4. `3.4.4`: step 内の根拠正規化後に候補全体へ和集合し、曖昧束縛、
+   `SOT-MODEL-022` の request と logical input の `ref` 完全一致、
    private mapping の寿命、provider 非依存性および active profile の不変を
    最終照合する
 
@@ -104,8 +102,13 @@ test 専用 set の暫定値に限り、active metadata、標準 command また�
 
 2 の `shared-terminal-production-neutral` は、第 5 段階より前の active profile が
 sidecar を消費しないことを確認する移行時検証 ID とする。第 5 段階で法令コアの
-採用済み profile を切り替えた後は、`SOT-ARCH-034` の core 消費契約を確認する
+採用済み profile を切り替えた後は、`SOT-ARCH-039` の core 消費契約を確認する
 検証へ置き換え、永続する `SOT-MODEL-031` の非消費条件として残さない。
+
+`3.4.4` の `core-evidence-production-neutral` も第 5 段階より前にだけ使う
+移行時検証 ID とする。原子的採用と同じ変更で終了し、評価に合格した候補内容と
+current adoption tuple から到達する production 経路を確認する
+`core-evidence-production-adopted` へ置き換える。
 
 この段階は意味規則そのものを再定義せず、それらの採用順序上の変更単位だけを
 固定する。
@@ -125,23 +128,26 @@ sidecar を消費しないことを確認する移行時検証 ID とする。�
    holdout を review し、digest を固定する
 3. holdout の内容または結果を参照せず、development 集合だけで第 3 段階の
    test 専用固定 profile set を校正し、profile version と ranking version を固定する
-4. holdout の内容または結果を読まずに、`SOT-ENG-037` の閉じた candidate
-   evaluation request、pointer、CI handoff 専用 command、`SOT-ENG-036` の候補
-   writer、次の `baselineVersion` および出力先だけを準備する。この request は
-   test が候補 profile set を直接構成する一件の tuple を固定し、標準 command、
-   中央品質ゲート、製品 CLI、設定、MCP または transport から選択できない。
-   この時点では command を起動せず、holdout の測定値を持つ report または
-   baseline を生成しない
-5. 4 の review 済み commit に対して `SOT-ENG-037` の専用 CI job を一回だけ
+4. holdout の内容または結果を読まずに、`SOT-ENG-038` の閉じた candidate
+   content manifest、二件の有効な review attestation、evaluation request、
+   pointer、CI handoff 専用 command、`SOT-ENG-036` の候補 writer、次の
+   `baselineVersion` および出力先だけを準備する。各成果物の field、content
+   identity、review binding、再現および資源境界は `SOT-ENG-038` を定義元とする。
+   標準 command、中央品質ゲート、製品 CLI、設定、MCP または transport から候補を
+   選択できず、この時点では command を起動せず、holdout の測定値を持つ report、
+   result または baseline を生成しない
+5. 4 の content-bound review 済み commit に対して `SOT-ENG-038` の専用 CI job を
+   一回だけ
    起動し、固定 holdout で `SOT-ENG-024` の全受入基準を検査する。profile、
    corpus、evaluator、受入値または request を変えない handoff 変更で、
    passed report は予約した baseline version file、failed report は同 SOT の
    failed history へ同じ byte のまま保存する。report、result、corpus、
    profile set、metric 計算、one-time use および privacy 境界を独立 review し、
+   `SOT-ENG-036` の `evaluation-baseline-candidate-isolation` を満たし、
    passed の場合だけ第 5 段階へ進む
 
 5 の一回起動、再試行および同じ `evaluationId` の再現確認の意味は
-`SOT-ENG-037` を定義元とし、本規定では 4 の review 完了後に 5 へ進む順序だけを
+`SOT-ENG-038` を定義元とし、本規定では 4 の review 完了後に 5 へ進む順序だけを
 固定する。
 
 初回の relation 依存変更では、2 の候補名を `corpus-v10`、4 の予約名を
@@ -157,7 +163,7 @@ passed と failed のどちらでも、構造上有効な result が一件でき
 失敗 report の配置、不変性、予約 baseline version の再利用禁止および
 全ての過去の passed/failed holdout と同じ leakage group digest を含まない
 新しい holdout の bounded な compact-index 検査は
-`SOT-ENG-037` に従う。新しい holdout を独立 review してから、次の第 4 段階を行う。
+`SOT-ENG-038` に従う。新しい holdout を独立 review してから、次の第 4 段階を行う。
 
 ### 第 5 段階: 原子的採用
 
@@ -165,6 +171,13 @@ passed と failed のどちらでも、構造上有効な result が一件でき
 `SOT-ENG-033` の current adoption tuple を、同じ採用変更で新しい profile set へ
 切り替える。本規定では完全な採用要素を重複して列挙せず、いずれか一部だけを
 先行切替しないという順序上の制約だけを定める。
+
+採用する profile metadata、cue、辞書、composition および意味判定 source set は、
+第 4 段階 5 で `outcome=passed` となった request の candidate content と完全一致
+させる。同じ変更で `core-evidence-production-neutral` を終了し、
+`core-evidence-production-adopted` により、その exact content と current adoption
+tuple を使う production composition root だけが `SOT-ARCH-039` の sidecar、
+限定代替列および private evidence mapping を消費することを確認する。
 
 同じ採用変更では、`SOT-MODEL-024` と `SOT-IF-051` に従い、公開 MCP の
 `completed`、`needs_clarification`、`capability_unavailable` および
@@ -206,7 +219,7 @@ adoption 基準の標準 command を CI で一回実行し、意味判定と実�
 必要な provider または resolver 変更が `query_legal_information` の
 `SOT-ENG-036` 投影若しくは検索例カタログの項目を変える場合は、第 6 段階の
 番号付き変更として着手せず、本七段階 rollout の対象外とする。
-`SOT-ENG-037` の request は profile set 候補だけを識別するため、provider、
+`SOT-ENG-038` の request は profile set 候補だけを識別するため、provider、
 parser、resolver または mapping の候補 field を同 request へ追加して流用しない。
 
 この種の変更を実装する前に、少なくとも次を一つの閉じた契約として定義する
@@ -253,25 +266,25 @@ ID は変更順序から検証へ到達するための索引であり、各動�
 | 変更単位 | 定義元 | 固定検証 ID |
 |---|---|---|
 | 3.1 | `SOT-ENG-035` | `profile-metadata-schema-versions`、`profile-metadata-branch-retention-presence` |
-| 3.2 | `SOT-MODEL-031`、`SOT-ENG-034` | `shared-terminal-sequence-contract`、`shared-terminal-production-neutral` |
-| 3.3 | `SOT-ARCH-031`、`SOT-ARCH-032` | `profile-private-evidence-mapping-lifetime`、`profile-evidence-cluster-key` |
-| 3.4.1 | `SOT-ARCH-034` | `core-evidence-mapping-input-kinds`、`core-evidence-mapping-topic-positive`、`core-evidence-mapping-ref-no-span` |
-| 3.4.2 | `SOT-ARCH-034` | `core-law-name-content-projection` |
-| 3.4.3 | `SOT-ARCH-032`、`SOT-ARCH-034` | `core-shared-terminal-task-resource-binding`、`core-shared-terminal-evidence-cluster`、`core-bounded-non-cartesian-alternatives` |
-| 3.4.4 | `SOT-ARCH-029`、`SOT-ARCH-031`、`SOT-ARCH-034` | `core-multi-step-evidence-step-local-normalization`、`core-evidence-mapping-private-lifetime`、`core-evidence-mapping-provider-independent`、`core-evidence-mapping-fail-closed`、`core-evidence-production-neutral` |
-| 3.5 | `SOT-ARCH-029`、`SOT-ARCH-032`、`SOT-ARCH-035` | `judicial-evidence-mapping-input-kinds`、`judicial-evidence-mapping-private-lifetime`、`judicial-evidence-mapping-topic-positive`、`judicial-evidence-mapping-ref-no-span`、`judicial-shared-terminal-rejected`、`judicial-evidence-mapping-pack-provider-invariant`、`judicial-evidence-mapping-fail-closed`、`judicial-multi-step-evidence-step-local-normalization`、`judicial-bounded-non-cartesian-alternatives` |
+| 3.2 | `SOT-MODEL-031`、`SOT-ENG-039` | `shared-terminal-sequence-contract`、`shared-terminal-production-neutral` |
+| 3.3 | `SOT-ARCH-031`、`SOT-ARCH-037` | `profile-private-evidence-mapping-lifetime`、`profile-evidence-cluster-key` |
+| 3.4.1 | `SOT-ARCH-039` | `core-evidence-mapping-input-kinds`、`core-evidence-mapping-topic-positive`、`core-evidence-mapping-ref-no-span` |
+| 3.4.2 | `SOT-ARCH-039` | `core-law-name-content-projection` |
+| 3.4.3 | `SOT-ARCH-037`、`SOT-ARCH-039` | `core-shared-terminal-task-resource-binding`、`core-shared-terminal-evidence-cluster`、`core-bounded-non-cartesian-alternatives` |
+| 3.4.4 | `SOT-MODEL-022`、`SOT-ARCH-036`、`SOT-ARCH-031`、`SOT-ARCH-039` | `core-multi-step-evidence-step-local-normalization`、`core-evidence-mapping-private-lifetime`、`core-evidence-mapping-provider-independent`、`core-evidence-mapping-fail-closed`、`core-evidence-production-neutral` |
+| 3.5 | `SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038` | `judicial-evidence-mapping-input-kinds`、`judicial-evidence-mapping-private-lifetime`、`judicial-evidence-mapping-topic-positive`、`judicial-evidence-mapping-ref-no-span`、`judicial-shared-terminal-rejected`、`judicial-evidence-mapping-pack-provider-invariant`、`judicial-evidence-mapping-fail-closed`、`judicial-multi-step-evidence-step-local-normalization`、`judicial-bounded-non-cartesian-alternatives` |
 | 3.6 | `SOT-ENG-035` | `profile-metadata-ranking-consistency`、`next-profile-set-fixed-composition` |
 | 4.1 | `SOT-ENG-033`、`SOT-ENG-036` | `evaluation-baseline-initial-bootstrap`、`evaluation-baseline-resource-maximum`、`evaluation-baseline-history-bounds`、`profile-set-adoption-canonical-bytes` |
 | 4.2 | `SOT-ENG-026` | `legal-query-corpus-v2-development-assertions`、`legal-query-corpus-v2-holdout-coverage`、`legal-query-corpus-v2-leakage-digests`、`legal-query-corpus-immutable-version` |
 | 4.3 | `SOT-ENG-024` | `next-profile-set-development-only-calibration` |
-| 4.4 | `SOT-ENG-037` | `candidate-evaluation-closed-artifacts`、`candidate-evaluation-request-identity`、`candidate-evaluation-evaluator-version-match`、`candidate-evaluation-current-single-target`、`candidate-evaluation-production-unreachable`、`candidate-evaluation-ci-authority`、`candidate-evaluation-consumed-digest-preflight` |
-| 4.5 | `SOT-ENG-037` | `candidate-evaluation-deterministic-replay`、`candidate-evaluation-outcome-exit-semantics`、`candidate-evaluation-success-handoff`、`candidate-evaluation-failure-history`、`candidate-evaluation-single-holdout-use`、`candidate-evaluation-leakage-exclusion`、`candidate-evaluation-leakage-index-bounds`、`candidate-evaluation-output-privacy`、`candidate-evaluation-adoption-link`、`candidate-evaluation-immutable-version` |
-| 5 | `SOT-ENG-033`、`SOT-IF-051` | `profile-set-atomic-adoption`、`profile-set-evaluator-version-identity`、`legal-query-clarification-guidance`、`legal-query-pack-disabled-guidance`、`legal-query-unsupported-guidance`、`legal-query-nonexecution-zero-calls`、`legal-query-content-structured-content-parity`、`legal-query-guidance-transport-parity` |
+| 4.4 | `SOT-ENG-038` | `candidate-evaluation-closed-artifacts`、`candidate-evaluation-request-identity`、`candidate-evaluation-candidate-content-identity`、`candidate-evaluation-referenced-file-bounds`、`candidate-evaluation-review-attestation`、`candidate-evaluation-review-content-binding`、`candidate-evaluation-evaluator-version-match`、`candidate-evaluation-build-context-isolation`、`candidate-evaluation-current-single-target`、`candidate-evaluation-production-unreachable`、`candidate-evaluation-ci-authority`、`candidate-evaluation-consumed-digest-preflight` |
+| 4.5 | `SOT-ENG-036`、`SOT-ENG-038` | `candidate-evaluation-deterministic-replay`、`candidate-evaluation-outcome-exit-semantics`、`candidate-evaluation-success-handoff`、`candidate-evaluation-failure-history`、`candidate-evaluation-single-holdout-use`、`candidate-evaluation-leakage-exclusion`、`candidate-evaluation-leakage-index-bounds`、`candidate-evaluation-output-privacy`、`candidate-evaluation-adoption-link`、`candidate-evaluation-immutable-version`、`evaluation-baseline-candidate-isolation` |
+| 5 | `SOT-ARCH-039`、`SOT-ENG-033`、`SOT-IF-051` | `profile-set-atomic-adoption`、`profile-set-evaluator-version-identity`、`core-evidence-production-adopted`、`legal-query-clarification-guidance`、`legal-query-pack-disabled-guidance`、`legal-query-unsupported-guidance`、`legal-query-nonexecution-zero-calls`、`legal-query-content-structured-content-parity`、`legal-query-guidance-transport-parity` |
 | 6.1 | `SOT-IF-054` | `egov-laws-runtime-response-classification`、`egov-laws-contract-change-separation`、`egov-laws-facade-capability-parser-identity`、`egov-laws-page-invariants` |
 | 6.2 | `SOT-IF-052` | `egov-keyword-runtime-response-classification`、`egov-keyword-contract-change-separation`、`egov-keyword-facade-capability-parser-identity`、`egov-keyword-page-invariants` |
 | 6.3 | `SOT-IF-011` | `egov-law-data-runtime-response-classification`、`egov-law-data-contract-change-separation`、`egov-law-data-input-response-identity`、`egov-law-data-xml-safety-boundary` |
 | 6.4 | `SOT-ARCH-030` | `law-target-resolution-parity`、`law-target-page-stable-partition`、`law-target-no-extra-fetch`、`law-target-ambiguous-no-reorder`、`law-target-unified-no-reparse` |
-| 7 | `SOT-ENG-034` | `unified-query-guidance-document-sync` |
+| 7 | `SOT-ENG-039` | `unified-query-guidance-document-sync` |
 
 一つの固定検証 ID が複数の閉じた assertion を持つ場合は、その assertion 群を
 同じ fixture 群で pass/fail できる一つの契約として扱う。例えば
@@ -304,8 +317,10 @@ step 内正規化も同様に、3.4.4 の
 `shared-terminal-production-neutral` は sidecar を構築しても active profile が
 消費しないことを確認する移行時契約であり、`core-evidence-production-neutral` は
 core の test 専用 evidence path 全体が active metadata と production runtime から
-到達不能であることを確認する契約とする。両者は同じ non-reachability を重複検証する
-ものではない。
+到達不能であることを確認する移行時契約とする。両者は同じ non-reachability を
+重複検証するものではなく、どちらも第 5 段階で終了する。法令コアの後者は
+`core-evidence-production-adopted` に置き換え、合格した candidate content と
+current adoption tuple に一致する production 経路の到達性を確認する。
 
 ## 段階ごとの進行条件
 
@@ -365,6 +380,12 @@ production composition root、標準 corpus、baseline および検索例カタ�
   同じ段階内でも順に review される
 - 各番号付き変更単位に固定検証 ID が対応し、その commit の権威 CI 成功を待って
   次の番号へ進む
+- 第 4 段階 4 が候補の profile metadata、cue、辞書、composition、意味判定
+  source set および二種の content-bound review attestation を固定している
+- 第 4 段階 5 に `evaluation-baseline-candidate-isolation` が割り当てられ、
+  candidate report が現行 baseline へ混入しない
+- 第 5 段階で `core-evidence-production-neutral` が終了し、
+  `core-evidence-production-adopted` に置き換わる
 - 第 6 段階の parser と page 順序が専用 fixture で検証され、意味評価 baseline の
   責務と混同されない
 - 第 7 段階が文書専用であり、公開 MCP 契約の実装・検証を第 5 段階から延期しない
@@ -375,10 +396,11 @@ production composition root、標準 corpus、baseline および検索例カタ�
 - [SOT-ARCH-021: プロバイダー非依存の検索語前処理](../30-architecture/21-provider-independent-query-preprocessing.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](../30-architecture/31-unified-query-intent-evidence-layer.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](../30-architecture/37-unified-query-normalized-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
-- [SOT-ARCH-034: core query profile の根拠対応](../30-architecture/34-core-query-profile-evidence-mapping.md)
-- [SOT-ARCH-035: judicial-cases query profile の根拠対応](../30-architecture/35-judicial-query-profile-evidence-mapping.md)
+- [SOT-ARCH-039: core query profile の ref 忠実な根拠対応と採用境界](../30-architecture/39-core-query-profile-evidence-mapping-v2.md)
+- [SOT-ARCH-038: judicial-cases query profile の ref 忠実な根拠対応](../30-architecture/38-judicial-query-profile-evidence-mapping-v2.md)
+- [SOT-ARCH-036: 複数 step 候補の step 内根拠正規化と保持](../30-architecture/36-multi-step-evidence-normalization.md)
 - [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
@@ -388,7 +410,7 @@ production composition root、標準 corpus、baseline および検索例カタ�
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)
-- [SOT-ENG-037: 統合照会 candidate 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)
+- [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)
 - [SOT-IF-011: e-Gov 法令本文取得マッピング](../40-interfaces/11-egov-law-document-mapping.md)
 - [SOT-IF-052: e-Gov キーワード検索 JSON 応答の受理契約](../40-interfaces/52-egov-keyword-response-contract.md)
 - [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)

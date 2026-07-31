@@ -87,7 +87,7 @@ high-confidence の分母が零件の場合は基準を満たしたと扱わず�
 score の重み、閾値、margin、tie-break、根拠コード、辞書、誤記規則、
 selection mode または hedge pair の生成規則を変更する場合は、新しい profile
 version を割り当てる。`branchRetentionMargin` の校正と version 所有境界は
-`SOT-ARCH-032` を定義元とし、開発用集合では同じ cluster の二件目・三件目、
+`SOT-ARCH-037` を定義元とし、開発用集合では同じ cluster の二件目・三件目、
 境界値の直内外、四件目および `SOT-ARCH-028` の公式別名衝突を別 case として
 評価する。`SOT-ARCH-025` の共有末尾 cue では、有効 separator、未知 separator、
 separator の反復、`を` と `について` の連結、同じ span の複数意味、有効列の
@@ -145,7 +145,7 @@ go run ./cmd/legal-query-eval --adoption=./testdata/legalquery/adoptions/current
 
 command は `SOT-ENG-033` の current adoption tuple から profile set、corpus、
 holdout digest、evaluator version、baseline version、baseline file および
-検索例カタログとの整合を解決する。`evaluatorVersion` は `SOT-ENG-037` の閉じた
+検索例カタログとの整合を解決する。`evaluatorVersion` は `SOT-ENG-038` の閉じた
 registry から exact version の実装だけを選択し、未知版、version range、
 current alias、近似版または最新版への fallback を拒否する。標準 mode に、
 これらの一部だけを別値へ上書きする引数、環境変数、設定または fallback を
@@ -163,7 +163,7 @@ current alias、近似版または最新版への fallback を拒否する。標
 relation 依存の意味判定、共有末尾 cue、限定分岐保持または profile set の
 公開既定動作を変更する採用では、原子的に切り替える完全な単位を
 `SOT-ARCH-033`、機械的な tuple と digest を `SOT-ENG-033`、変更順を
-`SOT-ENG-034` の定義に従わせる。本規定はその一覧を重複して持たず、
+`SOT-ENG-039` の定義に従わせる。本規定はその一覧を重複して持たず、
 評価の受入基準だけを定義する。
 
 次版の corpus、baseline、cue artifact または loader は、`SOT-ARCH-033`
@@ -203,7 +203,7 @@ passed と failed を含む過去の result/report を入力にしないこと�
 
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-028: 法令別名衝突の基本法優先順位](../30-architecture/28-law-alias-collision-ranking.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](../30-architecture/37-unified-query-normalized-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
@@ -215,4 +215,4 @@ passed と failed を含む過去の result/report を入力にしないこと�
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)
-- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)
+- [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)

@@ -120,7 +120,7 @@ history manifest は次の項目だけを持つ。
 配列は一件以上十六件以下とする。
 
 `evaluatorVersion` の正規形、意味版を増やす条件および閉じた実装 registry は
-`SOT-ENG-037` を定義元とする。採用 manifest は exact version だけを保持し、
+`SOT-ENG-038` を定義元とする。採用 manifest は exact version だけを保持し、
 任意 executable path、package path、commit、current alias または version range を
 持たない。
 
@@ -204,7 +204,7 @@ current adoption tuple は次と完全一致しなければならない。
 - `rankingVersion`: 全 profile metadata、構築済み profile set および baseline
 - `compositionVersion`: production と標準評価が注入する composer
 - `evaluatorVersion`: 初回 bootstrap では `legal-query-evaluator-v1`、
-  それ以後は採用根拠となる `SOT-ENG-037` の一件の passed result が参照する
+  それ以後は採用根拠となる `SOT-ENG-038` の一件の passed result が参照する
   request、標準 command が閉じた registry から選択する exact evaluator
 - `profiles`: 固定 profile 順と各 profile metadata の `profileVersion`、
   `cueSetVersion`。baseline の profile 一覧とは `profileId` と
@@ -233,7 +233,7 @@ production が使用する active profile metadata、cue artifact、profile set 
 `current.json` は準備変更で書き換えない。次版の metadata と cue artifact は test
 が直接構成する別の profile set に置き、新しい version を割り当てる。
 
-次版 baseline は、`SOT-ENG-037` の固定 request と CI handoff 専用 command が
+次版 baseline は、`SOT-ENG-038` の固定 request と CI handoff 専用 command が
 test 専用 profile set と request の exact evaluator version を直接構成した
 `outcome=passed` report byte だけから生成し、
 `baselines/versions/{baselineVersion}.json` に新しい version と digest を持つ
@@ -247,7 +247,7 @@ current tuple へ含める。production が使用する profile version、cue se
 または profile set version を変更する場合は、観測結果が同じでも新しい
 baseline version、digest および adoption tuple を同じ採用変更で切り替える。
 bootstrap の初回 baseline を除き、採用する baseline version と digest は、
-`SOT-ENG-037` の一件の passed result、同 result が参照する request の予約版
+`SOT-ENG-038` の一件の passed result、同 result が参照する request の予約版
 および report digest とも完全一致させる。新しい adoption manifest の
 `evaluatorVersion` も同じ request の値と完全一致させる。
 
@@ -328,7 +328,7 @@ field 順に投影し、外部 response、route、時刻または乱数を含め
 - `profile-set-preparation-unreachable`: 準備中の adoption ID を CLI、環境変数、
   設定、MCP 引数、transport または hidden tool から選べない
 - `profile-set-candidate-baseline-isolation`: 次版 baseline を test が直接構成する
-  set と `SOT-ENG-037` の passed result だけで version file へ生成し、現行標準
+  set と `SOT-ENG-038` の passed result だけで version file へ生成し、現行標準
   command から選べず、採用時と rollback 時に version file、result、
   `default.json` の byte と digest が一致する
 - `profile-set-adoption-artifact-safety`: path traversal、全階層の symlink、
@@ -351,4 +351,4 @@ field 順に投影し、外部 response、route、時刻または乱数を含め
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)
-- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)
+- [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)

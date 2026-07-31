@@ -89,6 +89,19 @@
 - `JudicialDecisionSearchIntentV1`: 検証済み検索語
 - `JudicialDecisionReadIntentV1`: 入力で受け取った裁判例の `ref`
 
+`ref` を持つ `LawReadIntentV1`、`LawArticleReadIntentV1` および
+`JudicialDecisionReadIntentV1` は、その候補生成 request が受け取った一件の
+`SourceResourceRef` だけを使用する。`SOT-MODEL-016` が定義する
+`providerId`、`sourceId`、`resourceType`、`resourceId` および任意の
+`versionId` の値と存在状態を変更せずに保持し、新しい `ref` の合成、別の
+`ref` への置換、文字列の正規化、補正または既定値の補完を行わない。
+各 string は入力 byte の完全一致で比較し、大文字小文字、先頭の零、Unicode
+表現または区切り文字を同値として読み替えない。
+request が `ref` を持たない場合、または logical input の `ref` が request の
+`ref` と型付き値として完全一致しない場合は、その request 解釈の候補 draft
+全体を構築しない。該当する read step だけを削除して、同じ draft のほかの
+step を残さない。
+
 各 logical input は、対応する capability v1 のうち registry なしで決定できる provider 非依存入力制約を candidate の作成時に満たす。検索語、構造化検索語、日付、不透明な法令 ID、リビジョン ID、`LawArticleLocation` および `SourceResourceRef` は、materialize するまで構造的に不正な値を保持しない。`ref` の provider と source が採用済みの対応か、pack が有効か、および選択した read capability と一致するかは candidate で推測せず、registry と materializer が外部呼出し前に検証する。
 
 `LawReadIntentV1` は、次のどちらか一方だけを持つ。
@@ -116,7 +129,17 @@ logical input は `limit`、offset または continuation を持たない。exec
 
 ## 確認
 
-許可した七組の対応、ID と major version の分離、logical input と capability の不一致、四 step 超過、provider DTO の混入、`ref` の構造と resource type の不一致、誤記候補の一意性および検索結果に依存する暗黙 read の禁止をモデルテストで確認する。未知の provider と採用済み provider・source metadata の不一致は、registry と materializer のテストで外部呼出し前に拒否することを確認する。
+許可した七組の対応、ID と major version の分離、logical input と capability の
+不一致、四 step 超過、provider DTO の混入、`ref` の構造と resource type の
+不一致、request の `ref` と read logical input の型付き完全一致、誤記候補の
+一意性および検索結果に依存する暗黙 read の禁止をモデルと profile の契約 test で
+確認する。構造上有効でも request と異なる provider、source、resource、
+version または version の存在状態を持つ `ref` は候補生成時に拒否する。
+同じ見た目でも大文字小文字、先頭の零、Unicode byte または区切り文字だけが
+異なる fixture も不一致として確認し、read step だけを削除した部分候補を
+残さない。
+未知の provider と採用済み provider・source metadata の不一致は、registry と
+materializer の test で外部呼出し前に拒否することを確認する。
 
 ## 関連
 

@@ -1,6 +1,9 @@
 # SOT-ENG-037: 統合照会の候補 holdout 評価 handoff
 
-- 状態: 有効
+- 状態: 廃止
+- 廃止理由: 候補を version tuple だけで識別し、profile metadata、cue、辞書、
+  composition、意味判定 source および独立 review を同じ内容へ結び付けられなかったため
+- 後継: [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)
 
 ## 規定
 

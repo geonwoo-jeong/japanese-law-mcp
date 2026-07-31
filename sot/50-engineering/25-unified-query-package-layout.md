@@ -120,7 +120,7 @@ profile の member だけを合成し、同じ profile の search/read を組み
 
 profile が実装する interface と共通の enum は `application/legalquery` が所有する。core profile と pack profile は互いを import せず、composition root が決定的な順序で一つの不変 profile set として組み立てる。
 
-各 profile は、`SOT-ARCH-031` の意図根拠レイヤと `SOT-ARCH-032` の
+各 profile は、`SOT-ARCH-031` の意図根拠レイヤと `SOT-ARCH-037` の
 evidence cluster を、候補 draft の生成中だけ使う profile-private な型または
 関数へ分けられる。その一時データを共通前処理、`application/legalquery` の
 公開 interface、別 profile、provider または MCP schema に追加しない。
@@ -167,7 +167,7 @@ executor は root context と固定 budget を各 step へ渡す。結果は通�
 統合照会を最初に構築するときは次の依存順に分け、各段階で test-first の検証を
 通す。この順序は package の初回構築順であり、採用済み意味判定を変更する
 rollout の段階、進行条件または commit 境界を定義しない。後者の定義元は
-`SOT-ENG-034` だけとする。
+`SOT-ENG-039` だけとする。
 
 1. logical input、candidate、plan、item 配分式、concrete result 型および JSON Schema
 2. 固定 corpus、evaluator、core profile、法概念辞書および共通前処理 port
@@ -205,7 +205,7 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ARCH-026: 統合照会の request materialization](../30-architecture/26-unified-query-request-materialization.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](../30-architecture/31-unified-query-intent-evidence-layer.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](../30-architecture/37-unified-query-normalized-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-MODEL-026: QueryProfileContribution](../20-model/26-query-profile-contribution.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](../20-model/28-query-candidate-composition-member.md)
@@ -214,5 +214,5 @@ MCP schema の全 `oneOf` variant、状態と decision の許可された組合�
 - [SOT-ENG-012: プロバイダーパッケージ構成](12-provider-package-layout.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](28-unified-query-unsupported-intent-cues.md)
-- [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
+- [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)

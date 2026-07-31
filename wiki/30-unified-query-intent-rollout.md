@@ -27,13 +27,25 @@ schema version 2 を使用し、active metadata は version 1 のまま維持す
 `judicial-cases` はこの sidecar をまだ消費しないため、公開既定の意味判定は
 変えていない。
 
-一方で、`SOT-ARCH-029`、`SOT-ARCH-032`、`SOT-ARCH-034` および
-`SOT-ENG-034` は、core の 3.4.1 から 3.4.4 に必要な文書上の契約を先行して更新した。
+一方で、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-039` および
+`SOT-ENG-039` は、core の 3.4.1 から 3.4.4 に必要な文書上の契約を先行して更新した。
 このうち 3.4.1 は、五 input kind の閉じた cue 対応、同じ節・同じ主題への束縛、
 `topicOrdinal`、`asOf` と updates 日付の差および span を持たない `ref` の例外を、
-active profile から到達しない request 内の対応として実装し、独立 review を通過した。
+test 専用 request 内の対応として実装し、独立 review を通過した。
 法令名本文検索語投影、shared-terminal 消費および step 内根拠正規化は、
 3.4.2 以降の番号付き変更で実装する。
+
+`SOT-ARCH-029` は、同じ step の弱い根拠を省略できる条件が選択的であったため
+廃止し、閉じた優越表、`normalizationGroup`、`conceptSources` および
+fail-closed を持つ `SOT-ARCH-036` に置き換えた。既存 code と test に残る
+`SOT-ARCH-029` 参照は現行実装との差分であり、3.4.4 の変更単位で
+`SOT-ARCH-036` の固定検証へ移行する。この文書変更では実装を変更していない。
+
+旧 `SOT-ARCH-032`、`SOT-ARCH-034`、`SOT-ARCH-035`、`SOT-ENG-034` および
+`SOT-ENG-037` は原文を保持して廃止し、それぞれ `SOT-ARCH-037`、
+`SOT-ARCH-039`、`SOT-ARCH-038`、`SOT-ENG-039` および `SOT-ENG-038` を
+現行の定義元とした。既存 code と test に残る旧 ID または旧振る舞いは実装差分で
+あり、この文書変更では置換していない。
 
 ただし、production composition root が構成する active profile set は従来の
 意味判定を維持し、生成済み relation を signal、候補保持または decision に
@@ -52,18 +64,19 @@ profile を profile ID 順に整列しており、production composition root �
 ## 推奨順序
 
 段階そのものの定義、順序および進行条件の定義元は
-[SOT-ENG-034](../sot/50-engineering/34-unified-query-rollout-stages.md) とする。
+[SOT-ENG-039](../sot/50-engineering/39-content-bound-unified-query-rollout-stages.md)
+とする。
 この章の表は、現時点の進捗と確認範囲を追跡するための運用上の写像である。
 
 | 段階 | 状態 | 目的 | 主な定義元 |
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
-| 3 | 進行中（3.4.1 実装・独立 review 通過） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-029`、`SOT-ARCH-031`、`SOT-ARCH-032`、`SOT-ARCH-034`、`SOT-ARCH-035`、`SOT-ENG-035` |
-| 4 | 未着手 | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-037` |
+| 3 | 進行中（3.4.1 実装・独立 review 通過） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
+| 4 | 未着手 | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
 | 5 | 未着手 | 全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | `GET /laws`、`GET /keyword`、`GET /law_data` の parser を一 endpoint ずつ移行した後、法令検索の canonical target 優先を application 層へ接続する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
-| 7 | 未着手 | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを現行標準へ同期する | `SOT-SCN-010`、`SOT-ENG-034` |
+| 7 | 未着手 | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを現行標準へ同期する | `SOT-SCN-010`、`SOT-ENG-039` |
 
 ## 段階 review 記録
 
@@ -73,7 +86,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 2 | 2026-07-31 | 9.5 / 10 | 9.3 / 10 | 0 | 共通 relation 生成、positive task role、引用・言及・topic 除外、profile 内の意図根拠、対象外候補 scope、next/active 分離 |
 | 3.1 | 2026-07-31 | 9.7 / 10（test 8.0 / 10） | 9.0 / 10 | 0 | schema version 1・2 の閉じた loader、存在状態、固定 set の共有校正と digest、active version 1 と test 専用 version 2 の分離 |
 | 3.2 | 2026-07-31 | 9.2 / 10（test 9.4 / 10） | 9.0 / 10 | 0 | 閉じた共有末尾列、bounded maximal-path 判定、実前処理の二代表例、128・256 上限、active core・裁判例の非消費 |
-| 3.4.1 | 2026-07-31 | 9.2 / 10（段階境界 9.4、test 8.8、実装 8.7） | 9.0 / 10 | 0 | 五 input kind の閉じた対応、同じ節・同じ主題、日付、span なし `ref`、active profile 非到達 |
+| 3.4.1 | 2026-07-31 | 9.2 / 10（段階境界 9.4、test 8.8、実装 8.7） | 9.0 / 10 | 0 | 五 input kind の閉じた対応、同じ節・同じ主題、日付および span なし `ref` の task/resource 束縛 |
 
 ## 第 3 段階以降の SOT 文書 review
 
@@ -88,7 +101,7 @@ profile を profile ID 順に整列しており、production composition root �
 |---|---:|---:|---:|---:|---:|---|
 | 2026-07-31 | 9.6 / 10 | 9.8 / 10 | 0 | 0 | 0 | core・judicial の根拠対応、第 3 から第 7 段階、profile 候補と provider 候補の境界、candidate identity、holdout の一回利用と compact leakage index、report と履歴の資源上限、evaluator の採用・再現・rollback、corpus の不変性、固定検証 ID |
 | 2026-07-31 | 9.1 / 10 | 9.4 / 10 | 0 | 0 | 0 | `SOT-ARCH-031` の同一 span 異種事実境界、共有 `explicit_task` 例外、`SOT-ARCH-034` の法令名本文検索語投影三経路、core・judicial の fail-closed fixture、および `SOT-ENG-035` の共有校正一致条件 |
-| 2026-07-31 | 9.4 / 10 | 9.5 / 10 | 0 | 0 | 0 | 今回の文書変更。step 内根拠正規化、topic-local draft の完全順序、非 Cartesian 限定代替列、core の task/resource・日付・`ref`・共有末尾束縛、core・judicial 固有固定検証 ID、および 3.4.1 から 3.4.4 の変更境界。実装は review 対象外 |
+| 2026-07-31 | 10.0 / 10 | 9.8 / 10 | 0 | 0 | 0 | 今回の後継 SOT、step 内根拠正規化、`ref` 忠実性、候補内容 identity、52 件の固定 review 契約集合、review attestation、検証済み source view、資源上限および七段階の導入順序。敵対的 review は 9.8 / 10、blocker・major・minor はすべて 0。文書設計だけを対象とし、実装完了は表さない |
 
 この review は文書設計だけを対象とし、第 3 段階以降の実装完了を表さない。
 実装状態は次節のとおり 3.1 から 3.3 までが完了し、3.4.1 は実装と独立 review を
@@ -96,7 +109,7 @@ profile を profile ID 順に整列しており、production composition root �
 
 ## 第 3 段階の内部進捗
 
-内部順序の定義元は `SOT-ENG-034` とし、ここでは実装状態だけを追跡する。
+内部順序の定義元は `SOT-ENG-039` とし、ここでは実装状態だけを追跡する。
 
 | 順序 | 状態 | 変更単位 |
 |---:|---|---|
@@ -134,12 +147,19 @@ profile set、`legal-query-evaluator-v1`、report byte および外部呼出し�
 
 その後、profile、辞書または誤記規則を変えず、新しい holdout の正解、集合分離
 および coverage を独立 review して digest を固定する。holdout を参照せず
-development 集合だけで次版固定 set を校正する。次に `SOT-ENG-037` の閉じた
-request と pointer、候補 set を直接構成する CI 専用入口、候補 writer、
+development 集合だけで次版固定 set を校正する。次に `SOT-ENG-038` の閉じた
+content manifest、二件の review attestation、request と pointer、候補 set を
+直接構成する CI 専用入口、候補 writer、
 `default-2` の予約名と出力先を別変更で準備する。これらを標準 command、製品 CLI、
 設定、MCP、transport または中央品質ゲートの現行参照先にしない。
-request は exact evaluator version と、corpus manifest が持つ
-`holdoutLeakageGroupDigests` の compact index を固定する。
+request は exact evaluator version、corpus manifest が持つ
+`holdoutLeakageGroupDigests` の compact index、profile metadata、cue、辞書、
+composition および意味判定 source set の candidate content digest を固定する。
+architecture と testability の二件の独立 review は、同じ candidate content、
+対象 SOT の ID と原 byte digest、rubric の内容 digest、8.0 / 10 以上、
+blocker なしおよび approved 判定を持つ不変 attestation として request へ
+結び付ける。この準備変更では holdout を起動せず、report、result または候補
+baseline を生成しない。
 
 review 済みの同一 commit に対して専用 CI job を一回だけ起動し、合格 report は
 `default-2` version file、失敗 report は変更不能な failed history へ同じ byte の
@@ -158,7 +178,11 @@ manifest の追加と current pointer の切替を全採用要素と同じ変更
 `baselines/default.json` は、準備済み `default-2` version file と同じ byte へ
 同じ採用変更で切り替える。adoption manifest、合格 request、標準 command および
 rollback 先はそれぞれ同じ exact evaluator version を指し、current evaluator への
-fallback を許可しない。公開 notice と questions、非実行時の外部呼出しゼロ、
+fallback を許可しない。合格 request の candidate content と production の
+metadata、cue、辞書、composition および意味判定 source set を完全一致させ、
+`core-evidence-production-neutral` を
+`core-evidence-production-adopted` へ置き換える。公開 notice と questions、
+非実行時の外部呼出しゼロ、
 `content` と `structuredContent` の同値性および transport 間の同値性もこの段階で
 固定検証し、第七段階へ延期しない。
 
@@ -168,7 +192,7 @@ fallback を許可しない。公開 notice と questions、非実行時の外�
 別変更で接続する。raw response、parser の error 分類および page item の同一性・
 順序は provider/application 専用 fixture で検証し、意味評価 baseline に証明させない。
 第六段階の各番号では評価投影と検索例カタログを不変に保つ。必要な変更がそれらを
-変える場合は現行の七段階 rollout と `SOT-ENG-037` の対象外とする。provider、
+変える場合は現行の七段階 rollout と `SOT-ENG-038` の対象外とする。provider、
 parser、resolver または mapping の候補 identity、production 非到達性、評価
 request、原子的採用 tuple、rollback、固定検証および資源境界を定義する別の
 新しい有効な SOT が採用されるまで、その変更へ着手しない。profile set 専用の
@@ -179,7 +203,7 @@ candidate request へ component field を足して流用しない。Wiki の実�
 
 ## 進行条件
 
-各段階および `SOT-ENG-034` が番号を付けた段階内変更は、一度に一つずつ進め、
+各段階および `SOT-ENG-039` が番号を付けた段階内変更は、一度に一つずつ進め、
 次の番号へ移る前に次を満たす。
 
 - 対象 SOT へ結び付く必要最小限の検証が成功する

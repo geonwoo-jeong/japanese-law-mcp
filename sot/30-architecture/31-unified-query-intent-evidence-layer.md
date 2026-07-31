@@ -65,7 +65,7 @@ relation の subject になっていない task cue、別 profile の cue、pred
 
 各 input kind が上表のどの事実を利用できるか、同じ節または主題へどう束縛するか、
 および何を独立した正の根拠とするかは profile 固有 SOT を定義元とする。法令コアは
-`SOT-ARCH-034`、`judicial-cases` は `SOT-ARCH-035` に従う。
+`SOT-ARCH-039`、`judicial-cases` は `SOT-ARCH-038` に従う。
 
 ## 評価順序
 
@@ -94,7 +94,7 @@ relation の subject になっていない task cue、別 profile の cue、pred
 適用する。profile は、各 draft の各 step と、その step を成立させた原文 span、
 evidence code および意図根拠レイヤを、profile 内の一時的な対応として保持できる。
 この対応は、候補の根拠検証、対象外との混在時の候補 scope、および
-`SOT-ARCH-032` の evidence cluster を確定するためだけに使用する。
+`SOT-ARCH-037` の evidence cluster を確定するためだけに使用する。
 
 ここでいう一つの位置付き事実は、同じ前処理出現の identity と kind を持つ一件を
 指す。同じ span に法令名と `quoted_phrase` のような異なる kind の出現が併存する
@@ -105,7 +105,7 @@ evidence code および意図根拠レイヤを、profile 内の一時的な対�
 step にも使用しない。その結果、profile 固有 SOT が要求する独立した正の根拠を
 満たさない step が残る場合は、その draft から contribution を構築しない。
 `SOT-MODEL-031` の `SharedTerminalSequence.terminalTaskRelation` は、
-`SOT-ARCH-034` の条件を満たす同じ sequence の各 step へ、共有する
+`SOT-ARCH-039` の条件を満たす同じ sequence の各 step へ、共有する
 `explicit_task` 根拠として対応できる。この場合も各 step は自身の topic span に
 別の正の根拠を必要とし、この共有だけでは「どの step へ束縛すべきか一意に
 決まらない事実」に含めない。ほかの共有 cue または relation を同じ例外へ
@@ -135,7 +135,7 @@ selection mode、composition member および constraint だけを検証する�
 `semantic_expansion` を別の意味へ流用しない。
 
 五層の評価後に、複数の候補 draft のうちどれを実行適格な分岐として保持するかは
-`SOT-ARCH-032` を定義元とする。本規定は保持 margin、保持件数、
+`SOT-ARCH-037` を定義元とする。本規定は保持 margin、保持件数、
 `selectionMode` または実行可否を重複して定義しない。
 
 `SOT-MODEL-026` が対象外との混在を監査するために保持できる内部候補は、同 SOT の
@@ -191,10 +191,10 @@ profile 固有の束縛を推測せず、各 profile が渡した構造の整合
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](37-unified-query-normalized-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)
-- [SOT-ARCH-034: 法令コア query profile の根拠対応](34-core-query-profile-evidence-mapping.md)
-- [SOT-ARCH-035: 裁判例 query profile の根拠対応](35-judicial-query-profile-evidence-mapping.md)
+- [SOT-ARCH-039: 法令コア query profile の ref 忠実な根拠対応と採用境界](39-core-query-profile-evidence-mapping-v2.md)
+- [SOT-ARCH-038: 裁判例 query profile の ref 忠実な根拠対応](38-judicial-query-profile-evidence-mapping-v2.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](../50-engineering/28-unified-query-unsupported-intent-cues.md)
 - [SOT-ENG-031: 統合照会の採用済み意図 cue セット](../50-engineering/31-unified-query-adopted-intent-cues.md)
 - [SOT-ENG-032: 統合照会の positive cue role 対応](../50-engineering/32-unified-query-positive-cue-role-mapping.md)

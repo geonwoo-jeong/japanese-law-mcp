@@ -1,6 +1,9 @@
 # SOT-ARCH-029: 複数 step 候補の根拠保持
 
-- 状態: 有効
+- 状態: 廃止
+- 廃止理由: 同じ step 内で弱い根拠を省略する条件が選択的で、候補の
+  `evidenceCodes` と score を一意に決められなかったため
+- 後継: [SOT-ARCH-036: 複数 step 候補の step 内根拠正規化と保持](36-multi-step-evidence-normalization.md)
 
 ## 規定
 

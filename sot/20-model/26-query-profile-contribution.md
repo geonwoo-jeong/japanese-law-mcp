@@ -121,8 +121,8 @@ subject、predicate または `general_term` だけからこの強い対応を�
 したがって、同じ候補内で一つの step だけが強い根拠を持ち、別の step が
 `general_term` だけで残る混在候補を、強い step の単独候補へ読み替えて保持しない。
 
-この step ごとの対応は生成時検証と `SOT-ARCH-032` の一時的な evidence cluster
-key にだけ使用する。最終の `LegalQueryCandidate` は `SOT-ARCH-029` に従う
+この step ごとの対応は生成時検証と `SOT-ARCH-037` の一時的な evidence cluster
+key にだけ使用する。最終の `LegalQueryCandidate` は `SOT-ARCH-036` に従う
 根拠コードの和集合を持ち、`QueryProfileContribution` はこの対応または span を
 新しい field として保存しない。`compositionMembers` が保持する位置 sidecar は
 profile 横断合成のための別契約とする。
@@ -203,8 +203,8 @@ member と hedge pair の構造的な併存、および複数候補の位置 sid
 - [SOT-MODEL-023: LegalQueryPlan](23-legal-query-plan.md)
 - [SOT-MODEL-028: QueryCandidateCompositionMember](28-query-candidate-composition-member.md)
 - [SOT-MODEL-030: CueTaskRelation v2](30-cue-task-relation-v2.md)
-- [SOT-ARCH-029: 複数 step 候補の根拠保持](../30-architecture/29-multi-step-evidence-preservation.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-036: 複数 step 候補の step 内根拠正規化と保持](../30-architecture/36-multi-step-evidence-normalization.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](../30-architecture/37-unified-query-normalized-branch-retention.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](../30-architecture/25-unified-query-multi-topic-separation.md)

@@ -202,7 +202,7 @@ scale、confidence、selection policy および tie-break 校正を持つ。
 単独 test fixture で構築することは、校正、holdout、baseline または採用候補としての
 固定 profile set を構成したことにはならない。固定 set として評価する時点で初めて、
 全 profile の schema version、ranking version および共有校正値の一致を検証する。
-準備、校正、holdout 判定および原子的採用の順序は `SOT-ENG-034` だけを
+準備、校正、holdout 判定および原子的採用の順序は `SOT-ENG-039` だけを
 定義元とする。
 
 ## loader と不変性
@@ -256,10 +256,10 @@ loader は少なくとも次を照合する。
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](../30-architecture/23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-028: 法令別名衝突の基本法優先順位](../30-architecture/28-law-alias-collision-ranking.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](../30-architecture/32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](../30-architecture/37-unified-query-normalized-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](../30-architecture/33-unified-query-profile-set-adoption-boundary.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](25-unified-query-package-layout.md)
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
-- [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
+- [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)

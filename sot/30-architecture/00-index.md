@@ -35,3 +35,7 @@
 - [33-unified-query-profile-set-adoption-boundary.md](33-unified-query-profile-set-adoption-boundary.md)
 - [34-core-query-profile-evidence-mapping.md](34-core-query-profile-evidence-mapping.md)
 - [35-judicial-query-profile-evidence-mapping.md](35-judicial-query-profile-evidence-mapping.md)
+- [36-multi-step-evidence-normalization.md](36-multi-step-evidence-normalization.md)
+- [37-unified-query-normalized-branch-retention.md](37-unified-query-normalized-branch-retention.md)
+- [38-judicial-query-profile-evidence-mapping-v2.md](38-judicial-query-profile-evidence-mapping-v2.md)
+- [39-core-query-profile-evidence-mapping-v2.md](39-core-query-profile-evidence-mapping-v2.md)

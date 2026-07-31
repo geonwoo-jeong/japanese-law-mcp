@@ -1,9 +1,6 @@
-# SOT-ARCH-034: 法令コア query profile の根拠対応
+# SOT-ARCH-039: 法令コア query profile の ref 忠実な根拠対応と採用境界
 
-- 状態: 廃止
-- 廃止理由: 法令コアの private evidence mapping を公開既定から恒久的に隔離する境界では、
-  `ref` の完全一致と段階的な production 採用を一つの現行契約として扱えなかったため
-- 後継: [SOT-ARCH-039: 法令コア query profile の ref 忠実な根拠対応と採用境界](39-core-query-profile-evidence-mapping-v2.md)
+- 状態: 有効
 
 ## 規定
 
@@ -24,7 +21,7 @@ provider、route または外部結果に依存せず、各 step の主題と独
 task、resource、capability および logical input の七組は `SOT-MODEL-022`、
 位置付き事実と layer/evidence code の共通対応は `SOT-ARCH-031`、
 複数主題の分離は `SOT-ARCH-025`、cluster key、同値 draft の統合、margin および
-三件上限は `SOT-ARCH-032` を定義元とする。本規定は、それらを再定義しない。
+三件上限は `SOT-ARCH-037` を定義元とする。本規定は、それらを再定義しない。
 
 法令コア profile metadata の `targets` は、次の input kind をこの順で一件ずつ
 持つ。対応する task、resource、capability ID および major version は
@@ -82,6 +79,13 @@ article/paragraph target および read relation によって resource が一意
 ある場合は、適用できる全 cue が `law_provision` と両立しなければならない。
 `ref` 自体にはこの場合も span を補わない。
 
+`law_read` または `law_article_read` が `ref` を使う場合は、contribution を
+構築する前に、logical input の `ref` が候補生成 request の入力 `ref` と
+`SOT-MODEL-022` の条件で完全一致することを確認する。欠落または不一致時の
+失敗単位は同 SOT の候補 draft 全体とし、本規定で再定義しない。法令コア固有の
+制約として、profile 内の law ID、法令名、法令番号、検索結果、route metadata
+または既定 provider から代替 `ref` を合成しない。
+
 明示 relation または resource cue がないことを許す semantic candidate では、
 存在しない明示根拠を補わず、上表の semantic と独立した正の根拠の条件だけを
 評価する。複数の relation または cue を同じ意味へ決定的に縮約できない場合は、
@@ -124,7 +128,7 @@ cue の role と意味における閉じた対応は次のとおりとする。�
 input kind に使わない。近いという理由だけで別の節、別 task または別 resource の
 事実を借りない。
 
-`topicOrdinal` の共通計算は `SOT-ARCH-032` を定義元とする。本規定の表と
+`topicOrdinal` の共通計算は `SOT-ARCH-037` を定義元とする。本規定の表と
 共有末尾列が示す core 固有の主題分離結果だけを同計算へ渡し、step 件数、
 input kind、候補結合または生成順を別の ordinal 入力にしない。
 
@@ -141,7 +145,7 @@ input kind、候補結合または生成順を別の ordinal 入力にしない�
 `list_updates/updates` 明示根拠と組み合わせた
 `target_anchor/structured_reference` とし、独立した正の根拠および private
 mapping の cluster span 利用可能事実にできる。ただし、最終的な
-`evidenceSpan` は `SOT-ARCH-032` の優先順で選ぶため、成立に必須の
+`evidenceSpan` は `SOT-ARCH-037` の優先順で選ぶため、成立に必須の
 `list_updates/updates` 明示根拠が先に選ばれる。日付を理由にこの優先順を
 上書きしない。同じ日付 mention を一つの draft で `asOf` と updates target の
 両方へ束縛できる場合は、どちらかを推測して使わず、その曖昧な事実を除いた後に
@@ -249,13 +253,13 @@ input の意味署名、元になった位置付き事実の kind、および pr
 扱う境界は、前節の規則を優先する。
 
 二つ以上の topic がそれぞれ複数意味を持つ場合の draft 列は、
-`SOT-ARCH-032` の限定代替列に従う。各 topic の第一候補からなる基準 draft と、
+`SOT-ARCH-037` の限定代替列に従う。各 topic の第一候補からなる基準 draft と、
 一度に一 topic だけを追加意味へ置き換えた draft を評価し、複数 topic の追加意味を
 同時に組み合わせた Cartesian 分岐を作らない。core の topic-local draft は、
 当該 topic の型付き logical input、位置付き正の根拠および検証済み共有末尾
 relation だけを持つ。同じ span の `quoted_phrase`、法令名投影、法概念または
 `morphological_phrase` の各意味は、この topic-local draft を
-`SOT-ARCH-032` の score と通常 `tieBreak` で比較して第一候補と追加意味を決める。
+`SOT-ARCH-037` の score と通常 `tieBreak` で比較して第一候補と追加意味を決める。
 
 共有 terminal cue の span は各 step の `explicit_task` 根拠として対応できるが、
 各 topic は自身の topic span に、上表の独立した正の根拠を一つ以上持たなければ
@@ -268,21 +272,21 @@ token または新しい cue を復元しない。
 ## cluster 対応
 
 `topicOrdinal` の値、同じ主題の共有および未分離時の `1` は
-`SOT-ARCH-032` に従う。core profile は、前述の input kind ごとの主題分離と
+`SOT-ARCH-037` に従う。core profile は、前述の input kind ごとの主題分離と
 検証済み共有末尾列の結果だけを同規定へ渡す。
 
 各 step の `evidenceSpan` は、上表で当該 step に利用可能かつ実際にその step を
-生成した事実だけから、`SOT-ARCH-032` の
+生成した事実だけから、`SOT-ARCH-037` の
 `explicit_task_resource`、`target_anchor`、`semantic_expansion` の優先順で
 一件を選ぶ。入力 `ref`、`asOf` だけの日付、別 step の cue または候補全体の
 span を代用しない。
 
 同じ cluster と完全な意味署名を持つ draft の統合、代表 draft、根拠と
 `conceptSources` の和集合および source tuple 衝突時の失敗は
-`SOT-ARCH-032` に従う。本規定で score を再計算したり、生成経路の件数を
+`SOT-ARCH-037` に従う。本規定で score を再計算したり、生成経路の件数を
 分岐数として加えたりしない。
 
-候補の `evidenceCodes` と score に使う code は、`SOT-ARCH-029` に従い、
+候補の `evidenceCodes` と score に使う code は、`SOT-ARCH-036` に従い、
 各 step の同値経路を先に正規化してから候補全体へ和集合する。別 step の
 `official_identifier` を理由に、独立した content search step の
 `legal_concept`、`morphological_context` または `general_term` を削除しない。
@@ -296,7 +300,9 @@ canonical URL、endpoint、query parameter、adapter DTO、検索結果、route 
 入力 `SourceResourceRef` は共通の不透明参照として、法令系 input kind が許す
 `resourceType` と version 構造だけを profile で確認する。provider/source の
 registry 対応、capability binding および materialization は後段へ残す。
-法令コア profile が候補生成時に e-Gov その他の provider route を選ばない。
+この構造確認は、前節の request と logical input の typed `ref` 完全一致確認を
+省略する理由にしない。法令コア profile が候補生成時に e-Gov その他の provider
+route を選ばない。
 
 ## 確認
 
@@ -311,7 +317,7 @@ registry 対応、capability binding および materialization は後段へ残�
 - `core-evidence-mapping-provider-independent`
 - `core-law-name-content-projection`
 - `core-evidence-mapping-fail-closed`
-- `core-evidence-production-neutral`
+- `core-evidence-production-adopted`
 - `core-shared-terminal-task-resource-binding`
 - `core-multi-step-evidence-step-local-normalization`
 - `core-bounded-non-cartesian-alternatives`
@@ -331,7 +337,7 @@ registry 対応、capability binding および materialization は後段へ残�
 `target_anchor/structured_reference` へ対応させても独立した正の根拠または
 cluster span にしない。同じ日付を updates target とする正常系では、同じ主題の
 明示 cue と合わせて正の根拠および cluster span 利用可能事実にできる一方、
-最終的な `evidenceSpan` は `SOT-ARCH-032` の優先順どおり明示 cue になることを
+最終的な `evidenceSpan` は `SOT-ARCH-037` の優先順どおり明示 cue になることを
 確認する。
 
 `core-evidence-mapping-ref-no-span` では、法令 `ref` を
@@ -343,8 +349,11 @@ resource cue がある場合は、すべて `law` と両立する場合だけ正
 read relation が一件、零件および二件以上の fixture、ならびに互換 resource cue
 なし、互換 cue あり、競合 cue ありの fixture を組み合わせる。
 `ref` を持つ article read では、一意に束縛した read task cue と位置付き article
-target だけを `SOT-ARCH-032` の優先順へ渡し、別の明示 resource cue を要求しない。
-同じ節に resource cue がある場合の両立条件も同様に確認する。
+target だけを `SOT-ARCH-037` の優先順へ渡し、別の明示 resource cue を要求しない。
+同じ節に resource cue がある場合の両立条件も同様に確認する。この固定検証 ID は、
+span、read relation、resource cue と `resourceType` の閉じた束縛だけを所有し、
+request と logical input の `ref` 完全一致は 3.4.4 の
+`core-evidence-mapping-fail-closed` で確認する。
 
 法令名と同じ span の引用句、明示的な個別主題、共有末尾 topic、裸の法令名、
 一意な誤記補正、同一 surface の複数 law identity、read と content search の
@@ -372,17 +381,27 @@ cue または両立しない task cue がある場合は成立しないことを
 一方を選んだ contribution または部分的な mapping を作らないことを確認する。
 検証済み共有末尾 relation を各 topic step の明示 task 根拠として共有し、各 topic
 span が別の正の根拠を持つ正常系は、この曖昧性として拒否しない。
+`core-evidence-mapping-fail-closed` は、これらに加えて logical input と request の
+`ref` 不一致を含み、別 `ref` への置換または一部 step だけの残存を許可しない。
+request と同じ `ref` の正常系、request に `ref` がない場合、および provider、
+source、resource、version 若しくは version の存在状態、大文字小文字、先頭の零、
+Unicode byte または区切り文字だけが異なる構造上有効な `ref` を fixture にする。
 
 複数 step 候補の evidence と score は
 `core-multi-step-evidence-step-local-normalization` で、step 内の同値経路を
 正規化した後で和集合する。別 step の強い根拠によって独立 step の弱い根拠が
-削除されず、`SOT-ARCH-029` の最終順序になることを確認する。
+削除されず、`SOT-ARCH-036` の最終順序になることを確認する。
 
-`core-evidence-production-neutral` では、第 5 段階より前の active profile
-metadata と production composition root から本規定の test 専用経路を構成できず、
-active request が sidecar、限定代替列または private evidence mapping を
-decision、候補または外部呼出しへ使用しないことを、file name の除外ではなく
-loader の構成不能性と active runtime の観測で確認する。
+第 5 段階の原子的採用後は、`core-evidence-production-adopted` で、current
+adoption tuple が固定する profile metadata、cue、辞書、composition および
+評価済み candidate content と完全一致する法令コア profile だけが production
+composition root から本規定の経路へ到達し、sidecar、限定代替列および private
+evidence mapping を同じ規則で使用することを確認する。未採用版、test fixture、
+別 digest または一部 component だけを active 経路へ混在させない。
+
+第 5 段階より前の非到達性は本規定の永続条件ではなく、`SOT-ENG-039` の移行用
+`core-evidence-production-neutral` を定義元とする。原子的採用と同じ変更で
+同 ID の要求を終了し、`core-evidence-production-adopted` へ置き換える。
 
 `core-shared-terminal-task-resource-binding` では、`教えて` と
 `教えてください` の正確な terminal relation が、別の明示 resource cue なしで
@@ -397,8 +416,10 @@ loader の構成不能性と active runtime の観測で確認する。
 - [SOT-MODEL-025: LegalQueryPreprocessResult](../20-model/25-legal-query-preprocess-result.md)
 - [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
-- [SOT-ARCH-029: 複数 step 候補の根拠保持](29-multi-step-evidence-preservation.md)
+- [SOT-ARCH-036: 複数 step 候補の step 内根拠正規化と保持](36-multi-step-evidence-normalization.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](31-unified-query-intent-evidence-layer.md)
-- [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
+- [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](37-unified-query-normalized-branch-retention.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)
+- [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](../50-engineering/39-content-bound-unified-query-rollout-stages.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](../50-engineering/35-unified-query-profile-metadata-artifact-contract.md)
+- [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](../50-engineering/38-content-bound-candidate-evaluation-handoff.md)
