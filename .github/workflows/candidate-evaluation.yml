@@ -1,0 +1,156 @@
+name: 統合照会候補の評価 handoff
+
+on:
+  workflow_dispatch:
+    inputs:
+      preparation_commit:
+        description: review 済み準備 commit の完全な Git object ID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: candidate-evaluation-${{ inputs.preparation_commit }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-evaluation:
+    name: 固定済み候補を一回評価する
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: 不変な準備 commit を検証する
+        shell: bash
+        env:
+          PREPARATION_COMMIT: ${{ inputs.preparation_commit }}
+          WORKFLOW_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$PREPARATION_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "準備 commit は小文字十六進数40桁の完全な Git object ID で指定してください。" >&2
+            exit 1
+          fi
+          if [[ "$PREPARATION_COMMIT" != "$WORKFLOW_COMMIT" ]]; then
+            echo "workflow definition と準備 commit が一致しません。" >&2
+            exit 1
+          fi
+
+      - name: review 済み準備 commit を取得する
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.preparation_commit }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: checkout 境界を閉じる
+        shell: bash
+        env:
+          PREPARATION_COMMIT: ${{ inputs.preparation_commit }}
+        run: |
+          set -euo pipefail
+          HEAD_COMMIT="$(git rev-parse HEAD)"
+          TARGET_COMMIT="$(git rev-parse "${PREPARATION_COMMIT}^{commit}")"
+          if [[ "$HEAD_COMMIT" != "$PREPARATION_COMMIT" || "$TARGET_COMMIT" != "$PREPARATION_COMMIT" ]]; then
+            echo "checkout と準備 commit が一致しません。" >&2
+            exit 1
+          fi
+          if [[ -n "$(git status --porcelain=v1 --untracked-files=all)" ]]; then
+            echo "候補評価の checkout が clean ではありません。" >&2
+            exit 1
+          fi
+          if [[ -n "$(git submodule status --recursive)" ]]; then
+            echo "候補評価では submodule を使用できません。" >&2
+            exit 1
+          fi
+
+      - name: 固定 Go toolchain を設定する
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.26.5"
+          check-latest: false
+          cache: false
+
+      # SOT-ENG-038: 第4.4段階では通常 CI から到達せず、手動 dispatch も実行しない。
+      # 第4.5段階で閉じた worker registry と archive staging を接続してから一回だけ実行する。
+      - name: 閉じた候補評価 command を実行する
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANDIDATE_GOROOT="$(env -i PATH="$PATH" GOENV=off GOTOOLCHAIN=local go env GOROOT)"
+          CANDIDATE_GOMODCACHE="$RUNNER_TEMP/candidate-module-cache"
+          CANDIDATE_GOCACHE="$RUNNER_TEMP/candidate-build-cache"
+          CANDIDATE_TMPDIR="$RUNNER_TEMP/candidate-tmp"
+          install -d -m 0700 "$CANDIDATE_GOMODCACHE" "$CANDIDATE_GOCACHE" "$CANDIDATE_TMPDIR"
+          env -i \
+            PATH="$PATH" \
+            GOROOT="$CANDIDATE_GOROOT" \
+            GOMODCACHE="$CANDIDATE_GOMODCACHE" \
+            GOCACHE="$CANDIDATE_GOCACHE" \
+            TMPDIR="$CANDIDATE_TMPDIR" \
+            GOWORK=off GOENV=off GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off \
+            GOFLAGS='-mod=readonly -buildvcs=false' \
+            GOOS=linux GOARCH=amd64 GOAMD64=v1 GOEXPERIMENT= CGO_ENABLED=0 GOMAXPROCS=1 \
+            go run ./cmd/legal-query-candidate-eval --repository=. --output-directory=./.artifacts/legal-query-candidate-evaluation \
+            </dev/null
+
+      - name: 閉じた handoff output を検証する
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUTPUT_ROOT="./.artifacts/legal-query-candidate-evaluation"
+          if [[ -L "$OUTPUT_ROOT" || ! -d "$OUTPUT_ROOT" ]]; then
+            echo "候補評価 output root が通常 directory ではありません。" >&2
+            exit 1
+          fi
+          mapfile -t TOP_LEVEL_ENTRIES < <(find "$OUTPUT_ROOT" -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort)
+          if [[ "${#TOP_LEVEL_ENTRIES[@]}" -ne 1 || ! -d "${TOP_LEVEL_ENTRIES[0]}" || -L "${TOP_LEVEL_ENTRIES[0]}" ]]; then
+            echo "候補評価 output root は一つの通常 evaluation directory だけを持たなければなりません。" >&2
+            exit 1
+          fi
+          EVALUATION_NAME="$(basename "${TOP_LEVEL_ENTRIES[0]}")"
+          if [[ ! "$EVALUATION_NAME" =~ ^evaluation-sha256-[0-9a-f]{64}$ ]]; then
+            echo "候補評価 output の evaluation ID が不正です。" >&2
+            exit 1
+          fi
+          mapfile -t OUTPUT_ENTRIES < <(find "$OUTPUT_ROOT" -mindepth 1 -print | LC_ALL=C sort)
+          if [[ "${#OUTPUT_ENTRIES[@]}" -ne 3 ]]; then
+            echo "候補評価 output に未知の entry があります。" >&2
+            exit 1
+          fi
+          mapfile -t OUTPUT_FILES < <(find "$OUTPUT_ROOT" -type f -print | LC_ALL=C sort)
+          if [[ "${#OUTPUT_FILES[@]}" -ne 2 ]]; then
+            echo "候補評価 handoff は report と result の二 file だけでなければなりません。" >&2
+            exit 1
+          fi
+          OUTPUT_DIRECTORY="$(dirname "${OUTPUT_FILES[0]}")"
+          if [[ "$OUTPUT_DIRECTORY" != "$(dirname "${OUTPUT_FILES[1]}")" ]]; then
+            echo "候補評価 handoff の二 file が同じ evaluation directory にありません。" >&2
+            exit 1
+          fi
+          mapfile -t OUTPUT_NAMES < <(printf '%s\n' "$(basename "${OUTPUT_FILES[0]}")" "$(basename "${OUTPUT_FILES[1]}")" | LC_ALL=C sort)
+          if [[ "${OUTPUT_NAMES[*]}" != "report.json result.json" ]]; then
+            echo "候補評価 handoff の file 名が不正です。" >&2
+            exit 1
+          fi
+          for OUTPUT_FILE in "${OUTPUT_FILES[@]}"; do
+            if [[ "$(stat -c '%h' "$OUTPUT_FILE")" -ne 1 ]]; then
+              echo "候補評価 handoff に hardlink があります。" >&2
+              exit 1
+            fi
+          done
+          if find "$OUTPUT_ROOT" -type l -print -quit | grep -q .; then
+            echo "候補評価 handoff に symlink があります。" >&2
+            exit 1
+          fi
+
+      - name: 候補評価 handoff を保存する
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: candidate-evaluation-${{ inputs.preparation_commit }}
+          path: ./.artifacts/legal-query-candidate-evaluation
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1

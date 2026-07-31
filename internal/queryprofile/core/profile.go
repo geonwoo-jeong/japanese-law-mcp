@@ -113,13 +113,17 @@ func Load(
 	if err != nil {
 		return nil, err
 	}
-	return &Profile{
+	profile := &Profile{
 		metadata:                         metadata,
 		cues:                             cues,
 		cueByID:                          cueByID,
 		concepts:                         conceptByID,
 		rankAliasCollisionGroupsBySource: true,
-	}, nil
+	}
+	if metadata.SchemaVersion() == 2 {
+		return newCoreEvidenceProfile(profile)
+	}
+	return profile, nil
 }
 
 func validateConditionalTieBreaks(

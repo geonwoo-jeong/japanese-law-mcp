@@ -105,6 +105,47 @@ func TestLoadは閉じたJSONとschemaVersionを検証する(t *testing.T) {
 	}
 }
 
+func TestCanonicalBytesはObject順を意味から除外して存在状態を保持する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	margin := 12
+	original := validProfileJSON(t, 2, &margin, "")
+	reordered := []byte(strings.Replace(
+		string(original),
+		`"schemaVersion":2,"profileId":"core",`,
+		`"profileId":"core","schemaVersion":2,`,
+		1,
+	))
+	first, err := Load(original)
+	if err != nil {
+		t.Fatalf("SOT-ENG-035: 元成果物を読めません: %v", err)
+	}
+	second, err := Load(reordered)
+	if err != nil {
+		t.Fatalf("SOT-ENG-035: 並べ替え成果物を読めません: %v", err)
+	}
+	if !bytes.Equal(first.CanonicalBytes(), second.CanonicalBytes()) {
+		t.Fatal("SOT-ENG-038: object key 順が canonical metadata を変えました")
+	}
+	if bytes.Contains(first.CanonicalBytes(), []byte(`conditionalTieBreaks`)) {
+		t.Fatal("SOT-ENG-038: 省略 field を canonical metadata に補いました")
+	}
+	empty, err := Load(validProfileJSON(
+		t,
+		2,
+		&margin,
+		`"conditionalTieBreaks":{},`,
+	))
+	if err != nil {
+		t.Fatalf("SOT-ENG-035: 空 object 付き成果物を読めません: %v", err)
+	}
+	if bytes.Equal(first.CanonicalBytes(), empty.CanonicalBytes()) {
+		t.Fatal("SOT-ENG-038: 省略と存在する空 object を同一視しました")
+	}
+}
+
 func TestLoadはbranchRetentionMarginの存在状態を保持する(
 	t *testing.T,
 ) {

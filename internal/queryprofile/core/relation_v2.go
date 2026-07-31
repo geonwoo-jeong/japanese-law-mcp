@@ -38,8 +38,8 @@ func newCueTaskRelationV2Profile(profile *Profile) (*Profile, error) {
 	return &result, nil
 }
 
-// newCoreEvidenceProfile は、次版 metadata を使う非公開の準備経路を返す。
-// LoadEmbedded からは到達させず、profile set の原子的採用までは test 専用とする。
+// newCoreEvidenceProfile は、schema version 2 metadata の意味経路を返す。
+// 現行の組込み schema version 1 からは到達しない。
 func newCoreEvidenceProfile(profile *Profile) (*Profile, error) {
 	if profile == nil {
 		return nil, fmt.Errorf("core profile は必須です")

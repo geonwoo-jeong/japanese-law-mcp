@@ -5,6 +5,9 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalconceptlexicon"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateartifact"
 )
 
 func TestLoadNextForVerificationはDevelopment校正CueをActiveから分離する(
@@ -12,7 +15,7 @@ func TestLoadNextForVerificationはDevelopment校正CueをActiveから分離す�
 ) {
 	t.Parallel()
 
-	next, err := LoadNextForVerification()
+	next, err := loadCandidateForTest()
 	if err != nil {
 		t.Fatalf("SOT-ENG-024/SOT-ENG-039: 校正版を読み込めません: %v", err)
 	}
@@ -59,7 +62,7 @@ func TestLoadNextForVerificationは明示的な裁判例検索を保持する(
 	t.Parallel()
 
 	const verificationID = "next-judicial-explicit-search-regression"
-	profile, err := LoadNextForVerification()
+	profile, err := loadCandidateForTest()
 	if err != nil {
 		t.Fatalf("%s: 校正版を読み込めません: %v", verificationID, err)
 	}
@@ -82,6 +85,19 @@ func TestLoadNextForVerificationは明示的な裁判例検索を保持する(
 	); !slices.Equal(got, []string{"医療過誤"}) {
 		t.Fatalf("%s: search queries = %#v", verificationID, got)
 	}
+}
+
+func loadCandidateForTest() (*Profile, error) {
+	lawNames, err := lawnamelexicon.LoadEmbedded()
+	if err != nil {
+		return nil, err
+	}
+	concepts, err := legalconceptlexicon.LoadEmbedded()
+	if err != nil {
+		return nil, err
+	}
+	artifact := legalquerycandidateartifact.JudicialCases()
+	return Load(artifact.Metadata(), artifact.Cues(), lawNames, concepts)
 }
 
 func judicialTaskSearchTerms(

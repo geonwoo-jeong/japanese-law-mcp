@@ -2,9 +2,8 @@ package judicialcases
 
 import "github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 
-// generateJudicialEvidence は、schema version 2 の非公開評価経路である。
-//
-// 3.5 段階では active profile から到達させず、relation-v2 profile だけが使う。
+// generateJudicialEvidence は、schema version 2 の意味経路である。
+// 現行の組込み schema version 1 からは到達しない。
 func (p *Profile) generateJudicialEvidence(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,

@@ -75,8 +75,17 @@ schema byte、カテゴリ最小件数および safety pair を固定検証し�
 原 byte の content digest、core と `judicial-cases` の development 校正版および
 四十三件全体の決定的 fingerprint を追加した。holdout、manifest、execution、
 過去の report または result を校正入力にせず、独立した二回の読込みと profile
-構成が同じ観測を返すことを固定した。独立 review は通過し、今回の commit に
-対する権威 CI の判定対象である。
+構成が同じ観測を返すことを固定した。独立 review と権威 CI は通過した。
+
+第 4.4 段階として、`SOT-ENG-038` の schema v2、content manifest、52 件の固定
+review SOT digest、architecture/testability の二件の review attestation、
+`corpus-v10` と `default-2` 予約名へ結び付く request、`current.json` pointer、
+fail-closed な CI handoff 入口および候補 baseline writer を追加した。holdout、
+result、failed report または候補 baseline の中身は生成せず、Git が追跡できない
+空 history root は loader 側で論理的 empty として扱う。実際の
+`testdata/legalquery/candidate-evaluations/` subtree は canonical byte で生成し、
+閉じた loader の自己検証を通過した。次の 4.5 だけが holdout の一回実行と
+結果 handoff を担当する。
 
 したがって、`corpus-v10` は準備済みであっても、relation 対応の意味判定、
 `default-2` および対応する検索例カタログとともに、まだ現行標準ではない。
@@ -93,7 +102,7 @@ schema byte、カテゴリ最小件数および safety pair を固定検証し�
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
 | 3 | 完了 | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
-| 4 | 着手中（4.1・4.2 完了、4.3 実装・独立 review 通過、権威 CI 判定対象） | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
+| 4 | 着手中（4.1 から 4.4 完了、4.5 待ち） | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
 | 5 | 未着手 | 全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | `GET /laws`、`GET /keyword`、`GET /law_data` の parser を一 endpoint ずつ移行した後、法令検索の canonical target 優先を application 層へ接続する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
 | 7 | 未着手 | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを現行標準へ同期する | `SOT-SCN-010`、`SOT-ENG-039` |
@@ -115,6 +124,7 @@ schema byte、カテゴリ最小件数および safety pair を固定検証し�
 | 4.1 | 2026-07-31 | 9.1 / 10（testability 8.8 / 10） | 8.8 / 10 | 0 | `default-1` version file と current baseline の byte 完全一致、初回 adoption history と `current.json`、baseline schema と閉じた loader、`--adoption` 固定の標準評価 command、中央品質ゲートの adoption 入口、catalog の corpus・baseline・version と verification artifact 実在検証 |
 | 4.2 | 2026-07-31 | 8.8 / 10（testability 8.5 / 10） | 9.1 / 10 | 0 | schema version 2 の三成果物と typed decoder、development assertion 十一件、追加 coverage 七件と safety pair、leakage digest の再計算と原 ID 非露出、`corpus-v9`・schema version 1 および `corpus-v10` の byte 固定、`step_limit_exceeded` だけに限定した空 meaning 境界 |
 | 4.3 | 2026-07-31 | 9.4 / 10（testability 9.0 / 10） | 9.3 / 10 | 0 | schema と development だけを開く loader、原 byte content digest、二回の独立構成、四十三件全体の fingerprint と scorecard、core・裁判例の専用校正 artifact、active からの非到達性、共有末尾の同値縮約後四 step 境界 |
+| 4.4 | 2026-07-31 | 9.6 / 10（testability 9.2 / 10） | 8.8 / 10 | 0 | schema v2 の五成果物、52 件 SOT digest 付き review attestation、`corpus-v10`/`default-2` request、`current.json` pointer、空 history root の fail-closed 解釈、manual CI handoff 入口、候補 baseline writer、canonical subtree の自己検証 |
 
 ## 第 3 段階以降の SOT 文書 review
 
@@ -166,8 +176,8 @@ schema byte、カテゴリ最小件数および safety pair を固定検証し�
 |---:|---|---|
 | 4.1 | 完了 | 現行 baseline schema、`default-1` version file、初回 adoption manifest、固定 evaluator registry、adoption 基準の標準 command と中央品質ゲート |
 | 4.2 | 完了 | schema version 2、新規 holdout を含む `corpus-v10`、集合分離、development assertion、coverage、leakage digest および旧版・準備版の byte 固定 |
-| 4.3 | 実装・独立 review 通過（権威 CI 判定対象） | holdout を使わない development 専用 loader、原 byte digest、次版 profile set 校正および四十三件全体の決定的 fingerprint |
-| 4.4 | 未着手 | 内容固定済み候補 request、review attestation および CI handoff 入口 |
+| 4.3 | 完了 | holdout を使わない development 専用 loader、原 byte digest、次版 profile set 校正および四十三件全体の決定的 fingerprint |
+| 4.4 | 完了 | 内容固定済み候補 request、review attestation、`current.json` pointer、manual CI handoff 入口および候補 baseline writer |
 | 4.5 | 未着手 | 一回の holdout 判定、変更不能な result と `default-2` 候補 handoff |
 
 ## 段階の境界

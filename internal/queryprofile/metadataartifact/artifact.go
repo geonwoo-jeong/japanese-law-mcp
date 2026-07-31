@@ -2,6 +2,7 @@
 package metadataartifact
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -13,6 +14,7 @@ const maximumProfileBytes = 64 << 10
 type Artifact struct {
 	metadata                    legalquery.QueryProfileMetadata
 	conditionalTieBreaksPresent bool
+	canonicalBytes              []byte
 }
 
 // Load は、閉じた schema version 1 または 2 の成果物を読み込む。
@@ -36,18 +38,39 @@ func Load(data []byte) (*Artifact, error) {
 		if decodeErr != nil {
 			return nil, decodeErr
 		}
-		return buildArtifact(document.values())
+		return buildCanonicalArtifact(document, document.values())
 	case 2:
 		document, decodeErr := decodeStrict[documentV2](data)
 		if decodeErr != nil {
 			return nil, decodeErr
 		}
-		return buildArtifact(document.values())
+		return buildCanonicalArtifact(document, document.values())
 	default:
 		return nil, fmt.Errorf(
 			"profile data の schemaVersion が未対応です",
 		)
 	}
+}
+
+// CanonicalBytes は、version 別 field 順と省略状態を保つ JSON byte を複製する。
+func (a *Artifact) CanonicalBytes() []byte {
+	if a == nil {
+		return nil
+	}
+	return append([]byte(nil), a.canonicalBytes...)
+}
+
+func buildCanonicalArtifact(document any, values documentValues) (*Artifact, error) {
+	artifact, err := buildArtifact(values)
+	if err != nil {
+		return nil, err
+	}
+	canonical, err := json.Marshal(document)
+	if err != nil {
+		return nil, fmt.Errorf("profile metadata を canonical JSON にできません: %w", err)
+	}
+	artifact.canonicalBytes = append(canonical, '\n')
+	return artifact, nil
 }
 
 // Metadata は、検証済みの不変 metadata を返す。

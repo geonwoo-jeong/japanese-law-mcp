@@ -21,7 +21,7 @@ type documentV1 struct {
 	Score                *scoreDocument           `json:"score"`
 	Selection            *selectionDocumentV1     `json:"selection"`
 	TieBreak             []string                 `json:"tieBreak"`
-	ConditionalTieBreaks *map[string][]string     `json:"conditionalTieBreaks"`
+	ConditionalTieBreaks *map[string][]string     `json:"conditionalTieBreaks,omitempty"`
 	Lexicons             *lexiconVersionsDocument `json:"lexicons"`
 }
 
@@ -35,7 +35,7 @@ type documentV2 struct {
 	Score                *scoreDocument           `json:"score"`
 	Selection            *selectionDocumentV2     `json:"selection"`
 	TieBreak             []string                 `json:"tieBreak"`
-	ConditionalTieBreaks *map[string][]string     `json:"conditionalTieBreaks"`
+	ConditionalTieBreaks *map[string][]string     `json:"conditionalTieBreaks,omitempty"`
 	Lexicons             *lexiconVersionsDocument `json:"lexicons"`
 }
 

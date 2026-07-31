@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querypreprocess"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateprofile"
 	coreprofile "github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/core"
 	judicialcasesprofile "github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/judicialcases"
 )
@@ -153,31 +153,14 @@ func loadNextForVerification() (Dependencies, error) {
 }
 
 func buildStage36NextDependencies() (Dependencies, error) {
-	core, err := coreprofile.LoadNextForVerification()
+	candidate, err := legalquerycandidateprofile.Load()
 	if err != nil {
-		return Dependencies{}, fmt.Errorf("next core profile を読み込めません: %w", err)
-	}
-	judicial, err := judicialcasesprofile.LoadNextForVerification()
-	if err != nil {
-		return Dependencies{}, fmt.Errorf("next judicial profile を読み込めません: %w", err)
-	}
-	profiles := []legalquery.QueryProfile{core, judicial}
-	profileSet, err := newNextProfileSet(profiles)
-	if err != nil {
-		return Dependencies{}, err
-	}
-	cues := append(core.CueVocabulary(), judicial.CueVocabulary()...)
-	preprocessor, err := querypreprocess.NewEmbedded(cues)
-	if err != nil {
-		return Dependencies{}, fmt.Errorf("next preprocessor を構成できません: %w", err)
+		return Dependencies{}, fmt.Errorf("next profile set を読み込めません: %w", err)
 	}
 	return Dependencies{
-		preprocessor: preprocessor,
-		profiles:     profileSet,
-		profileMetadata: []legalquery.QueryProfileMetadata{
-			core.Metadata(),
-			judicial.Metadata(),
-		},
+		preprocessor:    candidate.Preprocessor(),
+		profiles:        candidate.Profiles(),
+		profileMetadata: candidate.ProfileMetadata(),
 	}, nil
 }
 
@@ -203,15 +186,11 @@ func mustStage36Profiles(
 	t *testing.T,
 ) (*coreprofile.Profile, *judicialcasesprofile.Profile) {
 	t.Helper()
-	core, err := coreprofile.LoadNextForVerification()
+	candidate, err := legalquerycandidateprofile.Load()
 	if err != nil {
-		t.Fatalf("%s: next core を読み込めません: %v", nextProfileSetFixedCompositionID, err)
+		t.Fatalf("%s: next profile set を読み込めません: %v", nextProfileSetFixedCompositionID, err)
 	}
-	judicial, err := judicialcasesprofile.LoadNextForVerification()
-	if err != nil {
-		t.Fatalf("%s: next judicial を読み込めません: %v", nextProfileSetFixedCompositionID, err)
-	}
-	return core, judicial
+	return candidate.Core(), candidate.JudicialCases()
 }
 
 func assertStage36SharedCalibration(

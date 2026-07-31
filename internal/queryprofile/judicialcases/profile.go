@@ -97,12 +97,16 @@ func Load(
 	if err != nil {
 		return nil, err
 	}
-	return &Profile{
+	profile := &Profile{
 		metadata: metadata,
 		cues:     cues,
 		cueByID:  cueByID,
 		concepts: conceptByID,
-	}, nil
+	}
+	if metadata.SchemaVersion() == 2 {
+		return newJudicialEvidenceProfile(profile)
+	}
+	return profile, nil
 }
 
 // Metadata は、selector と評価が参照する不変 metadata を返す。

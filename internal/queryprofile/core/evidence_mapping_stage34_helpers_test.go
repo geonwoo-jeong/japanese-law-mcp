@@ -30,15 +30,7 @@ func mustCoreEvidenceProfile(t *testing.T) *Profile {
 			err,
 		)
 	}
-	profile, err := newCoreEvidenceProfile(base)
-	if err != nil {
-		t.Fatalf(
-			"%s: core evidence profile を準備できません: %v",
-			coreEvidenceMappingPrivateLifetimeID,
-			err,
-		)
-	}
-	return profile
+	return base
 }
 
 func generateCoreEvidenceQuery(
