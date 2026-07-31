@@ -90,7 +90,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 3.2 | 2026-07-31 | 9.2 / 10（test 9.4 / 10） | 9.0 / 10 | 0 | 閉じた共有末尾列、bounded maximal-path 判定、実前処理の二代表例、128・256 上限、active core・裁判例の非消費 |
 | 3.4.1 | 2026-07-31 | 9.2 / 10（段階境界 9.4、test 8.8、実装 8.7） | 9.0 / 10 | 0 | 五 input kind の閉じた対応、同じ節・同じ主題、日付および span なし `ref` の task/resource 束縛 |
 | 3.4.2 | 2026-07-31 | 9.7 / 10（実装 9.5 / 10） | 9.1 / 10 | 0 | 法令名本文検索語投影の三経路、完全一致する主題 span、同じ節の一意束縛、read・law search・article read 競合の fail-closed、同一表記の複数 identity、検証済み terminal task 例外 |
-| 3.4.3 | 2026-07-31 | 9.3 / 10 | 記録保留 | 0 | shared-terminal の exact relation 消費、task/resource 束縛、同一 span の別意味保持、異なる span の同値縮約、non-Cartesian 限定代替列、四 step 上限と五件目 `step_limit_exceeded`、cluster 単位の三件保持、active 非到達性 |
+| 3.4.3 | 2026-07-31 | 9.3 / 10（敵対的 review 8.6 / 10） | 9.3 / 10 | 0 | shared-terminal の exact relation 消費、互換な複数 resource cue の根拠和集合、同一 span の別意味保持、異なる span の同値縮約、non-Cartesian 限定代替列、四 step 上限と五件目 `step_limit_exceeded`、cluster 単位の三件保持、active 非到達性 |
 
 ## 第 3 段階以降の SOT 文書 review
 
