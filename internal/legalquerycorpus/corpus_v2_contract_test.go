@@ -360,7 +360,7 @@ func corpusV2LeakageDigestCase(
 	t.Helper()
 	values := validSemanticCaseValues(t)
 	values.SchemaVersion = corpusSchemaVersionV2
-	values.CaseID = "holdout-leakage-digest-" + string(rune('a'+index))
+	values.CaseID = fmt.Sprintf("holdout-leakage-digest-%02d", index)
 	values.LeakageGroupID = leakageGroupID
 	semanticCase, err := NewSemanticCase(values)
 	if err != nil {

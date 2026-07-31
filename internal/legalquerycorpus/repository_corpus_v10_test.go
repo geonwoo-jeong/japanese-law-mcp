@@ -187,10 +187,7 @@ func repositoryCorpusJSONWithoutVersion(
 	path string,
 ) map[string]any {
 	t.Helper()
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("SOT-ENG-026: fixture を読めません: %v", err)
-	}
+	data := readRepositoryCorpusFile(t, path)
 	var value map[string]any
 	if err := json.Unmarshal(data, &value); err != nil {
 		t.Fatalf("SOT-ENG-026: fixture JSON を解釈できません: %v", err)
@@ -205,10 +202,7 @@ func assertRepositoryCorpusFileDigest(
 	expected string,
 ) {
 	t.Helper()
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("%s: 固定 file を読めません: %v", corpusImmutableVersionVerificationID, err)
-	}
+	data := readRepositoryCorpusFile(t, path)
 	if got := fmt.Sprintf("%x", sha256.Sum256(data)); got != expected {
 		t.Fatalf("%s: SHA-256 = %q", corpusImmutableVersionVerificationID, got)
 	}
@@ -247,14 +241,28 @@ func repositoryCorpusTreeDigest(t *testing.T, root string) string {
 		if err != nil {
 			t.Fatalf("%s: corpus path を相対化できません: %v", corpusImmutableVersionVerificationID, err)
 		}
-		data, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatalf("%s: corpus file を読めません: %v", corpusImmutableVersionVerificationID, err)
-		}
+		data := readRepositoryCorpusFile(t, path)
 		input = append(input, filepath.ToSlash(relative)...)
 		input = append(input, 0)
 		input = append(input, data...)
 		input = append(input, 0)
 	}
 	return fmt.Sprintf("%x", sha256.Sum256(input))
+}
+
+func readRepositoryCorpusFile(t *testing.T, path string) []byte {
+	t.Helper()
+	root, err := os.OpenRoot(filepath.Dir(path))
+	if err != nil {
+		t.Fatalf("%s: corpus directory を開けません: %v", corpusImmutableVersionVerificationID, err)
+	}
+	data, readErr := root.ReadFile(filepath.Base(path))
+	closeErr := root.Close()
+	if readErr != nil {
+		t.Fatalf("%s: corpus file を読めません: %v", corpusImmutableVersionVerificationID, readErr)
+	}
+	if closeErr != nil {
+		t.Fatalf("%s: corpus directory を閉じられません: %v", corpusImmutableVersionVerificationID, closeErr)
+	}
+	return data
 }

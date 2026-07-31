@@ -76,14 +76,6 @@ func validateSemanticEnabledPacks(values []string) error {
 	return nil
 }
 
-func isSemanticCoverageID(value string) bool {
-	_, exists := semanticCoverageDefinitionForSchemaVersion(
-		corpusSchemaVersionV1,
-		value,
-	)
-	return exists
-}
-
 func isSemanticSafetyCoverageID(value string) bool {
 	definition, exists := semanticCoverageDefinitionForSchemaVersion(
 		corpusSchemaVersionV1,
@@ -153,15 +145,6 @@ func semanticCategoryIDsForCoverageIDs(
 		}
 	}
 	return values
-}
-
-func semanticCoverageDefinitionFor(
-	coverageID string,
-) (semanticCoverageDefinition, bool) {
-	return semanticCoverageDefinitionForSchemaVersion(
-		corpusSchemaVersionV1,
-		coverageID,
-	)
 }
 
 func semanticCoverageDefinitionForSchemaVersion(
