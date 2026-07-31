@@ -27,7 +27,7 @@ func (p *Profile) selectionMode(
 		return legalquery.QuerySelectionModeClarificationRequired
 	case cues.has("safety", "implicit_first_read"):
 		return legalquery.QuerySelectionModeClarificationRequired
-	case hasTooManySeparatedSubjects(input, cues):
+	case p.requiresSeparatedSubjectClarification(input, cues, candidates):
 		return legalquery.QuerySelectionModeClarificationRequired
 	case len(candidates) == 0 &&
 		hasSeparatedSubjectEvidence(input, cues) &&
@@ -36,6 +36,25 @@ func (p *Profile) selectionMode(
 	default:
 		return legalquery.QuerySelectionModeAutomatic
 	}
+}
+
+func (p *Profile) requiresSeparatedSubjectClarification(
+	input legalquery.CandidateGenerationInput,
+	cues resolvedCues,
+	candidates []legalquery.LegalQueryCandidate,
+) bool {
+	if !hasTooManySeparatedSubjects(input, cues) {
+		return false
+	}
+	if p.intentEvidenceMode != cueIntentEvidenceCore || len(candidates) == 0 {
+		return true
+	}
+	for _, candidate := range candidates {
+		if len(candidate.Steps()) > legalquery.MaxCapabilityCalls {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Profile) hedgePairs(

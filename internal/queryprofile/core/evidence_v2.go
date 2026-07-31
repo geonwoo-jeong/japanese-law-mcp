@@ -107,6 +107,9 @@ func (p *Profile) generateCoreEvidenceDrafts(
 		}
 		return result, nil
 	}
+	if hasTooManySeparatedSubjects(input, cues) {
+		return nil, errCoreEvidenceStepLimitExceeded
+	}
 	projected, handled, err := p.buildCoreProjectedLawNameDrafts(input, cues)
 	if err != nil {
 		return nil, err

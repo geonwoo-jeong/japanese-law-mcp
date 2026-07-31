@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	//go:embed testdata/relation-v2/profile.json
+	//go:embed testdata/development-calibration/profile.json
 	verificationNextProfileJSON []byte
 
-	//go:embed testdata/relation-v2/cues.json
+	//go:embed testdata/development-calibration/cues.json
 	verificationNextCuesJSON []byte
 )
 

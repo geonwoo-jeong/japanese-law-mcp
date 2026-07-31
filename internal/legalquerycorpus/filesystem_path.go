@@ -49,6 +49,21 @@ func resolveCorpusFilesystemPaths(
 	}, nil
 }
 
+func resolveDevelopmentFilesystemPaths(
+	repositoryRoot string,
+	developmentDirectory string,
+) (resolvedCorpusFilesystemPaths, error) {
+	if developmentDirectory == "" ||
+		filepath.Clean(developmentDirectory) != developmentDirectory ||
+		filepath.Base(developmentDirectory) != string(ManifestSetDevelopment) {
+		return resolvedCorpusFilesystemPaths{}, invalidCorpusFilesystemPath()
+	}
+	return resolveCorpusFilesystemPaths(
+		repositoryRoot,
+		filepath.Dir(developmentDirectory),
+	)
+}
+
 func resolveCorpusRelativePath(
 	inputRepositoryRoot string,
 	resolvedRepositoryRoot string,

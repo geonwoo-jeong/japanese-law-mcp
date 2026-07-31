@@ -81,6 +81,53 @@ func openCorpusFilesystem(
 	return candidate, nil
 }
 
+// openDevelopmentFilesystem は、schema と development だけを閉域化して開く。
+func openDevelopmentFilesystem(
+	ctx context.Context,
+	repositoryRoot string,
+	developmentDirectory string,
+) (filesystem *corpusFilesystem, err error) {
+	if err := checkCorpusFilesystemContext(ctx); err != nil {
+		return nil, err
+	}
+	paths, err := resolveDevelopmentFilesystemPaths(
+		repositoryRoot,
+		developmentDirectory,
+	)
+	if err != nil {
+		return nil, err
+	}
+	candidate := &corpusFilesystem{corpusVersion: paths.corpusVersion}
+	defer func() {
+		if err != nil {
+			_ = candidate.close()
+		}
+	}()
+	if err = candidate.openRoots(ctx, paths.repositoryRoot); err != nil {
+		return nil, err
+	}
+	candidate.development.root, err = openVerifiedChildRoot(
+		ctx,
+		candidate.corpusRoot,
+		string(ManifestSetDevelopment),
+	)
+	if err != nil {
+		return nil, err
+	}
+	fixtureCount := 0
+	var fixtureBytes int64
+	candidate.development.files, err = scanCorpusSetEntries(
+		ctx,
+		candidate.development.root,
+		&fixtureCount,
+		&fixtureBytes,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return candidate, nil
+}
+
 func (f *corpusFilesystem) openRoots(
 	ctx context.Context,
 	repositoryRoot string,

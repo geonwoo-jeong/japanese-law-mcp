@@ -90,6 +90,15 @@ func (p *Profile) Generate(
 			legalquery.QueryCompositionConstraintNone,
 		)
 	}
+	if p.intentEvidenceMode == cueIntentEvidenceCore {
+		return p.generateCoreEvidence(
+			input,
+			cues,
+			relationV2ContentDrafts,
+			signals,
+			scope,
+		)
+	}
 	if hasTooManySeparatedSubjects(input, cues) {
 		return p.newGeneration(
 			nil,
@@ -100,16 +109,6 @@ func (p *Profile) Generate(
 			legalquery.QueryCompositionConstraintStepLimitExceeded,
 		)
 	}
-	if p.intentEvidenceMode == cueIntentEvidenceCore {
-		return p.generateCoreEvidence(
-			input,
-			cues,
-			relationV2ContentDrafts,
-			signals,
-			scope,
-		)
-	}
-
 	drafts, err := p.generateDrafts(input, cues, relationV2ContentDrafts)
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err

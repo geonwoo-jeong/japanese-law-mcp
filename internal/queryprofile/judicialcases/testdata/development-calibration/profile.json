@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "profileId": "judicial-cases",
+  "profileVersion": "judicial-cases-2026-07-31-12",
+  "rankingVersion": "legal-query-ranking-2026-07-31-2",
+  "cueSetVersion": "judicial-cases-cues-2026-07-31-5",
+  "targets": [
+    {
+      "task": "search",
+      "resource": "judicial_decision",
+      "inputKind": "judicial_decision_search"
+    },
+    {
+      "task": "read",
+      "resource": "judicial_decision",
+      "inputKind": "judicial_decision_read"
+    }
+  ],
+  "score": {
+    "minimum": 0,
+    "maximum": 405,
+    "evidenceWeights": [
+      {
+        "code": "official_identifier",
+        "weight": 90
+      },
+      {
+        "code": "structured_reference",
+        "weight": 80
+      },
+      {
+        "code": "explicit_task",
+        "weight": 60
+      },
+      {
+        "code": "explicit_resource",
+        "weight": 50
+      },
+      {
+        "code": "official_alias",
+        "weight": 40
+      },
+      {
+        "code": "legal_concept",
+        "weight": 35
+      },
+      {
+        "code": "morphological_context",
+        "weight": 25
+      },
+      {
+        "code": "unique_typo_correction",
+        "weight": 15
+      },
+      {
+        "code": "general_term",
+        "weight": 10
+      }
+    ],
+    "highConfidenceAt": 130,
+    "mediumConfidenceAt": 80
+  },
+  "selection": {
+    "singleThreshold": 85,
+    "minimumExecutionThreshold": 80,
+    "singleMargin": 25,
+    "hedgeMargin": 10,
+    "branchRetentionMargin": 12
+  },
+  "tieBreak": [
+    "evidence_set",
+    "step_count",
+    "meaning_signature",
+    "source_position"
+  ],
+  "lexicons": {
+    "lawNames": "e-gov-law-api-v2-laws-2026-07-27+ndl-common-abbreviations-2026-07-27",
+    "legalConcepts": "legal-concept-2026-07-30-2"
+  }
+}

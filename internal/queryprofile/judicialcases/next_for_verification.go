@@ -9,8 +9,11 @@ import (
 )
 
 var (
-	//go:embed testdata/relation-v2/profile.json
+	//go:embed testdata/development-calibration/profile.json
 	verificationNextJudicialProfileJSON []byte
+
+	//go:embed testdata/development-calibration/cues.json
+	verificationNextJudicialCuesJSON []byte
 )
 
 // LoadNextForVerification は、検証専用の次版 judicial evidence profile を返す。
@@ -25,7 +28,7 @@ func LoadNextForVerification() (*Profile, error) {
 	}
 	base, err := Load(
 		verificationNextJudicialProfileJSON,
-		embeddedCues,
+		verificationNextJudicialCuesJSON,
 		lawNames,
 		concepts,
 	)

@@ -1,0 +1,430 @@
+{
+  "schemaVersion": 3,
+  "profileId": "core",
+  "cueSetVersion": "core-cues-2026-07-31-16",
+  "cues": [
+    {
+      "cueId": "operator-all",
+      "category": "operator",
+      "value": "all",
+      "syntaxRole": "none",
+      "terms": [
+        "いずれも",
+        "かつ",
+        "すべて",
+        "すべてを含む",
+        "とも含む",
+        "両方",
+        "両方を含む",
+        "全部",
+        "全部を含む",
+        "及び",
+        "双方",
+        "各語を含む"
+      ]
+    },
+    {
+      "cueId": "operator-any",
+      "category": "operator",
+      "value": "any",
+      "syntaxRole": "none",
+      "terms": [
+        "いずれか",
+        "どれか一つ",
+        "または",
+        "もしくは",
+        "又は",
+        "若しくは"
+      ]
+    },
+    {
+      "cueId": "operator-as-of",
+      "category": "operator",
+      "value": "as_of",
+      "syntaxRole": "none",
+      "terms": [
+        "時点",
+        "時点の"
+      ]
+    },
+    {
+      "cueId": "operator-dual-candidate",
+      "category": "operator",
+      "value": "dual_candidate",
+      "syntaxRole": "none",
+      "terms": [
+        "2候補",
+        "二候補"
+      ]
+    },
+    {
+      "cueId": "operator-exclude",
+      "category": "operator",
+      "value": "exclude",
+      "syntaxRole": "none",
+      "terms": [
+        "以外",
+        "除いて",
+        "除く",
+        "除外"
+      ]
+    },
+    {
+      "cueId": "operator-individual",
+      "category": "operator",
+      "value": "individual",
+      "syntaxRole": "none",
+      "terms": [
+        "それぞれ",
+        "について",
+        "一つずつ",
+        "個別に",
+        "各々",
+        "各一ページ確認してください"
+      ]
+    },
+    {
+      "cueId": "operator-resource-choice",
+      "category": "operator",
+      "value": "resource_choice",
+      "syntaxRole": "none",
+      "terms": [
+        "どれで探すか決められません"
+      ]
+    },
+    {
+      "cueId": "operator-single-choice",
+      "category": "operator",
+      "value": "single_choice",
+      "syntaxRole": "none",
+      "terms": [
+        "一つの"
+      ]
+    },
+    {
+      "cueId": "reserved-pack-judicial-cases",
+      "category": "reserved_pack",
+      "value": "judicial-cases",
+      "syntaxRole": "none",
+      "terms": [
+        "判例",
+        "最高裁判例",
+        "裁判例",
+        "裁判例本文"
+      ]
+    },
+    {
+      "cueId": "resource-law",
+      "category": "resource",
+      "value": "law",
+      "syntaxRole": "none",
+      "terms": [
+        "正式な法令",
+        "正式名称",
+        "法令",
+        "法令名",
+        "法令略称",
+        "法情報",
+        "略称"
+      ]
+    },
+    {
+      "cueId": "resource-law-provision",
+      "category": "resource",
+      "value": "law_provision",
+      "syntaxRole": "none",
+      "terms": [
+        "本文",
+        "本文から",
+        "本文で",
+        "本文と第",
+        "本文及び第",
+        "本文第",
+        "条文",
+        "条文検索",
+        "条項",
+        "規定"
+      ]
+    },
+    {
+      "cueId": "resource-updates",
+      "category": "resource",
+      "value": "updates",
+      "syntaxRole": "none",
+      "terms": [
+        "の更新",
+        "更新された法令",
+        "更新一覧",
+        "更新情報",
+        "更新法令"
+      ]
+    },
+    {
+      "cueId": "safety-implicit-first-read",
+      "category": "safety",
+      "value": "implicit_first_read",
+      "syntaxRole": "none",
+      "terms": [
+        "候補確認を省略",
+        "先頭",
+        "最も関連度が高い結果",
+        "第一件"
+      ]
+    },
+    {
+      "cueId": "syntax-content-result-unit",
+      "category": "syntax",
+      "value": "content_result_unit",
+      "syntaxRole": "none",
+      "terms": [
+        "一覧",
+        "箇所"
+      ]
+    },
+    {
+      "cueId": "syntax-related-law-scope",
+      "category": "syntax",
+      "value": "related_law_scope",
+      "syntaxRole": "none",
+      "terms": [
+        "に関する法律"
+      ]
+    },
+    {
+      "cueId": "syntax-task-predicate-create",
+      "category": "syntax",
+      "value": "task_predicate",
+      "syntaxRole": "task_predicate",
+      "terms": [
+        "作成して",
+        "作成してください",
+        "作成する"
+      ]
+    },
+    {
+      "cueId": "task-list-updates",
+      "category": "task",
+      "value": "list_updates",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "列挙して",
+        "列挙する"
+      ]
+    },
+    {
+      "cueId": "task-read",
+      "category": "task",
+      "value": "read",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "取得して",
+        "取得してください",
+        "取得する",
+        "確認したい",
+        "確認して",
+        "確認する",
+        "表示して",
+        "表示する",
+        "見せて",
+        "見せてください",
+        "読み",
+        "読みたい",
+        "読む",
+        "読んで",
+        "読んでください"
+      ]
+    },
+    {
+      "cueId": "task-search",
+      "category": "task",
+      "value": "search",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "探したい",
+        "探して",
+        "探してください",
+        "探す",
+        "教えて",
+        "教えてください",
+        "検索",
+        "検索したい",
+        "検索して",
+        "検索してください",
+        "検索する",
+        "見たい",
+        "見たいです",
+        "見つかりますか",
+        "見つけたい",
+        "見つけて",
+        "見つける",
+        "調べたい",
+        "調べて",
+        "調べてください",
+        "調べる"
+      ]
+    },
+    {
+      "cueId": "unsupported-explicit-task-expression",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "explicit_out_of_scope_task",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "要約してください"
+      ]
+    },
+    {
+      "cueId": "unsupported-legal-advice-expression",
+      "category": "unsupported",
+      "value": "legal_advice",
+      "intentGroup": "legal_advice",
+      "signal": "unsupported_legal_advice",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "どうすればよいですか",
+        "どちらが有利",
+        "予測してください",
+        "判断してください",
+        "勝てますか",
+        "勝てるか",
+        "当たるか",
+        "有効か",
+        "法的に判断",
+        "署名すべき",
+        "違法ですか",
+        "違法なら",
+        "適法か判断",
+        "適法ですか"
+      ]
+    },
+    {
+      "cueId": "unsupported-legal-advice-object",
+      "category": "unsupported",
+      "value": "legal_advice",
+      "intentGroup": "legal_advice",
+      "signal": "unsupported_legal_advice",
+      "syntaxRole": "task_object",
+      "terms": [
+        "法的結論"
+      ]
+    },
+    {
+      "cueId": "unsupported-relationship-analysis-expression",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "relationship_analysis",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "引用関係を可視化"
+      ]
+    },
+    {
+      "cueId": "unsupported-relationship-analysis-object",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "relationship_analysis",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_object",
+      "terms": [
+        "引用する裁判例のグラフ",
+        "引用関係図",
+        "影響グラフ",
+        "影響マップ"
+      ]
+    },
+    {
+      "cueId": "unsupported-resource",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "external_information_source",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_object",
+      "terms": [
+        "EDINET",
+        "一般ウェブ記事",
+        "内部文書",
+        "労働通達",
+        "国税不服審判所の裁決",
+        "国税庁の通達",
+        "未公開内部文書",
+        "民間判例データベース",
+        "法律事務所ブログ",
+        "自治体文書",
+        "自治体条例",
+        "都道府県資料"
+      ]
+    },
+    {
+      "cueId": "unsupported-translation-expression",
+      "category": "unsupported",
+      "value": "translation",
+      "intentGroup": "translation",
+      "signal": "unsupported_translation",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "英語に翻訳",
+        "英語に翻訳してください"
+      ]
+    },
+    {
+      "cueId": "unsupported-translation-object",
+      "category": "unsupported",
+      "value": "translation",
+      "intentGroup": "translation",
+      "signal": "unsupported_translation",
+      "syntaxRole": "task_object",
+      "terms": [
+        "和訳",
+        "翻訳",
+        "英訳"
+      ]
+    },
+    {
+      "cueId": "unsupported-unadopted-pack",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "unadopted_information_or_extension",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_object",
+      "terms": [
+        "legislative-history",
+        "労務相談",
+        "国会会議録",
+        "国会審議",
+        "税務相談",
+        "立法沿革",
+        "立法理由",
+        "立法経緯",
+        "行政規則"
+      ]
+    },
+    {
+      "cueId": "unsupported-version-comparison-expression",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "version_comparison",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_expression",
+      "terms": [
+        "二時点を比較",
+        "変更履歴を追う",
+        "改正前後を比較",
+        "比較して",
+        "比較してください"
+      ]
+    },
+    {
+      "cueId": "unsupported-version-comparison-object",
+      "category": "unsupported",
+      "value": "task_or_resource",
+      "intentGroup": "version_comparison",
+      "signal": "unsupported_task_or_resource",
+      "syntaxRole": "task_object",
+      "terms": [
+        "差分"
+      ]
+    }
+  ]
+}

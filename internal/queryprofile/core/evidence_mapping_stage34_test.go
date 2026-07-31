@@ -186,7 +186,7 @@ func TestCoreEvidenceProfileは異なるSpanの同じ意味を一Stepへ縮約�
 	t *testing.T,
 ) {
 	profile := mustCoreEvidenceProfile(t)
-	generation := generateCoreEvidenceQuery(
+	two := generateCoreEvidenceQuery(
 		t,
 		profile,
 		"帰化、帰化を教えてください",
@@ -195,10 +195,37 @@ func TestCoreEvidenceProfileは異なるSpanの同じ意味を一Stepへ縮約�
 	)
 	assertSingleContentCandidate(
 		t,
-		generation,
+		two,
 		[][]string{{"帰化"}},
 		coreSharedTerminalEvidenceClusterID,
 	)
+
+	fiveWithRepeatedMeaning := generateCoreEvidenceQuery(
+		t,
+		profile,
+		"量子相続、月面抵当、火星登記、海底供託、月面抵当について教えてください",
+		nil,
+		coreSharedTerminalEvidenceClusterID,
+	)
+	assertSingleContentCandidate(
+		t,
+		fiveWithRepeatedMeaning,
+		[][]string{
+			{"量子相続"},
+			{"月面抵当"},
+			{"火星登記"},
+			{"海底供託"},
+		},
+		coreSharedTerminalEvidenceClusterID,
+	)
+	if fiveWithRepeatedMeaning.SelectionMode() !=
+		legalquery.QuerySelectionModeAutomatic {
+		t.Fatalf(
+			"%s: 同値縮約後の selectionMode = %q",
+			coreSharedTerminalEvidenceClusterID,
+			fiveWithRepeatedMeaning.SelectionMode(),
+		)
+	}
 }
 
 func TestCoreEvidenceProfileは法令名を許可した三経路だけで本文検索語にする(
