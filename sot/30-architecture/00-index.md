@@ -33,3 +33,5 @@
 - [31-unified-query-intent-evidence-layer.md](31-unified-query-intent-evidence-layer.md)
 - [32-unified-query-bounded-branch-retention.md](32-unified-query-bounded-branch-retention.md)
 - [33-unified-query-profile-set-adoption-boundary.md](33-unified-query-profile-set-adoption-boundary.md)
+- [34-core-query-profile-evidence-mapping.md](34-core-query-profile-evidence-mapping.md)
+- [35-judicial-query-profile-evidence-mapping.md](35-judicial-query-profile-evidence-mapping.md)

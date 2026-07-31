@@ -90,6 +90,25 @@ member を持つ照会では、その profile 内の通常の single または h
 代替解釈を合成すること、上位 score の core 候補と pack 候補を無条件に
 組み合わせること、および照会文全体を広い検索語として補うことを禁止する。
 
+## 同一主題の profile 横断代替
+
+同一の一主題が法令コアと `judicial-cases` の両 profile で意味候補になり得る
+場合、各 profile は `SOT-ARCH-034` または `SOT-ARCH-035` の自身の根拠対応だけで、
+独立した正の根拠を満たす contribution を生成する。公的根拠を持つ法概念または
+当該 profile の明示 resource cue がない裸の名詞から、別 profile の task、
+resource または候補を補わない。
+
+同じ主題から得た二 profile の候補は代替解釈であり、
+`role=required_member` として一候補へ合成しない。selector 前の候補集合へ残し、
+実行対象数と hedge の可否は `SOT-ARCH-023` に従う。二候補を「念のため」で
+無条件に実行しない。
+
+一方、`民法を検索してください。裁判例も検索してください。` のように、異なる
+task/resource と各取得対象がそれぞれ位置付きの明示根拠を持つ照会は、一主題の
+代替解釈ではない。各 profile が一意な required member を作れる場合に限り、本規定の
+通常の profile 横断合成を適用する。単なる resource 名の列挙、対象を共有できない
+cue または一 profile だけの一般語から、もう一方の member を捏造しない。
+
 ## step 順序と ID
 
 全構成元 step は、次の完全順で新しい配列へ並べる。
@@ -207,6 +226,12 @@ core と `judicial-cases` の混合 fixture、裁判例 `ref` の read と検索
 四 collection step の item 予算、および公開結果の plan 順を
 `SOT-ENG-024` の評価で確認する。
 
+同じ法概念が法令本文検索と裁判例検索の候補になり得る場合に、各 profile が自身の
+独立根拠だけを使用し、代替解釈を required member として合成せず、無条件に二件
+実行しないことを確認する。異なる task/resource と対象が個別に明示された照会は、
+逆に一つの広い検索へ変換せず、適格な required member として合成することも
+確認する。
+
 ## 関連
 
 - [SOT-MODEL-022: LegalQueryCandidate](../20-model/22-legal-query-candidate.md)
@@ -216,4 +241,6 @@ core と `judicial-cases` の混合 fixture、裁判例 `ref` の read と検索
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
 - [SOT-ARCH-023: 統合照会の候補選択と制限付き実行](23-unified-query-selection-and-hedging.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
+- [SOT-ARCH-034: 法令コア query profile の根拠対応](34-core-query-profile-evidence-mapping.md)
+- [SOT-ARCH-035: 裁判例 query profile の根拠対応](35-judicial-query-profile-evidence-mapping.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

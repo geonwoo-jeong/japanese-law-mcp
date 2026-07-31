@@ -122,6 +122,18 @@ runtime parser と、公式一次資料を確認する provider contract 検証�
 
 ## 確認
 
+少なくとも次の固定 test ID を provider fixture と facade/capability contract test で
+確認する。
+
+- `egov-keyword-runtime-response-classification`: 個別 runtime 応答の構造違反を
+  `invalid_source_response` にする
+- `egov-keyword-contract-change-separation`: 保存した公式契約の意図的な変更だけを
+  `source_contract_changed` にする
+- `egov-keyword-facade-capability-parser-identity`: 同じ raw fixture を両入口で同じ
+  parser 判定、sentence identity、展開順および mapping にする
+- `egov-keyword-page-invariants`: sentence count、item 展開数、offset、
+  next offset、limit および total count の全境界を固定する
+
 公式 JSON 例、正常な空結果、単一法令・複数 sentence、複数法令、
 省略可能項目の欠落と `null`、未知の追加項目、および
 複数法令に一致する `永住許可` の匿名化した固定 snapshot を fixture にする。

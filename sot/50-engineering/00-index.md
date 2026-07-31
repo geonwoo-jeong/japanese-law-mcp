@@ -36,3 +36,4 @@
 - [34-unified-query-rollout-stages.md](34-unified-query-rollout-stages.md)
 - [35-unified-query-profile-metadata-artifact-contract.md](35-unified-query-profile-metadata-artifact-contract.md)
 - [36-unified-query-evaluation-baseline-artifact-contract.md](36-unified-query-evaluation-baseline-artifact-contract.md)
+- [37-unified-query-candidate-evaluation-handoff.md](37-unified-query-candidate-evaluation-handoff.md)

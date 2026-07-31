@@ -105,6 +105,7 @@ history manifest は次の項目だけを持つ。
 | `profileSetVersion` | string | はい | 当該 composition root の不透明な set version |
 | `rankingVersion` | string | はい | 当該 profile 全体が共有する校正版 |
 | `compositionVersion` | string | はい | 当該採用の composer 規則の版 |
+| `evaluatorVersion` | string | はい | 当該採用の標準評価器の固定意味版 |
 | `profiles` | object[] | はい | 当該 composition root の固定順に並べた profile tuple |
 | `corpusVersion` | string | はい | 当該採用の標準 corpus |
 | `holdoutDigest` | string | はい | corpus manifest の holdout digest |
@@ -116,6 +117,12 @@ history manifest は次の項目だけを持つ。
 各 `profiles` 要素は `profileId`、`profileVersion` および `cueSetVersion`
 だけを持つ。profile ID の辞書順ではなく、production composition root が
 候補 contribution を構成する固定順に並べ、重複を許さない。
+配列は一件以上十六件以下とする。
+
+`evaluatorVersion` の正規形、意味版を増やす条件および閉じた実装 registry は
+`SOT-ENG-037` を定義元とする。採用 manifest は exact version だけを保持し、
+任意 executable path、package path、commit、current alias または version range を
+持たない。
 
 `adoptionId` は `adoption-sha256-` と小文字十六進六十四桁を連結した値とする。
 suffix は、`adoptionId` 自身を除く field を次の完全順序と符号化で直列化した
@@ -129,6 +136,7 @@ profileSetId
 profileSetVersion
 rankingVersion
 compositionVersion
+evaluatorVersion
 profiles
 corpusVersion
 holdoutDigest
@@ -152,6 +160,18 @@ catalogSha256
 bool、浮動小数、`null` または未知の型を canonical 入力へ許可しない。loader は
 不正な field 順、配列順または `adoptionId` を整列若しくは補正せず拒否する。
 
+history manifest の原 byte は、上記の schema field 順をそのまま JSON object の
+key 順に使い、配列を規定順のまま一行へ直列化した canonical JSON とする。
+UTF-8、BOM なし、indent なし、key または separator 周囲の空白なし、整数の
+先頭零なし、および末尾 LF 一 byte を必須とする。schema が許す machine ID、
+version、digest および artifact kind は ASCII の正規形に限定し、同じ文字を
+別の JSON escape へ置き換えない。loader は typed value をこの形式へ再直列化し、
+読み込んだ原 byte と完全一致しない history manifest を拒否する。
+
+`current.json` も `artifactKind`、`schemaVersion`、`adoptionId` の順を持つ同じ
+canonical JSON byte とする。これにより、tuple field が同じでも空白、改行、
+key 順または escape だけを変えた file を同じ採用履歴として受理しない。
+
 `baselineVersion` の正規形、version file の配置および存在条件は
 `SOT-ENG-036` を定義元とする。`baselineSha256` は
 `baselines/versions/{baselineVersion}.json` の原 byte に対する小文字十六進
@@ -166,6 +186,8 @@ rollback も previous tuple の version file と同じ byte を `default.json` �
 相対 path の byte 昇順に並べ、各 file について
 `relativePath`、ASCII space 一文字、file の SHA-256、LF 一文字を連結した
 byte 列の SHA-256 とする。`history/` が存在する場合は対象から除外する。
+`catalogVersion` の正規形と上限は `SOT-ENG-029` を定義元とし、loader は
+正規形でない値を採用 tuple の任意文字列として受理しない。
 
 ## 完全一致
 
@@ -181,6 +203,9 @@ current adoption tuple は次と完全一致しなければならない。
   baseline の `profileSet.profileSetVersion`
 - `rankingVersion`: 全 profile metadata、構築済み profile set および baseline
 - `compositionVersion`: production と標準評価が注入する composer
+- `evaluatorVersion`: 初回 bootstrap では `legal-query-evaluator-v1`、
+  それ以後は採用根拠となる `SOT-ENG-037` の一件の passed result が参照する
+  request、標準 command が閉じた registry から選択する exact evaluator
 - `profiles`: 固定 profile 順と各 profile metadata の `profileVersion`、
   `cueSetVersion`。baseline の profile 一覧とは `profileId` と
   `profileVersion` が同じ順で一致する
@@ -204,20 +229,27 @@ memory 上で構造、canonical digest および準備済み参照先を事前�
 history manifest として保存するのは原子的採用と同じ変更だけとする。
 
 production が使用する active profile metadata、cue artifact、profile set version、
-baseline file、`baselineVersion`、`baselineSha256` および `current.json` は
-準備変更で書き換えない。次版の metadata と cue artifact は test が直接構成する
-別の profile set に置き、新しい version を割り当てる。
+標準 evaluator version、baseline file、`baselineVersion`、`baselineSha256` および
+`current.json` は準備変更で書き換えない。次版の metadata と cue artifact は test
+が直接構成する別の profile set に置き、新しい version を割り当てる。
 
-次版 baseline は、test がその別 profile set を直接構成する内部評価入口から生成し、
+次版 baseline は、`SOT-ENG-037` の固定 request と CI handoff 専用 command が
+test 専用 profile set と request の exact evaluator version を直接構成した
+`outcome=passed` report byte だけから生成し、
 `baselines/versions/{baselineVersion}.json` に新しい version と digest を持つ
-候補成果物として追加する。標準 command の現行 `default`、CLI、環境変数、設定、
-build tag または hidden profile-set option から次版 set を選択できるようにしない。
+候補成果物として追加する。標準 command の現行 `default`、製品 CLI、環境変数、
+設定、build tag または hidden profile-set option から次版 set を選択できるように
+しない。
 
 原子的な採用時は、準備済み baseline の byte と digest を書き換えず、
 production へ採用した profile set の評価結果と完全一致することを確認してから
 current tuple へ含める。production が使用する profile version、cue set version
 または profile set version を変更する場合は、観測結果が同じでも新しい
 baseline version、digest および adoption tuple を同じ採用変更で切り替える。
+bootstrap の初回 baseline を除き、採用する baseline version と digest は、
+`SOT-ENG-037` の一件の passed result、同 result が参照する request の予約版
+および report digest とも完全一致させる。新しい adoption manifest の
+`evaluatorVersion` も同じ request の値と完全一致させる。
 
 ## 初回導入
 
@@ -226,9 +258,18 @@ baseline version、digest および adoption tuple を同じ採用変更で切�
 manifest を作る。この初回 manifest だけは `previousAdoptionId` を省略し、
 `current.json` はその `adoptionId` を指す。
 
-初回 manifest の導入前後で profile、corpus、baseline、標準 command、
-検索例カタログおよび production の観測動作を変更しない。現行
-`default.json` と同じ byte を持つ最初の version file も追加する。
+初回 manifest の導入前後で profile、corpus、baseline、検索例カタログ、
+評価結果および production の観測動作を変更しない。現行 `default.json` と同じ
+byte を持つ最初の version file も追加し、初回 manifest の `evaluatorVersion` は
+`legal-query-evaluator-v1` とする。
+
+この初回 bootstrap では、`SOT-ENG-024` に従い、標準 command と中央品質ゲートの
+入口を移行用の個別引数から `current.json` を読む adoption 基準 command へ
+同じ変更で切り替える。ここでいう観測動作の不変は command line の文字列を
+維持することではなく、切替前後の評価対象 tuple、report byte、plan および
+外部呼出し境界が完全に一致し、両方が
+`legal-query-evaluator-v1` を使用することを意味する。一方の command を fallback
+として残したり、二つを標準 command として併存させたりしない。
 
 次版を初めて採用する変更では、新しい history manifest の
 `previousAdoptionId` を初回 manifest の `adoptionId` とし、production と全採用要素を
@@ -241,7 +282,10 @@ manifest を作る。この初回 manifest だけは `previousAdoptionId` を省
 初回 manifest 以外の新しい history manifest は、直前の `current.json` が指した
 `adoptionId` を `previousAdoptionId` に持つ。rollback 変更では、production
 composition root と `SOT-ARCH-033` の全採用要素をその previous tuple へ戻し、
-`current.json` も同じ `previousAdoptionId` へ戻す。
+`current.json` も同じ `previousAdoptionId` へ戻す。標準 command は previous
+manifest の exact `evaluatorVersion` を閉じた registry から選び、その版の実装、
+baseline version および report byte の組を採用当時の状態へ戻す。current 版への
+fallback または evaluator だけを残す部分 rollback を許可しない。
 
 過去 manifest が存在することを、production から過去 set を選択できる入口に
 しない。rollback 後の repository は、戻した tuple に対して本規定の完全一致検査を
@@ -265,13 +309,18 @@ field 順に投影し、外部 response、route、時刻または乱数を含め
 外部ネットワークを使わない契約 test と文書検査で、少なくとも次の固定 test ID を
 確認する。
 
-- `profile-set-atomic-adoption`: current tuple と production、corpus、baseline、
-  catalog の全項目および digest が一致する
+- `profile-set-atomic-adoption`: current tuple と production、evaluator、corpus、
+  baseline、catalog の全項目および digest が一致する
 - `profile-set-initial-adoption-bootstrap`: manifest 導入前後の観測動作を
   変えず、現行集合の初回 manifest だけが `previousAdoptionId` を省略し、
-  `current.json` がその manifest を指す
+  `current.json` がその manifest を指す。標準 command と中央品質ゲートは同じ
+  変更で adoption 基準へ切り替わり、切替前後の評価対象 tuple、report byte、
+  plan および外部呼出し境界が一致する
 - `profile-set-production-evaluation-identity`: production plan の
   `profileVersion`、固定 profile 順および外部呼出し境界の投影が標準評価と一致する
+- `profile-set-evaluator-version-identity`: bootstrap では version 1、それ以後は
+  exact passed request、current manifest、標準 command および rollback 先 manifest
+  の evaluator version が一致し、未知版、range、alias および fallback を拒否する
 - `profile-set-rollback-tuple`: current と previous の fixture を使い、
   一項目だけを戻す部分 rollback、存在しない previous および tuple 混在を拒否する
 - `profile-set-pack-transport-invariance`: stdio、HTTP、pack 有効および無効で
@@ -279,12 +328,16 @@ field 順に投影し、外部 response、route、時刻または乱数を含め
 - `profile-set-preparation-unreachable`: 準備中の adoption ID を CLI、環境変数、
   設定、MCP 引数、transport または hidden tool から選べない
 - `profile-set-candidate-baseline-isolation`: 次版 baseline を test が直接構成する
-  set だけで version file へ生成し、現行標準 command から選べず、採用時と
-  rollback 時に version file と `default.json` の byte と digest が一致する
+  set と `SOT-ENG-037` の passed result だけで version file へ生成し、現行標準
+  command から選べず、採用時と rollback 時に version file、result、
+  `default.json` の byte と digest が一致する
 - `profile-set-adoption-artifact-safety`: path traversal、全階層の symlink、
   特殊 file、未知 entry、上限超過、不正 UTF-8、重複 key、`null`、外部 `$ref`、
   未知項目、二個目の値、後方 token、file 名と ID の不一致、不在 previous、
   複数初回 manifest、自己参照および cycle を拒否する
+- `profile-set-adoption-canonical-bytes`: field 値が同じでも空白、indent、末尾改行、
+  key 順、整数表現または JSON escape が canonical byte と異なる history manifest
+  と pointer を拒否し、`catalogVersion` の正規形と上限を検証する
 
 ## 関連
 
@@ -298,3 +351,4 @@ field 順に投影し、外部 response、route、時刻または乱数を含め
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)
+- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)

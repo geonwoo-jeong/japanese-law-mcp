@@ -121,6 +121,16 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 
 ## 確認
 
+少なくとも次の固定 test ID を、stdio と Streamable HTTP の MCP 契約 test から
+確認する。
+
+- `legal-query-clarification-guidance`
+- `legal-query-pack-disabled-guidance`
+- `legal-query-unsupported-guidance`
+- `legal-query-nonexecution-zero-calls`
+- `legal-query-content-structured-content-parity`
+- `legal-query-guidance-transport-parity`
+
 入力の全境界、公開供給元ごとの `ref` の往復と不一致、法令専門ツールが `ref` を公開しない互換性、未知項目、非日本語、識別子だけの入力、構造化識別子を含む日本語、混在言語、対象外意図との混在、単一候補、二候補、明確化、五 step 明確化、pack 無効、空結果、部分失敗、全失敗、全 `R/C` item 配分、四呼出し上限、四十 item 上限、一ページ制約、起動時 route 不備および transport 間の schema 一致を MCP 契約テストで確認する。
 
 `民法第709条を見せて。私の場合は違法ですか` のような混在要求で外部呼出しを行わないこと、内部 score と trace が公開されないこと、法概念の公的資料、裁判例 notice と全 item の provenance が保持されること、および既存専門ツールの契約 fixture が変わらないことを確認する。

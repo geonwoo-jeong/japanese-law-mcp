@@ -104,6 +104,8 @@ sidecar から原文を復元したり、別の separator 条件を補ったり�
 ネットワークを使わない model test、共通 constructor test および profile
 contract test で、少なくとも次を確認する。
 
+- `shared-terminal-sequence-contract`: 後続の構造例、不正入力、上限および
+  accessor の不変性を一つの閉じた sidecar 契約として確認する
 - `永住許可、帰化を教えてください` と
   `永住許可と帰化について教えてください` から、二つの topic span と一つの
   `direct_task` relation を持つ sidecar を作る

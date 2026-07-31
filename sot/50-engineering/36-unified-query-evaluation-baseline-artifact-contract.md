@@ -19,6 +19,14 @@ baseline を書き換えず、同じ入力から生成した report をこの契
 採用 tuple、digest および rollback は `SOT-ENG-033` を定義元とする。本規定は
 それらの値または導入順を重複して定義しない。
 
+本 baseline は、意味 plan、selection、根拠、実行 attempt、公開 execution status、
+件数および固定予算を、本規定の field へ投影した範囲だけを証明する。provider の
+raw JSON/XML をどの error code へ分類したか、公開 tool error の詳細、
+`LawSummary` item の identity、page 内の完全順または parser と facade が同じ
+raw byte を受理したかは投影しない。これらは対応する provider、interface または
+application の固定 fixture を定義元とし、baseline が同じであることを代用証拠に
+しない。
+
 ## 配置
 
 成果物は次の配置とする。
@@ -41,6 +49,21 @@ schema は JSON Schema Draft 2020-12 とし、すべての object を閉じる�
 `versions/{baselineVersion}.json` は一度追加した byte を変更しない版付き成果物とする。
 採用中の version file、`default.json` および digest の一致条件は
 `SOT-ENG-033` を定義元とする。
+
+## 初回 bootstrap と候補準備
+
+`SOT-ENG-033` の初回 adoption manifest を導入する変更では、本規定の schema、
+閉じた loader および現行 report の決定的な直列化を先に有効にする。同じ変更で、
+現行 `default.json` と byte が完全に同じ
+`versions/{baselineVersion}.json` を exclusive create し、現行 corpus、
+production profile set、評価値および検索例を変更せず、最初の history manifest と
+current tuple へ結び付ける。
+
+この初回 bootstrap は、次版 baseline 候補の生成を許可するものではない。次版の
+候補 profile set を直接構成する内部評価入口、次の `baselineVersion` および候補
+writer は、`SOT-ENG-034` 第 4 段階の後続番号で別に準備する。候補 writer を
+標準 command、中央品質ゲート、CLI、設定、MCP または transport から呼び出せる
+ようにしない。
 
 ## top-level object
 
@@ -87,6 +110,8 @@ digest を持つ history manifest を追加する。候補または過去の ver
 
 `profiles` の各 object は `profileId`、`profileVersion` だけをこの順で持つ。
 配列は評価対象の composition root が構成する固定 profile 順と一致させる。
+配列は一件以上十六件以下とし、各 ID と version は `SOT-ENG-033` の採用 tuple の
+正規形と上限を満たす。
 current baseline と標準 report では production composition root、採用前候補では
 test が直接構成した target composition root の順を使う。loader または評価器が
 profile ID 順へ並べ替えてはならない。
@@ -195,15 +220,48 @@ category の metric は、その category に属する case だけを母集団�
 baseline loader は、一 byte 以上四 MiB 以下の regular file を固定 repository
 path から読む。symbolic link、repository 外への path 解決、不正 UTF-8、重複 key、
 `null`、未知項目、二個目の JSON 値および後方の非空白 token を拒否する。
+JSON depth は `12`、一 report の value 数は `65536` を上限とする。
+
+`baselines/` は `default.json` と `versions/` だけを持ち、`versions/` は正規形の
+`{baselineVersion}.json` 通常 file だけを持つ。subdirectory、symlink、device、
+FIFO、socket および未知 entry を拒否する。version file は `4096` 件以下、
+原 byte 合計 `256 MiB` 以下とし、`default.json` はこの合計に含めず個別の
+四 MiB 上限を適用する。directory 列挙中に件数または宣言 size の合計が上限を
+超えた時点で失敗し、不正な一件を無視して部分 history を返さない。
+
+report 上限は、`SOT-ENG-026` の holdout 四百件以下と execution 四百件以下から
+次のように導出する。十二 category、holdout の九 metric、category ごとの八 metric、
+四 derived observation と top-level 失敗 ID により、holdout の同一 case ID は
+最大百十回現れる。execution の六 metric と top-level 失敗 ID により、
+execution の同一 case ID は最大七回現れる。したがって全 case が全対象 metric で
+失敗する最大投影でも、case ID の出現は
+`400 * 110 + 400 * 7 = 46800` 件以下である。
+
+case ID は最大六十四 ASCII byte であり、JSON の引用符と区切りを含め一出現
+六十七 byte 以下であるため、全失敗 ID の byte は `3135600` 以下となる。
+閉じた field 名、十二 category、百十五個以下の metric object、十六件以下の
+profile、整数、ratio、container および固定識別子からなる非 case-ID 投影は、
+`262144` byte と `4096` values を上限とする。writer と loader はこの二つの
+部分上限も別に検証する。これにより、正当な最大 report は
+`3135600 + 262144 = 3397744` byte 以下、`46800 + 4096 = 50896` values 以下となり、
+全体の四 MiB と `65536` values の上限内に収まる。
+
+将来 schema が category、metric、profile または集合別 fixture 上限を増やす場合は、
+正当な最大 report を拒否しない新しい baseline schema version、部分上限および
+全体資源上限を同じ変更で採用する。
 
 標準 report は file から decode せず、固定 evaluator が不変な typed report として
 memory 上に構築し、検証後に一回だけ JSON byte へ直列化する。標準 command は
 その byte を stdout へ出力し、baseline file を作成または変更しない。
 
-第 4 段階の候補 baseline writer は、合格した同じ report byte を受け取り、
-予約済みの `baselines/versions/{baselineVersion}.json` だけへ exclusive create
-する。既存 file、symlink、非 regular file、repository 外 path または四 MiB を
-超える byte を拒否し、別の直列化や再計算で byte を変えない。
+第 4 段階の候補 evaluator は、合否にかかわらず同じ typed report を本規定へ
+一回だけ直列化する。保存先、result、logical one-time use および CI handoff は
+`SOT-ENG-037` を定義元とする。候補 baseline writer は
+`outcome=passed` の同じ report byte だけを受け取り、request が予約した
+`baselines/versions/{baselineVersion}.json` へ exclusive create する。
+`outcome=failed` の report を baseline path へ置かない。既存 file、symlink、
+非 regular file、repository 外 path または四 MiB を超える byte を拒否し、
+別の直列化や再計算で byte を変えない。
 
 object の key 順と本規定で固定した配列順を検証し、不正な値を並べ替え、丸め、
 補完または既定値へ置換しない。schema validation と意味上の相互参照検証の
@@ -235,9 +293,21 @@ byte 一致と切替単位は `SOT-ENG-033` に従う。本規定の loader は�
 
 - `evaluation-baseline-closed-json`: 空入力、上限超過、symlink、不正 UTF-8、
   重複 key、`null`、未知項目、二個目の値および後方 token を拒否する
+- `evaluation-baseline-resource-maximum`: holdout 四百件と execution 四百件が
+  全対象 metric で失敗する正当な最大 report を受理し、case-ID 部分、
+  非 case-ID 部分、四 MiB、`65536` values、version file 件数および
+  history 合計 byte の各上限を一単位超える成果物を拒否する
+- `evaluation-baseline-history-bounds`: `versions/` の未知 entry、subdirectory、
+  symlink、特殊 file、`4096` 件超過および `256 MiB` 超過を拒否し、
+  不正な一件を除いた部分 history を返さない
+- `evaluation-baseline-initial-bootstrap`: 現行 `default.json` と最初の version
+  file の byte が一致し、初回 history manifest、current tuple、標準 report および
+  adoption 基準 command が同じ corpus と production profile set を指す。次版候補
+  writer または候補 profile set は標準経路から到達できない
 - `evaluation-baseline-candidate-isolation`: 候補 version file は準備済み target
-  corpus、profile set および予約版に一致し、採用前に history manifest、
-  current tuple、`default.json` または標準 command から到達できない
+  corpus、profile set、`SOT-ENG-037` の passed result および予約版に一致し、
+  採用前に history manifest、current tuple、`default.json` または標準 command
+  から到達できない。failed report は baseline path に存在しない
 - `evaluation-baseline-structure`: top-level、profile set、三集合、category、
   metric および違反件数の項目と固定順を検証する
 - `evaluation-baseline-metric-order`: holdout、category、derived observation
@@ -263,3 +333,4 @@ byte 一致と切替単位は `SOT-ENG-033` に従う。本規定の loader は�
 - [SOT-ENG-029: 統合照会の検索例カタログ](29-unified-query-example-catalog.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-034: 統合照会の意味判定変更における導入段階と変更順序](34-unified-query-rollout-stages.md)
+- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)

@@ -32,6 +32,10 @@ test ID は掲載しない。それらは有効な SOT と Wiki の実装差分�
 期待 status、検証 artifact または章構成を変更した場合は `catalogVersion` を
 増やす。表記修正だけで観測内容を変えない場合は version を維持できる。
 
+`catalogVersion` は `unified-query-examples-v` と先頭が零ではない十進整数を
+連結した、64 byte 以下の ASCII 値とする。`00-index.md` に一件だけ記載し、
+別名、任意の tag、日付または同じ番号の異なる内容を許可しない。
+
 ## 例の種類
 
 各例は `semantic` または `execution` のどちらか一つとする。
@@ -122,6 +126,7 @@ exact fixture で確認できるようになるまで最低件数へ算入しな
   推測値として記載していない
 - 現行標準に存在しない case ID、corpus version または baseline versionを
   確認済みとして記載していない
+- `catalogVersion` が正規形であり、現行採用 manifest と一致する
 - 公開しない score、重み、棄却候補、provider route または trace を含まない
 
 ## 関連

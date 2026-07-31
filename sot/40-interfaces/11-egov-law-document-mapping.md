@@ -62,6 +62,18 @@ https://laws.e-gov.go.jp/law/{lawId}/{revisionPart}
 
 ## 確認
 
+少なくとも次の固定 test ID を XML provider fixture と
+facade/capability contract test で確認する。
+
+- `egov-law-data-runtime-response-classification`: 個別 runtime XML の欠落、
+  malformed 値および型違反を `invalid_source_response` にする
+- `egov-law-data-contract-change-separation`: 保存した公式契約の意図的な変更だけを
+  `source_contract_changed` にする
+- `egov-law-data-input-response-identity`: 入力の law ID、revision ID および
+  `ref` と応答 identity の完全一致を外部結果の公開前に確認する
+- `egov-law-data-xml-safety-boundary`: DTD、entity、外部参照、byte、構造および
+  処理上限を fail closed で拒否する
+
 正常な公式 XML 例、対象なし、`law_info`、`revision_info` または `Law` の欠落、
 malformed XML、DTD、entity declaration、法令 ID とリビジョン ID の不一致、
 byte・構造・解析時間の各上限、および外部本文を公開 error に含めない case を

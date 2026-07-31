@@ -225,6 +225,9 @@ loader は少なくとも次を照合する。
   cue set および辞書 version の不一致を拒否する
 - `profile-metadata-ranking-consistency`: 固定 set 内の ranking version、共有 score、
   selection、tie-break および schema version の混在を拒否する
+- `next-profile-set-fixed-composition`: 次版の全 profile を production と同じ固定順で
+  一回だけ構成し、schema version 2、ranking version および
+  `branchRetentionMargin` の一致を確認する
 - `profile-metadata-conditional-tie-break`: core の条件付き完全順を検証し、
   未採用 profile の条件付き項目と未知条件を拒否する
 - `profile-metadata-immutability`: accessor の戻り値を変更しても metadata、

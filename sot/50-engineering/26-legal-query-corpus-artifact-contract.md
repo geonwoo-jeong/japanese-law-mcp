@@ -54,13 +54,29 @@ Git checkout による checksum の差を防ぐため、`testdata/legalquery/**/
 | `corpusVersion` | string | はい | corpus directory の basename と一致 |
 | `seed` | integer | はい | `0` 以上 `2147483647` 以下 |
 | `holdoutDigest` | string | はい | holdout の順序付き entry 全体を固定する SHA-256 |
+| `holdoutLeakageGroupDigests` | `string[]` | schema version 2 以降 | holdout の leakage group を閉じた digest 集合へ投影した値 |
 | `requiredCategoryIds` | `string[]` | はい | 本規定の必須カテゴリ ID 全件 |
 | `requiredExecutionScenarioIds` | `string[]` | はい | 本規定の必須実行 scenario ID 全件 |
+| `requiredDevelopmentAssertionIds` | `string[]` | schema version 2 のみ | schema version 2 の development 境界 ID 全件 |
 | `sets` | object | はい | `development`、`holdout`、`execution` を一件ずつ保持 |
 
 各集合は `caseCount` と `cases` を持つ。`caseCount` は `cases` の件数および実在する fixture 件数と一致する。`cases` は `caseId` 昇順の `{caseId, sha256}` だけを持ち、`sha256` は対応 fixture の原 byte 全体に対する小文字十六進六十四桁とする。manifest 自身は循環参照を避けるため checksum 対象にしない。
 
+`holdout` の `caseCount` は `SOT-ENG-024` の最小二百四十件以上、四百件以下とし、
+`execution` の `caseCount` は一件以上四百件以下とする。三集合の fixture 総数は
+後述の `4096` を超えない。development は baseline に個別 case ID を投影しないため、
+この二つの集合別上限から除外するが、fixture 総数と原 byte 合計の上限には含める。
+
 `holdoutDigest` は、holdout の `cases` を manifest 順に `caseId`、ASCII space 一文字、`sha256`、LF 一文字として連結した byte 列の SHA-256 を、小文字十六進六十四桁で表す。
+
+schema version 2 以降の `holdoutLeakageGroupDigests` は、各 holdout fixture の
+`leakageGroupId` について、ASCII byte
+`legal-query-leakage-group-v1`、NUL 一 byte、ID の原 ASCII byte を連結した値の
+SHA-256 を小文字十六進六十四桁で表し、重複を除いて byte 昇順に並べる。
+一件以上四百件以下とし、loader は全 holdout fixture から同じ一覧を再計算して
+manifest と完全一致させる。raw `leakageGroupId` の一覧を manifest へ複製しない。
+schema version 1 は同 field を受理せず、`SOT-ENG-037` の新しい candidate 評価には
+使用しない。
 
 同じ checksum を異なる `caseId` へ登録しない。manifest の宣言、fixture file 名、fixture 内の `caseId`、所属集合および実在 file 集合は完全に一致しなければならない。
 
@@ -75,6 +91,7 @@ Git checkout による checksum の差を防ぐため、`testdata/legalquery/**/
 | `caseId` | string | はい | manifest と file 名に一致する ID |
 | `leakageGroupId` | string | はい | 同じ発話、法的対象および変形群を束ねる ID |
 | `coverageIds` | `string[]` | はい | 詳細な検証対象 |
+| `developmentAssertionIds` | `string[]` | schema version 2 の development のみ | development だけで存在を機械検査する境界 ID |
 | `safetyVariant` | string | 条件付き | `ordinary` または `adversarial` |
 | `enabledPacks` | `string[]` | はい | 当該 case で有効な採用済み pack |
 | `request` | object | はい | 公開入力境界へ渡す原入力 |
@@ -336,6 +353,8 @@ loader は解決済み repository root を OS の root API で開く。manifest 
 | manifest | `2 MiB` |
 | fixture 一件 | `256 KiB` |
 | fixture 総数 | `4096` |
+| holdout fixture 件数 | `400` |
+| execution fixture 件数 | `400` |
 | corpus fixture 原 byte 合計 | `64 MiB` |
 | JSON nesting depth | `16` |
 | 一 JSON document の value 数 | `100000` |
@@ -365,8 +384,10 @@ loader は少なくとも次の順序で検証し、最初の決定的なエラ�
 6. 全集合の ID と checksum の一意性、配列順および参照整合
 7. semantic expectation の request error、decision、reason、meaning、selection および logical input
 8. development と holdout の完全 request、比較キーおよび leakage group の分離
-9. holdout の件数、coverage から導出したカテゴリおよび safety pair
-10. execution の参照、action、release 順、期待値および scenario coverage
+9. schema version 2 の holdout leakage group digest の再計算、順序、一意性および件数
+10. schema version 2 の development assertion の閉じた一覧と必須 ID の存在
+11. holdout の件数、coverage から導出したカテゴリおよび safety pair
+12. execution の参照、action、release 順、期待値および scenario coverage
 
 development と holdout の分離は、次の三条件をすべて確認する。
 
@@ -386,7 +407,22 @@ JSON の項目、discriminator、enum、variant または機械カテゴリ契�
 
 query、期待意味、集合、カテゴリ、seed または評価上の fixture 内容を変更するときは新しい `corpus-vN` を作る。
 
-同じ意味と入力の case を次の corpus version へ移す場合は `caseId` を維持できる。入力または期待意味を変える場合は新しい `caseId` を割り当てる。意味を変えない整形だけの変更は同じ corpus version で checksum を更新できるが、機械 formatter で byte 表現を統一し、独立 review を受ける。
+同じ意味と入力の case を次の corpus version へ移す場合は `caseId` を維持できる。
+入力または期待意味を変える場合は新しい `caseId` を割り当てる。
+
+まだ独立 review と digest 固定を完了せず、candidate evaluation request、result、
+baseline、adoption manifest または検索例カタログのいずれからも参照されない
+準備中 corpus に限り、意味を変えない整形を同じ `corpusVersion` の中で行える。
+この場合も機械 formatter で byte 表現を統一し、全 fixture checksum、
+`holdoutDigest` および `holdoutLeakageGroupDigests` を再計算してから独立 review を
+受ける。
+
+独立 review と digest 固定を完了した corpus、または前記成果物の一つから
+参照された corpus は、manifest、fixture、schema version、file 名、directory 構造
+および全 byte を変更、移動、削除または再生成しない。意味を変えない整形、
+checksum だけの訂正または typo 修正も新しい `corpusVersion` で行い、
+`SOT-ENG-037` の既存 request、result、report、baseline および adoption history を
+書き換えない。
 
 holdout の期待値を変える場合は、実装へ合わせるためではなく fixture の誤りであることを独立 review で確認し、理由、新しい corpus version、holdout digest および変更前後の評価結果を同じ変更へ残す。
 
@@ -427,6 +463,30 @@ version 2 の manifest と全 fixture は schema version 2 で一致しなけれ
 `boundary-unsupported-cue-context` は `safetyVariant` を必須とし、holdout で
 `ordinary` と `adversarial` を一件以上ずつ持つ。
 
+schema version 2 の `requiredDevelopmentAssertionIds` は、次の十一件を
+この ASCII 昇順で一件ずつ持つ。development の semantic case だけが
+`developmentAssertionIds` に次の値を一件以上持つことができ、holdout と
+execution は同項目を持たない。各 ID は development 集合に一件以上存在させる。
+loader は存在しない ID、未知 ID、重複および manifest にない ID を拒否し、
+同じ一件が複数 ID を満たす場合も ID ごとの存在確認を省略しない。
+
+- `shared-terminal-five-distinct-meanings`
+- `shared-terminal-five-with-repeated-meaning`
+- `shared-terminal-four-distinct-meanings`
+- `shared-terminal-nonunique-maximal-sequence`
+- `shared-terminal-repeated-meaning-different-span`
+- `shared-terminal-repeated-separator`
+- `shared-terminal-same-span-multiple-meanings`
+- `shared-terminal-tail-connector-chain`
+- `shared-terminal-unknown-separator`
+- `shared-terminal-valid-maximal-no-subsequence`
+- `shared-terminal-valid-separator`
+
+これらは `SOT-ENG-024` が development 集合に要求する共有末尾 cue の各変形を、
+一つの総称 coverage だけで済ませず存在検査するための ID である。ranking 指標、
+holdout のカテゴリ件数または baseline の metric ID へ追加せず、development
+校正の入力としてだけ使う。
+
 cue artifact 自体の schema version 3 混在、長短語および tuple 衝突は照会ごとの
 semantic fixture ではないため coverage ID にしない。これらは `SOT-ENG-030` の
 固定 loader test を定義元とする。
@@ -439,7 +499,17 @@ relation 対応 profile set の実装完了、`default-2` baseline、標準 comm
 
 ## 確認
 
-JSON Schema test と loader test で、三 artifact variant、`plan` と `request_error` の正常系、未知項目、重複 key、trailing value、不正 UTF-8、depth・value・file・件数・合計 byte 上限、path traversal、repository 外または別 subtree の絶対 path、区切り文字、各階層の symlink、特殊 file、未知 entry、外部 `$ref`、未知 schema version、checksum、holdout digest、manifest 不一致、全体 ID 重複、並び順、development と holdout の完全 request・比較キー・leakage group 衝突、coverage とカテゴリ最小件数、safety pair、execution の全 step 参照・release 順列・step/outcome 対応・scenario 条件および getter の深い複製を確認する。
+JSON Schema test と loader test で、三 artifact variant、`plan` と `request_error` の正常系、未知項目、重複 key、trailing value、不正 UTF-8、depth・value・file・件数・合計 byte 上限、path traversal、repository 外または別 subtree の絶対 path、区切り文字、各階層の symlink、特殊 file、未知 entry、外部 `$ref`、未知 schema version、checksum、holdout digest、manifest 不一致、全体 ID 重複、並び順、development と holdout の完全 request・比較キー・leakage group 衝突、schema version 2 の development assertion 全件、coverage とカテゴリ最小件数、safety pair、execution の全 step 参照・release 順列・step/outcome 対応・scenario 条件および getter の深い複製を確認する。
+
+とくに `legal-query-corpus-v2-development-assertions` で schema version 2 の十一個の
+development assertion ID を、`legal-query-corpus-v2-holdout-coverage` で七個の
+追加 coverage ID、カテゴリ、最小件数および safety pair を固定確認する。
+`legal-query-corpus-v2-leakage-digests` で、holdout fixture から再計算した
+digest 集合が manifest と完全一致し、raw ID を manifest へ複製せず、一件以上
+四百件以下、重複なしおよび byte 昇順であることを固定確認する。
+`legal-query-corpus-immutable-version` で、未参照かつ digest 固定前の準備中整形だけを
+同じ版で許可し、固定後または request、result、baseline、adoption manifest 若しくは
+検索例カタログから参照された版の一 byte 変更、移動、削除および再生成を拒否する。
 
 race detector で同じ corpus の並行読取りが共有状態を変更しないことを確認する。検証は外部ネットワークへ接続せず、失敗時に照会本文、fixture 全体または認証情報をエラーへ含めない。
 

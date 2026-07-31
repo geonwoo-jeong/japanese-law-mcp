@@ -187,6 +187,18 @@ continuation を使用する。facade の `offset` から内部 token を合成�
 
 ## 確認
 
+少なくとも次の固定 test ID を provider fixture と facade/capability contract test で
+確認する。
+
+- `egov-laws-runtime-response-classification`: 個別 runtime 応答の構造違反を
+  `invalid_source_response` にする
+- `egov-laws-contract-change-separation`: 保存した公式契約の意図的な変更だけを
+  `source_contract_changed` にする
+- `egov-laws-facade-capability-parser-identity`: 同じ raw fixture を両入口で同じ
+  parser 判定、item identity、順序および mapping にする
+- `egov-laws-page-invariants`: count、array 長、offset、next offset、limit および
+  total count の全境界を固定する
+
 原文と解決済みの正式名称が、追加の変換なしで `law_title` へ一回だけ
 encode されることを確認する。部分文字列、内部にだけ `/` を含む文字列、
 および先頭と末尾が `/` の文字列を fixture にし、最後の case が

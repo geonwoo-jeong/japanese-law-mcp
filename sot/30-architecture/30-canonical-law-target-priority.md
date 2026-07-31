@@ -120,6 +120,20 @@ title 表記、検索 score または DTO に基づく特例を設けない。
 
 ## 確認
 
+少なくとも次の固定 test ID を resolver、application facade および統合 contract
+test で確認する。
+
+- `law-target-resolution-parity`: `search_laws` と統合照会が同じ位置付き入力から
+  同じ解決済み law ID または同じ非解決を得る
+- `law-target-page-stable-partition`: 対象 item だけを先頭へ移し、対象内・対象外の
+  provider 順と page metadata を保持する
+- `law-target-no-extra-fetch`: 統合照会では確認検索を行わず、専門 tool でも
+  本規定の正常空結果条件以外に追加 page または fallback を取得しない
+- `law-target-ambiguous-no-reorder`: 複数 span、複数 law ID、短い語または同率誤記で
+  page を並べ替えない
+- `law-target-unified-no-reparse`: 統合照会は分離済み logical input だけを使い、
+  元の自然文の再解析または二回目の Kagome を行わない
+
 正式名称、公式略称、補足別名、自然文内の一法令名および一意な挿入・削除・
 置換・転置について、`search_laws` と統合照会が同じ law ID を解決済み対象と
 することを確認する。

@@ -144,18 +144,21 @@ go run ./cmd/legal-query-eval --adoption=./testdata/legalquery/adoptions/current
 ```
 
 command は `SOT-ENG-033` の current adoption tuple から profile set、corpus、
-holdout digest、baseline version、baseline file および検索例カタログとの整合を
-解決する。標準 mode に、これらの一部だけを別値へ上書きする引数、環境変数、
-設定または fallback を設けない。過去の corpus、profile set および baseline は
-再現用成果物として保持できるが、current tuple が参照しない版を標準採用判定へ
-使用しない。
+holdout digest、evaluator version、baseline version、baseline file および
+検索例カタログとの整合を解決する。`evaluatorVersion` は `SOT-ENG-037` の閉じた
+registry から exact version の実装だけを選択し、未知版、version range、
+current alias、近似版または最新版への fallback を拒否する。標準 mode に、
+これらの一部だけを別値へ上書きする引数、環境変数、設定または fallback を
+設けない。過去の corpus、profile set、evaluator および baseline は再現用成果物
+として保持できるが、current tuple が参照しない版を標準採用判定へ使用しない。
 
 採用 manifest の初回導入では、移行 command が使用していた
 `corpus-v9`、`default` profile set および review 済みの `default-1` baseline を、
-観測結果を変えず最初の current tuple へ固定する。この三値は初回 bootstrap の
-現行実装を識別する値であり、初回導入後の標準版を本規定へ恒久的に固定するもの
-ではない。初回導入と同じ変更で中央品質ゲートを adoption 基準 command へ
-切り替え、以後は移行 command を標準として実行しない。
+`legal-query-evaluator-v1` とともに観測結果を変えず最初の current tuple へ
+固定する。これらの値は初回 bootstrap の現行実装を識別する値であり、
+初回導入後の標準版を本規定へ恒久的に固定するものではない。初回導入と同じ変更で
+中央品質ゲートを adoption 基準 command へ切り替え、以後は移行 command を
+標準として実行しない。
 
 relation 依存の意味判定、共有末尾 cue、限定分岐保持または profile set の
 公開既定動作を変更する採用では、原子的に切り替える完全な単位を
@@ -178,14 +181,21 @@ privacy 境界を守り、照会本文、辞書 entry 全体、外部 response �
 引数、schema、checksum、最小件数、baseline、受入基準または再現性のいずれかを
 満たさない場合は非ゼロ終了する。初回 `current.json` 導入後の adoption 基準
 command では、baseline file が `SOT-ENG-036` の review 済み期待値と holdout
-digest を持ち、current adoption tuple と一致しなければならない。移行 command と
-adoption 基準 command のどちらも、実行中に baseline を書き換えない。
+digest を持ち、current adoption tuple の exact evaluator version で生成された
+採用時 report と一致しなければならない。rollback 後は previous manifest が固定する
+exact evaluator version と baseline の組だけを使用し、current evaluator を残す
+部分 rollback を拒否する。移行 command と adoption 基準 command のどちらも、
+実行中に baseline を書き換えない。
 
 統合照会の application、profile、辞書、planner model、公開 interface、評価 corpus、baseline または evaluator を変更した場合は、この command を `SOT-ENG-020` の中央品質ゲートから実行する。
 
 ## 確認
 
 固定 seed、固定 profile、ネットワークを使わない provider fixture および標準 command で評価を再現できることを確認する。manifest の checksum、集合分離、最小件数、baseline、profile version、corpus version、カテゴリ別 score および失敗 case ID を追跡できる形で出力する。
+
+`next-profile-set-development-only-calibration` の固定 test ID で、候補 profile set の
+校正が development 集合だけを読み、holdout の内容、期待値、結果、または
+passed と failed を含む過去の result/report を入力にしないことを確認する。
 
 評価 command 自身に、予算超過、誤呼出し、順序の非決定性および holdout 混入を検出するテストを持たせる。
 
@@ -205,3 +215,4 @@ adoption 基準 command のどちらも、実行中に baseline を書き換え�
 - [SOT-ENG-030: 統合照会の cue 成果物契約](30-unified-query-cue-artifact-contract.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)
+- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](37-unified-query-candidate-evaluation-handoff.md)

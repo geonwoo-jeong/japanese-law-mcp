@@ -56,10 +56,18 @@ test 専用の別実装は、同じ package 内の非公開 constructor、testda
 production composition root、現行の埋込み metadata path、標準評価 command、
 中央品質ゲートおよび公開 MCP の到達経路と共有してはならない。
 
+この非到達性の例外は、`SOT-ENG-037` が固定する CI handoff 専用 command
+一つだけとする。同 command は利用者の query、任意の profile/corpus 選択または
+production request を受け取らず、固定 pointer が指す一件の test 専用 set を
+holdout 評価する repository verification 入口である。製品 binary、標準評価
+command、中央品質ゲート、利用者向け CLI、MCP または transport の到達経路へ
+登録しない。
+
 準備変更は、現行標準の corpus version と baseline version、公開 decision、
 選択した meaning、step、reason、外部呼出し境界および検索例の観測結果を
 変更しない。production が使用する cue artifact、profile version または
-profile set version も変更せず、`SOT-ENG-033` の current tuple と完全一致させる。
+profile set version、標準評価器の exact version も変更せず、
+`SOT-ENG-033` の current tuple と完全一致させる。
 
 次版の cue 成果物その他の検証済み metadata を変更した場合に、次版の不透明な
 profile version または profile set version を更新する義務は維持する。ただし
@@ -78,6 +86,7 @@ version を変更する場合は、意味計画の観測結果が同じであっ
 
 - production composition root が構成する profile、共通前処理および planner
 - profile version、ranking version、composition version および profile set version
+- 標準評価 command が閉じた registry から選択する exact evaluator version
 - 対象動作を検証する model、profile、planner、application および MCP 契約 test
 - `SOT-ENG-024`、`SOT-ENG-026` および `SOT-ENG-036` が要求する corpus、
   baseline、標準 command および変更前後の評価
@@ -100,8 +109,8 @@ profile set version で構成されなければならない。
 採用後に rollback する場合は、「原子的な採用」に列挙した全要素と Wiki の
 実装済み範囲を、相互に整合する直前の採用済み集合へ戻す。production
 composition root、共通前処理、planner、profile 実装と metadata、cue artifact
-と loader、標準 corpus、baseline、標準 command、中央品質ゲートおよび
-検索例カタログの一部だけを戻して混在状態を作らない。
+と loader、標準 corpus、evaluator version、baseline、標準 command、
+中央品質ゲートおよび検索例カタログの一部だけを戻して混在状態を作らない。
 
 直前の採用前から準備状態にあった relation sidecar、test 専用実装または候補成果物
 だけを残す場合は、本規定の「準備状態」の全条件を再び満たし、production の
@@ -121,6 +130,8 @@ decision、reason、selection、meaning、step および外部呼出し境界に
   meaning、step および外部呼出し境界が一致する
 - production composition root と標準評価 command が、同じ採用済み
   profile set version を使用する
+- 標準評価 command が current adoption tuple の exact evaluator version だけを
+  使用し、rollback でも previous tuple の版へ戻る
 - 新しい意味判定の採用時に、対応 corpus、baseline、標準 command、中央品質
   ゲートおよび検索例カタログが同じ変更で切り替わる
 - pack の有効状態または transport によって意味認識 profile set が変わらない
@@ -138,3 +149,4 @@ decision、reason、selection、meaning、step および外部呼出し境界に
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](../50-engineering/33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](../50-engineering/35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](../50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md)
+- [SOT-ENG-037: 統合照会の候補 holdout 評価 handoff](../50-engineering/37-unified-query-candidate-evaluation-handoff.md)

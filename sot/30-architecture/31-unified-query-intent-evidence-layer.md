@@ -30,6 +30,43 @@
 
 一つの照会文が複数主題へ分かれる場合は、`boundary` を照会全体へ先に確認した後、`SOT-ARCH-025` が分離した各主題に対して `explicit_task_resource` から `clarification_or_reject` までを独立に適用する。
 
+## 位置付き事実と根拠コードの共通対応
+
+各 profile は、ある事実が自身の採用済み input kind の step を実際に成立させた
+場合だけ、次の共通対応を private evidence mapping へ記録する。出現が照会文に
+存在するだけで、同じ draft の全 step へ根拠を複製しない。
+
+| 前処理事実 | レイヤ | 根拠コード | span |
+|---|---|---|---|
+| 入力 `ref` | `boundary` | `official_identifier` | 持たない |
+| `direct_task` relation の subject | `explicit_task_resource` | `explicit_task` | subject の span |
+| 同じ profile の採用済み resource cue | `explicit_task_resource` | `explicit_resource` | cue の span |
+| `law_id` または `law_revision_id` | `target_anchor` | `official_identifier` | identifier mention の span |
+| 法令番号、条、項、完全な暦日または事件番号 | `target_anchor` | `structured_reference` | 対応 mention の span |
+| 法令名 | `target_anchor` | `official_alias` | law name mention の span |
+| `quoted_phrase` | `target_anchor` | `general_term` | query term mention の span |
+| 法概念 | `semantic_expansion` | `legal_concept` | legal concept mention の span |
+| `morphological_phrase` | `semantic_expansion` | `morphological_context` | query term mention の span |
+
+`morphological_phrase` を同時に `general_term` として記録したり、profile ごとに
+二コードの一方を選んだりしない。`general_term` は上表の `quoted_phrase` その他、
+それ自体の定義元が同 code を明示する事実だけに使用する。
+
+法令名または法概念の `matchKind=unique_typo_correction` は、それぞれ
+`official_alias` または `legal_concept` に
+`unique_typo_correction` を補助的に併記する。誤記コードだけから step、追加分岐
+または明示 task/resource を作らない。
+
+relation の subject になっていない task cue、別 profile の cue、predicate だけの
+出現、対象へ束縛されていない resource cue、および `asOf` の条件としてだけ使う
+日付は、それ自体を当該 step の最初の根拠 span にしない。入力 `ref` は
+`official_identifier` へ寄与できるが span を持たないため、零長 span、照会全体
+または read 対象らしい文字列を補ってはならない。
+
+各 input kind が上表のどの事実を利用できるか、同じ節または主題へどう束縛するか、
+および何を独立した正の根拠とするかは profile 固有 SOT を定義元とする。法令コアは
+`SOT-ARCH-034`、`judicial-cases` は `SOT-ARCH-035` に従う。
+
 ## 評価順序
 
 1. `boundary` で `standalone_structured_query`、非日本語境界、入力 `ref` の read 制約、および対象外 relation を確認する。
@@ -107,6 +144,8 @@ task/resource に適用できる `SOT-ARCH-025` の複数主題分離を前提�
 
 少なくとも次を、profile test、planner test および統合評価 fixture で確認する。
 
+- `profile-private-evidence-mapping-lifetime`: step を成立させた位置付き事実だけを
+  private mapping へ保持し、contribution 構築後に破棄する
 - `民法第709条を見せてください。` は、明示 read と条文対象が `explicit_task_resource` と `target_anchor` で先に確定する
 - `永住許可と帰化について教えてください。` は、二主題分離後にそれぞれの検索候補へ解釈される
 - `営業秘密` のような法概念だけの語は、`semantic_expansion` の弱い候補として保持できても、上位の明示 read を上書きしない
@@ -126,6 +165,8 @@ task/resource に適用できる `SOT-ARCH-025` の複数主題分離を前提�
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
 - [SOT-ARCH-033: 統合照会の意味判定 profile set 採用境界](33-unified-query-profile-set-adoption-boundary.md)
+- [SOT-ARCH-034: 法令コア query profile の根拠対応](34-core-query-profile-evidence-mapping.md)
+- [SOT-ARCH-035: 裁判例 query profile の根拠対応](35-judicial-query-profile-evidence-mapping.md)
 - [SOT-ENG-028: 統合照会の対象外意図 cue セット](../50-engineering/28-unified-query-unsupported-intent-cues.md)
 - [SOT-ENG-031: 統合照会の採用済み意図 cue セット](../50-engineering/31-unified-query-adopted-intent-cues.md)
 - [SOT-ENG-032: 統合照会の positive cue role 対応](../50-engineering/32-unified-query-positive-cue-role-mapping.md)

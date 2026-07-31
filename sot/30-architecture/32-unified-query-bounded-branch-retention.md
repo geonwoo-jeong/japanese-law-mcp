@@ -53,7 +53,8 @@ cluster key を再計算しない。
 
 1. 採用済みの task/resource に属する
 2. `SOT-ARCH-031` の `boundary` により非実行境界へ落ちていない
-3. 独立した正の根拠を一つ以上持つ
+3. 複数主題候補では各 `topicOrdinal` が、単一主題候補では候補全体が、
+   独立した正の根拠を一つ以上持つ
 4. 同じ profile と `rankingVersion` に属する cluster 内の首位候補との差が、
    その profile set で校正した保持 margin の範囲内にある
 
@@ -64,7 +65,10 @@ cluster key を再計算しない。
 - 公的根拠を持つ法概念辞書 entry
 - `SOT-ARCH-025` の規則で独立主題と判定した一般検索語
 
-弱い一般語だけ、対象外 relation の subject/predicate だけ、または別候補から流用した根拠だけでは追加分岐を保持できない。
+弱い一般語だけ、対象外 relation の subject/predicate だけ、または別 step、
+別主題若しくは別候補から流用した根拠だけでは追加分岐を保持できない。同じ
+candidate draft の別 step に正の根拠があっても、根拠のない
+`topicOrdinal` を持つ候補を追加分岐にしない。
 
 保持 margin は、`singleMargin` および `hedgeMargin` と異なる
 `branchRetentionMargin` とする。同じ cluster の首位候補との
@@ -131,7 +135,15 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 本規定の追加分岐、三件上限または `branchRetentionMargin` の対象に含めない。
 それらの順位と十六候補上限内での保持順は同 SOT を定義元とする。
 
-一つの主題から law、law_provision、judicial_decision など複数 resource へ自動展開した全組合せを cluster として保持することはできない。cluster は独立根拠のまとまりであり、resource の総当たり集合ではない。条件 1 から 4 を満たす四件目の代替候補を同じ cluster で検出した場合、profile は同じ profile の完全順序による上位三件だけを clarification 用候補として保持し、`selectionMode=clarification_required`、`hedgePairs=[]` とする。四件目以降は実行候補へ含めない。selector はこの入力を通常の候補不足または内部エラーにせず、`SOT-MODEL-023` の `ambiguous_candidates` を持つ `needs_clarification` へ変換する。
+一つの主題から同じ profile が所有する複数 resource へ自動展開した全組合せを
+cluster として保持することはできない。cluster は独立根拠のまとまりであり、
+resource の総当たり集合ではない。異なる profile 間の代替解釈と合成可否は
+`SOT-ARCH-027` を定義元とする。条件 1 から 4 を満たす四件目の代替候補を同じ
+cluster で検出した場合、profile は同じ profile の完全順序による上位三件だけを
+clarification 用候補として保持し、`selectionMode=clarification_required`、
+`hedgePairs=[]` とする。四件目以降は実行候補へ含めない。selector はこの入力を
+通常の候補不足または内部エラーにせず、`SOT-MODEL-023` の
+`ambiguous_candidates` を持つ `needs_clarification` へ変換する。
 
 ## 保持と実行の分離
 
@@ -148,8 +160,6 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 
 ## 多義語と列挙
 
-同じ語が法令本文検索と裁判例検索の両方へ対応し得る場合、公的根拠を持つ法概念辞書または明示 resource cue があるときだけ、二分岐まで保持できる。単なる列挙や裸の名詞だけでは、法令と裁判例の両方へ無条件に分岐しない。
-
 `永住許可と帰化について教えてください。` のように主題が複数ある照会は、`SOT-ARCH-025` に従い、原則として一候補内の別 step として保持する。別候補に分かれるのは、同じ主題に対する代替意味がある場合だけとし、主題ごとの全組合せを分岐として増殖させない。
 
 ## 公開境界
@@ -160,9 +170,10 @@ profile 横断合成後のいずれも、全体の十六候補上限を超えて
 
 少なくとも次を、planner test、profile test および統合評価 fixture で確認する。
 
-- 一つの法概念が法令本文検索と裁判例検索の両候補を持つ場合、二分岐まで保持できても無条件に二件実行しない
+- `profile-evidence-cluster-key`: 各 step の
+  `{topicOrdinal, evidenceSpan}` を原文順に固定し、span の捏造、別候補からの流用、
+  contribution への保存および後段での再計算を拒否する
 - 明示 read、明示条文または検証済み `ref` がある場合、弱い一般語からの広い検索分岐を保持しない
-- `民法を検索してください。裁判例も検索してください。` は、明示主題の分離として保持し、照会全体を一検索へ広げない
 - `民法第103条を引用する裁判例の影響グラフを作成してください。` は、対象外との混在により実行分岐を零件とする
 - 同じ evidence cluster から四件目の代替候補を黙って保持せず、上位三件を clarification 用候補として残したまま `selectionMode=clarification_required` にする
 - 同じ意味署名の draft を複数経路から生成しても、同値縮約後の一件として数え、
