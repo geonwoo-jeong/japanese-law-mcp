@@ -598,6 +598,10 @@ func (p *Profile) materializeCandidates(
 		if err != nil {
 			return nil, nil, err
 		}
+		rankingSignature, err := draftMeaningRankingSignature(current.draft)
+		if err != nil {
+			return nil, nil, err
+		}
 		prepared = append(prepared, preparedDraft{
 			draft:      current.draft,
 			evidence:   evidence,
@@ -606,7 +610,7 @@ func (p *Profile) materializeCandidates(
 			signature:  current.signature,
 			rankingSignature: weakGeneralRankingSignature(
 				current.draft,
-				current.signature,
+				rankingSignature,
 			),
 		})
 	}

@@ -126,7 +126,10 @@ func withLawAliasCollisionRankingSignatures(
 		}
 		signatureSlots := make([]string, 0, len(indexes))
 		for _, index := range indexes {
-			signatureSlots = append(signatureSlots, result[index].signature)
+			signatureSlots = append(
+				signatureSlots,
+				result[index].rankingSignature,
+			)
 		}
 		slices.Sort(signatureSlots)
 
@@ -137,8 +140,12 @@ func withLawAliasCollisionRankingSignatures(
 			if leftFact.prefixCount != rightFact.prefixCount {
 				return leftFact.prefixCount > rightFact.prefixCount
 			}
-			return result[ordered[left]].signature <
-				result[ordered[right]].signature
+			if result[ordered[left]].rankingSignature !=
+				result[ordered[right]].rankingSignature {
+				return result[ordered[left]].rankingSignature <
+					result[ordered[right]].rankingSignature
+			}
+			return result[ordered[left]].signature < result[ordered[right]].signature
 		})
 		for order, index := range ordered {
 			result[index].rankingSignature = signatureSlots[order]

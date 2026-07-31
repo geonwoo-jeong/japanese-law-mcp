@@ -43,6 +43,9 @@ func comparePreparedDrafts(
 	if left.rankingSignature != right.rankingSignature {
 		return strings.Compare(left.rankingSignature, right.rankingSignature)
 	}
+	if left.signature != right.signature {
+		return strings.Compare(left.signature, right.signature)
+	}
 	return sourcePosition(left.draft) - sourcePosition(right.draft)
 }
 

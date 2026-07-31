@@ -558,7 +558,7 @@ func TestCandidateGenerationInputは不正Sidecar参照を拒否する(t *testin
 	}
 }
 
-func TestActiveProfileはSharedTerminalSequenceの準備経路を選択しない(
+func TestSharedTerminalSequenceの消費を非公開準備経路に閉じる(
 	t *testing.T,
 ) {
 	t.Parallel()
@@ -608,9 +608,14 @@ func TestActiveProfileはSharedTerminalSequenceの準備経路を選択しない
 						)
 					}
 					if ok && selector.Sel.Name == "buildCoreSharedTerminalDrafts" {
+						if profileDirectory == "core" &&
+							filepath.Base(file) == "evidence_v2.go" {
+							builderReferences++
+							return true
+						}
 						builderReferences++
 						t.Errorf(
-							"SOT-ENG-039: 3.4.3 の準備関数を %s から選択しています",
+							"SOT-ENG-039: 3.4.3 の準備関数を許可外の %s から選択しています",
 							file,
 						)
 					}
@@ -626,10 +631,15 @@ func TestActiveProfileはSharedTerminalSequenceの準備経路を選択しない
 					sidecarAccesses,
 				)
 			}
-			if builderReferences != 0 {
+			wantBuilderReferences := 0
+			if profileDirectory == "core" {
+				wantBuilderReferences = 1
+			}
+			if builderReferences != wantBuilderReferences {
 				t.Fatalf(
-					"SOT-ENG-039: 3.4.3 の準備関数参照数 = %d",
+					"SOT-ENG-039: 3.4.3 の準備関数参照数 = %d, want %d",
 					builderReferences,
+					wantBuilderReferences,
 				)
 			}
 		})
