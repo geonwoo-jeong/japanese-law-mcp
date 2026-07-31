@@ -116,6 +116,11 @@ sidecar を消費しないことを確認する移行時検証 ID とする。�
    failed history へ同じ byte のまま保存する。report、result、corpus、
    profile set、metric 計算、one-time use および privacy 境界を独立 review し、
    passed の場合だけ第 5 段階へ進む
+
+5 の一回起動、再試行および同じ `evaluationId` の再現確認の意味は
+`SOT-ENG-037` を定義元とし、本規定では 4 の review 完了後に 5 へ進む順序だけを
+固定する。
+
 初回の relation 依存変更では、2 の候補名を `corpus-v10`、4 の予約名を
 `default-2` とする。これらは今回の初回候補を識別する名前であり、将来の導入で
 常に固定する版ではない。初回導入後の現行値は current adoption tuple を

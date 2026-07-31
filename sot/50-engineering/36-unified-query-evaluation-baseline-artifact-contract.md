@@ -222,6 +222,12 @@ path から読む。symbolic link、repository 外への path 解決、不正 UT
 `null`、未知項目、二個目の JSON 値および後方の非空白 token を拒否する。
 JSON depth は `12`、一 report の value 数は `65536` を上限とする。
 
+repository root から `baselines/`、`default.json` および
+`versions/{baselineVersion}.json` までの全 path component は、OS の root API と
+`Lstat` 相当で検証し、open 後の file descriptor でも通常 file、size および解決先
+directory を再確認する。loader と writer は path 正規化後の文字列比較だけで
+symlink、置換または TOCTOU を許容しない。
+
 `baselines/` は `default.json` と `versions/` だけを持ち、`versions/` は正規形の
 `{baselineVersion}.json` 通常 file だけを持つ。subdirectory、symlink、device、
 FIFO、socket および未知 entry を拒否する。version file は `4096` 件以下、
@@ -261,7 +267,9 @@ memory 上に構築し、検証後に一回だけ JSON byte へ直列化する�
 `baselines/versions/{baselineVersion}.json` へ exclusive create する。
 `outcome=failed` の report を baseline path へ置かない。既存 file、symlink、
 非 regular file、repository 外 path または四 MiB を超える byte を拒否し、
-別の直列化や再計算で byte を変えない。
+別の直列化や再計算で byte を変えない。候補 evaluator と writer は
+`default.json` を作成、置換、削除または更新せず、current adoption tuple が参照する
+既定 baseline の切替は `SOT-ENG-033` の原子的採用または rollback 変更だけで行う。
 
 object の key 順と本規定で固定した配列順を検証し、不正な値を並べ替え、丸め、
 補完または既定値へ置換しない。schema validation と意味上の相互参照検証の

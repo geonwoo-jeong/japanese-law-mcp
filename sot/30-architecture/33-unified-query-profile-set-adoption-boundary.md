@@ -61,7 +61,12 @@ production composition root、現行の埋込み metadata path、標準評価 co
 production request を受け取らず、固定 pointer が指す一件の test 専用 set を
 holdout 評価する repository verification 入口である。製品 binary、標準評価
 command、中央品質ゲート、利用者向け CLI、MCP または transport の到達経路へ
-登録しない。
+登録しない。同 command 自身は追跡済み source tree を変更せず、未追跡の固定
+output root へ report/result 候補を出すだけとする。追跡済み成果物への反映は、
+`SOT-ENG-033` が定める初回 bootstrap、原子的採用若しくは rollback の変更、または
+`SOT-ENG-037` が定める review 済み handoff commit だけで行い、各変更単位が
+所有しない adoption pointer、history、baseline 若しくは failed report を
+同時に変更しない。
 
 準備変更は、現行標準の corpus version と baseline version、公開 decision、
 選択した meaning、step、reason、外部呼出し境界および検索例の観測結果を
