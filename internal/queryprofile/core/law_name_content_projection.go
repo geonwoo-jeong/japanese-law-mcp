@@ -50,6 +50,7 @@ func newCoreValidatedContentTopic(
 	}
 	taskCount := 0
 	resourceCount := 0
+	resourceFactIDs := make(map[string]struct{})
 	for _, value := range baseEvidence {
 		if value.FactID == "" ||
 			value.Layer != profileevidence.LayerExplicitTaskResource {
@@ -61,6 +62,12 @@ func newCoreValidatedContentTopic(
 		case legalquery.EvidenceExplicitTask:
 			taskCount++
 		case legalquery.EvidenceExplicitResource:
+			if _, exists := resourceFactIDs[value.FactID]; exists {
+				return coreValidatedContentTopic{}, fmt.Errorf(
+					"本文検索 topic の明示 resource 根拠が重複しています",
+				)
+			}
+			resourceFactIDs[value.FactID] = struct{}{}
 			resourceCount++
 		default:
 			return coreValidatedContentTopic{}, fmt.Errorf(
@@ -75,9 +82,9 @@ func newCoreValidatedContentTopic(
 	}
 	switch lawProvisionBinding {
 	case coreLawProvisionBindingExplicitResource:
-		if resourceCount != 1 {
+		if resourceCount == 0 {
 			return coreValidatedContentTopic{}, fmt.Errorf(
-				"本文検索 topic の明示 resource 根拠が一意ではありません",
+				"本文検索 topic の明示 resource 根拠がありません",
 			)
 		}
 	case coreLawProvisionBindingTerminalTask:

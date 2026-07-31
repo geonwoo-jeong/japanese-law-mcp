@@ -558,7 +558,7 @@ func TestCandidateGenerationInputは不正Sidecar参照を拒否する(t *testin
 	}
 }
 
-func TestActiveProfileはSharedTerminalSequenceをまだ消費しない(
+func TestActiveProfileはSharedTerminalSequenceの準備経路を選択しない(
 	t *testing.T,
 ) {
 	t.Parallel()
@@ -567,6 +567,8 @@ func TestActiveProfileはSharedTerminalSequenceをまだ消費しない(
 		profileDirectory := profileDirectory
 		t.Run(profileDirectory, func(t *testing.T) {
 			t.Parallel()
+			sidecarAccesses := 0
+			builderReferences := 0
 			files, err := filepath.Glob(filepath.Join(
 				"..",
 				"..",
@@ -595,8 +597,20 @@ func TestActiveProfileはSharedTerminalSequenceをまだ消費しない(
 				ast.Inspect(parsed, func(node ast.Node) bool {
 					selector, ok := node.(*ast.SelectorExpr)
 					if ok && selector.Sel.Name == "SharedTerminalSequences" {
+						if profileDirectory == "core" &&
+							filepath.Base(file) == "shared_terminal_v2.go" {
+							sidecarAccesses++
+							return true
+						}
 						t.Errorf(
-							"SOT-MODEL-031: active profile が %s で sidecar を消費しています",
+							"SOT-MODEL-031: active profile から到達する %s が sidecar を消費しています",
+							file,
+						)
+					}
+					if ok && selector.Sel.Name == "buildCoreSharedTerminalDrafts" {
+						builderReferences++
+						t.Errorf(
+							"SOT-ENG-039: 3.4.3 の準備関数を %s から選択しています",
 							file,
 						)
 					}
@@ -605,6 +619,18 @@ func TestActiveProfileはSharedTerminalSequenceをまだ消費しない(
 			}
 			if productionFiles == 0 {
 				t.Fatal("検査対象の production profile source がありません")
+			}
+			if profileDirectory == "core" && sidecarAccesses != 1 {
+				t.Fatalf(
+					"SOT-ENG-039: core の準備 accessor 数 = %d",
+					sidecarAccesses,
+				)
+			}
+			if builderReferences != 0 {
+				t.Fatalf(
+					"SOT-ENG-039: 3.4.3 の準備関数参照数 = %d",
+					builderReferences,
+				)
 			}
 		})
 	}
