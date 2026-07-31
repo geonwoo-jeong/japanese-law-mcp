@@ -3,10 +3,7 @@ package legalqueryeval
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
-	"os"
 )
 
 const maximumStandardBaselineBytes = 4 << 20
@@ -74,47 +71,6 @@ type executionReportDTO struct {
 	ImplicitFirstReadCount     *int                        `json:"implicitFirstReadCount"`
 	EmptyReclassificationCount *int                        `json:"emptyReclassificationCount"`
 	FailedCaseIDs              []string                    `json:"failedCaseIds"`
-}
-
-// LoadStandardBaseline は、サイズ制限と閉じた schema で review 済み baseline を読む。
-func LoadStandardBaseline(path string) (StandardReport, error) {
-	if path == "" {
-		return StandardReport{}, fmt.Errorf("baseline path は必須です")
-	}
-	file, err := os.Open(path) //nolint:gosec // SOT-ENG-024: 利用者が明示した読取り専用 baseline path だけを開く。
-	if err != nil {
-		return StandardReport{}, fmt.Errorf("baseline を開けません: %w", err)
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-	info, err := file.Stat()
-	if err != nil {
-		return StandardReport{}, fmt.Errorf("baseline を確認できません: %w", err)
-	}
-	if !info.Mode().IsRegular() {
-		return StandardReport{}, fmt.Errorf("baseline は通常ファイルでなければなりません")
-	}
-	if info.Size() > maximumStandardBaselineBytes {
-		return StandardReport{}, fmt.Errorf("baseline が安全上の上限を超えています")
-	}
-
-	decoder := json.NewDecoder(
-		io.LimitReader(file, maximumStandardBaselineBytes+1),
-	)
-	decoder.DisallowUnknownFields()
-	var document standardReportDTO
-	if err := decoder.Decode(&document); err != nil {
-		return StandardReport{}, fmt.Errorf("baseline JSON が不正です: %w", err)
-	}
-	var trailing json.RawMessage
-	if err := decoder.Decode(&trailing); !errors.Is(err, io.EOF) {
-		if err == nil {
-			return StandardReport{}, fmt.Errorf("baseline JSON の後に別の値があります")
-		}
-		return StandardReport{}, fmt.Errorf("baseline JSON の末尾が不正です: %w", err)
-	}
-	return standardReportFromDTO(document)
 }
 
 // CompareStandardBaseline は、同じ schema の測定文書を完全一致で比較する。

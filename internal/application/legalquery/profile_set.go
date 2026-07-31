@@ -38,6 +38,11 @@ func (s QueryProfileSet) RankingVersion() string {
 	return s.rankingVersion
 }
 
+// CompositionVersion は、profile 横断の候補合成規則版を返す。
+func (s QueryProfileSet) CompositionVersion() string {
+	return s.composer.Version()
+}
+
 // NewQueryProfileSet は、同じ ranking 校正を持つ profile を固定順で保持する。
 func NewQueryProfileSet(profiles []QueryProfile) (QueryProfileSet, error) {
 	if len(profiles) == 0 || len(profiles) > maximumProfileOrdinal {

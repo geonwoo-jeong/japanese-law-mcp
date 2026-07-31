@@ -3,7 +3,6 @@ package defaultprofile
 import (
 	"context"
 	"fmt"
-	"slices"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
@@ -74,26 +73,12 @@ func (e *Evaluator) BuildStandardReport(
 func profileVersionReports(
 	metadata []legalquery.QueryProfileMetadata,
 ) ([]legalqueryeval.ProfileVersionReport, error) {
-	ordered := append([]legalquery.QueryProfileMetadata{}, metadata...)
-	slices.SortFunc(
-		ordered,
-		func(left, right legalquery.QueryProfileMetadata) int {
-			switch {
-			case left.ProfileID() < right.ProfileID():
-				return -1
-			case left.ProfileID() > right.ProfileID():
-				return 1
-			default:
-				return 0
-			}
-		},
-	)
 	profileVersions := make(
 		[]legalqueryeval.ProfileVersionReport,
 		0,
-		len(ordered),
+		len(metadata),
 	)
-	for _, profile := range ordered {
+	for _, profile := range metadata {
 		report, reportErr := legalqueryeval.NewProfileVersionReport(
 			legalqueryeval.ProfileVersionReportValues{
 				ProfileID:      profile.ProfileID(),

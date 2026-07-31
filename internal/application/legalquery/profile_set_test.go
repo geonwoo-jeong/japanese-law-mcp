@@ -38,6 +38,9 @@ func TestQueryProfileSetは共通ranking規則だけを受理する(t *testing.T
 	if result.RankingVersion() != selectorTestRankingVersion {
 		t.Fatalf("rankingVersion = %q", result.RankingVersion())
 	}
+	if profileSet.CompositionVersion() != defaultCandidateCompositionVersion {
+		t.Fatalf("compositionVersion = %q", profileSet.CompositionVersion())
+	}
 
 	t.Run("rankingVersionの不一致", func(t *testing.T) {
 		t.Parallel()

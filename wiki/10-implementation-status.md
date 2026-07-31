@@ -69,7 +69,7 @@
   百二十八 sidecar の上限、ならびに全 profile へ一 request 一回だけ構築した
   sidecar を渡す production-neutral な profile 入力。active core と
   `judicial-cases` はまだ sidecar を候補または step へ変換しない
-- [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md)、[SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) および [SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md) に従う、閉じた schema、安全な loader、意味・根拠・選択・実行指標の集計器、再現用の `corpus-v1` から `corpus-v8`、独立 review 済みの標準 `corpus-v9`、review 済みの `default-1` baseline、固定引数だけを受け付ける `legal-query-eval` および中央品質ゲートからの評価接続
+- [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md)、[SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md)、[SOT-ENG-026](../sot/50-engineering/26-legal-query-corpus-artifact-contract.md)、[SOT-ENG-033](../sot/50-engineering/33-unified-query-profile-set-adoption-manifest.md) および [SOT-ENG-036](../sot/50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md) に従う、閉じた schema、安全な loader、意味・根拠・選択・実行指標の集計器、再現用の `corpus-v1` から `corpus-v8`、独立 review 済みの標準 `corpus-v9`、review 済みの `default-1` baseline、byte 完全一致する `baselines/versions/default-1.json`、初回 adoption history と `current.json`、固定 `--adoption` だけを受け付ける `legal-query-eval`、および adoption 基準へ切り替えた中央品質ゲートからの評価接続
 - [SOT-ARCH-025](../sot/30-architecture/25-unified-query-multi-topic-separation.md) と [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、版付きの法令コア query profile、五つの法令コア能力に対する決定的な意味候補生成、十六候補・四 step の固定上限、同じ意味を持つ辞書根拠の統合、二つ以上四つ以下の主題を原文順の独立 step にする処理、明示した `all`、`any` および `exclude` の優先、ならびに個数別の列挙をしない `とも含む` の全件指定
 - [SOT-PROD-011](../sot/00-product/11-unified-legal-query-scope.md)、[SOT-ARCH-019](../sot/30-architecture/19-extension-pack-activation-boundary.md)、[SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、法令コアから独立した版付きの裁判例 query profile、裁判例検索と検証済み `judicial-decision` 参照の読取り候補、検索 task と裁判例 resource の両 cue がある完全な事件番号から `searchText` による一つの `structured_reference` 検索候補を作り、同一 span の引用候補を重複させず read または `ref` を推測しない処理、全候補への `judicial-cases` 必須 pack の付与、最大四 step の個別検索、pack 有効時と無効時の selector 回帰試験、および development corpus の裁判例二事例との照合
 - [SOT-MODEL-026](../sot/20-model/26-query-profile-contribution.md)、[SOT-MODEL-023](../sot/20-model/23-legal-query-plan.md)、[SOT-ARCH-019](../sot/30-architecture/19-extension-pack-activation-boundary.md) および [SOT-ARCH-023](../sot/30-architecture/23-unified-query-selection-and-hedging.md) に従う、不変な profile contribution、共通校正を検証する profile set、安定した意味順位、明示された hedge pair、決定的な構造だけの入力を候補なしで対象外にする単独の `standalone_structured_query` を含む安全信号、採用済み pack の固定状態、`single`・`hedged`・三種類の非実行判定および実行前の固定予算を確定する provider 非依存 selector、ならびに製品前処理から法令コア plan までの development corpus 回帰試験
@@ -90,9 +90,7 @@
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる
-  test 専用 version 2 profile set、採用 manifest、
-  [SOT-ENG-036](../sot/50-engineering/36-unified-query-evaluation-baseline-artifact-contract.md)
-  の baseline schema と厳格な loader、relation 対応 corpus・baseline・検索例の
+  test 専用 version 2 profile set、relation 対応 corpus・baseline・検索例の
   原子的切替、next profile set の production 採用、および後続の provider 契約更新。
   現在地と着手順は
   [統合照会の意図判定導入順](30-unified-query-intent-rollout.md) で追跡する

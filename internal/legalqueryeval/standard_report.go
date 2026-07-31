@@ -19,7 +19,7 @@ var (
 	standardCorpusVersionPattern = regexp.MustCompile(`^corpus-v[1-9][0-9]*$`)
 	standardDigestPattern        = regexp.MustCompile(`^[0-9a-f]{64}$`)
 	standardBaselinePattern      = regexp.MustCompile(
-		`^default-[a-z0-9]+(?:-[a-z0-9]+)*$`,
+		`^default-[1-9][0-9]*$`,
 	)
 )
 
@@ -118,7 +118,7 @@ func (r ProfileSetReport) RankingVersion() string {
 	return r.rankingVersion
 }
 
-// Profiles は、profile ID 順の個別版を返す。
+// Profiles は、composition root の固定順で個別版を返す。
 func (r ProfileSetReport) Profiles() []ProfileVersionReport {
 	return append([]ProfileVersionReport{}, r.profiles...)
 }

@@ -116,9 +116,7 @@ func legalQueryEvaluationStep(snapshot string) step {
 			false,
 			"run",
 			"./cmd/legal-query-eval",
-			"--corpus=./testdata/legalquery/corpus-v9",
-			"--profile-set=default",
-			"--baseline=./testdata/legalquery/baselines/default.json",
+			"--adoption=./testdata/legalquery/adoptions/current.json",
 			"--format=json",
 		),
 	)

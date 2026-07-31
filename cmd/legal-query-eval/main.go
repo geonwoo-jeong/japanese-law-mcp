@@ -12,22 +12,17 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryadoption"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/defaultprofile"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/evaluators"
 )
 
-const (
-	standardCorpusPath      = "testdata/legalquery/corpus-v9"
-	standardBaselinePath    = "testdata/legalquery/baselines/default.json"
-	standardBaselineVersion = "default-1"
-)
+const standardAdoptionPath = "testdata/legalquery/adoptions/current.json"
 
 type options struct {
-	Corpus     string
-	ProfileSet string
-	Baseline   string
-	Format     string
+	Adoption string
+	Format   string
 }
 
 func main() {
@@ -75,13 +70,9 @@ func parseOptions(args []string, stderr io.Writer) (options, error) {
 	flags := flag.NewFlagSet("legal-query-eval", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 
-	corpus := singleOption{name: "--corpus"}
-	profileSet := singleOption{name: "--profile-set"}
-	baseline := singleOption{name: "--baseline"}
+	adoption := singleOption{name: "--adoption"}
 	outputFormat := singleOption{name: "--format"}
-	flags.Var(&corpus, "corpus", "評価 corpus directory")
-	flags.Var(&profileSet, "profile-set", "評価 profile set")
-	flags.Var(&baseline, "baseline", "review 済み baseline path")
+	flags.Var(&adoption, "adoption", "採用済み profile set pointer")
 	flags.Var(&outputFormat, "format", "出力形式")
 	if err := flags.Parse(args); err != nil {
 		return options{}, fmt.Errorf("統合照会評価の引数を解釈できません: %w", err)
@@ -90,9 +81,7 @@ func parseOptions(args []string, stderr io.Writer) (options, error) {
 		return options{}, fmt.Errorf("統合照会評価に位置引数は指定できません")
 	}
 	for _, value := range []*singleOption{
-		&corpus,
-		&profileSet,
-		&baseline,
+		&adoption,
 		&outputFormat,
 	} {
 		if err := value.requireOne(); err != nil {
@@ -100,27 +89,13 @@ func parseOptions(args []string, stderr io.Writer) (options, error) {
 		}
 	}
 	current := options{
-		Corpus:     normalizeRepositoryPath(corpus.value),
-		ProfileSet: profileSet.value,
-		Baseline:   normalizeRepositoryPath(baseline.value),
-		Format:     outputFormat.value,
+		Adoption: normalizeRepositoryPath(adoption.value),
+		Format:   outputFormat.value,
 	}
-	if current.Corpus != standardCorpusPath {
+	if current.Adoption != standardAdoptionPath {
 		return options{}, fmt.Errorf(
-			"統合照会評価の --corpus は %s だけを受け付けます",
-			standardCorpusPath,
-		)
-	}
-	if current.Baseline != standardBaselinePath {
-		return options{}, fmt.Errorf(
-			"統合照会評価の --baseline は %s だけを受け付けます",
-			standardBaselinePath,
-		)
-	}
-	if current.ProfileSet != "default" {
-		return options{}, fmt.Errorf(
-			"統合照会評価の --profile-set は default だけを受け付けます: %q",
-			current.ProfileSet,
+			"統合照会評価の --adoption は %s だけを受け付けます",
+			standardAdoptionPath,
 		)
 	}
 	if current.Format != "json" {
@@ -169,32 +144,49 @@ func execute(ctx context.Context, current options) ([]byte, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("context は nil にできません")
 	}
-	evaluator, err := defaultprofile.New()
+	if current.Adoption != standardAdoptionPath || current.Format != "json" {
+		return nil, fmt.Errorf("標準評価 option が adoption 基準ではありません")
+	}
+	adoption, err := legalqueryadoption.LoadCurrent(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("default evaluator を構築できません: %w", err)
+		return nil, fmt.Errorf("current adoption を解決できません: %w", err)
+	}
+	evaluator, err := evaluators.New(adoption.EvaluatorVersion())
+	if err != nil {
+		return nil, err
+	}
+	identity, err := evaluator.Identity()
+	if err != nil {
+		return nil, err
+	}
+	if err := verifyAdoptionProfileIdentity(adoption, identity); err != nil {
+		return nil, err
 	}
 	corpus, err := legalquerycorpus.Load(
 		ctx,
 		".",
-		current.Corpus,
+		path.Join("testdata/legalquery", adoption.CorpusVersion()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("corpus を読み込めません: %w", err)
 	}
-
-	baseline, err := legalqueryeval.LoadStandardBaseline(current.Baseline)
+	if err := verifyAdoptionCorpusIdentity(adoption, corpus); err != nil {
+		return nil, err
+	}
+	baseline, err := legalqueryeval.LoadCurrentBaseline(
+		ctx,
+		adoption.BaselineVersion(),
+	)
 	if err != nil {
 		return nil, err
 	}
-	if err := verifyStandardBaselineVersion(
-		baseline.BaselineVersion(),
-	); err != nil {
+	if err := verifyAdoptionBaselineIdentity(adoption, baseline); err != nil {
 		return nil, err
 	}
 	report, err := evaluator.BuildStandardReport(
 		ctx,
 		corpus,
-		standardBaselineVersion,
+		adoption.BaselineVersion(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("標準評価 report を構築できません: %w", err)
@@ -208,18 +200,8 @@ func execute(ctx context.Context, current options) ([]byte, error) {
 	if err := legalqueryeval.VerifyStandardAcceptance(report); err != nil {
 		return encoded, fmt.Errorf("受入基準を満たしません: %w", err)
 	}
-	if err := legalqueryeval.CompareStandardBaseline(report, baseline); err != nil {
+	if err := legalqueryeval.CompareStandardBaseline(report, baseline.Report()); err != nil {
 		return encoded, err
 	}
 	return encoded, nil
-}
-
-func verifyStandardBaselineVersion(version string) error {
-	if version != standardBaselineVersion {
-		return fmt.Errorf(
-			"baselineVersion は %s でなければなりません",
-			standardBaselineVersion,
-		)
-	}
-	return nil
 }

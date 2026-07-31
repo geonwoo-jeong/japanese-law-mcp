@@ -148,6 +148,52 @@ func TestStandardReportの再現性母集団はPlanCaseだけを数える(t *tes
 	}
 }
 
+func TestStandardReportは数値以外のBaselineVersionを拒否する(t *testing.T) {
+	t.Parallel()
+
+	execution, err := NewExecutionReport([]ExecutionCaseEvaluation{
+		mustExecutionCaseEvaluation(t, "execution-empty"),
+	})
+	if err != nil {
+		t.Fatalf("試験用 execution report を作成できません: %v", err)
+	}
+	reproducibility, err := NewEvaluationMetricReport(
+		EvaluationMetricReportValues{
+			MetricID:    "plan-reproducibility",
+			Numerator:   1,
+			Denominator: 1,
+		},
+	)
+	if err != nil {
+		t.Fatalf("試験用 reproducibility を作成できません: %v", err)
+	}
+	_, err = NewStandardReport(StandardReportValues{
+		CorpusVersion:     "corpus-v4",
+		HoldoutDigest:     strings.Repeat("a", 64),
+		ProfileSetID:      "default",
+		ProfileSetVersion: "profile-set-v1",
+		RankingVersion:    "legal-query-ranking-2026-07-28-1",
+		ProfileVersions: []ProfileVersionReport{
+			mustProfileVersionReport(
+				t,
+				"core",
+				"core-2026-07-30-1",
+				"legal-query-ranking-2026-07-28-1",
+			),
+		},
+		BaselineVersion:      "default-current",
+		DevelopmentCaseCount: 1,
+		HoldoutCaseIDs:       []string{"holdout-intent-01"},
+		Semantic:             perfectSemanticReport(1),
+		Execution:            execution,
+		Reproducibility:      reproducibility,
+		DerivedObservations:  perfectDerivedObservations(t),
+	})
+	if err == nil {
+		t.Fatal("SOT-ENG-036: 数値以外の baselineVersion を受理しました")
+	}
+}
+
 func perfectDerivedObservations(
 	t *testing.T,
 ) []EvaluationMetricReport {
@@ -241,7 +287,7 @@ func TestStandardBaselineは閉じたJSONを読んで完全一致だけを受理
 		t.Fatalf("試験用 baseline を書き込めません: %v", err)
 	}
 
-	baseline, err := LoadStandardBaseline(path)
+	baseline, err := loadStandardBaselineFromPath(path)
 	if err != nil {
 		t.Fatalf("SOT-ENG-024: baseline を読み込めません: %v", err)
 	}
@@ -275,7 +321,7 @@ func TestStandardBaselineは閉じたJSONを読んで完全一致だけを受理
 	if err := os.WriteFile(path, unknown, 0o600); err != nil {
 		t.Fatalf("未知項目付き baseline を書き込めません: %v", err)
 	}
-	if _, err := LoadStandardBaseline(path); err == nil {
+	if _, err := loadStandardBaselineFromPath(path); err == nil {
 		t.Fatal("SOT-ENG-024: 未知項目を持つ baseline を受理しました")
 	}
 }

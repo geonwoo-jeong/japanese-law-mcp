@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestRunParsesOptionsAndWritesJSON(t *testing.T) {
+func TestRunParsesAdoptionOptionsAndWritesJSON(t *testing.T) {
 	t.Parallel()
 
 	var got options
@@ -18,12 +18,7 @@ func TestRunParsesOptionsAndWritesJSON(t *testing.T) {
 	var stdout bytes.Buffer
 	code := run(
 		context.Background(),
-		[]string{
-			"--corpus=./testdata/legalquery/corpus-v9",
-			"--profile-set=default",
-			"--baseline=./testdata/legalquery/baselines/default.json",
-			"--format=json",
-		},
+		standardArguments(),
 		&stdout,
 		&stderr,
 		func(_ context.Context, current options) ([]byte, error) {
@@ -34,50 +29,27 @@ func TestRunParsesOptionsAndWritesJSON(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("終了コード = %d, stderr = %q", code, stderr.String())
 	}
-	want := options{
-		Corpus:     "testdata/legalquery/corpus-v9",
-		ProfileSet: "default",
-		Baseline:   "testdata/legalquery/baselines/default.json",
-		Format:     "json",
-	}
+	want := options{Adoption: standardAdoptionPath, Format: "json"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("オプションが一致しません:\n got: %#v\nwant: %#v", got, want)
 	}
-	if gotOutput := stdout.String(); gotOutput != "{\"ok\":true}\n" {
-		t.Fatalf("標準出力 = %q", gotOutput)
+	if stdout.String() != "{\"ok\":true}\n" {
+		t.Fatalf("標準出力 = %q", stdout.String())
 	}
 }
 
-func TestParseOptionsはWindows区切りでも固定RepositoryPathを受理する(
-	t *testing.T,
-) {
+func TestParseOptionsはWindows区切りでも固定AdoptionPathを受理する(t *testing.T) {
 	t.Parallel()
 
 	got, err := parseOptions([]string{
-		`--corpus=.\testdata\legalquery\corpus-v9`,
-		"--profile-set=default",
-		`--baseline=.\testdata\legalquery\baselines\default.json`,
+		`--adoption=.\testdata\legalquery\adoptions\current.json`,
 		"--format=json",
 	}, &bytes.Buffer{})
 	if err != nil {
 		t.Fatalf("Windows の path 区切りを受理できません: %v", err)
 	}
-	if got.Corpus != standardCorpusPath ||
-		got.Baseline != standardBaselinePath {
+	if got.Adoption != standardAdoptionPath {
 		t.Fatalf("固定 path へ正規化されません: %#v", got)
-	}
-}
-
-func TestVerifyStandardBaselineVersionはDefault1以外を拒否する(
-	t *testing.T,
-) {
-	t.Parallel()
-
-	if err := verifyStandardBaselineVersion("changed-1"); err == nil {
-		t.Fatal("SOT-ENG-024: 未採用の baseline version を受理しました")
-	}
-	if err := verifyStandardBaselineVersion("default-1"); err != nil {
-		t.Fatalf("SOT-ENG-024: default-1 を拒否しました: %v", err)
 	}
 }
 
@@ -88,12 +60,7 @@ func TestRunは受入失敗でも診断JSONを一つ出力する(t *testing.T) {
 	var stderr bytes.Buffer
 	code := run(
 		context.Background(),
-		[]string{
-			"--corpus=./testdata/legalquery/corpus-v9",
-			"--profile-set=default",
-			"--baseline=./testdata/legalquery/baselines/default.json",
-			"--format=json",
-		},
+		standardArguments(),
 		&stdout,
 		&stderr,
 		func(context.Context, options) ([]byte, error) {
@@ -104,8 +71,7 @@ func TestRunは受入失敗でも診断JSONを一つ出力する(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("終了コード = %d, want 1", code)
 	}
-	if stdout.String() !=
-		"{\"artifactKind\":\"legal_query_evaluation\"}\n" {
+	if stdout.String() != "{\"artifactKind\":\"legal_query_evaluation\"}\n" {
 		t.Fatalf("標準出力 = %q", stdout.String())
 	}
 	if !strings.Contains(stderr.String(), "受入基準") {
@@ -113,101 +79,68 @@ func TestRunは受入失敗でも診断JSONを一つ出力する(t *testing.T) {
 	}
 }
 
-func TestRunRejectsInvalidArgumentsInJapanese(t *testing.T) {
+func TestRunRejectsLegacyAndInvalidArgumentsInJapanese(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
 		args []string
 	}{
+		{name: "adoption がない", args: []string{"--format=json"}},
 		{
-			name: "corpus がない",
+			name: "未知の adoption path",
 			args: []string{
-				"--profile-set=default",
-				"--baseline=./testdata/legalquery/baselines/default.json",
+				"--adoption=./testdata/legalquery/adoptions/other.json",
 				"--format=json",
 			},
 		},
 		{
-			name: "未知の profile set",
-			args: []string{
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=custom",
-				"--baseline=./testdata/legalquery/baselines/default.json",
-				"--format=json",
-			},
-		},
-		{
-			name: "baseline がない",
-			args: []string{
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=default",
-				"--format=json",
-			},
+			name: "format がない",
+			args: []string{"--adoption=./testdata/legalquery/adoptions/current.json"},
 		},
 		{
 			name: "format が json ではない",
 			args: []string{
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=default",
-				"--baseline=./testdata/legalquery/baselines/default.json",
+				"--adoption=./testdata/legalquery/adoptions/current.json",
 				"--format=text",
 			},
 		},
 		{
 			name: "repository 上書き",
-			args: []string{
-				"--repository=/tmp/other",
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=default",
+			args: append(standardArguments(), "--repository=/tmp/other"),
+		},
+		{
+			name: "legacy corpus override",
+			args: append(standardArguments(), "--corpus=./testdata/legalquery/corpus-v9"),
+		},
+		{
+			name: "legacy profile override",
+			args: append(standardArguments(), "--profile-set=default"),
+		},
+		{
+			name: "legacy baseline override",
+			args: append(
+				standardArguments(),
 				"--baseline=./testdata/legalquery/baselines/default.json",
-				"--format=json",
-			},
+			),
 		},
 		{
-			name: "bootstrap baseline version",
-			args: []string{
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=default",
-				"--baseline-version=default-1",
-				"--format=json",
-			},
+			name: "adoption path traversal",
+			args: []string{"--adoption=../current.json", "--format=json"},
 		},
 		{
-			name: "corpus path traversal",
+			name: "adoption 重複",
 			args: []string{
-				"--corpus=../corpus-v9",
-				"--profile-set=default",
-				"--baseline=./testdata/legalquery/baselines/default.json",
-				"--format=json",
-			},
-		},
-		{
-			name: "baseline path traversal",
-			args: []string{
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=default",
-				"--baseline=../default.json",
-				"--format=json",
-			},
-		},
-		{
-			name: "profile set 重複",
-			args: []string{
-				"--corpus=./testdata/legalquery/corpus-v9",
-				"--profile-set=default",
-				"--profile-set=default",
-				"--baseline=./testdata/legalquery/baselines/default.json",
+				"--adoption=./testdata/legalquery/adoptions/current.json",
+				"--adoption=./testdata/legalquery/adoptions/current.json",
 				"--format=json",
 			},
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
 			var stderr bytes.Buffer
 			code := run(
 				context.Background(),
@@ -229,37 +162,38 @@ func TestRunRejectsInvalidArgumentsInJapanese(t *testing.T) {
 	}
 }
 
-func TestExecuteはCorpusV9とReview済みBaselineを完全一致で評価する(
+func TestExecuteはCurrentAdoptionとReview済みBaselineを完全一致で評価する(
 	t *testing.T,
 ) {
 	t.Chdir("../..")
 
 	result, err := execute(context.Background(), options{
-		Corpus:     standardCorpusPath,
-		ProfileSet: "default",
-		Baseline:   standardBaselinePath,
-		Format:     "json",
+		Adoption: standardAdoptionPath,
+		Format:   "json",
 	})
 	if err != nil {
-		t.Fatalf("SOT-ENG-024: 標準評価 command が失敗しました: %v", err)
+		t.Fatalf("profile-set-initial-adoption-bootstrap: 標準評価に失敗しました: %v", err)
 	}
-	baseline, err := os.ReadFile(standardBaselinePath)
+	baseline, err := os.ReadFile("testdata/legalquery/baselines/default.json")
 	if err != nil {
 		t.Fatalf("review 済み baseline を読めません: %v", err)
 	}
 	if string(result) != string(baseline) {
-		t.Fatal("SOT-ENG-024: 評価結果が review 済み baseline と一致しません")
+		t.Fatal("profile-set-production-evaluation-identity: report byte が一致しません")
 	}
-	if !strings.Contains(
-		string(result),
+	for _, marker := range []string{
 		`"corpusVersion":"corpus-v9"`,
-	) {
-		t.Fatalf("SOT-ENG-024: corpus-v9 の report ではありません: %s", result)
-	}
-	if !strings.Contains(
-		string(result),
 		`"baselineVersion":"default-1"`,
-	) {
-		t.Fatalf("SOT-ENG-024: default-1 の report ではありません: %s", result)
+	} {
+		if !strings.Contains(string(result), marker) {
+			t.Fatalf("採用済み report marker がありません: %s", marker)
+		}
+	}
+}
+
+func standardArguments() []string {
+	return []string{
+		"--adoption=./testdata/legalquery/adoptions/current.json",
+		"--format=json",
 	}
 }

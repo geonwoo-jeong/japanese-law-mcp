@@ -71,6 +71,8 @@ percent-encoding または Unicode look-alike を file 名として解釈しな�
 | history manifest 一件 | `256 KiB` |
 | history manifest 件数 | `4096` |
 | history manifest 原 byte 合計 | `32 MiB` |
+| 検索例カタログの entry 件数 | `64` |
+| 検索例カタログの Markdown 原 byte 合計 | `1 MiB` |
 | JSON nesting depth | `8` |
 | 一 JSON document の value 数 | `4096` |
 
@@ -188,6 +190,11 @@ rollback も previous tuple の version file と同じ byte を `default.json` �
 byte 列の SHA-256 とする。`history/` が存在する場合は対象から除外する。
 `catalogVersion` の正規形と上限は `SOT-ENG-029` を定義元とし、loader は
 正規形でない値を採用 tuple の任意文字列として受理しない。
+
+カタログ直下には空でない Markdown 通常 file と任意の `history/` directory
+だけを許し、symbolic link、特殊 file、その他の subdirectory、Markdown 以外の
+file および上記の資源上限を超える集合を拒否する。不正な一件を無視して
+部分的な digest を返さない。
 
 ## 完全一致
 

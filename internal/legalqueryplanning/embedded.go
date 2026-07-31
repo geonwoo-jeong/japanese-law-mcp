@@ -31,7 +31,7 @@ func (d Dependencies) Profiles() legalquery.QueryProfileSet {
 	return d.profiles
 }
 
-// ProfileMetadata は、profile ID 順の個別 profile 版情報を返す。
+// ProfileMetadata は、composition root の固定順で個別 profile 版情報を返す。
 func (d Dependencies) ProfileMetadata() []legalquery.QueryProfileMetadata {
 	return append(
 		[]legalquery.QueryProfileMetadata{},

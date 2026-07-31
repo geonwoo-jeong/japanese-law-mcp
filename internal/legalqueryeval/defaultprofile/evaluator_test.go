@@ -345,7 +345,7 @@ func TestExecutionEvaluatorはStepIDで結果予算を照合する(t *testing.T)
 	}
 }
 
-func TestProfileVersionReportsはProfileID順へ正規化する(t *testing.T) {
+func TestProfileVersionReportsはCompositionRoot順を保持する(t *testing.T) {
 	evaluator, err := New()
 	if err != nil {
 		t.Fatalf("default profile evaluator を構築できません: %v", err)
@@ -356,9 +356,9 @@ func TestProfileVersionReportsはProfileID順へ正規化する(t *testing.T) {
 	if err != nil {
 		t.Fatalf("profile version report を構築できません: %v", err)
 	}
-	if reports[0].ProfileID() != "core" ||
-		reports[1].ProfileID() != "judicial-cases" {
-		t.Fatalf("SOT-ENG-024: profile version 順 = %#v", reports)
+	if reports[0].ProfileID() != "judicial-cases" ||
+		reports[1].ProfileID() != "core" {
+		t.Fatalf("SOT-ENG-036: composition root 順 = %#v", reports)
 	}
 }
 

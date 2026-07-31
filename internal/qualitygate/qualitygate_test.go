@@ -273,7 +273,7 @@ func TestBuildPlanCIAddsAllVulnerabilityAndHistoryChecks(t *testing.T) {
 		t.Fatalf("CI の省資源テスト設定がありません: %q", got)
 	}
 	wantSuffix := []string{
-		"legal-query-eval|SOT-ENG-024|" + snapshot + "|go|run|./cmd/legal-query-eval|--corpus=./testdata/legalquery/corpus-v9|--profile-set=default|--baseline=./testdata/legalquery/baselines/default.json|--format=json",
+		"legal-query-eval|SOT-ENG-024|" + snapshot + "|go|run|./cmd/legal-query-eval|--adoption=./testdata/legalquery/adoptions/current.json|--format=json",
 		"product-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/go.mod|govulncheck|-test|./...",
 		"tool-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|govulncheck|github.com/golangci/golangci-lint/v2/cmd/golangci-lint|github.com/rhysd/actionlint/cmd/actionlint|golang.org/x/vuln/cmd/govulncheck",
 		"gitleaks-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|govulncheck|github.com/zricethezav/gitleaks/v8",
