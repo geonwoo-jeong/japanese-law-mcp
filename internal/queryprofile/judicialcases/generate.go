@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/profileevidence"
 )
 
 const maximumGeneratedCandidates = 16
@@ -17,8 +18,11 @@ type candidateDraft struct {
 }
 
 type stepDraft struct {
-	startByte int
-	input     legalquery.LogicalInput
+	startByte        int
+	topicOrdinal     int
+	input            legalquery.LogicalInput
+	evidenceCodes    []legalquery.EvidenceCode
+	evidenceBindings []profileevidence.EvidenceValues
 }
 
 // Generate は、位置付き前処理事実だけから裁判例候補を生成する。
@@ -58,7 +62,8 @@ func (p *Profile) Generate(
 	if err != nil {
 		return legalquery.CandidateGeneration{}, err
 	}
-	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 {
+	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 ||
+		p.intentEvidenceMode == cueIntentEvidenceJudicial {
 		cues, err = p.resolveRelationV2Cues(input, cues)
 		if err != nil {
 			return legalquery.CandidateGeneration{}, err
@@ -74,6 +79,9 @@ func (p *Profile) Generate(
 			nil,
 			legalquery.QueryCompositionConstraintNone,
 		)
+	}
+	if p.intentEvidenceMode == cueIntentEvidenceJudicial {
+		return p.generateJudicialEvidence(input, cues, scope)
 	}
 
 	read, err := buildReadDraft(input, cues)
@@ -146,8 +154,14 @@ func buildReadDraft(
 			legalquery.EvidenceExplicitResource,
 		},
 		steps: []stepDraft{{
-			startByte: startByte,
-			input:     readInput,
+			startByte:    startByte,
+			topicOrdinal: 1,
+			input:        readInput,
+			evidenceCodes: []legalquery.EvidenceCode{
+				legalquery.EvidenceOfficialIdentifier,
+				legalquery.EvidenceExplicitTask,
+				legalquery.EvidenceExplicitResource,
+			},
 		}},
 	}, nil
 }
@@ -234,12 +248,22 @@ func combineJudicialReadAndSearch(
 			return combined.steps[left].startByte <
 				combined.steps[right].startByte
 		})
+		assignJudicialStepOrdinals(&combined)
 		if len(combined.steps) > legalquery.MaxCapabilityCalls {
 			return nil, true
 		}
 		result = append(result, combined)
 	}
 	return result, false
+}
+
+func assignJudicialStepOrdinals(draft *candidateDraft) {
+	if draft == nil {
+		return
+	}
+	for index := range draft.steps {
+		draft.steps[index].topicOrdinal = index + 1
+	}
 }
 
 func judicialCompositionMembers(

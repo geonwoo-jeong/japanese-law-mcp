@@ -13,6 +13,7 @@ type cueIntentEvidenceMode uint8
 const (
 	cueIntentEvidenceLegacy cueIntentEvidenceMode = iota
 	cueIntentEvidenceRelationV2
+	cueIntentEvidenceJudicial
 )
 
 type cueRelationRefKey struct {

@@ -640,6 +640,11 @@ func (p *Profile) buildSearchSubjects(
 					selectedSubjects,
 				),
 				input: searchInput,
+				evidenceCodes: []legalquery.EvidenceCode{
+					legalquery.EvidenceStructuredReference,
+					legalquery.EvidenceExplicitTask,
+					legalquery.EvidenceExplicitResource,
+				},
 			}},
 		})
 	}
@@ -669,6 +674,11 @@ func (p *Profile) buildSearchSubjects(
 					selectedSubjects,
 				),
 				input: searchInput,
+				evidenceCodes: []legalquery.EvidenceCode{
+					legalquery.EvidenceExplicitTask,
+					legalquery.EvidenceExplicitResource,
+					termEvidence,
+				},
 			}},
 		})
 	}
@@ -696,6 +706,11 @@ func (p *Profile) buildSearchSubjects(
 					selectedSubjects,
 				),
 				input: searchInput,
+				evidenceCodes: []legalquery.EvidenceCode{
+					legalquery.EvidenceStructuredReference,
+					legalquery.EvidenceExplicitTask,
+					legalquery.EvidenceExplicitResource,
+				},
 			}},
 		})
 	}
@@ -789,7 +804,8 @@ func (p *Profile) buildConceptSearchSubjects(
 						mention.Span(),
 						selected,
 					),
-					input: searchInput,
+					input:         searchInput,
+					evidenceCodes: append([]legalquery.EvidenceCode(nil), evidence...),
 				}},
 			})
 			if definition.entry.SelectionPolicy ==
