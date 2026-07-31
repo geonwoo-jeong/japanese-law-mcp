@@ -79,6 +79,10 @@ registry と materializer に残す。
 一件へ推測せず、同じ `topicOrdinal` と `evidenceSpan` を持つ代替 draft とする。
 異なる span に同じ検索意味が反復し、明示的な個別分離が成立する場合は、法令コアの
 共有末尾列における同値縮約を流用せず、位置の異なる独立 step として保持する。
+各主題の第一候補と追加意味は、当該主題の型付き logical input、位置付き正の根拠
+および同じ主題へ一意に束縛した task/resource 根拠だけを持つ topic-local draft を、
+`SOT-ARCH-032` の正規化済み score と通常 `tieBreak` で比較して決める。
+別主題の根拠、入力配列順または法令別名の条件付き順を使わない。
 
 入力 `ref` の read と別の明示 search は、各 step が自身の独立根拠を満たす場合に、
 同じ `judicial-cases` profile が原文順の複数 step を持つ一候補へまとめる。
@@ -125,6 +129,8 @@ capability binding、pack availability および materialization は後段へ残
 - `judicial-shared-terminal-rejected`
 - `judicial-evidence-mapping-pack-provider-invariant`
 - `judicial-evidence-mapping-fail-closed`
+- `judicial-multi-step-evidence-step-local-normalization`
+- `judicial-bounded-non-cartesian-alternatives`
 
 検索の許可事実と禁止事実、read `ref`、read と search の結合、一から四主題、
 五主題、同一 span の別意味、異なる span の同一意味、法令名・条項の非採用、
@@ -136,6 +142,20 @@ capability binding、pack availability および materialization は後段へ残
 失った主題を fixture にし、一方を選んだ contribution または部分的な mapping を
 作らないことを確認する。
 
+`judicial-multi-step-evidence-step-local-normalization` では、read と search
+または複数 search を一候補へまとめる場合に、各 step の同値経路を先に
+正規化してから候補全体へ和集合する。別 step の強い根拠を理由に独立 step の
+弱い根拠を削除せず、最終順序が `SOT-ARCH-029` に一致することを確認する。
+
+`judicial-bounded-non-cartesian-alternatives` では、明示的に個別分離した二つ以上の
+主題がそれぞれ複数意味を持つ場合に、基準 draft と一主題ずつの置換だけを
+原文順で評価し、複数主題を同時に置換した Cartesian 組合せを作らない。
+限定代替列の後に、`SOT-ARCH-032` の同値縮約、margin、三件上限および
+四件目の明確化を適用する。同一 topic に事件番号または明示検索語、法概念および
+`morphological_phrase` の複数意味を与え、topic-local draft の正規化済み score と
+通常 `tieBreak` から第一候補と全追加意味の順が一意に決まり、入力配列順を変えても
+同じになることを確認する。
+
 ## 関連
 
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
@@ -144,6 +164,7 @@ capability binding、pack availability および materialization は後段へ残
 - [SOT-MODEL-027: JudicialCaseNumberMention](../20-model/27-judicial-case-number-mention.md)
 - [SOT-MODEL-031: SharedTerminalSequence](../20-model/31-shared-terminal-sequence.md)
 - [SOT-ARCH-025: 統合照会の複数主題分離](25-unified-query-multi-topic-separation.md)
+- [SOT-ARCH-029: 複数 step 候補の根拠保持](29-multi-step-evidence-preservation.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](31-unified-query-intent-evidence-layer.md)
 - [SOT-ARCH-032: 統合照会の限定分岐保持](32-unified-query-bounded-branch-retention.md)
 - [SOT-IF-042: `judicial-decision.read` capability v1](../40-interfaces/42-judicial-decision-read-capability.md)

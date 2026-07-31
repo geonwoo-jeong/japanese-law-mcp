@@ -162,6 +162,38 @@ clarification 用候補として保持し、`selectionMode=clarification_require
 
 `永住許可と帰化について教えてください。` のように主題が複数ある照会は、`SOT-ARCH-025` に従い、原則として一候補内の別 step として保持する。別候補に分かれるのは、同じ主題に対する代替意味がある場合だけとし、主題ごとの全組合せを分岐として増殖させない。
 
+二つ以上の主題にそれぞれ代替意味がある場合は、各主題の意味候補を profile 固有の
+完全順序で並べ、次の限定代替列だけを evidence cluster の評価対象とする。
+
+この profile 固有の完全順序は、Cartesian draft を作る前に、各意味候補を
+その一主題だけの topic-local draft として比較して確定する。topic-local draft は、
+その主題へ束縛した step と位置付き事実、および profile 固有 SOT が当該主題へ
+共有できると明示した task/resource 根拠だけを持つ。別主題の事実を含めない。
+まず同じ完全な意味署名の経路を一件へ縮約し、`SOT-ARCH-029` に従って
+step 内正規化後の根拠 code 集合から、同じ profile metadata で
+`semanticScore` を計算する。`semanticScore` の非増加順とし、同点では
+`SOT-ENG-035` の通常の `tieBreak` を適用する。
+法令別名衝突群だけの `conditionalTieBreaks` は、この意味候補順に流用しない。
+通常の `tieBreak` まで同値なら完全な意味署名も同じであり、先の縮約対象とする。
+この比較のために複数主題の組合せ draft を作らない。
+
+1. 各主題の第一候補を原文順に並べた一件を基準 draft とする
+2. `topicOrdinal` の原文順に、一つの主題だけをその主題の第二候補以降へ
+   一件ずつ置き換え、ほかの主題は基準 draft の第一候補のままにする
+3. 二つ以上の主題を同時に第二候補以降へ置き換えた Cartesian 組合せは作らない
+
+一主題だけが多義である場合は、基準 draft とその主題の全追加意味がこの列に
+含まれる。複数主題の場合も、ある主題の代替意味を、別主題の代替意味が存在する
+ことだけを理由に捨てない。限定代替列を作った後に、同じ evidence cluster と
+同じ完全な意味署名を持つ draft の同値縮約、`branchRetentionMargin`、三件上限
+および四件目の明確化を、この順で適用する。
+
+profile 固有 SOT が同じ span の異なる事実 kind または意味を別候補と定めた場合は、
+logical input の文字列が同じという理由だけで限定代替列を作る前に和集合しない。
+一方、同じ意味を持つ重複生成経路の縮約は本規定の同値 draft 統合に従う。
+候補生成順、配列の先頭、provider 数または外部結果から、基準 draft や置換順を
+変更しない。
+
 ## 公開境界
 
 公開 MCP 結果には、保持だけした全分岐、保持 margin、重みの生値または棄却した分岐理由の全列挙を出さない。公開面へ出るのは、選択済み interpretation、明確化理由、対象外理由および実行結果だけとする。
@@ -179,6 +211,13 @@ clarification 用候補として保持し、`selectionMode=clarification_require
 - 同じ意味署名の draft を複数経路から生成しても、同値縮約後の一件として数え、
   四件目の誤検出により明確化へ落とさず、`conceptSources` を欠落させない。同じ
   `conceptId` の source tuple が競合する場合は contribution を構築しない
+- 複数主題と複数意味を許可する各 profile の固有固定検証 ID で、基準 draft と
+  一主題ずつの置換だけを原文順で評価し、二主題以上の同時置換を作らないことを
+  確認する。各主題の topic-local draft を step 内正規化後の score と通常
+  `tieBreak` で完全に並べ、生成順または条件付き別名順を使わない。各主題の
+  追加意味を欠落させず、限定代替列の後に同値縮約、margin、三件上限および
+  四件目の明確化を適用する。異なる profile の変更単位で同じ固定検証 ID を
+  再利用しない
 - 公式別名衝突群は `SOT-ARCH-028` の完全順序と十六候補上限を維持し、
   `branchRetentionMargin` または三件上限で切り捨てない
 

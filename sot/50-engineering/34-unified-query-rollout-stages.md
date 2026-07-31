@@ -64,12 +64,12 @@ test 専用 set の暫定値に限り、active metadata、標準 command また�
 3. `SOT-ARCH-031` の共通対応に従う private evidence mapping の寿命、step
    対応、`topicOrdinal` および cluster key の共通骨格を構築する。profile 固有の
    許可事実はこの番号で推測しない
-4. `SOT-ARCH-034` に従い、core profile だけが sidecar を消費して共有末尾 cue の
-   複数主題 step、input kind ごとの根拠対応および限定分岐を作る test 専用経路を
-   完成させる
-5. `SOT-ARCH-035` に従い、`judicial-cases` profile は sidecar を消費せず、
-   自身の位置付き出現による input kind ごとの根拠対応と cluster だけで
-   限定分岐を適用する
+4. `SOT-ARCH-029`、`SOT-ARCH-032` および `SOT-ARCH-034` に従い、core profile
+   だけが sidecar を消費して共有末尾 cue の複数主題 step、input kind ごとの
+   根拠対応および限定分岐を作る test 専用経路を完成させる
+5. `SOT-ARCH-029`、`SOT-ARCH-032` および `SOT-ARCH-035` に従い、
+   `judicial-cases` profile は sidecar を消費せず、自身の位置付き出現による
+   input kind ごとの根拠対応と cluster だけで限定分岐を適用する
 6. core と `judicial-cases` を production と同じ固定順で組み立て、全 profile が
    schema version 2、同じ ranking version および同じ
    `branchRetentionMargin` を持つ一つの test 専用固定 profile set を完成させる
@@ -78,6 +78,26 @@ test 専用 set の暫定値に限り、active metadata、標準 command また�
 それだけでは校正、holdout、標準 command、baseline、production または採用候補の
 固定 profile set とみなさない。6 を満たした固定 set だけを第 4 段階の development
 校正へ渡せる。
+
+4 は、次の内部変更単位をこの順で一つずつ完了した場合だけ完了とする。
+
+1. `3.4.1`: 五 input kind の閉じた task/resource cue 対応、同じ節・同じ主題への
+   束縛、`topicOrdinal`、`asOf` と updates 日付の差、および span を持たない
+   `ref` の閉じた resource cue 省略例外を確定する。`asOf` と updates 日付の差は
+   `core-evidence-mapping-input-kinds` の fixture に含める
+2. `3.4.2`: 法令名を本文検索語へ投影できる三経路、同じ節の一意な
+   content search 束縛、および read/law search との競合時の fail-closed を確定する
+3. `3.4.3`: 正確な terminal relation を持つ sidecar の消費、同一 span の別意味、
+   異なる span の同値縮約、topic-local draft の完全順序、限定代替列、
+   四 step 上限および cluster 単位の三件保持を確定する。ここでいう四 step
+   上限は、五件目を黙って切り捨てず `step_limit_exceeded` とする境界を含む
+4. `3.4.4`: step 内の根拠正規化後に候補全体へ和集合し、曖昧束縛、
+   private mapping の寿命、provider 非依存性および active profile の不変を
+   最終照合する
+
+`3.4.1` から `3.4.4` は、それぞれ前の番号の契約と検証を維持する独立した
+変更単位とする。後続番号の実装または fixture を先行番号へ混在させず、
+各番号の review、commit および権威 CI が完了してから次へ進む。
 
 2 の `shared-terminal-production-neutral` は、第 5 段階より前の active profile が
 sidecar を消費しないことを確認する移行時検証 ID とする。第 5 段階で法令コアの
@@ -232,8 +252,11 @@ ID は変更順序から検証へ到達するための索引であり、各動�
 | 3.1 | `SOT-ENG-035` | `profile-metadata-schema-versions`、`profile-metadata-branch-retention-presence` |
 | 3.2 | `SOT-MODEL-031`、`SOT-ENG-034` | `shared-terminal-sequence-contract`、`shared-terminal-production-neutral` |
 | 3.3 | `SOT-ARCH-031`、`SOT-ARCH-032` | `profile-private-evidence-mapping-lifetime`、`profile-evidence-cluster-key` |
-| 3.4 | `SOT-ARCH-034` | `core-evidence-mapping-input-kinds`、`core-evidence-mapping-private-lifetime`、`core-evidence-mapping-topic-positive`、`core-evidence-mapping-ref-no-span`、`core-shared-terminal-evidence-cluster`、`core-evidence-mapping-provider-independent`、`core-law-name-content-projection`、`core-evidence-mapping-fail-closed` |
-| 3.5 | `SOT-ARCH-035` | `judicial-evidence-mapping-input-kinds`、`judicial-evidence-mapping-private-lifetime`、`judicial-evidence-mapping-topic-positive`、`judicial-evidence-mapping-ref-no-span`、`judicial-shared-terminal-rejected`、`judicial-evidence-mapping-pack-provider-invariant`、`judicial-evidence-mapping-fail-closed` |
+| 3.4.1 | `SOT-ARCH-034` | `core-evidence-mapping-input-kinds`、`core-evidence-mapping-topic-positive`、`core-evidence-mapping-ref-no-span` |
+| 3.4.2 | `SOT-ARCH-034` | `core-law-name-content-projection` |
+| 3.4.3 | `SOT-ARCH-032`、`SOT-ARCH-034` | `core-shared-terminal-task-resource-binding`、`core-shared-terminal-evidence-cluster`、`core-bounded-non-cartesian-alternatives` |
+| 3.4.4 | `SOT-ARCH-029`、`SOT-ARCH-031`、`SOT-ARCH-034` | `core-multi-step-evidence-step-local-normalization`、`core-evidence-mapping-private-lifetime`、`core-evidence-mapping-provider-independent`、`core-evidence-mapping-fail-closed`、`core-evidence-production-neutral` |
+| 3.5 | `SOT-ARCH-029`、`SOT-ARCH-032`、`SOT-ARCH-035` | `judicial-evidence-mapping-input-kinds`、`judicial-evidence-mapping-private-lifetime`、`judicial-evidence-mapping-topic-positive`、`judicial-evidence-mapping-ref-no-span`、`judicial-shared-terminal-rejected`、`judicial-evidence-mapping-pack-provider-invariant`、`judicial-evidence-mapping-fail-closed`、`judicial-multi-step-evidence-step-local-normalization`、`judicial-bounded-non-cartesian-alternatives` |
 | 3.6 | `SOT-ENG-035` | `profile-metadata-ranking-consistency`、`next-profile-set-fixed-composition` |
 | 4.1 | `SOT-ENG-033`、`SOT-ENG-036` | `evaluation-baseline-initial-bootstrap`、`evaluation-baseline-resource-maximum`、`evaluation-baseline-history-bounds`、`profile-set-adoption-canonical-bytes` |
 | 4.2 | `SOT-ENG-026` | `legal-query-corpus-v2-development-assertions`、`legal-query-corpus-v2-holdout-coverage`、`legal-query-corpus-v2-leakage-digests`、`legal-query-corpus-immutable-version` |
@@ -247,6 +270,40 @@ ID は変更順序から検証へ到達するための索引であり、各動�
 | 6.4 | `SOT-ARCH-030` | `law-target-resolution-parity`、`law-target-page-stable-partition`、`law-target-no-extra-fetch`、`law-target-ambiguous-no-reorder`、`law-target-unified-no-reparse` |
 | 7 | `SOT-ENG-034` | `unified-query-guidance-document-sync` |
 
+一つの固定検証 ID が複数の閉じた assertion を持つ場合は、その assertion 群を
+同じ fixture 群で pass/fail できる一つの契約として扱う。例えば
+`core-evidence-mapping-input-kinds` は五 input kind、閉じた cue 対応、
+同じ節・同じ主題束縛、および `asOf` と updates 日付差を同じ契約として確認する。
+`core-evidence-mapping-ref-no-span` は、入力 `ref` が
+`boundary/official_identifier` へ寄与しても span、独立主題または cluster の
+`evidenceSpan` を持たず、構造検証済み `ref.resourceType` が resource を確定し、
+一意な read の位置付き task cue だけを cluster に利用できる契約として確認する。
+明示 resource cue は必須にしないが、存在する全 cue の互換性を確認する。
+`core-shared-terminal-evidence-cluster` は
+正確な terminal relation、同値縮約、四 step 上限および cluster 単位の保持を
+同じ契約として確認する。
+
+`core-shared-terminal-task-resource-binding` は、`教えて` と
+`教えてください` の閉じた正常系、同じ節の互換 resource cue、競合する
+task/resource cue、別節 cue および同じ surface の別 relation を一つの
+task/resource 束縛契約として確認する。
+
+非 Cartesian の限定代替列は profile 共通の契約とするが、固定検証 ID は変更単位
+ごとに分ける。3.4.3 の `core-bounded-non-cartesian-alternatives` は core の
+共有末尾列で、3.5 の `judicial-bounded-non-cartesian-alternatives` は
+`judicial-cases` の明示的な個別分離で同じ規則を確認し、一方の成功で他方を
+代用しない。どちらも、各主題だけの topic-local draft を step 内正規化後の
+score と通常 `tieBreak` で並べ、入力配列順または条件付き別名順を使わない。
+step 内正規化も同様に、3.4.4 の
+`core-multi-step-evidence-step-local-normalization` と 3.5 の
+`judicial-multi-step-evidence-step-local-normalization` を別々に確認する。
+
+`shared-terminal-production-neutral` は sidecar を構築しても active profile が
+消費しないことを確認する移行時契約であり、`core-evidence-production-neutral` は
+core の test 専用 evidence path 全体が active metadata と production runtime から
+到達不能であることを確認する契約とする。両者は同じ non-reachability を重複検証する
+ものではない。
+
 ## 段階ごとの進行条件
 
 各段階は、次を満たした場合だけ次段階へ進める。
@@ -256,13 +313,13 @@ ID は変更順序から検証へ到達するための索引であり、各動�
 3. review 指摘を反映した後に、同じ段階境界を再確認している
 4. 段階の変更単位が、前後の段階と混ざらない
 
-第 3 段階の 1 から 6、第 4 段階の 1 から 5 および第 6 段階の 1 から 4 は、
-それぞれ一つの独立した変更単位とする。各番号について上記 1 から 4 を満たし、
-review 指摘を反映した後に一つの commit として確定する。その commit に対する
-`SOT-ENG-020` と `SOT-ENG-027` の適用可能な権威 CI が成功したことを確認してから、
-同じ段階の次の番号へ進む。CI が未完了、cancel または失敗の状態では次の番号へ
-進まない。後続番号の成果物を先行番号へ混在させて、先行番号の検証、review または
-CI を代用しない。
+第 3 段階の 1 から 6、`3.4.1` から `3.4.4`、第 4 段階の 1 から 5 および
+第 6 段階の 1 から 4 は、それぞれ一つの独立した変更単位とする。各番号について
+上記 1 から 4 を満たし、review 指摘を反映した後に一つの commit として確定する。
+その commit に対する `SOT-ENG-020` と `SOT-ENG-027` の適用可能な権威 CI が
+成功したことを確認してから、同じ段階の次の番号へ進む。CI が未完了、cancel
+または失敗の状態では次の番号へ進まない。後続番号の成果物を先行番号へ混在させて、
+先行番号の検証、review または CI を代用しない。
 
 公開既定動作を切り替えない段階では、`SOT-ARCH-033` に従い、active artifact、
 production composition root、標準 corpus、baseline および検索例カタログを現行のまま保つ。
@@ -301,7 +358,8 @@ production composition root、標準 corpus、baseline および検索例カタ�
 - 原子的採用段階で、`SOT-ARCH-033` の全採用要素と `SOT-ENG-033` の
   current tuple の同期が要求される
 - provider parser などの独立変更が、meaning 変更段階から切り離されている
-- 第 3・第 4・第 6 段階の番号付き変更単位が、同じ段階内でも順に review される
+- 第 3・第 4・第 6 段階の番号付き変更単位と `3.4.1` から `3.4.4` が、
+  同じ段階内でも順に review される
 - 各番号付き変更単位に固定検証 ID が対応し、その commit の権威 CI 成功を待って
   次の番号へ進む
 - 第 6 段階の parser と page 順序が専用 fixture で検証され、意味評価 baseline の
