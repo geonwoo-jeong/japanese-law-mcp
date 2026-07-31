@@ -67,7 +67,7 @@ func TestBuilderBuildsFixedSemanticSourceClosure(t *testing.T) {
 		t.Fatalf("files = %#v, want %#v", got, wantPaths)
 	}
 	for _, file := range files {
-		raw, readErr := os.ReadFile(filepath.Join(repository, filepath.FromSlash(file.Path)))
+		raw, readErr := readSourceClosureTestFile(repository, file.Path)
 		if readErr != nil {
 			t.Fatal(readErr)
 		}
@@ -190,6 +190,15 @@ func writeSourceClosureFixture(t *testing.T, root string, relative string, conte
 	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func readSourceClosureTestFile(root string, relative string) ([]byte, error) {
+	repositoryRoot, err := os.OpenRoot(root)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = repositoryRoot.Close() }()
+	return repositoryRoot.ReadFile(filepath.FromSlash(relative))
 }
 
 type fakeToolchain struct {

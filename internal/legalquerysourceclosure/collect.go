@@ -25,14 +25,14 @@ func collectGoListPackage(
 	sourceBytes *int64,
 ) error {
 	if pkg.ImportPath == "" {
-		return fmt.Errorf("Go dependency package の import path がありません")
+		return fmt.Errorf("go dependency package の import path がありません")
 	}
 	if _, exists := seenImports[pkg.ImportPath]; exists {
-		return fmt.Errorf("Go dependency package %q が複数回解決されました", pkg.ImportPath)
+		return fmt.Errorf("go dependency package %q が複数回解決されました", pkg.ImportPath)
 	}
 	seenImports[pkg.ImportPath] = struct{}{}
 	if pkg.Error != nil || len(pkg.DepsErrors) != 0 {
-		return fmt.Errorf("Go dependency package %q に読込み error があります", pkg.ImportPath)
+		return fmt.Errorf("go dependency package %q に読込み error があります", pkg.ImportPath)
 	}
 	if pkg.Standard {
 		if pkg.Module != nil {

@@ -83,7 +83,7 @@ func (c BuildContext) validate() error {
 	fixed := FixedBuildContext()
 	if c.goos != fixed.goos || c.goarch != fixed.goarch || c.goamd64 != fixed.goamd64 ||
 		c.goexperiment != fixed.goexperiment || c.cgoEnabled != fixed.cgoEnabled || len(c.buildTags) != 0 {
-		return fmt.Errorf("Go build context が SOT-ENG-038 の固定値ではありません")
+		return fmt.Errorf("go build context が SOT-ENG-038 の固定値ではありません")
 	}
 	return nil
 }

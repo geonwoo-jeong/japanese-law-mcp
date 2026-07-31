@@ -124,7 +124,13 @@ result、failed report または候補 baseline の中身は生成せず、Git �
 | 4.1 | 2026-07-31 | 9.1 / 10（testability 8.8 / 10） | 8.8 / 10 | 0 | `default-1` version file と current baseline の byte 完全一致、初回 adoption history と `current.json`、baseline schema と閉じた loader、`--adoption` 固定の標準評価 command、中央品質ゲートの adoption 入口、catalog の corpus・baseline・version と verification artifact 実在検証 |
 | 4.2 | 2026-07-31 | 8.8 / 10（testability 8.5 / 10） | 9.1 / 10 | 0 | schema version 2 の三成果物と typed decoder、development assertion 十一件、追加 coverage 七件と safety pair、leakage digest の再計算と原 ID 非露出、`corpus-v9`・schema version 1 および `corpus-v10` の byte 固定、`step_limit_exceeded` だけに限定した空 meaning 境界 |
 | 4.3 | 2026-07-31 | 9.4 / 10（testability 9.0 / 10） | 9.3 / 10 | 0 | schema と development だけを開く loader、原 byte content digest、二回の独立構成、四十三件全体の fingerprint と scorecard、core・裁判例の専用校正 artifact、active からの非到達性、共有末尾の同値縮約後四 step 境界 |
-| 4.4 | 2026-07-31 | 9.6 / 10（testability 9.2 / 10） | 8.8 / 10 | 0 | schema v2 の五成果物、52 件 SOT digest 付き review attestation、`corpus-v10`/`default-2` request、`current.json` pointer、空 history root の fail-closed 解釈、manual CI handoff 入口、候補 baseline writer、canonical subtree の自己検証 |
+| 4.4 | 2026-07-31 | 9.6 / 10（testability 9.2 / 10） | 8.6 / 10 | 0 | schema v2 の五成果物、52 件 SOT digest 付き review attestation、`corpus-v10`/`default-2` request、`current.json` pointer、空 history root の fail-closed 解釈、manual CI handoff 入口、候補 baseline writer、canonical subtree の自己検証 |
+
+4.4 の最終 security review で残った非 blocker は、local 準備時の Go executable を
+ambient `PATH` から解決する点と、4.5 で実 worker を接続するときに非 `GO*` 環境も
+process 内で再度閉じる点である。4.4 の専用 workflow は固定 setup-go と `env -i` を
+使い、command は worker 未接続で fail-closed のため、前者は権威 CI の再検証、後者は
+4.5 の worker 接続時に解消する。
 
 ## 第 3 段階以降の SOT 文書 review
 

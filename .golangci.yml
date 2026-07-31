@@ -26,6 +26,13 @@ linters:
       allow-unused: false
       require-explanation: true
       require-specific: true
+  exclusions:
+    rules:
+      # SOT-ENG-019/SOT-ENG-038: 同値な append 代入への書換えだけで review 済み candidate content の source byte を変えない。
+      - path: ^internal/queryprofile/metadataartifact/artifact\.go$
+        text: "appendAssign: append result not assigned to the same slice"
+        linters:
+          - gocritic
 
 formatters:
   enable:

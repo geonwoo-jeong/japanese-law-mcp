@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -123,9 +122,10 @@ func TestCommandAndCacheBoundariesFailClosed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	goRoot := testRuntimeGoRoot(t, goBinary)
 	toolchain, err := NewCommandToolchain(ToolchainInfrastructure{
 		GoBinary:           goBinary,
-		GoRoot:             runtime.GOROOT(),
+		GoRoot:             goRoot,
 		ModuleCache:        t.TempDir(),
 		BuildCache:         t.TempDir(),
 		TemporaryDirectory: t.TempDir(),
@@ -137,9 +137,9 @@ func TestCommandAndCacheBoundariesFailClosed(t *testing.T) {
 	invalidDirectory := filepath.Join(validDirectory, "missing")
 	invalidInfrastructures := []ToolchainInfrastructure{
 		{GoBinary: goBinary, GoRoot: invalidDirectory, ModuleCache: validDirectory, BuildCache: validDirectory, TemporaryDirectory: validDirectory},
-		{GoBinary: goBinary, GoRoot: runtime.GOROOT(), ModuleCache: invalidDirectory, BuildCache: validDirectory, TemporaryDirectory: validDirectory},
-		{GoBinary: goBinary, GoRoot: runtime.GOROOT(), ModuleCache: validDirectory, BuildCache: invalidDirectory, TemporaryDirectory: validDirectory},
-		{GoBinary: goBinary, GoRoot: runtime.GOROOT(), ModuleCache: validDirectory, BuildCache: validDirectory, TemporaryDirectory: invalidDirectory},
+		{GoBinary: goBinary, GoRoot: goRoot, ModuleCache: invalidDirectory, BuildCache: validDirectory, TemporaryDirectory: validDirectory},
+		{GoBinary: goBinary, GoRoot: goRoot, ModuleCache: validDirectory, BuildCache: invalidDirectory, TemporaryDirectory: validDirectory},
+		{GoBinary: goBinary, GoRoot: goRoot, ModuleCache: validDirectory, BuildCache: validDirectory, TemporaryDirectory: invalidDirectory},
 	}
 	for _, infrastructure := range invalidInfrastructures {
 		if _, err := NewCommandToolchain(infrastructure); err == nil {

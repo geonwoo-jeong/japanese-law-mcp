@@ -15,10 +15,10 @@ const maximumGoEnvironmentBytes = 32 << 10
 // ambient GO* 変数と workspace は discovery と dependency 列挙のどちらにも継承しない。
 func NewLocalBuilder(ctx context.Context) (Builder, error) {
 	if ctx == nil {
-		return Builder{}, fmt.Errorf("Go cache discovery context は nil にできません")
+		return Builder{}, fmt.Errorf("go cache discovery context は nil にできません")
 	}
 	if err := ctx.Err(); err != nil {
-		return Builder{}, fmt.Errorf("Go cache discovery が中止されました: %w", err)
+		return Builder{}, fmt.Errorf("go cache discovery が中止されました: %w", err)
 	}
 	binary, err := exec.LookPath("go")
 	if err != nil {
@@ -26,7 +26,7 @@ func NewLocalBuilder(ctx context.Context) (Builder, error) {
 	}
 	binary, err = filepath.EvalSymlinks(binary)
 	if err != nil {
-		return Builder{}, fmt.Errorf("Go executable の symlink を解決できません")
+		return Builder{}, fmt.Errorf("go executable の symlink を解決できません")
 	}
 	binary, err = validateGoBinary(binary)
 	if err != nil {
@@ -34,7 +34,7 @@ func NewLocalBuilder(ctx context.Context) (Builder, error) {
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return Builder{}, fmt.Errorf("Go cache discovery 用 home directory を解決できません")
+		return Builder{}, fmt.Errorf("go cache discovery 用 home directory を解決できません")
 	}
 	command := exec.CommandContext(ctx, binary, "env", "-json", "GOROOT", "GOMODCACHE", "GOCACHE") //nolint:gosec // SOT-ENG-038: descriptor 検証済み Go executable と固定 go env argv だけを起動する。
 	command.Env = []string{

@@ -37,7 +37,10 @@ func TestWriteCandidateBaselineは検証済みbyteだけを予約版へ新規作
 		"versions",
 		"default-2.json",
 	)
-	written, err := os.ReadFile(versionPath)
+	written, err := readCandidateBaselineRootFile(
+		repositoryRoot,
+		filepath.Join("testdata", "legalquery", "baselines", "versions", "default-2.json"),
+	)
 	if err != nil {
 		t.Fatalf("%s: 作成済み候補を読めません: %v", verificationID, err)
 	}
@@ -52,14 +55,10 @@ func TestWriteCandidateBaselineは検証済みbyteだけを予約版へ新規作
 		t.Fatalf("%s: 候補 baseline の mode = %v", verificationID, info.Mode())
 	}
 
-	defaultPath := filepath.Join(
+	after, err := readCandidateBaselineRootFile(
 		repositoryRoot,
-		"testdata",
-		"legalquery",
-		"baselines",
-		"default.json",
+		filepath.Join("testdata", "legalquery", "baselines", "default.json"),
 	)
-	after, err := os.ReadFile(defaultPath)
 	if err != nil {
 		t.Fatalf("%s: default baseline を確認できません: %v", verificationID, err)
 	}
@@ -75,7 +74,10 @@ func TestWriteCandidateBaselineは検証済みbyteだけを予約版へ新規作
 	); err == nil {
 		t.Fatal(verificationID + ": 使用済み予約版を再利用しました")
 	}
-	writtenAgain, err := os.ReadFile(versionPath)
+	writtenAgain, err := readCandidateBaselineRootFile(
+		repositoryRoot,
+		filepath.Join("testdata", "legalquery", "baselines", "versions", "default-2.json"),
+	)
 	if err != nil {
 		t.Fatalf("%s: 既存候補を再確認できません: %v", verificationID, err)
 	}
@@ -146,7 +148,10 @@ func TestWriteCandidateBaselineは既存と非通常fileを上書きしない(t 
 		); err == nil {
 			t.Fatal(verificationID + ": 既存 file を上書きしました")
 		}
-		got, err := os.ReadFile(target)
+		got, err := readCandidateBaselineRootFile(
+			repositoryRoot,
+			filepath.Join("testdata", "legalquery", "baselines", "versions", "default-2.json"),
+		)
 		if err != nil || !bytes.Equal(got, existing) {
 			t.Fatal(verificationID + ": 既存 file の byte が変化しました")
 		}
@@ -190,7 +195,7 @@ func TestWriteCandidateBaselineは既存と非通常fileを上書きしない(t 
 		); err == nil {
 			t.Fatal(verificationID + ": symlink を上書きしました")
 		}
-		got, err := os.ReadFile(outside)
+		got, err := readCandidateBaselineRootFile(repositoryRoot, "outside.json")
 		if err != nil || !bytes.Equal(got, outsideBytes) {
 			t.Fatal(verificationID + ": repository 外 file が変化しました")
 		}
@@ -372,6 +377,15 @@ func candidateBaselineTestPath(repositoryRoot, version string) string {
 		"versions",
 		version+".json",
 	)
+}
+
+func readCandidateBaselineRootFile(repositoryRoot, relative string) ([]byte, error) {
+	root, err := os.OpenRoot(repositoryRoot)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = root.Close() }()
+	return root.ReadFile(filepath.ToSlash(relative))
 }
 
 func assertCandidateBaselineAbsent(t *testing.T, repositoryRoot, version string) {

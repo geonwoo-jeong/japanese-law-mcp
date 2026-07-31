@@ -170,7 +170,6 @@ func hashModuleZipEntry(ctx context.Context, entry *zip.File) (string, int64, er
 		return "", 0, fmt.Errorf("module zip entry を開けません")
 	}
 	hasher := sha256.New()
-	//nolint:gosec // SOT-ENG-038: entry header と一件・module 合計上限を先に検証し、LimitReader で上限加算一 byteだけを読む。
 	written, copyErr := io.Copy(hasher, io.LimitReader(contextReader{ctx: ctx, reader: opened}, MaximumModuleEntryBytes+1))
 	closeErr := opened.Close()
 	if copyErr != nil || closeErr != nil || written > MaximumModuleEntryBytes {

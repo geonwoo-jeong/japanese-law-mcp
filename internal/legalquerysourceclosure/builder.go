@@ -30,7 +30,7 @@ type Builder struct {
 // Build は、SOT-ENG-038 の固定 context で local file と外部 module を閉じる。
 func (b Builder) Build(ctx context.Context, repositoryPath string, packageRoots []string) (SourceSet, error) {
 	if b.Toolchain == nil {
-		return SourceSet{}, fmt.Errorf("Go toolchain が指定されていません")
+		return SourceSet{}, fmt.Errorf("go toolchain が指定されていません")
 	}
 	if err := ctx.Err(); err != nil {
 		return SourceSet{}, fmt.Errorf("semantic source closure の構築が中止されました: %w", err)
@@ -54,10 +54,10 @@ func (b Builder) Build(ctx context.Context, repositoryPath string, packageRoots 
 	}
 	toolchainVersion, err := b.Toolchain.Version(ctx, absoluteRepository)
 	if err != nil {
-		return SourceSet{}, fmt.Errorf("Go toolchain version を取得できません: %w", err)
+		return SourceSet{}, fmt.Errorf("go toolchain version を取得できません: %w", err)
 	}
 	if !goToolchainVersionPattern.MatchString(toolchainVersion) {
-		return SourceSet{}, fmt.Errorf("Go toolchain version が固定可能な release 形式ではありません")
+		return SourceSet{}, fmt.Errorf("go toolchain version が固定可能な release 形式ではありません")
 	}
 	buildContext := FixedBuildContext()
 	if err := buildContext.validate(); err != nil {
@@ -70,7 +70,7 @@ func (b Builder) Build(ctx context.Context, repositoryPath string, packageRoots 
 	}
 	output, err := b.Toolchain.ListDependencies(ctx, request)
 	if err != nil {
-		return SourceSet{}, fmt.Errorf("Go dependency closure を列挙できません: %w", err)
+		return SourceSet{}, fmt.Errorf("go dependency closure を列挙できません: %w", err)
 	}
 	closure, decodeErr := decodeGoList(ctx, output, absoluteRepository, repository, moduleIdentity.path, roots)
 	closeErr := output.Close()
@@ -78,7 +78,7 @@ func (b Builder) Build(ctx context.Context, repositoryPath string, packageRoots 
 		return SourceSet{}, decodeErr
 	}
 	if closeErr != nil {
-		return SourceSet{}, fmt.Errorf("Go dependency closure command が失敗しました: %w", closeErr)
+		return SourceSet{}, fmt.Errorf("go dependency closure command が失敗しました: %w", closeErr)
 	}
 	modules, err := b.inspectModules(ctx, closure.modules)
 	if err != nil {
@@ -236,7 +236,7 @@ func decodeGoList(
 	packageCount := 0
 	for {
 		if err := ctx.Err(); err != nil {
-			return decodedClosure{}, fmt.Errorf("Go dependency closure の読取りが中止されました: %w", err)
+			return decodedClosure{}, fmt.Errorf("go dependency closure の読取りが中止されました: %w", err)
 		}
 		var pkg goListPackage
 		err := decoder.Decode(&pkg)
@@ -244,14 +244,14 @@ func decodeGoList(
 			break
 		}
 		if err != nil {
-			return decodedClosure{}, fmt.Errorf("Go dependency closure JSON を解析できません: %w", err)
+			return decodedClosure{}, fmt.Errorf("go dependency closure JSON を解析できません: %w", err)
 		}
 		if limited.N <= 0 {
-			return decodedClosure{}, fmt.Errorf("Go dependency closure JSON が上限を超えています")
+			return decodedClosure{}, fmt.Errorf("go dependency closure JSON が上限を超えています")
 		}
 		packageCount++
 		if packageCount > maximumGoListPackages {
-			return decodedClosure{}, fmt.Errorf("Go dependency package 数が上限を超えています")
+			return decodedClosure{}, fmt.Errorf("go dependency package 数が上限を超えています")
 		}
 		if err := collectGoListPackage(ctx, repositoryPath, repository, mainModulePath, packageRoots, pkg, seenImports, foundRoots, files, modules, &sourceBytes); err != nil {
 			return decodedClosure{}, err

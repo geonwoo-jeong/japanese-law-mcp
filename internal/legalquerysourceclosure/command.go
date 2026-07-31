@@ -206,11 +206,11 @@ func commandFailure(operation string, err error, stderr string) error {
 func validateGoBinary(value string) (string, error) {
 	absolute, err := filepath.Abs(value)
 	if err != nil {
-		return "", fmt.Errorf("Go executable を解決できません")
+		return "", fmt.Errorf("go executable を解決できません")
 	}
 	info, err := os.Lstat(absolute)
 	if err != nil || info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() || info.Mode().Perm()&0o111 == 0 {
-		return "", fmt.Errorf("Go executable が symlink ではない実行可能 file ではありません")
+		return "", fmt.Errorf("go executable が symlink ではない実行可能 file ではありません")
 	}
 	return absolute, nil
 }

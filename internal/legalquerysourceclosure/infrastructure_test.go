@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -51,7 +51,7 @@ func TestCommandToolchainListsOnlyFixedContext(t *testing.T) {
 	temporaryDirectory := t.TempDir()
 	toolchain, err := NewCommandToolchain(ToolchainInfrastructure{
 		GoBinary:           goBinary,
-		GoRoot:             runtime.GOROOT(),
+		GoRoot:             testRuntimeGoRoot(t, goBinary),
 		ModuleCache:        moduleCache,
 		BuildCache:         buildCache,
 		TemporaryDirectory: temporaryDirectory,
@@ -124,4 +124,19 @@ func TestModuleCacheProviderRejectsSymlinkSegment(t *testing.T) {
 	if _, err := provider.Load(context.Background(), "example.com/dependency", "v1.2.3"); err == nil {
 		t.Fatal("module cache の symlink segment を受理しました")
 	}
+}
+
+func testRuntimeGoRoot(t *testing.T, goBinary string) string {
+	t.Helper()
+	command := exec.CommandContext(
+		t.Context(),
+		goBinary,
+		"env",
+		"GOROOT",
+	)
+	output, err := command.Output()
+	if err != nil {
+		t.Fatalf("go env GOROOT を取得できません: %v", err)
+	}
+	return strings.TrimSpace(string(output))
 }
