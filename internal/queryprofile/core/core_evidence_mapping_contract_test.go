@@ -393,7 +393,7 @@ func TestCoreEvidenceMappingInputKinds(t *testing.T) {
 			test := test
 			t.Run(test.name, func(t *testing.T) {
 				fixture := mustCoreEvidenceFixture(t, test.query, nil)
-				draft := candidateDraft{}
+				var draft candidateDraft
 				if test.kind == legalquery.InputKindLawRead {
 					draft = mustCoreLawIDReadDraft(
 						t,

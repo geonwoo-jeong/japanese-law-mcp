@@ -104,10 +104,11 @@ func coreTaskCueStartByte(
 	kind legalquery.LogicalInputKind,
 ) (int, bool) {
 	taskValue := "read"
-	if kind == legalquery.InputKindLawUpdates {
+	switch kind {
+	case legalquery.InputKindLawUpdates:
 		taskValue = "list_updates"
-	} else if kind == legalquery.InputKindLawSearch ||
-		kind == legalquery.InputKindLawContentSearch {
+	case legalquery.InputKindLawSearch,
+		legalquery.InputKindLawContentSearch:
 		taskValue = "search"
 	}
 	mentions := cues.mentions[cueMeaningKey("task", taskValue)]
