@@ -9,6 +9,7 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/profileevidence"
 )
 
 const maximumGeneratedCandidates = 16
@@ -25,8 +26,10 @@ type candidateDraft struct {
 }
 
 type stepDraft struct {
-	startByte int
-	input     legalquery.LogicalInput
+	startByte        int
+	topicOrdinal     int
+	input            legalquery.LogicalInput
+	evidenceBindings []profileevidence.EvidenceValues
 }
 
 // Generate は、位置付き前処理事実だけから法令コア候補を生成する。
@@ -496,11 +499,18 @@ func cloneDraft(value candidateDraft) candidateDraft {
 	for code := range value.evidence {
 		evidence[code] = struct{}{}
 	}
+	steps := append([]stepDraft(nil), value.steps...)
+	for index := range steps {
+		steps[index].evidenceBindings = append(
+			[]profileevidence.EvidenceValues(nil),
+			steps[index].evidenceBindings...,
+		)
+	}
 	return candidateDraft{
 		evidence:                     evidence,
 		concepts:                     append([]legalquery.LegalConceptSource(nil), value.concepts...),
 		requiredPacks:                append([]string(nil), value.requiredPacks...),
-		steps:                        append([]stepDraft(nil), value.steps...),
+		steps:                        steps,
 		aliasRankings:                append([]lawAliasRankingFact(nil), value.aliasRankings...),
 		preserveOfficialAlias:        value.preserveOfficialAlias,
 		preserveMorphologicalContext: value.preserveMorphologicalContext,
