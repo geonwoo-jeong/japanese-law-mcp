@@ -2,6 +2,7 @@ package legalquerycorpus
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -68,16 +69,20 @@ func TestLoadDevelopmentはmanifestとholdoutなしでdevelopmentだけを読む
 	if development.Cases()[0].CaseID() != firstCaseID {
 		t.Fatal("SOT-ENG-024/SOT-ENG-026: Cases() が共有 slice を返しました")
 	}
+	fixtureRoot, err := os.OpenRoot(root)
+	if err != nil {
+		t.Fatalf("SOT-ENG-024: test repository を開けません: %v", err)
+	}
 	fixture := filepath.Join(
-		root,
 		"testdata",
 		"legalquery",
 		"corpus-v10",
 		"development",
 		firstCaseID+".json",
 	)
-	file, err := os.OpenFile(fixture, os.O_APPEND|os.O_WRONLY, 0)
+	file, err := fixtureRoot.OpenFile(fixture, os.O_APPEND|os.O_WRONLY, 0)
 	if err != nil {
+		_ = fixtureRoot.Close()
 		t.Fatalf("SOT-ENG-024: development fixture を開けません: %v", err)
 	}
 	if _, err := file.WriteString("\n"); err != nil {
@@ -85,7 +90,11 @@ func TestLoadDevelopmentはmanifestとholdoutなしでdevelopmentだけを読む
 		t.Fatalf("SOT-ENG-024: development fixture を変更できません: %v", err)
 	}
 	if err := file.Close(); err != nil {
+		_ = fixtureRoot.Close()
 		t.Fatalf("SOT-ENG-024: development fixture を閉じられません: %v", err)
+	}
+	if err := fixtureRoot.Close(); err != nil {
+		t.Fatalf("SOT-ENG-024: test repository を閉じられません: %v", err)
 	}
 	changed, err := LoadDevelopment(
 		context.Background(),
@@ -177,9 +186,41 @@ func copyDevelopmentTree(t *testing.T, source string, target string) {
 	}
 }
 
-func copyDevelopmentTreeFiles(source string, target string) error {
-	return filepath.WalkDir(
-		source,
+func copyDevelopmentTreeFiles(source string, target string) (err error) {
+	if err := os.MkdirAll(target, 0o750); err != nil {
+		return err
+	}
+	sourceInfo, err := os.Lstat(source)
+	if err != nil || sourceInfo.Mode()&os.ModeSymlink != 0 ||
+		!sourceInfo.IsDir() {
+		return fmt.Errorf("development tree の root が有効ではありません")
+	}
+	sourceRoot, err := os.OpenRoot(source)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, sourceRoot.Close()) }()
+	openedSource, err := sourceRoot.Stat(".")
+	if err != nil || !os.SameFile(sourceInfo, openedSource) {
+		return fmt.Errorf("development tree の root が変化しました")
+	}
+	targetInfo, err := os.Lstat(target)
+	if err != nil || targetInfo.Mode()&os.ModeSymlink != 0 ||
+		!targetInfo.IsDir() {
+		return fmt.Errorf("development copy の root が有効ではありません")
+	}
+	targetRoot, err := os.OpenRoot(target)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, targetRoot.Close()) }()
+	openedTarget, err := targetRoot.Stat(".")
+	if err != nil || !os.SameFile(targetInfo, openedTarget) {
+		return fmt.Errorf("development copy の root が変化しました")
+	}
+	return fs.WalkDir(
+		sourceRoot.FS(),
+		".",
 		func(path string, entry fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
 				return walkErr
@@ -187,13 +228,12 @@ func copyDevelopmentTreeFiles(source string, target string) error {
 			if entry.Type()&os.ModeSymlink != 0 {
 				return fmt.Errorf("development tree に symlink があります")
 			}
-			relative, err := filepath.Rel(source, path)
-			if err != nil {
-				return err
-			}
-			destination := filepath.Join(target, relative)
+			relative := filepath.FromSlash(path)
 			if entry.IsDir() {
-				return os.MkdirAll(destination, 0o755)
+				if relative == "." {
+					return nil
+				}
+				return targetRoot.MkdirAll(relative, 0o750)
 			}
 			info, err := entry.Info()
 			if err != nil {
@@ -202,11 +242,16 @@ func copyDevelopmentTreeFiles(source string, target string) error {
 			if !info.Mode().IsRegular() {
 				return fmt.Errorf("development tree に通常 file 以外があります")
 			}
-			data, err := os.ReadFile(path)
+			data, err := sourceRoot.ReadFile(relative)
 			if err != nil {
 				return err
 			}
-			return os.WriteFile(destination, data, 0o644)
+			current, err := sourceRoot.Lstat(relative)
+			if err != nil || !current.Mode().IsRegular() ||
+				!os.SameFile(info, current) {
+				return fmt.Errorf("development tree の file が変化しました")
+			}
+			return targetRoot.WriteFile(relative, data, 0o600)
 		},
 	)
 }

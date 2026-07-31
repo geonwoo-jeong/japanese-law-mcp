@@ -114,7 +114,7 @@ schema byte、カテゴリ最小件数および safety pair を固定検証し�
 | 3.6 | 2026-07-31 | 9.0 / 10 | 9.0 / 10 | 0 | 実 next profile の production 固定順構成、schema version 2 と共有校正値、欠落・重複・逆順・weight 差と順序差の拒否、active composition root と標準評価経路からの非到達性 |
 | 4.1 | 2026-07-31 | 9.1 / 10（testability 8.8 / 10） | 8.8 / 10 | 0 | `default-1` version file と current baseline の byte 完全一致、初回 adoption history と `current.json`、baseline schema と閉じた loader、`--adoption` 固定の標準評価 command、中央品質ゲートの adoption 入口、catalog の corpus・baseline・version と verification artifact 実在検証 |
 | 4.2 | 2026-07-31 | 8.8 / 10（testability 8.5 / 10） | 9.1 / 10 | 0 | schema version 2 の三成果物と typed decoder、development assertion 十一件、追加 coverage 七件と safety pair、leakage digest の再計算と原 ID 非露出、`corpus-v9`・schema version 1 および `corpus-v10` の byte 固定、`step_limit_exceeded` だけに限定した空 meaning 境界 |
-| 4.3 | 2026-07-31 | 9.4 / 10（testability 8.9 / 10） | 8.9 / 10 | 0 | schema と development だけを開く loader、原 byte content digest、二回の独立構成、四十三件全体の fingerprint と scorecard、core・裁判例の専用校正 artifact、active からの非到達性、共有末尾の同値縮約後四 step 境界 |
+| 4.3 | 2026-07-31 | 9.4 / 10（testability 9.0 / 10） | 9.3 / 10 | 0 | schema と development だけを開く loader、原 byte content digest、二回の独立構成、四十三件全体の fingerprint と scorecard、core・裁判例の専用校正 artifact、active からの非到達性、共有末尾の同値縮約後四 step 境界 |
 
 ## 第 3 段階以降の SOT 文書 review
 

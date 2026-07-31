@@ -487,9 +487,41 @@ func stage43CopyTree(t *testing.T, source string, target string) {
 	}
 }
 
-func stage43CopyTreeFiles(source string, target string) error {
-	return filepath.WalkDir(
-		source,
+func stage43CopyTreeFiles(source string, target string) (err error) {
+	if err := os.MkdirAll(target, 0o750); err != nil {
+		return err
+	}
+	sourceInfo, err := os.Lstat(source)
+	if err != nil || sourceInfo.Mode()&os.ModeSymlink != 0 ||
+		!sourceInfo.IsDir() {
+		return fmt.Errorf("development-only source root が有効ではありません")
+	}
+	sourceRoot, err := os.OpenRoot(source)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, sourceRoot.Close()) }()
+	openedSource, err := sourceRoot.Stat(".")
+	if err != nil || !os.SameFile(sourceInfo, openedSource) {
+		return fmt.Errorf("development-only source root が変化しました")
+	}
+	targetInfo, err := os.Lstat(target)
+	if err != nil || targetInfo.Mode()&os.ModeSymlink != 0 ||
+		!targetInfo.IsDir() {
+		return fmt.Errorf("development-only copy root が有効ではありません")
+	}
+	targetRoot, err := os.OpenRoot(target)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, targetRoot.Close()) }()
+	openedTarget, err := targetRoot.Stat(".")
+	if err != nil || !os.SameFile(targetInfo, openedTarget) {
+		return fmt.Errorf("development-only copy root が変化しました")
+	}
+	return fs.WalkDir(
+		sourceRoot.FS(),
+		".",
 		func(path string, entry fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
 				return walkErr
@@ -497,13 +529,12 @@ func stage43CopyTreeFiles(source string, target string) error {
 			if entry.Type()&os.ModeSymlink != 0 {
 				return fmt.Errorf("development-only source に symlink があります")
 			}
-			relative, err := filepath.Rel(source, path)
-			if err != nil {
-				return err
-			}
-			destination := filepath.Join(target, relative)
+			relative := filepath.FromSlash(path)
 			if entry.IsDir() {
-				return os.MkdirAll(destination, 0o755)
+				if relative == "." {
+					return nil
+				}
+				return targetRoot.MkdirAll(relative, 0o750)
 			}
 			info, err := entry.Info()
 			if err != nil {
@@ -514,11 +545,16 @@ func stage43CopyTreeFiles(source string, target string) error {
 					"development-only source に通常 file 以外があります",
 				)
 			}
-			data, err := os.ReadFile(path)
+			data, err := sourceRoot.ReadFile(relative)
 			if err != nil {
 				return err
 			}
-			return os.WriteFile(destination, data, 0o644)
+			current, err := sourceRoot.Lstat(relative)
+			if err != nil || !current.Mode().IsRegular() ||
+				!os.SameFile(info, current) {
+				return fmt.Errorf("development-only source file が変化しました")
+			}
+			return targetRoot.WriteFile(relative, data, 0o600)
 		},
 	)
 }
