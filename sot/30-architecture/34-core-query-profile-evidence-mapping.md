@@ -37,10 +37,9 @@ task、resource、capability および logical input の七組は `SOT-MODEL-022
 
 ## private evidence mapping
 
-profile は候補 draft の各 step について、少なくとも step の原文順、
-`topicOrdinal`、その step を実際に成立させた位置付き事実、各事実の layer と
-evidence code、および cluster の `evidenceSpan` に利用できるかを、一 request
-だけの private mapping として保持する。
+private mapping の項目、request 内だけの寿命、公開禁止および競合時の扱いは
+`SOT-ARCH-031` を定義元とする。本規定は、法令コアの各 step へどの事実を
+対応させるかだけを定義する。
 
 同じ候補に複数 step があっても、ある step の事実を別 step へ複製しない。
 候補 draft を結合する場合は、ordered logical input の意味署名と
@@ -48,9 +47,9 @@ evidence code、および cluster の `evidenceSpan` に利用できるかを、
 だけで別 step の根拠を借りない。同じ事実、span、layer および code の重複を
 除き、layer 順、span 順、`SOT-MODEL-022` の evidence code 順に保持する。
 
-この mapping の寿命と公開禁止は `SOT-ARCH-031` に従う。不正な step 対応、
-範囲外 span、根拠のない主題または同じ事実の競合を検出した場合は
-contribution を構築せず、いずれか一方を推測して残さない。
+範囲外 span または profile 固有の禁止事実を含む mapping は不正とする。
+束縛が一意でない事実の除外後に根拠のない主題が残る場合、および同じ事実の
+競合を検出した場合は contribution を構築せず、いずれか一方を推測して残さない。
 
 ## input kind ごとの対応
 
@@ -60,7 +59,7 @@ contribution を構築せず、いずれか一方を推測して残さない。
 | input kind | 主題と `topicOrdinal` | 明示根拠 | target | semantic | 独立した正の根拠 |
 |---|---|---|---|---|---|
 | `law_search` | `SOT-ARCH-025` で個別分離した法令名、identifier または検索語を原文順に数える。分離しない場合は全 step を `1` とする | 同じ節で対象を束縛する core の search `direct_task` relation と law resource cue | 法令名、law ID、revision ID、法令番号、law resource へ明示的に束縛した `quoted_phrase` | law resource へ明示的に束縛した `morphological_phrase` | 公式 identifier、法令番号若しくは法令名、または search と law resource の明示根拠に束縛した検索語。形態素句だけで追加分岐にする場合は `SOT-ARCH-025` の独立主題でなければならない |
-| `law_content_search` | 共有末尾列では後述の同値縮約後の topic span、個別分離では法概念、検索語または本文中の literal な法令名を原文順に数える。分離しない場合は `1` とする | 同じ節で対象を束縛する core の search `direct_task` relation、law provision resource cue、および検証済み共有末尾 relation | `quoted_phrase`。法令名は、法令の identity ではなく本文検索語として logical input へ実際に変換した場合だけ利用できる | 公的 source を持つ法概念と `morphological_phrase` | 公的 source を持つ法概念、同じ節の明示検索対象、または `SOT-ARCH-025` が独立主題とした一般検索語。task/resource cue だけでは足りない |
+| `law_content_search` | 共有末尾列では後述の同値縮約後の topic span、個別分離では法概念、検索語または本文中の literal な法令名を原文順に数える。分離しない場合は `1` とする | 同じ節で対象を束縛する core の search `direct_task` relation、law provision resource cue、および検証済み共有末尾 relation | `quoted_phrase`、または後述の 2 若しくは 3 の条件で本文検索語へ変換した法令名。法令の identity としての法令名は利用しない | 公的 source を持つ法概念と `morphological_phrase` | 公的 source を持つ法概念、同じ節の明示検索対象、`SOT-ARCH-025` が独立主題とした一般検索語、または後述の 2 若しくは 3 で本文検索語へ変換した法令名。task/resource cue だけでは足りない |
 | `law_read` | 明示 read と結び付いた一つの法令 target を一主題とする。入力 `ref` は span を作らず、同じ read の位置付き cue を原文順の根拠にする。分離しない場合は `1` とする | core の read `direct_task` relation と、同じ read に束縛した law resource cue | 法令名、law ID、revision ID または法令番号。法令 `ref` は span なしの `official_identifier` としてだけ利用する | 利用しない | 検証済み law `ref`、または一意な公式 identifier・法令番号・法令名と明示 read の組。一つの裸の法令名または一般語だけで read を作らない |
 | `law_article_read` | 同じ read に束縛した法令 target と article/paragraph location の組を一主題とする。法令 target が `ref` の場合は最初の article span を位置付き target とする。個別に明示された組は原文順に数え、分離しない場合は `1` とする | core の read `direct_task` relation と、同じ read に束縛した law provision resource cue | 法令名、law ID、法令番号、article および任意の paragraph。法令 `ref` は span を持たない | 利用しない | 検証済み law `ref` または一意な法令 target、検証済み article location、および明示 read がすべて必要。article だけ、revision ID と article の組、または一般語で補わない |
 | `law_updates` | 明示的に個別分離された完全な日付を原文順に数える。通常の一日付は `1` とする | core の list-updates `direct_task` relation と updates resource cue | 完全な暦日 | 利用しない | 完全な暦日と、同じ主題の list-updates/updates 明示根拠が必要。cue だけ、不完全日付または相対日は不可 |
@@ -68,6 +67,56 @@ contribution を構築せず、いずれか一方を推測して残さない。
 同じ節または同じ主題への束縛を一意に決められない場合は、その事実を当該
 input kind に使わない。近いという理由だけで別の節、別 task または別 resource の
 事実を借りない。
+
+## 法令名を本文検索語へ投影する条件
+
+法令名出現を `law_content_search` の検索語へ変換できるのは、法令の identity
+として `law_search`、`law_read` または `law_article_read` へ束縛する場合ではなく、
+次の順で最初に成立する一つの経路がある場合だけとする。先の経路が成立した場合は、
+後の経路から検索語または根拠を重ねない。
+
+1. 同じ span の `quoted_phrase` が、同じ節の core search task と
+   law provision resource に束縛されている
+2. 同じ span の `quoted_phrase` がなく、`SOT-ARCH-025` の `それぞれ`、
+   `個別に`、`一つずつ`または`各々`の明示 cue による個別分離で、その法令名 span
+   自体が一つの主題範囲と完全一致し、同じ主題の task/resource が
+   `law_content_search` に一意に定まる
+3. 同じ span の `quoted_phrase` がなく、後述する検証済み共有末尾列で、その
+   法令名 span が一つの `topicSpan` と完全一致する
+
+1 では `quoted_phrase` の原文表記を検索語とし、layer は `target_anchor`、
+根拠 code は `general_term` とする。法令名出現は同じ span の候補意味を確認する
+補助事実にはできるが、検索語、独立した正の根拠または cluster span を二重に
+追加しない。
+
+2 と 3 では、同じ主題範囲と完全一致する同一 span・同一 `surface` の
+法令名出現を、一つの本文検索表記群として扱う。この群は profile 内の一時的な
+判定単位であり、新しい前処理事実、field または公開 model として保存しない。
+群の `surface` から前後の Unicode White_Space だけを除いた原文表記を、一つの
+`allTerms` 要素とする。比較用正規化値、読み、law ID、revision ID、法令番号
+または辞書の canonical title へ置換しない。
+
+群に `matchKind` が `unique_typo_correction` ではない法令名出現が一件以上ある
+場合は、その該当出現をすべて、`law_content_search` に限って同じ主題の
+明示検索対象とし、同じ step の `target_anchor/official_alias` へ対応させる。
+同一 span・同一 `surface` が複数の law identity に対応していても、どの identity
+も選ばず、別 draft、別 step、追加の正の根拠または複数の検索語へ増やさない。
+この identity の多重性は、本文検索語の step 束縛における曖昧性とみなさない。
+候補の `official_alias` は重複のない一 code とし、群は独立した正の根拠を
+一件だけ満たす。派生した `allTerms` の文字列を別の事実にしたり、
+`general_term` を追加したりしない。
+
+群の全出現が `matchKind=unique_typo_correction` の場合は、同じ span の
+`quoted_phrase` が 1 の条件を独立に満たさない限り、2 または 3 だけで
+本文検索語へ変換しない。この場合も変換根拠は `quoted_phrase` とし、
+誤記補正した法令名を検索語へ置き換えない。
+
+同じ法令名 span に read、law search または article read の target 束縛も成立する
+場合は、節、relation または主題の境界だけで content search への束縛を一意に
+分離できなければ本文検索語へ投影しない。法令名が照会文に存在すること、法令名と
+law provision cue の距離が近いこと、または同じ候補に別の content search step が
+あることだけでは変換しない。law ID、revision ID および法令番号を本文検索語へ
+変換しない。
 
 検索または read の `asOf` に使う日付は、選択済み logical input の条件を支持する
 `structured_reference` にはできるが、独立主題、追加 step、追加分岐または
@@ -137,10 +186,24 @@ registry 対応、capability binding および materialization は後段へ残�
 - `core-evidence-mapping-ref-no-span`
 - `core-shared-terminal-evidence-cluster`
 - `core-evidence-mapping-provider-independent`
+- `core-law-name-content-projection`
+- `core-evidence-mapping-fail-closed`
 
 五 input kind の許可事実と禁止事実、同一 span の別意味、異なる span の同一意味、
 一から四主題、五主題、`asOf` と updates 日付の差、法令 `ref`、別節 cue、
 別 profile cue および provider metadata の差を fixture にする。
+
+法令名と同じ span の引用句、明示的な個別主題、共有末尾 topic、裸の法令名、
+一意な誤記補正、同一 surface の複数 law identity、read と content search の
+競合および law ID を fixture にし、許可した三条件だけが原文表記の本文検索語に
+なること、ならびに複数 identity を選択または複数検索へ展開しないことを確認する。
+
+一つの事実を同じ draft の複数 step または複数 `topicOrdinal` へ束縛できる
+曖昧な節、同じ draft・step・事実へ競合する layer/code または cluster span 可否を
+与えた mapping、範囲外 span および独立した正の根拠を失った主題を fixture にし、
+一方を選んだ contribution または部分的な mapping を作らないことを確認する。
+検証済み共有末尾 relation を各 topic step の明示 task 根拠として共有し、各 topic
+span が別の正の根拠を持つ正常系は、この曖昧性として拒否しない。
 
 ## 関連
 

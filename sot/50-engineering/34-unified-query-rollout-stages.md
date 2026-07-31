@@ -232,9 +232,9 @@ ID は変更順序から検証へ到達するための索引であり、各動�
 | 3.1 | `SOT-ENG-035` | `profile-metadata-schema-versions`、`profile-metadata-branch-retention-presence` |
 | 3.2 | `SOT-MODEL-031`、`SOT-ENG-034` | `shared-terminal-sequence-contract`、`shared-terminal-production-neutral` |
 | 3.3 | `SOT-ARCH-031`、`SOT-ARCH-032` | `profile-private-evidence-mapping-lifetime`、`profile-evidence-cluster-key` |
-| 3.4 | `SOT-ARCH-034` | `core-evidence-mapping-input-kinds`、`core-evidence-mapping-private-lifetime`、`core-evidence-mapping-topic-positive`、`core-evidence-mapping-ref-no-span`、`core-shared-terminal-evidence-cluster`、`core-evidence-mapping-provider-independent` |
-| 3.5 | `SOT-ARCH-035` | `judicial-evidence-mapping-input-kinds`、`judicial-evidence-mapping-private-lifetime`、`judicial-evidence-mapping-topic-positive`、`judicial-evidence-mapping-ref-no-span`、`judicial-shared-terminal-rejected`、`judicial-evidence-mapping-pack-provider-invariant` |
-| 3.6 | `SOT-ENG-035` | `next-profile-set-fixed-composition` |
+| 3.4 | `SOT-ARCH-034` | `core-evidence-mapping-input-kinds`、`core-evidence-mapping-private-lifetime`、`core-evidence-mapping-topic-positive`、`core-evidence-mapping-ref-no-span`、`core-shared-terminal-evidence-cluster`、`core-evidence-mapping-provider-independent`、`core-law-name-content-projection`、`core-evidence-mapping-fail-closed` |
+| 3.5 | `SOT-ARCH-035` | `judicial-evidence-mapping-input-kinds`、`judicial-evidence-mapping-private-lifetime`、`judicial-evidence-mapping-topic-positive`、`judicial-evidence-mapping-ref-no-span`、`judicial-shared-terminal-rejected`、`judicial-evidence-mapping-pack-provider-invariant`、`judicial-evidence-mapping-fail-closed` |
+| 3.6 | `SOT-ENG-035` | `profile-metadata-ranking-consistency`、`next-profile-set-fixed-composition` |
 | 4.1 | `SOT-ENG-033`、`SOT-ENG-036` | `evaluation-baseline-initial-bootstrap`、`evaluation-baseline-resource-maximum`、`evaluation-baseline-history-bounds`、`profile-set-adoption-canonical-bytes` |
 | 4.2 | `SOT-ENG-026` | `legal-query-corpus-v2-development-assertions`、`legal-query-corpus-v2-holdout-coverage`、`legal-query-corpus-v2-leakage-digests`、`legal-query-corpus-immutable-version` |
 | 4.3 | `SOT-ENG-024` | `next-profile-set-development-only-calibration` |

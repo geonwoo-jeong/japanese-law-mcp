@@ -185,6 +185,19 @@ scale、confidence、selection policy および tie-break 校正を持つ。
 限定分岐を検証する固定 set は、全 profile を schema version 2 にそろえ、
 同じ `branchRetentionMargin` を持たなければならない。
 
+ここでいう共有校正値の一致は、各 profile metadata の次の値が byte 表記ではなく
+検証済み値として完全一致することを意味する。
+
+- `score.minimum`、`score.maximum`、九件の `evidenceWeights` の code・weight・順、
+  `highConfidenceAt` および `mediumConfidenceAt`
+- `selection.singleThreshold`、`minimumExecutionThreshold`、`singleMargin`、
+  `hedgeMargin` および schema version 2 の `branchRetentionMargin`
+- 共通 `tieBreak` の全要素と順
+
+`conditionalTieBreaks` は profile 固有 SOT が採用した条件だけを各 profile loader
+で検証するため、異なる profile 間で object の有無を一致させない。条件付き順序を
+共通 `tieBreak` の不一致を隠す代替値としても使わない。
+
 個別 profile の loader、private evidence mapping または candidate generation を
 単独 test fixture で構築することは、校正、holdout、baseline または採用候補としての
 固定 profile set を構成したことにはならない。固定 set として評価する時点で初めて、
@@ -224,10 +237,15 @@ loader は少なくとも次を照合する。
 - `profile-metadata-profile-ownership`: profile ID、target の固定順、
   cue set および辞書 version の不一致を拒否する
 - `profile-metadata-ranking-consistency`: 固定 set 内の ranking version、共有 score、
-  selection、tie-break および schema version の混在を拒否する
+  selection、tie-break および schema version の混在を、任意の固定 set
+  constructor に共通する loader 検査として拒否する
 - `next-profile-set-fixed-composition`: 次版の全 profile を production と同じ固定順で
-  一回だけ構成し、schema version 2、ranking version および
-  `branchRetentionMargin` の一致を確認する
+  一回だけ構成し、schema version 2、ranking version、score scale、confidence、
+  selection、共通 tie-break および `branchRetentionMargin` の完全一致を確認する。
+  ranking version が同じでも共有校正値の一項目だけが異なる set と、値が同じでも
+  profile 順または evidence weight 順だけが異なる set を拒否する。この検証は
+  `profile-metadata-ranking-consistency` と同じ loader 検査を、次版の正確な
+  composition へ適用し、profile の欠落、重複または test 用の別順も追加で拒否する
 - `profile-metadata-conditional-tie-break`: core の条件付き完全順を検証し、
   未採用 profile の条件付き項目と未知条件を拒否する
 - `profile-metadata-immutability`: accessor の戻り値を変更しても metadata、

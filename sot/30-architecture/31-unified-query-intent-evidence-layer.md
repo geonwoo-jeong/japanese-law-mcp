@@ -96,6 +96,27 @@ evidence code および意図根拠レイヤを、profile 内の一時的な対�
 この対応は、候補の根拠検証、対象外との混在時の候補 scope、および
 `SOT-ARCH-032` の evidence cluster を確定するためだけに使用する。
 
+ここでいう一つの位置付き事実は、同じ前処理出現の identity と kind を持つ一件を
+指す。同じ span に法令名と `quoted_phrase` のような異なる kind の出現が併存する
+場合は別の事実とし、それぞれが上表の対応を独立に満たすか確認する。
+
+同じ候補 draft の中で一つの位置付き事実を二つ以上の step または
+`topicOrdinal` のどれへ束縛すべきか一意に決まらない場合は、その事実をいずれの
+step にも使用しない。その結果、profile 固有 SOT が要求する独立した正の根拠を
+満たさない step が残る場合は、その draft から contribution を構築しない。
+`SOT-MODEL-031` の `SharedTerminalSequence.terminalTaskRelation` は、
+`SOT-ARCH-034` の条件を満たす同じ sequence の各 step へ、共有する
+`explicit_task` 根拠として対応できる。この場合も各 step は自身の topic span に
+別の正の根拠を必要とし、この共有だけでは「どの step へ束縛すべきか一意に
+決まらない事実」に含めない。ほかの共有 cue または relation を同じ例外へ
+類推しない。
+
+同じ draft、step および位置付き事実の組へ、上表と異なる layer、evidence code
+または cluster span 可否を二通り以上対応させた場合は、その draft を不正として
+全体を拒否する。`unique_typo_correction` を `official_alias` または
+`legal_concept` へ補助的に併記する上表の規則と、同じ span を別の意味として扱う
+別 draft は競合に含めない。配列順、距離、score または先勝ちで競合を解消しない。
+
 一時的な対応は一 request の profile 評価中だけ保持し、
 `LegalQueryPreprocessResult`、`LegalQueryCandidate`、
 `QueryProfileContribution` または profile set result に新しい field として
@@ -152,6 +173,13 @@ task/resource に適用できる `SOT-ARCH-025` の複数主題分離を前提�
 - `民法第103条を引用する裁判例の影響グラフを作成してください。` は、対象外 relation により非実行境界が先に立ち、取得候補を実行しない
 - `qznnsidvcvfxqirm` のような非日本語入力は、法情報照会へ翻訳または再分類しない
 - `この ref を読んでください。` は、入力 `ref` と read cue が一致する場合だけ read 候補になる
+
+事実をどの step または `topicOrdinal` へ束縛できるかは profile 固有規定が
+決めるため、曖昧な束縛、layer/code、cluster span 可否および正の根拠喪失に
+対する fail-closed は、法令コアの
+`core-evidence-mapping-fail-closed` と `judicial-cases` の
+`judicial-evidence-mapping-fail-closed` で確認する。共通 mapping 骨格は
+profile 固有の束縛を推測せず、各 profile が渡した構造の整合だけを検証する。
 
 ## 関連
 

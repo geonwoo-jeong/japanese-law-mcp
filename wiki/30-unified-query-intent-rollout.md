@@ -76,6 +76,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 確認日 | architecture review | testability review | blocker | major | minor | 確認範囲 |
 |---|---:|---:|---:|---:|---:|---|
 | 2026-07-31 | 9.6 / 10 | 9.8 / 10 | 0 | 0 | 0 | core・judicial の根拠対応、第 3 から第 7 段階、profile 候補と provider 候補の境界、candidate identity、holdout の一回利用と compact leakage index、report と履歴の資源上限、evaluator の採用・再現・rollback、corpus の不変性、固定検証 ID |
+| 2026-07-31 | 9.1 / 10 | 9.4 / 10 | 0 | 0 | 0 | `SOT-ARCH-031` の同一 span 異種事実境界、共有 `explicit_task` 例外、`SOT-ARCH-034` の法令名本文検索語投影三経路、core・judicial の fail-closed fixture、および `SOT-ENG-035` の共有校正一致条件 |
 
 この review は文書設計だけを対象とし、第 3 段階以降の実装完了を表さない。
 実装状態は次節のとおり 3.1 から 3.3 までが完了し、3.4 以降は `未着手` とする。

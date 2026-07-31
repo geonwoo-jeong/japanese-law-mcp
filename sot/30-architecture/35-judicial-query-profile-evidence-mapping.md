@@ -36,19 +36,19 @@ selector が実行可否だけを決める。
 
 ## private evidence mapping
 
-profile は候補 draft の各 step について、少なくとも step の原文順、
-`topicOrdinal`、その step を実際に成立させた位置付き事実、各事実の layer と
-evidence code、および cluster の `evidenceSpan` に利用できるかを、一 request
-だけの private mapping として保持する。
+private mapping の項目、request 内だけの寿命、公開禁止および競合時の扱いは
+`SOT-ARCH-031` を定義元とする。本規定は、`judicial-cases` の各 step へどの
+事実を対応させるかだけを定義する。
 
 同じ候補の read と search、または複数の search step の間で根拠を複製しない。
 候補 draft を結合する場合は、ordered logical input の意味署名と
 `topicOrdinal` が一致する step 同士だけの mapping を和集合にし、配列 index、
 共通 resource 名または一つの terminal cue だけで別 step の根拠を借りない。
 
-mapping の寿命、順序、公開禁止および競合時の fail-closed は
-`SOT-ARCH-031` と `SOT-ARCH-032` に従う。不正な step 対応、範囲外 span、
-根拠のない主題または同じ事実の競合を検出した場合は contribution を構築しない。
+順序と cluster 対応は `SOT-ARCH-032` に従う。範囲外 span または profile 固有の
+禁止事実を含む mapping は不正とする。束縛が一意でない事実の除外後に
+根拠のない主題が残る場合、および同じ事実の競合を検出した場合は contribution を
+構築しない。
 
 ## input kind ごとの対応
 
@@ -124,10 +124,17 @@ capability binding、pack availability および materialization は後段へ残
 - `judicial-evidence-mapping-ref-no-span`
 - `judicial-shared-terminal-rejected`
 - `judicial-evidence-mapping-pack-provider-invariant`
+- `judicial-evidence-mapping-fail-closed`
 
 検索の許可事実と禁止事実、read `ref`、read と search の結合、一から四主題、
 五主題、同一 span の別意味、異なる span の同一意味、法令名・条項の非採用、
 別 profile cue、pack 有効・無効および provider metadata の差を fixture にする。
+
+一つの事実を同じ draft の read と search、二つの search step または複数
+`topicOrdinal` へ束縛できる曖昧な節、同じ draft・step・事実へ競合する layer/code
+または cluster span 可否を与えた mapping、範囲外 span および独立した正の根拠を
+失った主題を fixture にし、一方を選んだ contribution または部分的な mapping を
+作らないことを確認する。
 
 ## 関連
 
