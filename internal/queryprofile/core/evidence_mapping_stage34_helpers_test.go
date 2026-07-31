@@ -161,10 +161,10 @@ func assertSingleContentCandidate(
 			len(wantTerms),
 		)
 	}
+	actualTerms := make([][]string, 0, len(steps))
 	for index, step := range steps {
 		input, ok := step.LogicalInput().(legalquery.LawContentSearchIntentV1)
 		if !ok ||
-			!slices.Equal(input.AllTerms(), wantTerms[index]) ||
 			len(input.AnyTerms()) != 0 ||
 			len(input.ExcludeTerms()) != 0 {
 			t.Fatalf(
@@ -174,6 +174,19 @@ func assertSingleContentCandidate(
 				step.LogicalInput(),
 			)
 		}
+		actualTerms = append(actualTerms, input.AllTerms())
+	}
+	if !slices.EqualFunc(
+		actualTerms,
+		wantTerms,
+		slices.Equal,
+	) {
+		t.Fatalf(
+			"%s: 本文検索語 = %#v、期待値は %#v",
+			verificationID,
+			actualTerms,
+			wantTerms,
+		)
 	}
 }
 

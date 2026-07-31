@@ -151,23 +151,33 @@ func coreBoundedTopicChoices(
 	if len(options) == 0 {
 		return nil
 	}
-	baseline := make([]coreTopicOption, len(options))
-	for index := range options {
-		if len(options[index]) == 0 {
+	baseline := make([]coreTopicOption, 0, len(options))
+	for _, topicOptions := range options {
+		if len(topicOptions) == 0 {
 			return nil
 		}
-		baseline[index] = cloneCoreTopicOption(options[index][0])
+		baseline = append(
+			baseline,
+			cloneCoreTopicOption(topicOptions[0]),
+		)
 	}
 	result := [][]coreTopicOption{baseline}
-	for topicIndex := range options {
-		for optionIndex := 1; optionIndex < len(options[topicIndex]); optionIndex++ {
-			choice := make([]coreTopicOption, len(baseline))
-			for index := range baseline {
-				choice[index] = cloneCoreTopicOption(baseline[index])
+	for topicIndex, topicOptions := range options {
+		for optionIndex, option := range topicOptions {
+			if optionIndex == 0 {
+				continue
 			}
-			choice[topicIndex] = cloneCoreTopicOption(
-				options[topicIndex][optionIndex],
-			)
+			choice := make([]coreTopicOption, 0, len(baseline))
+			for baselineIndex, baselineOption := range baseline {
+				if baselineIndex == topicIndex {
+					choice = append(choice, cloneCoreTopicOption(option))
+					continue
+				}
+				choice = append(
+					choice,
+					cloneCoreTopicOption(baselineOption),
+				)
+			}
 			result = append(result, choice)
 		}
 	}
