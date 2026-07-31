@@ -57,6 +57,11 @@ const (
 	EvidenceGeneralTerm EvidenceCode = "general_term"
 )
 
+// Order は、SOT-MODEL-022 が固定する強い根拠からの順序と有無を返す。
+func (c EvidenceCode) Order() (int, bool) {
+	return evidenceRank(c)
+}
+
 // Task は、候補 step が行う作業を表す。
 type Task string
 

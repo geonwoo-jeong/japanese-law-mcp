@@ -51,7 +51,7 @@ profile を profile ID 順に整列しており、production composition root �
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
-| 3 | 進行中（3.2 完了） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-032`、`SOT-ARCH-034`、`SOT-ARCH-035`、`SOT-ENG-035` |
+| 3 | 進行中（3.3 完了） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-032`、`SOT-ARCH-034`、`SOT-ARCH-035`、`SOT-ENG-035` |
 | 4 | 未着手 | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-037` |
 | 5 | 未着手 | 全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | `GET /laws`、`GET /keyword`、`GET /law_data` の parser を一 endpoint ずつ移行した後、法令検索の canonical target 優先を application 層へ接続する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
@@ -78,7 +78,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 2026-07-31 | 9.6 / 10 | 9.8 / 10 | 0 | 0 | 0 | core・judicial の根拠対応、第 3 から第 7 段階、profile 候補と provider 候補の境界、candidate identity、holdout の一回利用と compact leakage index、report と履歴の資源上限、evaluator の採用・再現・rollback、corpus の不変性、固定検証 ID |
 
 この review は文書設計だけを対象とし、第 3 段階以降の実装完了を表さない。
-実装状態は次節のとおり 3.1 と 3.2 が完了し、3.3 以降は `未着手` とする。
+実装状態は次節のとおり 3.1 から 3.3 までが完了し、3.4 以降は `未着手` とする。
 
 ## 第 3 段階の内部進捗
 
@@ -88,7 +88,7 @@ profile を profile ID 順に整列しており、production composition root �
 |---:|---|---|
 | 3.1 | 完了 | schema version 2 の profile metadata model、loader、存在状態および固定 set 整合 |
 | 3.2 | 完了 | production-neutral な `SharedTerminalSequence` sidecar |
-| 3.3 | 未着手 | profile-private な根拠対応と evidence cluster |
+| 3.3 | 完了 | profile-private な根拠対応と evidence cluster |
 | 3.4 | 未着手 | core の sidecar 消費、複数主題 step および限定分岐 |
 | 3.5 | 未着手 | sidecar を消費しない `judicial-cases` 固有の限定分岐 |
 | 3.6 | 未着手 | 全 profile が schema version 2 と共有校正値を持つ test 専用固定 set |
