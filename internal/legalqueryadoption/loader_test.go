@@ -160,7 +160,7 @@ func writeAdoptionFixtureFile(
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		t.Fatalf("adoption test dir を作れません: %v", err)
 	}
-	//nolint:gosec // t.TempDir 配下へ test が構成した固定 fixture だけを書く。
+	//nolint:gosec // SOT-ENG-019: t.TempDir 配下へ test が構成した固定 fixture だけを書く。
 	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("adoption test file を書けません: %v", err)
 	}
@@ -422,7 +422,7 @@ func rewriteCatalogFixture(
 	t.Helper()
 
 	path := filepath.Join(root, filepath.FromSlash(relative))
-	//nolint:gosec // t.TempDir 配下の固定 catalog fixture 名だけを test 内で読む。
+	//nolint:gosec // SOT-ENG-019: t.TempDir 配下の固定 catalog fixture 名だけを test 内で読む。
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("catalog fixture を読めません: %v", err)
@@ -431,7 +431,7 @@ func rewriteCatalogFixture(
 	if updated == string(raw) {
 		t.Fatalf("catalog fixture の置換対象がありません: %s", relative)
 	}
-	//nolint:gosec // t.TempDir 配下の同じ固定 catalog fixture だけを test 内で更新する。
+	//nolint:gosec // SOT-ENG-019: t.TempDir 配下の同じ固定 catalog fixture だけを test 内で更新する。
 	if err := os.WriteFile(path, []byte(updated), 0o600); err != nil {
 		t.Fatalf("catalog fixture を更新できません: %v", err)
 	}

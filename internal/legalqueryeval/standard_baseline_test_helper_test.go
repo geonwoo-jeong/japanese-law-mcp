@@ -12,7 +12,7 @@ func loadStandardBaselineFromPath(path string) (StandardReport, error) {
 	if path == "" {
 		return StandardReport{}, fmt.Errorf("baseline path は必須です")
 	}
-	file, err := os.Open(path) //nolint:gosec // t.TempDir 配下の baseline fixture だけを読む。
+	file, err := os.Open(path) //nolint:gosec // SOT-ENG-019: t.TempDir 配下の baseline fixture だけを読む。
 	if err != nil {
 		return StandardReport{}, fmt.Errorf("baseline を開けません: %w", err)
 	}
