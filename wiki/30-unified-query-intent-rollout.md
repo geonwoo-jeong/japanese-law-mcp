@@ -77,7 +77,7 @@ profile を profile ID 順に整列しており、production composition root �
 |---:|---|---|---|
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
-| 3 | 進行中（3.5 実装・独立 review・権威 CI 通過） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
+| 3 | 完了（3.6 実装・独立 review 通過、権威 CI 判定対象） | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
 | 4 | 未着手 | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-2` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行う | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
 | 5 | 未着手 | 全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | `GET /laws`、`GET /keyword`、`GET /law_data` の parser を一 endpoint ずつ移行した後、法令検索の canonical target 優先を application 層へ接続する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
@@ -96,6 +96,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 3.4.3 | 2026-07-31 | 9.3 / 10（敵対的 review 8.6 / 10） | 9.3 / 10 | 0 | shared-terminal の exact relation 消費、互換な複数 resource cue の根拠和集合、同一 span の別意味保持、異なる span の同値縮約、non-Cartesian 限定代替列、四 step 上限と五件目 `step_limit_exceeded`、cluster 単位の三件保持、active 非到達性 |
 | 3.4.4 | 2026-07-31 | 9.2 / 10（testability 8.6 / 10） | 8.9 / 10 | 0 | step 内の閉じた根拠正規化、三 step 以上と入力順の決定性、候補和集合・score・`conceptSources`、group 曖昧性と source tuple 競合の fail-closed、`ref` 完全一致、provider 非依存性、private mapping 寿命、active composition root 非到達性 |
 | 3.5 | 2026-07-31 | 8.5 / 10 | 9.0 / 10 | 0 | 裁判例の五 input kind、主題と span なし `ref` の分離と byte 完全一致、step 内根拠正規化、pack/provider 非意味化、shared terminal 非消費、non-Cartesian 限定代替列、同一節の競合 resource cue と曖昧な束縛の fail-closed |
+| 3.6 | 2026-07-31 | 9.0 / 10 | 9.0 / 10 | 0 | 実 next profile の production 固定順構成、schema version 2 と共有校正値、欠落・重複・逆順・weight 差と順序差の拒否、active composition root と標準評価経路からの非到達性 |
 
 ## 第 3 段階以降の SOT 文書 review
 
@@ -113,8 +114,8 @@ profile を profile ID 順に整列しており、production composition root �
 | 2026-07-31 | 10.0 / 10 | 9.8 / 10 | 0 | 0 | 0 | 今回の後継 SOT、step 内根拠正規化、`ref` 忠実性、候補内容 identity、52 件の固定 review 契約集合、review attestation、検証済み source view、資源上限および七段階の導入順序。敵対的 review は 9.8 / 10、blocker・major・minor はすべて 0。文書設計だけを対象とし、実装完了は表さない |
 
 この review は文書設計だけを対象とし、第 3 段階以降の実装完了を表さない。
-実装状態は次節のとおり 3.1 から 3.5 までが完了し、独立 review と権威 CI を
-通過した。3.6 以降は `未着手` とする。
+実装状態は次節のとおり 3.1 から 3.6 までが完了し、独立 review を通過した。
+3.6 は権威 CI の判定対象であり、第 4 段階以降は `未着手` とする。
 
 ## 第 3 段階の内部進捗
 
@@ -127,7 +128,7 @@ profile を profile ID 順に整列しており、production composition root �
 | 3.3 | 完了 | profile-private な根拠対応と evidence cluster |
 | 3.4 | 完了 | core の sidecar 消費、複数主題 step および限定分岐 |
 | 3.5 | 完了 | sidecar を消費しない `judicial-cases` 固有の限定分岐 |
-| 3.6 | 未着手 | 全 profile が schema version 2 と共有校正値を持つ test 専用固定 set |
+| 3.6 | 完了（権威 CI 判定対象） | 全 profile が schema version 2 と共有校正値を持つ test 専用固定 set |
 
 ### 3.4 の内部順序
 
