@@ -53,6 +53,35 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	}
 }
 
+func TestReferenceValidatorは実際の候補評価準備Treeをloaderで再読込できる(t *testing.T) {
+	t.Parallel()
+
+	root := candidateRepositoryRoot(t)
+	validator, err := NewReferenceValidator(root)
+	if err != nil {
+		t.Fatalf("candidate-evaluation-current-single-target: validator を作成できません: %v", err)
+	}
+	prepared, err := legalquerycandidateeval.LoadPreparedCurrent(
+		context.Background(),
+		root,
+		validator,
+	)
+	if err != nil {
+		t.Fatalf("candidate-evaluation-current-single-target: 実際の候補評価準備 tree を再読込できません: %v", err)
+	}
+	if prepared.Pointer.EvaluationID == "" ||
+		prepared.Request.EvaluationID == "" ||
+		prepared.CandidateContent.CandidateContentID == "" {
+		t.Fatalf("candidate-evaluation-current-single-target: current tree の主要 ID が空です: %#v", prepared)
+	}
+	if prepared.Pointer.EvaluationID != prepared.Request.EvaluationID {
+		t.Fatalf("candidate-evaluation-current-single-target: pointer=%q request=%q", prepared.Pointer.EvaluationID, prepared.Request.EvaluationID)
+	}
+	if len(prepared.ReviewAttestations) != 2 {
+		t.Fatalf("candidate-evaluation-current-single-target: review 数 = %d", len(prepared.ReviewAttestations))
+	}
+}
+
 func TestReferenceValidatorは不正Rootと取消を拒否する(t *testing.T) {
 	t.Parallel()
 
