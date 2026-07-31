@@ -31,9 +31,10 @@ func TestProfileEvidenceClusterKey(t *testing.T) {
 					DraftID: "draft-one",
 					Steps: []profileevidence.StepValues{
 						{
-							StepID:        "step-two",
-							SourceOrdinal: 2,
-							TopicOrdinal:  2,
+							StepID:               "step-two",
+							SourceOrdinal:        2,
+							TopicOrdinal:         2,
+							StepMeaningSignature: "law-search-two",
 							Evidence: []profileevidence.EvidenceValues{
 								{
 									FactID:              "target-second",
@@ -51,9 +52,10 @@ func TestProfileEvidenceClusterKey(t *testing.T) {
 							},
 						},
 						{
-							StepID:        "step-one",
-							SourceOrdinal: 1,
-							TopicOrdinal:  1,
+							StepID:               "step-one",
+							SourceOrdinal:        1,
+							TopicOrdinal:         1,
+							StepMeaningSignature: "law-search-one",
 							Evidence: []profileevidence.EvidenceValues{
 								{
 									FactID:              "semantic",
@@ -423,9 +425,10 @@ func clusterStep(
 	independentPositive bool,
 ) profileevidence.StepValues {
 	return profileevidence.StepValues{
-		StepID:        stepID,
-		SourceOrdinal: sourceOrdinal,
-		TopicOrdinal:  topicOrdinal,
+		StepID:               stepID,
+		SourceOrdinal:        sourceOrdinal,
+		TopicOrdinal:         topicOrdinal,
+		StepMeaningSignature: "law-search-" + stepID,
 		Evidence: []profileevidence.EvidenceValues{
 			{
 				FactID:              factID,

@@ -58,6 +58,23 @@ func (m Mapping) StepEvidence(draftID string, stepID string) ([]Evidence, error)
 	return append([]Evidence(nil), value.steps[index].evidence...), nil
 }
 
+// NormalizedStepEvidence は、同じ step・同じ group だけで閉じた優越表を
+// 適用した根拠の複製を返す。
+func (m Mapping) NormalizedStepEvidence(
+	draftID string,
+	stepID string,
+) ([]Evidence, error) {
+	value, exists := m.drafts[draftID]
+	if !exists {
+		return nil, fmt.Errorf("draftId %q は mapping に存在しません", draftID)
+	}
+	index, exists := value.stepByID[stepID]
+	if !exists {
+		return nil, fmt.Errorf("stepId %q は draft %q に存在しません", stepID, draftID)
+	}
+	return append([]Evidence(nil), value.steps[index].normalizedEvidence...), nil
+}
+
 func buildFacts(values []FactValues) (map[string]fact, error) {
 	if len(values) > maximumFacts {
 		return nil, fmt.Errorf("facts は %d 件以下でなければなりません", maximumFacts)
@@ -120,6 +137,14 @@ func buildDraft(value DraftValues, facts map[string]fact) (draft, error) {
 		if stepValue.TopicOrdinal < 1 {
 			return draft{}, fmt.Errorf("steps[%d].topicOrdinal は 1 以上でなければなりません", index)
 		}
+		if len(stepValue.StepMeaningSignature) < 1 ||
+			len(stepValue.StepMeaningSignature) > maximumStepMeaningSignatureBytes {
+			return draft{}, fmt.Errorf(
+				"steps[%d].stepMeaningSignature は 1 byte 以上 %d byte 以下でなければなりません",
+				index,
+				maximumStepMeaningSignatureBytes,
+			)
+		}
 		evidence, err := buildEvidence(stepValue.Evidence, facts)
 		if err != nil {
 			return draft{}, fmt.Errorf("steps[%d].evidence: %w", index, err)
@@ -127,10 +152,12 @@ func buildDraft(value DraftValues, facts map[string]fact) (draft, error) {
 		stepIDs[stepValue.StepID] = struct{}{}
 		sourceOrdinals[stepValue.SourceOrdinal] = struct{}{}
 		steps = append(steps, step{
-			stepID:        stepValue.StepID,
-			sourceOrdinal: stepValue.SourceOrdinal,
-			topicOrdinal:  stepValue.TopicOrdinal,
-			evidence:      evidence,
+			stepID:               stepValue.StepID,
+			sourceOrdinal:        stepValue.SourceOrdinal,
+			topicOrdinal:         stepValue.TopicOrdinal,
+			stepMeaningSignature: stepValue.StepMeaningSignature,
+			evidence:             evidence,
+			normalizedEvidence:   normalizeStepEvidence(evidence),
 		})
 	}
 	slices.SortFunc(steps, func(left step, right step) int {
@@ -160,6 +187,8 @@ func buildEvidence(values []EvidenceValues, facts map[string]fact) ([]Evidence, 
 	}
 	result := make([]Evidence, 0, len(values))
 	seen := make(map[string]Evidence, len(values))
+	factGroups := make(map[string]string, len(values))
+	groupFacts := make(map[string]map[string]struct{})
 	for index, value := range values {
 		registered, exists := facts[value.FactID]
 		if !exists {
@@ -175,6 +204,28 @@ func buildEvidence(values []EvidenceValues, facts map[string]fact) ([]Evidence, 
 				index,
 			)
 		}
+		if value.NormalizationGroup != "" {
+			if err := validateLocalID(
+				"normalizationGroup",
+				value.NormalizationGroup,
+			); err != nil {
+				return nil, fmt.Errorf("evidence[%d]: %w", index, err)
+			}
+		}
+		if previous, exists := factGroups[value.FactID]; exists &&
+			previous != value.NormalizationGroup {
+			return nil, fmt.Errorf(
+				"evidence[%d] は同じ fact を複数の normalizationGroup へ対応させています",
+				index,
+			)
+		}
+		factGroups[value.FactID] = value.NormalizationGroup
+		if value.NormalizationGroup != "" {
+			if groupFacts[value.NormalizationGroup] == nil {
+				groupFacts[value.NormalizationGroup] = make(map[string]struct{})
+			}
+			groupFacts[value.NormalizationGroup][value.FactID] = struct{}{}
+		}
 		built := Evidence{
 			factID:              registered.factID,
 			layer:               value.Layer,
@@ -182,6 +233,7 @@ func buildEvidence(values []EvidenceValues, facts map[string]fact) ([]Evidence, 
 			span:                cloneSpan(registered.span),
 			independentPositive: value.IndependentPositive,
 			clusterSpan:         value.ClusterSpan,
+			normalizationGroup:  value.NormalizationGroup,
 		}
 		key := value.FactID + "\x00" + string(value.Code)
 		if previous, duplicate := seen[key]; duplicate {
@@ -195,6 +247,14 @@ func buildEvidence(values []EvidenceValues, facts map[string]fact) ([]Evidence, 
 		}
 		seen[key] = built
 		result = append(result, built)
+	}
+	for group, factIDs := range groupFacts {
+		if len(factIDs) < 2 {
+			return nil, fmt.Errorf(
+				"normalizationGroup %q は二件以上の fact を必要とします",
+				group,
+			)
+		}
 	}
 	if err := validateEvidenceCombinations(result); err != nil {
 		return nil, err
@@ -356,7 +416,8 @@ func sameEvidence(left Evidence, right Evidence) bool {
 		leftExists == rightExists &&
 		(!leftExists || leftSpan == rightSpan) &&
 		left.independentPositive == right.independentPositive &&
-		left.clusterSpan == right.clusterSpan
+		left.clusterSpan == right.clusterSpan &&
+		left.normalizationGroup == right.normalizationGroup
 }
 
 func compareEvidence(left Evidence, right Evidence) int {

@@ -111,7 +111,7 @@ func TestProfileは明示検索と識別子読取りを同一候補に保持す�
 			legalquery.EvidenceOfficialAlias,
 		},
 	) {
-		t.Fatalf("SOT-ARCH-029: 複数 step の根拠 = %#v", got)
+		t.Fatalf("SOT-ARCH-036: 複数 step の根拠 = %#v", got)
 	}
 }
 
@@ -127,7 +127,7 @@ func TestProfileは同一読取りStepの識別子と別名を重複保持しな
 	)
 	candidates := generation.Candidates()
 	if len(candidates) != 1 || len(candidates[0].Steps()) != 1 {
-		t.Fatalf("SOT-ARCH-029: 同一 step の候補 = %#v", candidates)
+		t.Fatalf("SOT-ARCH-036: 同一 step の候補 = %#v", candidates)
 	}
 	if got := candidates[0].EvidenceCodes(); !slices.Equal(
 		got,
@@ -137,7 +137,7 @@ func TestProfileは同一読取りStepの識別子と別名を重複保持しな
 			legalquery.EvidenceExplicitResource,
 		},
 	) {
-		t.Fatalf("SOT-ARCH-029: 同一 step の根拠 = %#v", got)
+		t.Fatalf("SOT-ARCH-036: 同一 step の根拠 = %#v", got)
 	}
 }
 
@@ -159,7 +159,7 @@ func TestProfileは法令名検索と識別子付き条文読取りの根拠を�
 	if len(steps) != 2 ||
 		steps[0].InputKind() != legalquery.InputKindLawSearch ||
 		steps[1].InputKind() != legalquery.InputKindLawArticleRead {
-		t.Fatalf("SOT-ARCH-029: steps = %#v", steps)
+		t.Fatalf("SOT-ARCH-036: steps = %#v", steps)
 	}
 	if got := candidates[0].EvidenceCodes(); !slices.Equal(
 		got,
@@ -171,7 +171,7 @@ func TestProfileは法令名検索と識別子付き条文読取りの根拠を�
 			legalquery.EvidenceOfficialAlias,
 		},
 	) {
-		t.Fatalf("SOT-ARCH-029: 識別子付き条文読取りの根拠 = %#v", got)
+		t.Fatalf("SOT-ARCH-036: 識別子付き条文読取りの根拠 = %#v", got)
 	}
 }
 
@@ -192,7 +192,7 @@ func TestProfileは同一条文読取りStepの識別子と別名を重複保持
 	steps := candidates[0].Steps()
 	if len(steps) != 1 ||
 		steps[0].InputKind() != legalquery.InputKindLawArticleRead {
-		t.Fatalf("SOT-ARCH-029: steps = %#v", steps)
+		t.Fatalf("SOT-ARCH-036: steps = %#v", steps)
 	}
 	if got := candidates[0].EvidenceCodes(); !slices.Equal(
 		got,
@@ -203,7 +203,7 @@ func TestProfileは同一条文読取りStepの識別子と別名を重複保持
 			legalquery.EvidenceExplicitResource,
 		},
 	) {
-		t.Fatalf("SOT-ARCH-029: 同一条文読取り step の根拠 = %#v", got)
+		t.Fatalf("SOT-ARCH-036: 同一条文読取り step の根拠 = %#v", got)
 	}
 }
 
@@ -224,7 +224,7 @@ func TestProfileは法令履歴IDを版なし条文読取りの根拠に流用�
 	steps := candidates[0].Steps()
 	if len(steps) != 1 ||
 		steps[0].InputKind() != legalquery.InputKindLawArticleRead {
-		t.Fatalf("SOT-ARCH-029: steps = %#v", steps)
+		t.Fatalf("SOT-ARCH-036: steps = %#v", steps)
 	}
 	if got := candidates[0].EvidenceCodes(); !slices.Equal(
 		got,
@@ -235,7 +235,7 @@ func TestProfileは法令履歴IDを版なし条文読取りの根拠に流用�
 			legalquery.EvidenceOfficialAlias,
 		},
 	) {
-		t.Fatalf("SOT-ARCH-029: 版なし条文読取りの根拠 = %#v", got)
+		t.Fatalf("SOT-ARCH-036: 版なし条文読取りの根拠 = %#v", got)
 	}
 }
 

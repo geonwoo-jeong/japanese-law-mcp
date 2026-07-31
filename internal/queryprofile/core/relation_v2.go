@@ -13,6 +13,7 @@ type cueIntentEvidenceMode uint8
 const (
 	cueIntentEvidenceLegacy cueIntentEvidenceMode = iota
 	cueIntentEvidenceRelationV2
+	cueIntentEvidenceCore
 )
 
 type cueRelationRefKey struct {
@@ -34,6 +35,33 @@ func newCueTaskRelationV2Profile(profile *Profile) (*Profile, error) {
 	result.cueByID = maps.Clone(profile.cueByID)
 	result.concepts = maps.Clone(profile.concepts)
 	result.intentEvidenceMode = cueIntentEvidenceRelationV2
+	return &result, nil
+}
+
+// newCoreEvidenceProfile は、次版 metadata を使う非公開の準備経路を返す。
+// LoadEmbedded からは到達させず、profile set の原子的採用までは test 専用とする。
+func newCoreEvidenceProfile(profile *Profile) (*Profile, error) {
+	if profile == nil {
+		return nil, fmt.Errorf("core profile は必須です")
+	}
+	if profile.intentEvidenceMode != cueIntentEvidenceLegacy &&
+		profile.intentEvidenceMode != cueIntentEvidenceRelationV2 {
+		return nil, fmt.Errorf("core evidence profile の基底 mode が有効ではありません")
+	}
+	if profile.metadata.SchemaVersion() != 2 {
+		return nil, fmt.Errorf("core evidence profile は schemaVersion 2 を必要とします")
+	}
+	if _, present := profile.metadata.Selection().BranchRetentionMargin(); !present {
+		return nil, fmt.Errorf("core evidence profile は branchRetentionMargin を必要とします")
+	}
+	if err := validateRelationV2PositiveCueRoles(profile.cueByID); err != nil {
+		return nil, err
+	}
+	result := *profile
+	result.cues = cloneCueVocabularyEntries(profile.cues)
+	result.cueByID = maps.Clone(profile.cueByID)
+	result.concepts = maps.Clone(profile.concepts)
+	result.intentEvidenceMode = cueIntentEvidenceCore
 	return &result, nil
 }
 

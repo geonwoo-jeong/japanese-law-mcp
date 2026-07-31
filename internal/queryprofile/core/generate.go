@@ -4,11 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/queryprofile/profileevidence"
 )
 
@@ -23,6 +20,7 @@ type candidateDraft struct {
 	preserveOfficialAlias        bool
 	preserveMorphologicalContext bool
 	implicitResourceWeakGeneral  bool
+	sharedTerminal               bool
 }
 
 type stepDraft struct {
@@ -64,15 +62,18 @@ func (p *Profile) Generate(
 	}
 	cues := rawCues
 	var relationV2ContentDrafts []candidateDraft
-	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 {
+	if p.intentEvidenceMode == cueIntentEvidenceRelationV2 ||
+		p.intentEvidenceMode == cueIntentEvidenceCore {
 		cues, err = p.resolveRelationV2Cues(input, cues)
 		if err != nil {
 			return legalquery.CandidateGeneration{}, err
 		}
-		relationV2ContentDrafts, err =
-			p.buildRelationV2MentionTargetDrafts(input, cues)
-		if err != nil {
-			return legalquery.CandidateGeneration{}, err
+		if p.intentEvidenceMode == cueIntentEvidenceRelationV2 {
+			relationV2ContentDrafts, err =
+				p.buildRelationV2MentionTargetDrafts(input, cues)
+			if err != nil {
+				return legalquery.CandidateGeneration{}, err
+			}
 		}
 	}
 	if err := p.validateConceptMentions(input.LegalConceptMentions()); err != nil {
@@ -97,6 +98,15 @@ func (p *Profile) Generate(
 			nil,
 			nil,
 			legalquery.QueryCompositionConstraintStepLimitExceeded,
+		)
+	}
+	if p.intentEvidenceMode == cueIntentEvidenceCore {
+		return p.generateCoreEvidence(
+			input,
+			cues,
+			relationV2ContentDrafts,
+			signals,
+			scope,
 		)
 	}
 
@@ -515,6 +525,7 @@ func cloneDraft(value candidateDraft) candidateDraft {
 		preserveOfficialAlias:        value.preserveOfficialAlias,
 		preserveMorphologicalContext: value.preserveMorphologicalContext,
 		implicitResourceWeakGeneral:  value.implicitResourceWeakGeneral,
+		sharedTerminal:               value.sharedTerminal,
 	}
 }
 
@@ -715,222 +726,6 @@ func mergeEquivalentDraft(target *candidateDraft, source candidateDraft) {
 			target.steps[index].startByte = source.steps[index].startByte
 		}
 	}
-}
-
-type preparedDraft struct {
-	draft            candidateDraft
-	evidence         []legalquery.EvidenceCode
-	score            int
-	confidence       legalquery.Confidence
-	signature        string
-	rankingSignature string
-}
-
-func comparePreparedDrafts(
-	left preparedDraft,
-	right preparedDraft,
-	rankAliasCollisionGroupsBySource bool,
-) int {
-	if left.score != right.score {
-		return right.score - left.score
-	}
-	leftEvidence := evidenceSignature(left.evidence)
-	rightEvidence := evidenceSignature(right.evidence)
-	if leftEvidence != rightEvidence {
-		return strings.Compare(leftEvidence, rightEvidence)
-	}
-	if len(left.draft.steps) != len(right.draft.steps) {
-		return len(left.draft.steps) - len(right.draft.steps)
-	}
-	if rankAliasCollisionGroupsBySource {
-		if comparison := compareAliasCollisionGroupPositions(
-			left,
-			right,
-		); comparison != 0 {
-			return comparison
-		}
-	}
-	if left.rankingSignature != right.rankingSignature {
-		return strings.Compare(left.rankingSignature, right.rankingSignature)
-	}
-	return sourcePosition(left.draft) - sourcePosition(right.draft)
-}
-
-func normalizeEvidence(
-	values map[legalquery.EvidenceCode]struct{},
-	preserveOfficialAlias bool,
-	preserveLegalConcept bool,
-	preserveMorphologicalContext bool,
-) []legalquery.EvidenceCode {
-	result := make(map[legalquery.EvidenceCode]struct{}, len(values))
-	for code := range values {
-		result[code] = struct{}{}
-	}
-	if _, exists := result[legalquery.EvidenceOfficialIdentifier]; exists {
-		if !preserveOfficialAlias {
-			delete(result, legalquery.EvidenceOfficialAlias)
-		}
-		if !preserveLegalConcept {
-			delete(result, legalquery.EvidenceLegalConcept)
-		}
-		delete(result, legalquery.EvidenceMorphologicalContext)
-		delete(result, legalquery.EvidenceUniqueTypoCorrection)
-		delete(result, legalquery.EvidenceGeneralTerm)
-	} else if _, exists := result[legalquery.EvidenceOfficialAlias]; exists {
-		delete(result, legalquery.EvidenceMorphologicalContext)
-		delete(result, legalquery.EvidenceGeneralTerm)
-	} else if _, exists := result[legalquery.EvidenceLegalConcept]; exists {
-		if !preserveMorphologicalContext {
-			delete(result, legalquery.EvidenceMorphologicalContext)
-		}
-		delete(result, legalquery.EvidenceGeneralTerm)
-	} else if _, exists := result[legalquery.EvidenceMorphologicalContext]; exists {
-		delete(result, legalquery.EvidenceGeneralTerm)
-	}
-	ordered := make([]legalquery.EvidenceCode, 0, len(result))
-	for _, code := range evidenceOrder {
-		if _, exists := result[code]; exists {
-			ordered = append(ordered, code)
-		}
-	}
-	return ordered
-}
-
-func preservesLegalConceptForDistinctStep(draft candidateDraft) bool {
-	if len(draft.concepts) == 0 || len(draft.steps) < 2 {
-		return false
-	}
-	for _, step := range draft.steps {
-		if step.input.InputKind() ==
-			legalquery.InputKindLawContentSearch {
-			return true
-		}
-	}
-	return false
-}
-
-var evidenceOrder = []legalquery.EvidenceCode{
-	legalquery.EvidenceOfficialIdentifier,
-	legalquery.EvidenceStructuredReference,
-	legalquery.EvidenceExplicitTask,
-	legalquery.EvidenceExplicitResource,
-	legalquery.EvidenceOfficialAlias,
-	legalquery.EvidenceLegalConcept,
-	legalquery.EvidenceMorphologicalContext,
-	legalquery.EvidenceUniqueTypoCorrection,
-	legalquery.EvidenceGeneralTerm,
-}
-
-func evidenceSignature(values []legalquery.EvidenceCode) string {
-	parts := make([]string, 0, len(values))
-	for _, value := range values {
-		parts = append(parts, string(value))
-	}
-	return strings.Join(parts, "\x00")
-}
-
-func uniqueConceptSources(
-	values []legalquery.LegalConceptSource,
-) []legalquery.LegalConceptSource {
-	byID := make(map[string]legalquery.LegalConceptSource, len(values))
-	for _, value := range values {
-		byID[value.ConceptID()] = value
-	}
-	ids := make([]string, 0, len(byID))
-	for conceptID := range byID {
-		ids = append(ids, conceptID)
-	}
-	slices.Sort(ids)
-	result := make([]legalquery.LegalConceptSource, 0, len(ids))
-	for _, conceptID := range ids {
-		result = append(result, byID[conceptID])
-	}
-	return result
-}
-
-func sourcePosition(value candidateDraft) int {
-	if len(value.steps) == 0 {
-		return 0
-	}
-	position := value.steps[0].startByte
-	for _, step := range value.steps[1:] {
-		if step.startByte < position {
-			position = step.startByte
-		}
-	}
-	return position
-}
-
-func draftMeaningSignature(value candidateDraft) (string, error) {
-	parts := make([]string, 0, len(value.steps)+1)
-	packs := append([]string(nil), value.requiredPacks...)
-	slices.Sort(packs)
-	parts = append(parts, strings.Join(slices.Compact(packs), ","))
-	for _, step := range value.steps {
-		signature, err := logicalInputSignature(step.input)
-		if err != nil {
-			return "", err
-		}
-		parts = append(parts, signature)
-	}
-	return strings.Join(parts, "\x1f"), nil
-}
-
-func logicalInputSignature(value legalquery.LogicalInput) (string, error) {
-	switch input := value.(type) {
-	case legalquery.LawSearchIntentV1:
-		return "01-law-search|" + input.Query() + "|" +
-			optionalDateSignature(input.AsOf()), nil
-	case legalquery.LawContentSearchIntentV1:
-		return "02-law-content|" +
-			strings.Join(input.AllTerms(), "\x00") + "|" +
-			strings.Join(input.AnyTerms(), "\x00") + "|" +
-			strings.Join(input.ExcludeTerms(), "\x00") + "|" +
-			optionalDateSignature(input.AsOf()), nil
-	case legalquery.LawReadIntentV1:
-		if ref, exists := input.Ref(); exists {
-			return "03-law-read|ref|" + resourceRefSignature(ref), nil
-		}
-		lawID, _ := input.LawID()
-		revisionID, _ := input.RevisionID()
-		return "03-law-read|" + lawID + "|" + revisionID + "|" +
-			optionalDateSignature(input.AsOf()), nil
-	case legalquery.LawArticleReadIntentV1:
-		target := ""
-		if ref, exists := input.Ref(); exists {
-			target = resourceRefSignature(ref)
-		} else {
-			target, _ = input.LawID()
-		}
-		location := input.Location()
-		paragraph, _ := location.ParagraphNumber()
-		return "04-law-article|" + target + "|" +
-			string(location.Provision()) + "|" +
-			location.ArticleNumber() + "|" +
-			strconv.Itoa(paragraph) + "|" +
-			optionalDateSignature(input.AsOf()), nil
-	case legalquery.LawUpdateListIntentV1:
-		return "05-law-updates|" + input.Date().String(), nil
-	default:
-		return "", fmt.Errorf("core profile が未対応の logical input を生成しました")
-	}
-}
-
-func optionalDateSignature(date model.Date, exists bool) string {
-	if !exists {
-		return ""
-	}
-	return date.String()
-}
-
-func resourceRefSignature(ref model.SourceResourceRef) string {
-	key := ref.Key()
-	version, _ := key.VersionID()
-	return ref.ProviderID() + "|" +
-		key.SourceID() + "|" +
-		key.ResourceType() + "|" +
-		key.ResourceID() + "|" +
-		version
 }
 
 func (p *Profile) newGeneration(

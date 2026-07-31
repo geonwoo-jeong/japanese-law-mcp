@@ -211,6 +211,7 @@ func buildCoreSharedTerminalDraft(
 		return coreSharedTerminalDraft{}, err
 	}
 	draft.concepts = concepts
+	draft.sharedTerminal = true
 	for _, step := range draft.steps {
 		for _, evidence := range step.evidenceBindings {
 			draft.evidence[evidence.Code] = struct{}{}
@@ -322,7 +323,14 @@ func (p *Profile) prepareCoreSharedTerminalDraft(
 	if err != nil {
 		return coreSharedTerminalPreparedDraft{}, false, err
 	}
-	raw, reference := coreEvidenceRawDraftValue("draft", value.draft)
+	raw, reference, err := coreEvidenceRawDraftValue("draft", value.draft)
+	if err != nil {
+		return coreSharedTerminalPreparedDraft{}, false, err
+	}
+	raw, err = withCoreNormalizationGroups(raw, value.draft, facts.byID)
+	if err != nil {
+		return coreSharedTerminalPreparedDraft{}, false, err
+	}
 	if err := validateCoreRawDraft(raw, facts.values); err != nil {
 		return coreSharedTerminalPreparedDraft{}, false, err
 	}
@@ -444,7 +452,10 @@ func coreSharedTerminalEvidenceCodes(
 ) ([]legalquery.EvidenceCode, error) {
 	present := make(map[legalquery.EvidenceCode]struct{})
 	for _, stepID := range reference.stepIDs {
-		values, err := mapping.StepEvidence(reference.draftID, stepID)
+		values, err := mapping.NormalizedStepEvidence(
+			reference.draftID,
+			stepID,
+		)
 		if err != nil {
 			return nil, err
 		}

@@ -40,9 +40,10 @@ func singleStepValues(t testing.TB) profileevidence.MappingValues {
 				DraftID: "draft-one",
 				Steps: []profileevidence.StepValues{
 					{
-						StepID:        "step-one",
-						SourceOrdinal: 1,
-						TopicOrdinal:  1,
+						StepID:               "step-one",
+						SourceOrdinal:        1,
+						TopicOrdinal:         1,
+						StepMeaningSignature: "law-search",
 						Evidence: []profileevidence.EvidenceValues{
 							{
 								FactID:              "input-ref",

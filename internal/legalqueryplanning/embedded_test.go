@@ -1,6 +1,11 @@
 package legalqueryplanning
 
-import "testing"
+import (
+	"context"
+	"testing"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+)
 
 func TestLoadEmbeddedは評価用のProfile版を不変に公開する(t *testing.T) {
 	dependencies, err := LoadEmbedded()
@@ -30,5 +35,52 @@ func TestLoadEmbeddedは評価用のProfile版を不変に公開する(t *testin
 	again := dependencies.ProfileMetadata()
 	if again[0].ProfileID() != "core" {
 		t.Fatal("SOT-ENG-025: ProfileMetadata() が共有 slice を返しました")
+	}
+}
+
+func TestCoreEvidenceProductionNeutralは製品CompositionRootで維持する(
+	t *testing.T,
+) {
+	const verificationID = "core-evidence-production-neutral"
+	dependencies, err := LoadEmbedded()
+	if err != nil {
+		t.Fatalf("%s: planning 依存を読み込めません: %v", verificationID, err)
+	}
+	metadata := dependencies.ProfileMetadata()
+	if len(metadata) == 0 || metadata[0].ProfileID() != "core" ||
+		metadata[0].SchemaVersion() != 1 {
+		t.Fatalf("%s: active core metadata = %#v", verificationID, metadata)
+	}
+	if margin, present := metadata[0].Selection().BranchRetentionMargin(); present || margin != 0 {
+		t.Fatalf(
+			"%s: active core metadata がtest専用分岐を持っています",
+			verificationID,
+		)
+	}
+
+	request, err := legalquery.NewRequest(legalquery.RequestValues{
+		Query: "永住許可、帰化を教えてください",
+	})
+	if err != nil {
+		t.Fatalf("%s: request を構築できません: %v", verificationID, err)
+	}
+	preprocessed, err := dependencies.Preprocessor().Preprocess(
+		context.Background(),
+		request,
+	)
+	if err != nil {
+		t.Fatalf("%s: query を前処理できません: %v", verificationID, err)
+	}
+	result, err := dependencies.Profiles().Collect(preprocessed)
+	if err != nil {
+		t.Fatalf("%s: profile set を実行できません: %v", verificationID, err)
+	}
+	for _, candidate := range result.RankedCandidates() {
+		if len(candidate.Steps()) > 1 {
+			t.Fatalf(
+				"%s: 製品 composition root が test 専用の複数 step core 候補を返しました",
+				verificationID,
+			)
+		}
 	}
 }

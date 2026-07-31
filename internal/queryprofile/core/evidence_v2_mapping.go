@@ -12,6 +12,7 @@ import (
 type coreEvidenceEvaluation struct {
 	mapping profileevidence.Mapping
 	drafts  []coreEvidenceDraftRef
+	facts   coreEvidenceFactSet
 }
 
 type coreEvidenceDraftRef struct {
@@ -36,6 +37,8 @@ const (
 type coreEvidenceFact struct {
 	values         profileevidence.FactValues
 	kind           coreEvidenceFactKind
+	surface        string
+	conceptID      string
 	cueCategory    string
 	cueValue       string
 	directTask     bool
@@ -67,7 +70,7 @@ func buildCoreEvidenceEvaluation(
 			err,
 		)
 	}
-	if err := validateCoreDraftInputs(drafts); err != nil {
+	if err := validateCoreDraftInputs(input, drafts); err != nil {
 		return coreEvidenceEvaluation{}, err
 	}
 	boundDrafts, err := withCoreEvidenceBindings(input, cues, drafts)
@@ -110,6 +113,7 @@ func buildCoreEvidenceEvaluation(
 	return coreEvidenceEvaluation{
 		mapping: mapping,
 		drafts:  references,
+		facts:   facts,
 	}, nil
 }
 
@@ -128,16 +132,21 @@ func buildCoreEvidenceFacts(
 		})
 	}
 	for index, mention := range input.LawNameMentions() {
-		result.add(coreEvidenceMentionFact(
+		fact := coreEvidenceMentionFact(
 			"law-name", index, mention.Span(), coreEvidenceFactLawName,
 			mention.MatchKind(),
-		))
+		)
+		fact.surface = strings.TrimSpace(mention.Surface())
+		result.add(fact)
 	}
 	for index, mention := range input.LegalConceptMentions() {
-		result.add(coreEvidenceMentionFact(
+		fact := coreEvidenceMentionFact(
 			"legal-concept", index, mention.Span(),
 			coreEvidenceFactLegalConcept, mention.MatchKind(),
-		))
+		)
+		fact.surface = mention.Surface()
+		fact.conceptID = mention.ConceptID()
+		result.add(fact)
 	}
 	if err := result.addCueFacts(input, cues); err != nil {
 		return coreEvidenceFactSet{}, err
@@ -148,6 +157,7 @@ func buildCoreEvidenceFacts(
 			coreEvidenceFactIdentifier, "",
 		)
 		fact.identifierKind = mention.Kind()
+		fact.surface = mention.Surface()
 		result.add(fact)
 	}
 	for index, mention := range input.DateMentions() {
@@ -171,6 +181,7 @@ func buildCoreEvidenceFacts(
 			coreEvidenceFactQueryTerm, "",
 		)
 		fact.queryTermKind = mention.Kind()
+		fact.surface = mention.Surface()
 		result.add(fact)
 	}
 	return result, nil
@@ -262,7 +273,14 @@ func buildCoreEvidenceDraftValue(
 	error,
 ) {
 	draftID := fmt.Sprintf("draft-%d", index+1)
-	raw, reference := coreEvidenceRawDraftValue(draftID, draft)
+	raw, reference, err := coreEvidenceRawDraftValue(draftID, draft)
+	if err != nil {
+		return profileevidence.DraftValues{}, coreEvidenceDraftRef{}, false, fmt.Errorf(
+			"%s: %w",
+			draftID,
+			err,
+		)
+	}
 	if err := validateCoreRawDraft(raw, facts.values); err != nil {
 		return profileevidence.DraftValues{}, coreEvidenceDraftRef{}, false, fmt.Errorf(
 			"%s: %w",
@@ -284,7 +302,18 @@ func buildCoreEvidenceDraftValue(
 			)
 		}
 	}
-	filtered := removeAmbiguousCoreEvidence(raw, facts.byID)
+	filtered, retained := removeAmbiguousCoreEvidence(raw, draft, facts.byID)
+	if !retained {
+		return profileevidence.DraftValues{}, coreEvidenceDraftRef{}, false, nil
+	}
+	filtered, err = withCoreNormalizationGroups(filtered, draft, facts.byID)
+	if err != nil {
+		return profileevidence.DraftValues{}, coreEvidenceDraftRef{}, false, fmt.Errorf(
+			"%s: %w",
+			draftID,
+			err,
+		)
+	}
 	if !coreRequiredStepEvidencePresent(filtered, draft, facts.byID) {
 		return profileevidence.DraftValues{}, coreEvidenceDraftRef{}, false, nil
 	}
@@ -360,25 +389,10 @@ func coreRequiredStepEvidencePresent(
 	return true
 }
 
-func validateCoreDraftInputs(drafts []candidateDraft) error {
-	for draftIndex, draft := range drafts {
-		for stepIndex, step := range draft.steps {
-			if step.input == nil {
-				return fmt.Errorf(
-					"drafts[%d].steps[%d].logical input は必須です",
-					draftIndex,
-					stepIndex,
-				)
-			}
-		}
-	}
-	return nil
-}
-
 func coreEvidenceRawDraftValue(
 	draftID string,
 	draft candidateDraft,
-) (profileevidence.DraftValues, coreEvidenceDraftRef) {
+) (profileevidence.DraftValues, coreEvidenceDraftRef, error) {
 	value := profileevidence.DraftValues{
 		DraftID: draftID,
 		Steps:   make([]profileevidence.StepValues, 0, len(draft.steps)),
@@ -388,11 +402,16 @@ func coreEvidenceRawDraftValue(
 		stepIDs: make([]string, 0, len(draft.steps)),
 	}
 	for index, step := range draft.steps {
+		signature, err := logicalInputSignature(step.input)
+		if err != nil {
+			return profileevidence.DraftValues{}, coreEvidenceDraftRef{}, err
+		}
 		stepID := fmt.Sprintf("step-%d", index+1)
 		value.Steps = append(value.Steps, profileevidence.StepValues{
-			StepID:        stepID,
-			SourceOrdinal: index + 1,
-			TopicOrdinal:  step.topicOrdinal,
+			StepID:               stepID,
+			SourceOrdinal:        index + 1,
+			TopicOrdinal:         step.topicOrdinal,
+			StepMeaningSignature: signature,
 			Evidence: append(
 				[]profileevidence.EvidenceValues(nil),
 				step.evidenceBindings...,
@@ -400,7 +419,7 @@ func coreEvidenceRawDraftValue(
 		})
 		reference.stepIDs = append(reference.stepIDs, stepID)
 	}
-	return value, reference
+	return value, reference, nil
 }
 
 func validateCoreRawDraft(
@@ -416,10 +435,11 @@ func validateCoreRawDraft(
 		validation := profileevidence.DraftValues{
 			DraftID: "draft",
 			Steps: []profileevidence.StepValues{{
-				StepID:        "step",
-				SourceOrdinal: 1,
-				TopicOrdinal:  1,
-				Evidence:      step.Evidence,
+				StepID:               "step",
+				SourceOrdinal:        1,
+				TopicOrdinal:         1,
+				StepMeaningSignature: step.StepMeaningSignature,
+				Evidence:             step.Evidence,
 			}},
 		}
 		if err := newCoreValidationMapping(facts, validation); err != nil {
@@ -470,40 +490,6 @@ func validateCoreEvidenceBindings(
 		}
 	}
 	return nil
-}
-
-func removeAmbiguousCoreEvidence(
-	value profileevidence.DraftValues,
-	facts map[string]coreEvidenceFact,
-) profileevidence.DraftValues {
-	uses := make(map[string]map[int]struct{})
-	for stepIndex, step := range value.Steps {
-		for _, evidence := range step.Evidence {
-			if _, registered := facts[evidence.FactID]; !registered {
-				continue
-			}
-			if uses[evidence.FactID] == nil {
-				uses[evidence.FactID] = make(map[int]struct{})
-			}
-			uses[evidence.FactID][stepIndex] = struct{}{}
-		}
-	}
-	ambiguous := make(map[string]bool)
-	for factID, stepIndexes := range uses {
-		if len(stepIndexes) > 1 {
-			ambiguous[factID] = true
-		}
-	}
-	for index := range value.Steps {
-		filtered := make([]profileevidence.EvidenceValues, 0, len(value.Steps[index].Evidence))
-		for _, evidence := range value.Steps[index].Evidence {
-			if !ambiguous[evidence.FactID] {
-				filtered = append(filtered, evidence)
-			}
-		}
-		value.Steps[index].Evidence = filtered
-	}
-	return value
 }
 
 func coreEvidenceDraftHasPositiveTopics(
@@ -664,6 +650,7 @@ func coreAliasTargetAllowed(
 		return false
 	}
 	return kind == legalquery.InputKindLawSearch ||
+		kind == legalquery.InputKindLawContentSearch ||
 		kind == legalquery.InputKindLawRead ||
 		kind == legalquery.InputKindLawArticleRead
 }
@@ -679,9 +666,11 @@ func coreSemanticBindingAllowed(
 	}
 	switch code {
 	case legalquery.EvidenceLegalConcept:
-		return fact.kind == coreEvidenceFactLegalConcept
+		return kind == legalquery.InputKindLawContentSearch &&
+			fact.kind == coreEvidenceFactLegalConcept
 	case legalquery.EvidenceUniqueTypoCorrection:
-		return fact.kind == coreEvidenceFactLegalConcept &&
+		return kind == legalquery.InputKindLawContentSearch &&
+			fact.kind == coreEvidenceFactLegalConcept &&
 			fact.matchKind ==
 				legalquery.PreprocessMatchUniqueTypoCorrection
 	case legalquery.EvidenceMorphologicalContext:

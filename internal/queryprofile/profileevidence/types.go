@@ -1,11 +1,12 @@
-// Package profileevidence は、SOT-ARCH-031 と SOT-ARCH-032 に従い、
-// query profile の評価中だけ保持する根拠対応と cluster key を扱う。
+// Package profileevidence は、SOT-ARCH-031、SOT-ARCH-036 および
+// SOT-ARCH-037 に従い、query profile の評価中だけ保持する根拠対応を扱う。
 package profileevidence
 
 import "github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 
 const (
-	maximumLocalIDBytes = 64
+	maximumLocalIDBytes              = 64
+	maximumStepMeaningSignatureBytes = 8192
 	// maximumFacts は、前処理の最大 256 mention と任意の入力 ref を合わせた上限である。
 	maximumFacts  = 257
 	maximumDrafts = legalquery.MaxRankedCandidates
@@ -42,14 +43,16 @@ type EvidenceValues struct {
 	Code                legalquery.EvidenceCode
 	IndependentPositive bool
 	ClusterSpan         bool
+	NormalizationGroup  string
 }
 
 // StepValues は、候補 draft 内の一つの step と根拠対応を表す。
 type StepValues struct {
-	StepID        string
-	SourceOrdinal int
-	TopicOrdinal  int
-	Evidence      []EvidenceValues
+	StepID               string
+	SourceOrdinal        int
+	TopicOrdinal         int
+	StepMeaningSignature string
+	Evidence             []EvidenceValues
 }
 
 // DraftValues は、一つの候補 draft の根拠対応を表す。
@@ -73,6 +76,7 @@ type Evidence struct {
 	span                *legalquery.QuerySpan
 	independentPositive bool
 	clusterSpan         bool
+	normalizationGroup  string
 }
 
 // FactID は、profile 評価内だけで有効な事実 ID を返す。
@@ -108,16 +112,23 @@ func (e Evidence) ClusterSpan() bool {
 	return e.clusterSpan
 }
 
+// NormalizationGroup は、同じ step の同値根拠群と有無を返す。
+func (e Evidence) NormalizationGroup() (string, bool) {
+	return e.normalizationGroup, e.normalizationGroup != ""
+}
+
 type fact struct {
 	factID string
 	span   *legalquery.QuerySpan
 }
 
 type step struct {
-	stepID        string
-	sourceOrdinal int
-	topicOrdinal  int
-	evidence      []Evidence
+	stepID               string
+	sourceOrdinal        int
+	topicOrdinal         int
+	stepMeaningSignature string
+	evidence             []Evidence
+	normalizedEvidence   []Evidence
 }
 
 type draft struct {

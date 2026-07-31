@@ -66,7 +66,7 @@ func (m Mapping) ClusterKey(draftID string) (ClusterKey, bool, error) {
 	for _, current := range value.steps {
 		requiredTopics[current.topicOrdinal] = struct{}{}
 		var selected *legalquery.QuerySpan
-		for _, evidence := range current.evidence {
+		for _, evidence := range current.normalizedEvidence {
 			if evidence.independentPositive {
 				positiveTopics[current.topicOrdinal] = true
 			}

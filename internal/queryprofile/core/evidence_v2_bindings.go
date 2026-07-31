@@ -333,10 +333,24 @@ func coreContentSearchBindings(
 	terms := append(intent.AllTerms(), intent.AnyTerms()...)
 	terms = append(terms, intent.ExcludeTerms()...)
 	var result []profileevidence.EvidenceValues
-	for index, mention := range input.QueryTermMentions() {
+	queryTerms := input.QueryTermMentions()
+	for index, mention := range queryTerms {
 		if slices.Contains(terms, mention.Surface()) {
 			result = append(result, queryTermEvidence(index, mention, true))
 		}
+	}
+	for index, mention := range input.LawNameMentions() {
+		if !slices.Contains(terms, strings.TrimSpace(mention.Surface())) {
+			continue
+		}
+		if coreQuotedTermMatchesLawName(queryTerms, mention) {
+			continue
+		}
+		if len(draft.steps) > 1 &&
+			mention.Span().StartByte() != step.startByte {
+			continue
+		}
+		result = append(result, lawNameEvidence(index, mention, true)...)
 	}
 	conceptIDs := make(map[string]struct{}, len(draft.concepts))
 	for _, source := range draft.concepts {
@@ -363,6 +377,20 @@ func coreContentSearchBindings(
 		result = append(result, coreAsOfBindings(input, date)...)
 	}
 	return result
+}
+
+func coreQuotedTermMatchesLawName(
+	terms []legalquery.QueryTermMention,
+	lawName legalquery.LawNameMention,
+) bool {
+	for _, term := range terms {
+		if term.Kind() == legalquery.QueryTermMentionQuotedPhrase &&
+			term.Span() == lawName.Span() &&
+			term.Surface() == strings.TrimSpace(lawName.Surface()) {
+			return true
+		}
+	}
+	return false
 }
 
 func coreLawReadBindings(
