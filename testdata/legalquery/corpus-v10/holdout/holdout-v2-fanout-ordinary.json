@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-fanout-ordinary",
+  "leakageGroupId": "holdout-v2-fanout-five-topics",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "深海契約、衛星担保、火星登記、宇宙供託、海底抵当について教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

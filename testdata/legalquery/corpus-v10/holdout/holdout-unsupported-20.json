@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-unsupported-20",
+  "coverageIds": [
+    "boundary-mixed-unsupported",
+    "intent-law-search",
+    "structure-multiple-explicit-intents",
+    "unsupported-resource"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "recognized-core",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "会社法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "mixed_unsupported_intent",
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-unsupported-resource-mixed-company",
+  "request": {
+    "query": "会社法を検索し、EDINETの有価証券報告書も取得してください。対象外でも会社法だけ先に実行してください。"
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 2
+}

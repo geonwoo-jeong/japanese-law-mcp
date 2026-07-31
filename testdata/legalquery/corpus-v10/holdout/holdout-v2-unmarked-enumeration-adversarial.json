@@ -1,0 +1,65 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-unmarked-enumeration-adversarial",
+  "leakageGroupId": "holdout-v2-unmarked-enumeration-unknown-separator",
+  "coverageIds": [
+    "boundary-unmarked-enumeration"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "深海契約や衛星担保について教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "below_execution_threshold",
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "unmarked-provision",
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["衛星担保"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "unmarked-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "衛星担保"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": []
+  }
+}

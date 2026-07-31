@@ -1,0 +1,73 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-20",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-item-limit",
+    "budget-page-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "刑法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "会社法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "労働基準法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-four-law-searches",
+  "request": {
+    "limitPerAttempt": 1,
+    "query": "民法、刑法、会社法、労働基準法をそれぞれ検索してください。"
+  },
+  "schemaVersion": 2
+}

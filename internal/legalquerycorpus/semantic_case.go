@@ -18,29 +18,31 @@ const (
 
 // SemanticCaseValues は、意味判定 fixture の作成に必要な値を保持する。
 type SemanticCaseValues struct {
-	ArtifactKind   ArtifactKind
-	SchemaVersion  int
-	CaseID         string
-	LeakageGroupID string
-	CoverageIDs    []string
-	SafetyVariant  *SafetyVariant
-	EnabledPacks   []string
-	Request        Request
-	Expected       SemanticExpected
+	ArtifactKind            ArtifactKind
+	SchemaVersion           int
+	CaseID                  string
+	LeakageGroupID          string
+	CoverageIDs             []string
+	DevelopmentAssertionIDs []string
+	SafetyVariant           *SafetyVariant
+	EnabledPacks            []string
+	Request                 Request
+	Expected                SemanticExpected
 }
 
 // SemanticCase は、原 request と意味判定の期待投影を不変に保持する。
 type SemanticCase struct {
-	artifactKind   ArtifactKind
-	schemaVersion  int
-	caseID         string
-	leakageGroupID string
-	coverageIDs    []string
-	safetyVariant  *SafetyVariant
-	enabledPacks   []string
-	request        Request
-	expected       SemanticExpected
-	initialized    bool
+	artifactKind            ArtifactKind
+	schemaVersion           int
+	caseID                  string
+	leakageGroupID          string
+	coverageIDs             []string
+	developmentAssertionIDs []string
+	safetyVariant           *SafetyVariant
+	enabledPacks            []string
+	request                 Request
+	expected                SemanticExpected
+	initialized             bool
 }
 
 // NewSemanticCase は、単一 fixture 内の構造と cross-field 制約を検証して返す。
@@ -50,16 +52,17 @@ func NewSemanticCase(values SemanticCaseValues) (SemanticCase, error) {
 		return SemanticCase{}, err
 	}
 	semanticCase := SemanticCase{
-		artifactKind:   values.ArtifactKind,
-		schemaVersion:  values.SchemaVersion,
-		caseID:         values.CaseID,
-		leakageGroupID: values.LeakageGroupID,
-		coverageIDs:    cloneStrings(values.CoverageIDs),
-		safetyVariant:  cloneSafetyVariant(values.SafetyVariant),
-		enabledPacks:   cloneStrings(values.EnabledPacks),
-		request:        values.Request.clone(),
-		expected:       expected,
-		initialized:    true,
+		artifactKind:            values.ArtifactKind,
+		schemaVersion:           values.SchemaVersion,
+		caseID:                  values.CaseID,
+		leakageGroupID:          values.LeakageGroupID,
+		coverageIDs:             cloneStrings(values.CoverageIDs),
+		developmentAssertionIDs: cloneStrings(values.DevelopmentAssertionIDs),
+		safetyVariant:           cloneSafetyVariant(values.SafetyVariant),
+		enabledPacks:            cloneStrings(values.EnabledPacks),
+		request:                 values.Request.clone(),
+		expected:                expected,
+		initialized:             true,
 	}
 	if err := semanticCase.Validate(); err != nil {
 		return SemanticCase{}, err
@@ -92,9 +95,14 @@ func (c SemanticCase) CoverageIDs() []string {
 	return cloneStrings(c.coverageIDs)
 }
 
+// DevelopmentAssertionIDs は、v2 development 境界 ID の複製を返す。
+func (c SemanticCase) DevelopmentAssertionIDs() []string {
+	return cloneStrings(c.developmentAssertionIDs)
+}
+
 // CategoryIDs は、coverage から導出した manifest 順の category ID を返す。
 func (c SemanticCase) CategoryIDs() []string {
-	return semanticCategoryIDsForCoverageIDs(c.coverageIDs)
+	return semanticCategoryIDsForCoverageIDs(c.schemaVersion, c.coverageIDs)
 }
 
 // SafetyVariant は、安全境界 variant と項目の存在を返す。
@@ -132,7 +140,18 @@ func (c SemanticCase) Validate() error {
 	if err := c.validateHeader(); err != nil {
 		return err
 	}
-	if err := validateSemanticCoverage(c.coverageIDs, c.safetyVariant); err != nil {
+	if err := validateSemanticCoverage(
+		c.schemaVersion,
+		c.coverageIDs,
+		c.safetyVariant,
+	); err != nil {
+		return err
+	}
+	if err := validateSemanticDevelopmentAssertions(
+		c.schemaVersion,
+		c.caseID,
+		c.developmentAssertionIDs,
+	); err != nil {
 		return err
 	}
 	if err := validateSemanticEnabledPacks(c.enabledPacks); err != nil {
@@ -157,8 +176,8 @@ func (c SemanticCase) validateHeader() error {
 	switch {
 	case c.artifactKind != ArtifactKindSemanticCase:
 		return fmt.Errorf("artifactKind は semantic_case でなければなりません")
-	case c.schemaVersion != corpusSchemaVersion:
-		return fmt.Errorf("schemaVersion は 1 でなければなりません")
+	case !isSupportedCorpusSchemaVersion(c.schemaVersion):
+		return fmt.Errorf("schemaVersion は実装済みの版でなければなりません")
 	case !isSemanticCaseID(c.caseID):
 		return fmt.Errorf(
 			"semantic case の caseId は development または holdout の正規形でなければなりません",
@@ -168,6 +187,45 @@ func (c SemanticCase) validateHeader() error {
 	default:
 		return nil
 	}
+}
+
+func validateSemanticDevelopmentAssertions(
+	schemaVersion int,
+	caseID string,
+	values []string,
+) error {
+	if schemaVersion == corpusSchemaVersionV1 {
+		if len(values) != 0 {
+			return fmt.Errorf("schema version 1 は developmentAssertionIds を保持できません")
+		}
+		return nil
+	}
+	if validateManifestCaseID(ManifestSetDevelopment, caseID) != nil {
+		if len(values) != 0 {
+			return fmt.Errorf("holdout は developmentAssertionIds を保持できません")
+		}
+		return nil
+	}
+	previous := ""
+	for index, value := range values {
+		if !isDevelopmentAssertionID(value) {
+			return fmt.Errorf("developmentAssertionIds に未定義の値があります")
+		}
+		if index > 0 && previous >= value {
+			return fmt.Errorf("developmentAssertionIds は昇順で重複なく保持してください")
+		}
+		previous = value
+	}
+	return nil
+}
+
+func isDevelopmentAssertionID(value string) bool {
+	for _, allowed := range manifestRequiredDevelopmentAssertionIDs() {
+		if value == allowed {
+			return true
+		}
+	}
+	return false
 }
 
 // UnmarshalJSON は、version 別 DTO を介さない直接復元を拒否する。

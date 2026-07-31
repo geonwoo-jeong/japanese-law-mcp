@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-unmarked-enumeration-ordinary",
+  "leakageGroupId": "holdout-v2-unmarked-enumeration-bare",
+  "coverageIds": [
+    "boundary-unmarked-enumeration"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "永住許可、帰化"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

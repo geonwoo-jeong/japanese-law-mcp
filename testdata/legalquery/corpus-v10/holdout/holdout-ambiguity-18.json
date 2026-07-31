@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-18",
+  "coverageIds": [
+    "ambiguity-weak-general-term"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "law-provision",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "許可"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "law-name",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "許可"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "below_execution_threshold",
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-ambiguity-weak-03",
+  "request": {
+    "query": "許可に関する法律を見つけてください。"
+  },
+  "schemaVersion": 2
+}

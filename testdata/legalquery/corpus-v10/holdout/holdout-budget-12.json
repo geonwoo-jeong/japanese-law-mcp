@@ -1,0 +1,89 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-12",
+  "coverageIds": [
+    "budget-item-limit",
+    "budget-page-limit"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "adult-guardianship"
+        ],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource",
+          "legal_concept"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "95570/detail2",
+                  "resourceType": "judicial-decision",
+                  "sourceId": "courts-hanrei"
+                },
+                "providerId": "courts-hanrei-html"
+              }
+            },
+            "resource": "judicial_decision",
+            "task": "read"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "成年後見"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "成年後見"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-judicialref-read-search",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "この裁判例参照を読み、成年後見の条文と裁判例も検索してください。",
+    "ref": {
+      "key": {
+        "resourceId": "95570/detail2",
+        "resourceType": "judicial-decision",
+        "sourceId": "courts-hanrei"
+      },
+      "providerId": "courts-hanrei-html"
+    }
+  },
+  "schemaVersion": 2
+}

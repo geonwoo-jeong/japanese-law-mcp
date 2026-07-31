@@ -10,55 +10,70 @@ import (
 
 const corpusSchemaDraft202012 = "https://json-schema.org/draft/2020-12/schema"
 
-// corpusSchemaV1 は、外部参照を持たない解決済みの v1 schema を保持する。
-type corpusSchemaV1 struct {
+// corpusSchema は、外部参照を持たない解決済みの版別 schema を保持する。
+type corpusSchema struct {
+	version  int
 	resolved *jsonschema.Resolved
 }
 
+// corpusSchemaV1 は、既存 v1 test と helper の互換名である。
+type corpusSchemaV1 = corpusSchema
+
 // newCorpusSchemaV1 は、安全境界を満たす固定 v1 schema を解決する。
-func newCorpusSchemaV1(data []byte) (corpusSchemaV1, error) {
+func newCorpusSchemaV1(data []byte) (corpusSchema, error) {
+	return newCorpusSchema(corpusSchemaVersionV1, data)
+}
+
+func newCorpusSchemaV2(data []byte) (corpusSchema, error) {
+	return newCorpusSchema(corpusSchemaVersionV2, data)
+}
+
+func newCorpusSchema(version int, data []byte) (corpusSchema, error) {
+	if !isSupportedCorpusSchemaVersion(version) {
+		return corpusSchema{}, fmt.Errorf("corpus schema version は実装済みではありません")
+	}
 	if len(data) > int(corpusSchemaMaximumBytes) {
-		return corpusSchemaV1{}, fmt.Errorf(
-			"corpus schema v1 は size 上限以下でなければなりません",
+		return corpusSchema{}, fmt.Errorf(
+			"corpus schema は size 上限以下でなければなりません",
 		)
 	}
 	if _, err := inspectJSONObject(data, false); err != nil {
-		return corpusSchemaV1{}, fmt.Errorf(
-			"corpus schema v1 の JSON 安全境界が有効ではありません",
+		return corpusSchema{}, fmt.Errorf(
+			"corpus schema の JSON 安全境界が有効ではありません",
 		)
 	}
 	raw, err := decodeCorpusSchemaDocument(data)
 	if err != nil {
-		return corpusSchemaV1{}, err
+		return corpusSchema{}, err
 	}
 	if err := validateCorpusSchemaDraft(raw); err != nil {
-		return corpusSchemaV1{}, err
+		return corpusSchema{}, err
 	}
 	if err := validateCorpusSchemaReferences(raw); err != nil {
-		return corpusSchemaV1{}, err
+		return corpusSchema{}, err
 	}
 	var schema jsonschema.Schema
 	if err := json.Unmarshal(data, &schema); err != nil {
-		return corpusSchemaV1{}, fmt.Errorf(
-			"corpus schema v1 を解釈できません",
+		return corpusSchema{}, fmt.Errorf(
+			"corpus schema を解釈できません",
 		)
 	}
 	resolved, err := schema.Resolve(nil)
 	if err != nil {
-		return corpusSchemaV1{}, fmt.Errorf(
-			"corpus schema v1 を自己解決できません",
+		return corpusSchema{}, fmt.Errorf(
+			"corpus schema を自己解決できません",
 		)
 	}
-	return corpusSchemaV1{resolved: resolved}, nil
+	return corpusSchema{version: version, resolved: resolved}, nil
 }
 
 func decodeCorpusSchemaDocument(data []byte) (map[string]any, error) {
 	var raw map[string]any
 	if err := json.Unmarshal(data, &raw); err != nil {
-		return nil, fmt.Errorf("corpus schema v1 を解釈できません")
+		return nil, fmt.Errorf("corpus schema を解釈できません")
 	}
 	if raw == nil {
-		return nil, fmt.Errorf("corpus schema v1 は object でなければなりません")
+		return nil, fmt.Errorf("corpus schema は object でなければなりません")
 	}
 	return raw, nil
 }
@@ -67,7 +82,7 @@ func validateCorpusSchemaDraft(raw map[string]any) error {
 	draft, ok := raw["$schema"].(string)
 	if !ok || draft != corpusSchemaDraft202012 {
 		return fmt.Errorf(
-			"corpus schema v1 は JSON Schema Draft 2020-12 でなければなりません",
+			"corpus schema は JSON Schema Draft 2020-12 でなければなりません",
 		)
 	}
 	return nil
@@ -82,12 +97,12 @@ func validateCorpusSchemaReferences(value any) error {
 				reference, ok := child.(string)
 				if !ok || !strings.HasPrefix(reference, "#/") {
 					return fmt.Errorf(
-						"corpus schema v1 の $ref は local fragment でなければなりません",
+						"corpus schema の $ref は local fragment でなければなりません",
 					)
 				}
 			case "$dynamicRef":
 				return fmt.Errorf(
-					"corpus schema v1 では $dynamicRef を使用できません",
+					"corpus schema では $dynamicRef を使用できません",
 				)
 			}
 			if err := validateCorpusSchemaReferences(child); err != nil {
@@ -104,16 +119,16 @@ func validateCorpusSchemaReferences(value any) error {
 	return nil
 }
 
-func (s corpusSchemaV1) validate(data []byte) error {
+func (s corpusSchema) validate(data []byte) error {
 	if s.resolved == nil {
-		return fmt.Errorf("corpus schema v1 が初期化されていません")
+		return fmt.Errorf("corpus schema が初期化されていません")
 	}
 	var instance any
 	if err := json.Unmarshal(data, &instance); err != nil {
 		return fmt.Errorf("JSON 成果物を schema 検証用に解釈できません")
 	}
 	if err := s.resolved.Validate(instance); err != nil {
-		return fmt.Errorf("JSON 成果物が corpus schema v1 に適合しません")
+		return fmt.Errorf("JSON 成果物が corpus schema に適合しません")
 	}
 	return nil
 }

@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-intent-02",
+  "coverageIds": [
+    "intent-law-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2024-04-01",
+              "query": "個人情報の保護に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-intent-law-search-pipa-asof",
+  "request": {
+    "limitPerAttempt": 5,
+    "query": "2024年4月1日時点の個人情報の保護に関する法律を法令名で検索する"
+  },
+  "schemaVersion": 2
+}

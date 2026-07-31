@@ -69,7 +69,7 @@ func loadOpenCorpus(
 			"corpus root の manifest は corpus_manifest でなければなりません",
 		)
 	}
-	if header.schemaVersion != corpusSchemaVersion {
+	if !isSupportedCorpusSchemaVersion(header.schemaVersion) {
 		return Corpus{}, fmt.Errorf(
 			"manifest の schemaVersion は実装済みではありません",
 		)
@@ -78,11 +78,11 @@ func loadOpenCorpus(
 		return Corpus{}, err
 	}
 
-	schemaData, err := filesystem.readSchemaV1(ctx)
+	schemaData, err := filesystem.readSchema(ctx, header.schemaVersion)
 	if err != nil {
 		return Corpus{}, err
 	}
-	schema, err := newCorpusSchemaV1(schemaData)
+	schema, err := newCorpusSchema(header.schemaVersion, schemaData)
 	if err != nil {
 		return Corpus{}, err
 	}

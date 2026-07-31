@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-pack-18",
+  "coverageIds": [
+    "boundary-pack-disabled",
+    "intent-judicial-decision-search",
+    "intent-law-search",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "capability_unavailable",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "工場騒音"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "required_pack_disabled"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-pack-core-judicial",
+  "request": {
+    "query": "裁判例が無効でも民法の検索だけ先に実行し、続けて裁判例を「工場騒音」で検索してください。"
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 2
+}

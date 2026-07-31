@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-intent-06",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "行政指導"
+              ],
+              "anyTerms": [],
+              "asOf": "2023-12-01",
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-intent-content-asof",
+  "request": {
+    "limitPerAttempt": 9,
+    "query": "2023年12月1日時点の法令本文で「行政指導」を含む箇所を探す"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,47 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-name-11",
+  "coverageIds": [
+    "intent-law-search",
+    "name-sourced-alias"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "個人情報の保護に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "holdout-name-personal-information",
+  "request": {
+    "query": "個情法で個人情報保護の法律を探してください。"
+  },
+  "schemaVersion": 2
+}

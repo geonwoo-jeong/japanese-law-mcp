@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-pack-11",
+  "coverageIds": [
+    "boundary-pack-disabled",
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "capability_unavailable",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "個人情報漏えい"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "required_pack_disabled"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-pack-personal-data",
+  "request": {
+    "query": "裁判例を「個人情報漏えい」で検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

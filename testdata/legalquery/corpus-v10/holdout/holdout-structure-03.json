@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-03",
+  "coverageIds": [
+    "intent-law-content-search",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "デジタル社会"
+              ],
+              "anyTerms": [],
+              "asOf": "2024-04-01",
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-content-digital-date",
+  "request": {
+    "query": "2024年4月1日時点の法令本文から「デジタル社会」を検索して"
+  },
+  "schemaVersion": 2
+}

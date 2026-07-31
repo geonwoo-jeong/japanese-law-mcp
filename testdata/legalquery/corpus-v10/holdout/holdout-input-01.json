@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-01",
+  "coverageIds": [
+    "input-query-empty"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "query",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-empty-zero",
+  "request": {
+    "query": ""
+  },
+  "schemaVersion": 2
+}

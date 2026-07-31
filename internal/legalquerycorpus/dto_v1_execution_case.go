@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type executionCaseV1DTO struct {
+type executionCaseDTO struct {
 	ArtifactKind   *string            `json:"artifactKind"`
 	SchemaVersion  *int               `json:"schemaVersion"`
 	CaseID         *string            `json:"caseId"`
@@ -16,7 +16,15 @@ type executionCaseV1DTO struct {
 }
 
 func decodeExecutionCaseV1(data []byte) (ExecutionCase, error) {
-	var dto executionCaseV1DTO
+	return decodeExecutionCase(data)
+}
+
+func decodeExecutionCaseV2(data []byte) (ExecutionCase, error) {
+	return decodeExecutionCase(data)
+}
+
+func decodeExecutionCase(data []byte) (ExecutionCase, error) {
+	var dto executionCaseDTO
 	if err := decodeJSONV1(data, &dto); err != nil {
 		return ExecutionCase{}, err
 	}

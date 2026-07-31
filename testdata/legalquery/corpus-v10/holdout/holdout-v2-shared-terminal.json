@@ -1,0 +1,54 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-shared-terminal",
+  "leakageGroupId": "holdout-v2-shared-terminal-natural",
+  "coverageIds": [
+    "structure-shared-terminal-cue"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "永住許可と帰化について教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "natural-shared-terminal",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["永住許可"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["帰化"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": ["natural-shared-terminal"]
+  }
+}

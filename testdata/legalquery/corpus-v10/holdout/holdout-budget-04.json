@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-04",
+  "coverageIds": [
+    "budget-item-limit",
+    "budget-page-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "個人情報保護法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "個人データ"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-privacy-dual-search",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "個人情報保護法を検索し、「個人データ」を含む条文も検索してください。"
+  },
+  "schemaVersion": 2
+}

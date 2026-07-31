@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-unsupported-02",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-unsupported-advice-win",
+  "request": {
+    "query": "この証拠だけで損害賠償請求に勝てるか予測してください。"
+  },
+  "schemaVersion": 2
+}

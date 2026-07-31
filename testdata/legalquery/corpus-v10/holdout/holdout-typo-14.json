@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-typo-14",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official",
+    "typo-substitution"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "行政不服審査法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-typo-admin-appeal-search",
+  "request": {
+    "query": "行政不服審察法という法律を検索して。"
+  },
+  "schemaVersion": 2
+}

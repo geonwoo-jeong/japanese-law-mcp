@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-name-19",
+  "coverageIds": [
+    "concept-single",
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "child-support"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "legal_concept"
+        ],
+        "meaningId": "law-provision-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "養育費"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-provision-search"
+    ]
+  },
+  "leakageGroupId": "holdout-name-concept-child-support",
+  "request": {
+    "query": "離婚後の子どもの生活費に関する条文を検索"
+  },
+  "schemaVersion": 2
+}

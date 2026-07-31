@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -43,7 +44,11 @@ func validateManifestIntegrity(
 func validateIntegrityRequirements(
 	checked integrityCheckedCorpus,
 ) (integrityCheckedCorpus, error) {
-	checked, err := validateIntegrityHoldoutRequirements(checked)
+	checked, err := validateIntegrityDevelopmentAssertions(checked)
+	if err != nil {
+		return integrityCheckedCorpus{}, err
+	}
+	checked, err = validateIntegrityHoldoutRequirements(checked)
 	if err != nil {
 		return integrityCheckedCorpus{}, err
 	}
@@ -73,6 +78,11 @@ func validateManifestArtifacts(
 		return integrityCheckedCorpus{}, fmt.Errorf(
 			"manifest integrity の manifest が有効ではありません: %w",
 			err,
+		)
+	}
+	if schema.version != manifest.SchemaVersion() {
+		return integrityCheckedCorpus{}, fmt.Errorf(
+			"manifest と schema の version が一致しません",
 		)
 	}
 	if manifest.CorpusVersion() != filesystem.corpusVersion {
@@ -126,6 +136,12 @@ func validateManifestArtifacts(
 		return integrityCheckedCorpus{}, fmt.Errorf(
 			"manifest の holdoutDigest が実在 fixture と一致しません",
 		)
+	}
+	if err := validateManifestHoldoutLeakageGroupDigests(
+		manifest,
+		holdout,
+	); err != nil {
+		return integrityCheckedCorpus{}, err
 	}
 	if err := validateSemanticSetSeparation(development, holdout); err != nil {
 		return integrityCheckedCorpus{}, err
@@ -214,4 +230,59 @@ func computeFixtureDigest(entries []fixtureDigestEntry) string {
 func sha256Hex(data []byte) string {
 	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:])
+}
+
+func computeHoldoutLeakageGroupDigests(cases []SemanticCase) []string {
+	unique := make(map[string]struct{}, len(cases))
+	for _, semanticCase := range cases {
+		input := "legal-query-leakage-group-v1\x00" +
+			semanticCase.LeakageGroupID()
+		unique[sha256Hex([]byte(input))] = struct{}{}
+	}
+	digests := make([]string, 0, len(unique))
+	for digest := range unique {
+		digests = append(digests, digest)
+	}
+	sort.Strings(digests)
+	return digests
+}
+
+func validateManifestHoldoutLeakageGroupDigests(
+	manifest Manifest,
+	holdout []SemanticCase,
+) error {
+	if manifest.SchemaVersion() == corpusSchemaVersionV1 {
+		return nil
+	}
+	if !equalStringSequence(
+		manifest.HoldoutLeakageGroupDigests(),
+		computeHoldoutLeakageGroupDigests(holdout),
+	) {
+		return fmt.Errorf(
+			"manifest の holdout leakage digest 集合が実在 fixture と一致しません",
+		)
+	}
+	return nil
+}
+
+func validateIntegrityDevelopmentAssertions(
+	checked integrityCheckedCorpus,
+) (integrityCheckedCorpus, error) {
+	if checked.manifest.SchemaVersion() == corpusSchemaVersionV1 {
+		return checked, nil
+	}
+	present := make(map[string]struct{})
+	for _, semanticCase := range checked.development {
+		for _, assertionID := range semanticCase.DevelopmentAssertionIDs() {
+			present[assertionID] = struct{}{}
+		}
+	}
+	for _, required := range checked.manifest.RequiredDevelopmentAssertionIDs() {
+		if _, exists := present[required]; !exists {
+			return integrityCheckedCorpus{}, fmt.Errorf(
+				"development assertion の必須 ID が不足しています",
+			)
+		}
+	}
+	return checked, nil
 }

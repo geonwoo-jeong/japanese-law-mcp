@@ -1,0 +1,78 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-06",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "permanent-residence"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept",
+          "morphological_context"
+        ],
+        "meaningId": "law-provisions",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "永住許可"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+          "permanent-residence"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept",
+          "morphological_context"
+        ],
+        "meaningId": "court-decisions",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "永住許可"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-provisions",
+      "court-decisions"
+    ]
+  },
+  "leakageGroupId": "holdout-ambiguity-permanent-residence-concept",
+  "request": {
+    "query": "永住権について法情報を調べてください。"
+  },
+  "schemaVersion": 2
+}

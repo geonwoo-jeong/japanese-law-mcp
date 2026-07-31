@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-reference-18",
+  "coverageIds": [
+    "reference-case-reference"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "平成29(受)1908"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-reference-case-88528",
+  "request": {
+    "limitPerAttempt": 6,
+    "query": "平成29(受)1908 の裁判例を検索する"
+  },
+  "schemaVersion": 2
+}

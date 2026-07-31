@@ -1,0 +1,72 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-17",
+  "coverageIds": [
+    "budget-item-limit",
+    "budget-page-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "hedged",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "general_term"
+        ],
+        "meaningId": "law-name",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "取消し"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "general_term"
+        ],
+        "meaningId": "law-provision",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "取消し"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "hedged_close_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-name",
+      "law-provision"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-cancellation-choice",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "取消しは法令名検索と条文検索の二候補として検索してください。"
+  },
+  "schemaVersion": 2
+}

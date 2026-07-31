@@ -7,16 +7,18 @@ func cloneCorpusManifest(value Manifest) (Manifest, error) {
 		return Manifest{}, err
 	}
 	return NewManifest(ManifestValues{
-		ArtifactKind:                 value.ArtifactKind(),
-		SchemaVersion:                value.SchemaVersion(),
-		CorpusVersion:                value.CorpusVersion(),
-		Seed:                         value.Seed(),
-		HoldoutDigest:                value.HoldoutDigest(),
-		RequiredCategoryIDs:          value.RequiredCategoryIDs(),
-		RequiredExecutionScenarioIDs: value.RequiredExecutionScenarioIDs(),
-		Development:                  value.Development(),
-		Holdout:                      value.Holdout(),
-		Execution:                    value.Execution(),
+		ArtifactKind:                    value.ArtifactKind(),
+		SchemaVersion:                   value.SchemaVersion(),
+		CorpusVersion:                   value.CorpusVersion(),
+		Seed:                            value.Seed(),
+		HoldoutDigest:                   value.HoldoutDigest(),
+		HoldoutLeakageGroupDigests:      value.HoldoutLeakageGroupDigests(),
+		RequiredCategoryIDs:             value.RequiredCategoryIDs(),
+		RequiredExecutionScenarioIDs:    value.RequiredExecutionScenarioIDs(),
+		RequiredDevelopmentAssertionIDs: value.RequiredDevelopmentAssertionIDs(),
+		Development:                     value.Development(),
+		Holdout:                         value.Holdout(),
+		Execution:                       value.Execution(),
 	})
 }
 
@@ -29,15 +31,16 @@ func cloneCorpusSemanticCase(value SemanticCase) (SemanticCase, error) {
 		safetyVariant = &variant
 	}
 	return NewSemanticCase(SemanticCaseValues{
-		ArtifactKind:   value.ArtifactKind(),
-		SchemaVersion:  value.SchemaVersion(),
-		CaseID:         value.CaseID(),
-		LeakageGroupID: value.LeakageGroupID(),
-		CoverageIDs:    value.CoverageIDs(),
-		SafetyVariant:  safetyVariant,
-		EnabledPacks:   value.EnabledPacks(),
-		Request:        value.Request(),
-		Expected:       value.Expected(),
+		ArtifactKind:            value.ArtifactKind(),
+		SchemaVersion:           value.SchemaVersion(),
+		CaseID:                  value.CaseID(),
+		LeakageGroupID:          value.LeakageGroupID(),
+		CoverageIDs:             value.CoverageIDs(),
+		DevelopmentAssertionIDs: value.DevelopmentAssertionIDs(),
+		SafetyVariant:           safetyVariant,
+		EnabledPacks:            value.EnabledPacks(),
+		Request:                 value.Request(),
+		Expected:                value.Expected(),
 	})
 }
 

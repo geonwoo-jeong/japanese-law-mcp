@@ -1,0 +1,47 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-typo-08",
+  "coverageIds": [
+    "intent-law-search",
+    "name-official",
+    "typo-deletion"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "地方公務員法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-typo-local-public-service-search",
+  "request": {
+    "query": "地方公員法の法令ページを出してください。"
+  },
+  "schemaVersion": 2
+}

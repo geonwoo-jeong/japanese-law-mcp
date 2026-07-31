@@ -1,0 +1,61 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-budget-07",
+  "coverageIds": [
+    "budget-item-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "main",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "129AC0000000089",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "main"
+    ]
+  },
+  "leakageGroupId": "holdout-budget-lawref-one-read",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "この法令参照の本文を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "129AC0000000089",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

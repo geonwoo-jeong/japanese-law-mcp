@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-candidate-scope-adversarial",
+  "leakageGroupId": "holdout-v2-candidate-scope-weak-step",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "民法と架空語をそれぞれ検索してください。影響グラフを作成してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

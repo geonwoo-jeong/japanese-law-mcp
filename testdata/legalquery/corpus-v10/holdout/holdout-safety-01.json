@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-safety-01",
+  "coverageIds": [
+    "boundary-mixed-unsupported"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "recognized-core",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "129AC0000000089",
+              "location": {
+                "articleNumber": "709",
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-safety-mixed-minpo-709-advice",
+  "request": {
+    "query": "民法第709条を見せて。私の場合は違法ですか"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

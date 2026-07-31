@@ -65,7 +65,7 @@ func TestSemanticCaseはheaderとcatalogの違反を拒否する(t *testing.T) {
 			return values
 		},
 		"schemaVersion": func(values SemanticCaseValues) SemanticCaseValues {
-			values.SchemaVersion = 2
+			values.SchemaVersion = 3
 			return values
 		},
 		"execution caseId": func(values SemanticCaseValues) SemanticCaseValues {

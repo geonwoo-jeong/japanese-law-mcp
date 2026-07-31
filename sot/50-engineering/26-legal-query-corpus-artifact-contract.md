@@ -118,7 +118,7 @@ schema version 1 は同 field を受理せず、`SOT-ENG-038` の新しい candi
 |---|---|---:|---|
 | `decision` | string | はい | `LegalQueryPlan` の decision |
 | `reasonCodes` | `string[]` | はい | 順序を含む正確な決定理由 |
-| `meanings` | `ExpectedMeaning[]` | はい | 主正解を先頭にした正しい意味。`unsupported` だけ空を許す |
+| `meanings` | `ExpectedMeaning[]` | はい | 主正解を先頭にした正しい意味。`unsupported` と `step_limit_exceeded` の明確化だけ空を許す |
 | `selectedMeaningIds` | `string[]` | はい | selection 順の意味参照 |
 
 `ExpectedMeaning` は `meaningId`、順序を含む正確な `evidenceCodes`、辞書根拠の `conceptIds`、昇順の `requiredPacks` および一件以上四件以下の `steps` を持つ。`meaningId` は fixture 内でだけ安定した評価用 ID であり、製品の `candidateId` と一致させない。`meanings` は実際の ranked candidate 全件を golden にするものではなく、正しい意味だけを持つ。実際の追加候補は固定上限内で許可する。
@@ -139,7 +139,12 @@ requiredPacks
 corpus 自体は tuple 全体を重複記録せず `conceptId` だけを持ち、評価器が実際の
 候補に含まれる公開 `conceptSources` の完全 tuple と辞書版を照合する。
 
-`unsupported` 以外は `meanings` を一件以上持つ。`meanings` の先頭を ranking 指標の主正解とし、残りは正しい代替解釈とする。各 expected meaning は実際の ranked candidate に同じ意味署名で一件以上存在しなければならない。`selectedMeaningIds` は `meanings` の要素だけを重複なく参照し、実際の selection と順序を含め完全に一致する。decision ごとの件数と理由は `SOT-MODEL-023` に従う。
+`unsupported` と、reason が `step_limit_exceeded` 一件だけの
+`needs_clarification` 以外は `meanings` を一件以上持つ。
+`step_limit_exceeded` は四 step 上限内の `ExpectedMeaning` へ不完全な候補を
+投影せず、`meanings` と `selectedMeaningIds` をともに空とする。それ以外では
+`meanings` の先頭を ranking 指標の主正解とし、残りは正しい代替解釈とする。
+各 expected meaning は実際の ranked candidate に同じ意味署名で一件以上存在しなければならない。`selectedMeaningIds` は `meanings` の要素だけを重複なく参照し、実際の selection と順序を含め完全に一致する。decision ごとの件数と理由は `SOT-MODEL-023` に従う。
 
 評価器は `enabledPacks` と各 meaning の `requiredPacks` から availability を導出する。`single` と `hedged` の選択はすべて `available`、`capability_unavailable` の選択は一件以上の `pack_disabled`、`needs_clarification` の選択は `available` とし、`unsupported` と `request_error` は外部呼出し対象を持たない。fixture に availability を重複記録しない。
 

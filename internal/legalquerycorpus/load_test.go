@@ -79,7 +79,7 @@ func TestLoadは取消と各段階の失敗でCorpusの零値を返す(t *testin
 		filesystemReadTestWriteFile(
 			t,
 			layout.manifestPath,
-			[]byte(`{"artifactKind":"corpus_manifest","schemaVersion":2}`),
+			[]byte(`{"artifactKind":"corpus_manifest","schemaVersion":3}`),
 		)
 		if err := os.Remove(layout.schemaPath); err != nil {
 			t.Fatalf("SOT-ENG-026: schema を削除できません: %v", err)

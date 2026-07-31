@@ -119,8 +119,8 @@ func (c ExecutionCase) validateHeader() error {
 	switch {
 	case c.artifactKind != ArtifactKindExecutionCase:
 		return fmt.Errorf("artifactKind は execution_case でなければなりません")
-	case c.schemaVersion != corpusSchemaVersion:
-		return fmt.Errorf("schemaVersion は 1 でなければなりません")
+	case !isSupportedCorpusSchemaVersion(c.schemaVersion):
+		return fmt.Errorf("schemaVersion は実装済みの版でなければなりません")
 	case validateManifestCaseID(ManifestSetExecution, c.caseID) != nil:
 		return fmt.Errorf("execution case の caseId は execution 集合の正規形でなければなりません")
 	case validateManifestCaseID(ManifestSetDevelopment, c.semanticCaseID) != nil:

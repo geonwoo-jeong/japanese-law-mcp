@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-unsupported-relationship",
+  "leakageGroupId": "holdout-v2-unsupported-relationship-analysis",
+  "coverageIds": [
+    "unsupported-relationship-analysis"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "民法第103条を引用する裁判例の影響グラフを作成してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent",
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [
+      {
+        "meaningId": "relationship-retained-article",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "129AC0000000089",
+              "location": {
+                "provision": "main",
+                "articleNumber": "103"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": []
+  }
+}

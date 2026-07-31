@@ -1,0 +1,54 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-05",
+  "coverageIds": [
+    "intent-law-article-read",
+    "name-official",
+    "structure-article",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "asOf": "2024-04-01",
+              "lawId": "129AC0000000089",
+              "location": {
+                "articleNumber": "709",
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-minpo-709-read",
+  "request": {
+    "query": "2024年4月1日時点の民法第709条を読んで"
+  },
+  "schemaVersion": 2
+}

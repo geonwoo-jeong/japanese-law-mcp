@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-structure-18",
+  "coverageIds": [
+    "intent-law-search",
+    "intent-law-updates",
+    "name-official",
+    "structure-complete-date",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2024-04-01",
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2024-04-01"
+            },
+            "resource": "law",
+            "task": "list_updates"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-structure-date-search-updates",
+  "request": {
+    "query": "2024年4月1日時点の民法を検索し、2024年4月1日の法令更新一覧も取得して"
+  },
+  "schemaVersion": 2
+}

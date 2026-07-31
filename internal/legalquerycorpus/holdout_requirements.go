@@ -23,7 +23,14 @@ type holdoutRequirementCounts struct {
 func validateIntegrityHoldoutRequirements(
 	checked integrityCheckedCorpus,
 ) (integrityCheckedCorpus, error) {
-	if err := validateHoldoutRequirements(checked.holdout); err != nil {
+	schemaVersion := checked.manifest.SchemaVersion()
+	if !isSupportedCorpusSchemaVersion(schemaVersion) && len(checked.holdout) > 0 {
+		schemaVersion = checked.holdout[0].SchemaVersion()
+	}
+	if err := validateHoldoutRequirementsForSchemaVersion(
+		schemaVersion,
+		checked.holdout,
+	); err != nil {
 		return integrityCheckedCorpus{}, err
 	}
 	return checked, nil
@@ -31,6 +38,16 @@ func validateIntegrityHoldoutRequirements(
 
 // validateHoldoutRequirements は、holdout の規模、網羅性および安全対を確認する。
 func validateHoldoutRequirements(holdout []SemanticCase) error {
+	return validateHoldoutRequirementsForSchemaVersion(
+		corpusSchemaVersionV1,
+		holdout,
+	)
+}
+
+func validateHoldoutRequirementsForSchemaVersion(
+	schemaVersion int,
+	holdout []SemanticCase,
+) error {
 	if len(holdout) < minimumHoldoutCaseCount {
 		return fmt.Errorf(
 			"holdout は%d件以上でなければなりません",
@@ -41,10 +58,16 @@ func validateHoldoutRequirements(holdout []SemanticCase) error {
 	if err := validateHoldoutCategoryCounts(counts.categories); err != nil {
 		return err
 	}
-	if err := validateHoldoutCoverageCounts(counts.coverages); err != nil {
+	if err := validateHoldoutCoverageCounts(
+		schemaVersion,
+		counts.coverages,
+	); err != nil {
 		return err
 	}
-	return validateHoldoutSafetyVariantPairs(counts.safetyVariants)
+	return validateHoldoutSafetyVariantPairs(
+		schemaVersion,
+		counts.safetyVariants,
+	)
 }
 
 func collectHoldoutRequirementCounts(
@@ -62,7 +85,10 @@ func collectHoldoutRequirementCounts(
 		variant, hasVariant := semanticCase.SafetyVariant()
 		for _, coverageID := range semanticCase.CoverageIDs() {
 			counts.coverages[coverageID]++
-			definition, exists := semanticCoverageDefinitionFor(coverageID)
+			definition, exists := semanticCoverageDefinitionForSchemaVersion(
+				semanticCase.SchemaVersion(),
+				coverageID,
+			)
 			if exists && definition.requiresSafetyVariantPair && hasVariant {
 				counts.safetyVariants[holdoutSafetyVariantKey{
 					coverageID: coverageID,
@@ -87,8 +113,13 @@ func validateHoldoutCategoryCounts(counts map[string]int) error {
 	return nil
 }
 
-func validateHoldoutCoverageCounts(counts map[string]int) error {
-	for _, definition := range semanticCoverageDefinitions() {
+func validateHoldoutCoverageCounts(
+	schemaVersion int,
+	counts map[string]int,
+) error {
+	for _, definition := range semanticCoverageDefinitionsForSchemaVersion(
+		schemaVersion,
+	) {
 		if counts[definition.id] < definition.minimumHoldoutCount {
 			return fmt.Errorf(
 				"holdout の coverageId %q は%d件以上でなければなりません",
@@ -101,9 +132,12 @@ func validateHoldoutCoverageCounts(counts map[string]int) error {
 }
 
 func validateHoldoutSafetyVariantPairs(
+	schemaVersion int,
 	counts map[holdoutSafetyVariantKey]int,
 ) error {
-	for _, definition := range semanticCoverageDefinitions() {
+	for _, definition := range semanticCoverageDefinitionsForSchemaVersion(
+		schemaVersion,
+	) {
 		if !definition.requiresSafetyVariantPair {
 			continue
 		}

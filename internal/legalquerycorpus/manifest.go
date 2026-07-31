@@ -6,9 +6,13 @@ import (
 )
 
 const (
-	corpusSchemaVersion  = 1
-	manifestMaximumSeed  = 2147483647
-	manifestMaximumCases = 4096
+	corpusSchemaVersionV1 = 1
+	corpusSchemaVersionV2 = 2
+	// corpusSchemaVersion は、既存 v1 test helper の既定値を維持する。
+	corpusSchemaVersion                = corpusSchemaVersionV1
+	manifestMaximumSeed                = 2147483647
+	manifestMaximumCases               = 4096
+	manifestMaximumLeakageGroupDigests = 400
 )
 
 var (
@@ -179,31 +183,35 @@ func (s ManifestSet) clone() ManifestSet {
 
 // ManifestValues は、manifest の作成に必要な値を保持する。
 type ManifestValues struct {
-	ArtifactKind                 ArtifactKind
-	SchemaVersion                int
-	CorpusVersion                string
-	Seed                         int
-	HoldoutDigest                string
-	RequiredCategoryIDs          []string
-	RequiredExecutionScenarioIDs []string
-	Development                  ManifestSet
-	Holdout                      ManifestSet
-	Execution                    ManifestSet
+	ArtifactKind                    ArtifactKind
+	SchemaVersion                   int
+	CorpusVersion                   string
+	Seed                            int
+	HoldoutDigest                   string
+	HoldoutLeakageGroupDigests      []string
+	RequiredCategoryIDs             []string
+	RequiredExecutionScenarioIDs    []string
+	RequiredDevelopmentAssertionIDs []string
+	Development                     ManifestSet
+	Holdout                         ManifestSet
+	Execution                       ManifestSet
 }
 
 // Manifest は、版、固定 catalog と三集合を不変に保持する。
 type Manifest struct {
-	artifactKind                 ArtifactKind
-	schemaVersion                int
-	corpusVersion                string
-	seed                         int
-	holdoutDigest                string
-	requiredCategoryIDs          []string
-	requiredExecutionScenarioIDs []string
-	development                  ManifestSet
-	holdout                      ManifestSet
-	execution                    ManifestSet
-	initialized                  bool
+	artifactKind                    ArtifactKind
+	schemaVersion                   int
+	corpusVersion                   string
+	seed                            int
+	holdoutDigest                   string
+	holdoutLeakageGroupDigests      []string
+	requiredCategoryIDs             []string
+	requiredExecutionScenarioIDs    []string
+	requiredDevelopmentAssertionIDs []string
+	development                     ManifestSet
+	holdout                         ManifestSet
+	execution                       ManifestSet
+	initialized                     bool
 }
 
 // NewManifest は、manifest 単体で確認できる構造を検証して返す。
@@ -214,12 +222,16 @@ func NewManifest(values ManifestValues) (Manifest, error) {
 		corpusVersion:                values.CorpusVersion,
 		seed:                         values.Seed,
 		holdoutDigest:                values.HoldoutDigest,
+		holdoutLeakageGroupDigests:   cloneStrings(values.HoldoutLeakageGroupDigests),
 		requiredCategoryIDs:          cloneStrings(values.RequiredCategoryIDs),
 		requiredExecutionScenarioIDs: cloneStrings(values.RequiredExecutionScenarioIDs),
-		development:                  values.Development.clone(),
-		holdout:                      values.Holdout.clone(),
-		execution:                    values.Execution.clone(),
-		initialized:                  true,
+		requiredDevelopmentAssertionIDs: cloneStrings(
+			values.RequiredDevelopmentAssertionIDs,
+		),
+		development: values.Development.clone(),
+		holdout:     values.Holdout.clone(),
+		execution:   values.Execution.clone(),
+		initialized: true,
 	}
 	if err := manifest.Validate(); err != nil {
 		return Manifest{}, err
@@ -252,6 +264,11 @@ func (m Manifest) HoldoutDigest() string {
 	return m.holdoutDigest
 }
 
+// HoldoutLeakageGroupDigests は、holdout leakage group の digest 集合の複製を返す。
+func (m Manifest) HoldoutLeakageGroupDigests() []string {
+	return cloneStrings(m.holdoutLeakageGroupDigests)
+}
+
 // RequiredCategoryIDs は、必須 category ID の複製を返す。
 func (m Manifest) RequiredCategoryIDs() []string {
 	return cloneStrings(m.requiredCategoryIDs)
@@ -260,6 +277,11 @@ func (m Manifest) RequiredCategoryIDs() []string {
 // RequiredExecutionScenarioIDs は、必須実行 scenario ID の複製を返す。
 func (m Manifest) RequiredExecutionScenarioIDs() []string {
 	return cloneStrings(m.requiredExecutionScenarioIDs)
+}
+
+// RequiredDevelopmentAssertionIDs は、v2 development 境界 ID の複製を返す。
+func (m Manifest) RequiredDevelopmentAssertionIDs() []string {
+	return cloneStrings(m.requiredDevelopmentAssertionIDs)
 }
 
 // Development は、development 集合の複製を返す。
@@ -296,6 +318,9 @@ func (m Manifest) Validate() error {
 			"requiredExecutionScenarioIds は corpus version の定義件数を正しい順序で保持しなければなりません",
 		)
 	}
+	if err := m.validateVersionFields(); err != nil {
+		return err
+	}
 	return m.validateSets()
 }
 
@@ -303,8 +328,8 @@ func (m Manifest) validateHeader() error {
 	switch {
 	case m.artifactKind != ArtifactKindCorpusManifest:
 		return fmt.Errorf("artifactKind は corpus_manifest でなければなりません")
-	case m.schemaVersion != corpusSchemaVersion:
-		return fmt.Errorf("schemaVersion は 1 でなければなりません")
+	case !isSupportedCorpusSchemaVersion(m.schemaVersion):
+		return fmt.Errorf("schemaVersion は実装済みの版でなければなりません")
 	case !manifestCorpusVersionPattern.MatchString(m.corpusVersion):
 		return fmt.Errorf("corpusVersion は corpus-v と正の十進整数の正規形でなければなりません")
 	case m.seed < 0 || m.seed > manifestMaximumSeed:
@@ -314,6 +339,49 @@ func (m Manifest) validateHeader() error {
 	default:
 		return nil
 	}
+}
+
+func (m Manifest) validateVersionFields() error {
+	switch m.schemaVersion {
+	case corpusSchemaVersionV1:
+		if len(m.holdoutLeakageGroupDigests) != 0 ||
+			len(m.requiredDevelopmentAssertionIDs) != 0 {
+			return fmt.Errorf("schema version 1 は v2 manifest 項目を保持できません")
+		}
+		return nil
+	case corpusSchemaVersionV2:
+		if err := validateHoldoutLeakageGroupDigestList(
+			m.holdoutLeakageGroupDigests,
+		); err != nil {
+			return err
+		}
+		if !equalStringSequence(
+			m.requiredDevelopmentAssertionIDs,
+			manifestRequiredDevelopmentAssertionIDs(),
+		) {
+			return fmt.Errorf("requiredDevelopmentAssertionIds は定義された十一件を正しい順序で保持しなければなりません")
+		}
+		return nil
+	default:
+		return fmt.Errorf("schemaVersion は実装済みの版でなければなりません")
+	}
+}
+
+func validateHoldoutLeakageGroupDigestList(values []string) error {
+	if len(values) < 1 || len(values) > manifestMaximumLeakageGroupDigests {
+		return fmt.Errorf("holdoutLeakageGroupDigests は一件以上四百件以下でなければなりません")
+	}
+	previous := ""
+	for index, value := range values {
+		if !manifestSHA256Pattern.MatchString(value) {
+			return fmt.Errorf("holdoutLeakageGroupDigests は小文字十六進六十四桁でなければなりません")
+		}
+		if index > 0 && previous >= value {
+			return fmt.Errorf("holdoutLeakageGroupDigests は byte 昇順で重複なく保持してください")
+		}
+		previous = value
+	}
+	return nil
 }
 
 func (m Manifest) validateSets() error {
@@ -426,5 +494,25 @@ func manifestRequiredExecutionScenarioIDsForVersion(
 		return manifestLegacyRequiredExecutionScenarioIDs()
 	default:
 		return manifestRequiredExecutionScenarioIDs()
+	}
+}
+
+func isSupportedCorpusSchemaVersion(version int) bool {
+	return version == corpusSchemaVersionV1 || version == corpusSchemaVersionV2
+}
+
+func manifestRequiredDevelopmentAssertionIDs() []string {
+	return []string{
+		"shared-terminal-five-distinct-meanings",
+		"shared-terminal-five-with-repeated-meaning",
+		"shared-terminal-four-distinct-meanings",
+		"shared-terminal-nonunique-maximal-sequence",
+		"shared-terminal-repeated-meaning-different-span",
+		"shared-terminal-repeated-separator",
+		"shared-terminal-same-span-multiple-meanings",
+		"shared-terminal-tail-connector-chain",
+		"shared-terminal-unknown-separator",
+		"shared-terminal-valid-maximal-no-subsequence",
+		"shared-terminal-valid-separator",
 	}
 }

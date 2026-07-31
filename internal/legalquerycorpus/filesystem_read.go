@@ -8,7 +8,10 @@ import (
 	"sort"
 )
 
-const corpusSchemaV1Filename = "legal-query-corpus-v1.schema.json"
+const (
+	corpusSchemaV1Filename = "legal-query-corpus-v1.schema.json"
+	corpusSchemaV2Filename = "legal-query-corpus-v2.schema.json"
+)
 
 type corpusFixtureReader struct {
 	filesystem *corpusFilesystem
@@ -19,16 +22,38 @@ type corpusFixtureReader struct {
 func (f *corpusFilesystem) readSchemaV1(
 	ctx context.Context,
 ) ([]byte, error) {
+	return f.readSchema(ctx, corpusSchemaVersionV1)
+}
+
+func (f *corpusFilesystem) readSchema(
+	ctx context.Context,
+	schemaVersion int,
+) ([]byte, error) {
 	if f == nil || f.schemasRoot == nil {
 		return nil, fmt.Errorf("corpus schema の filesystem が初期化されていません")
+	}
+	filename, err := corpusSchemaFilename(schemaVersion)
+	if err != nil {
+		return nil, err
 	}
 	return readRegularCorpusFile(
 		ctx,
 		f.schemasRoot,
-		corpusSchemaV1Filename,
+		filename,
 		corpusSchemaMaximumBytes,
 		nil,
 	)
+}
+
+func corpusSchemaFilename(schemaVersion int) (string, error) {
+	switch schemaVersion {
+	case corpusSchemaVersionV1:
+		return corpusSchemaV1Filename, nil
+	case corpusSchemaVersionV2:
+		return corpusSchemaV2Filename, nil
+	default:
+		return "", fmt.Errorf("corpus schema version は実装済みではありません")
+	}
 }
 
 func (f *corpusFilesystem) newFixtureReader() *corpusFixtureReader {

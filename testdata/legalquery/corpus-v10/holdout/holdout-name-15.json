@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-name-15",
+  "coverageIds": [
+    "concept-single",
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "permanent-residence",
+          "permanent-residence-permission"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "legal_concept"
+        ],
+        "meaningId": "law-provision-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "永住許可"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-provision-search"
+    ]
+  },
+  "leakageGroupId": "holdout-name-concept-permanent-residence",
+  "request": {
+    "query": "永住権に関する条文を検索"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-10",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "query",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-query-control-lf",
+  "request": {
+    "query": "民法\nを検索"
+  },
+  "schemaVersion": 2
+}

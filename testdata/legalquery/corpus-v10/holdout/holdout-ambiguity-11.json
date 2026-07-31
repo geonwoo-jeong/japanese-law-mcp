@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-ambiguity-11",
+  "coverageIds": [
+    "ambiguity-three-or-more-candidates"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "cabinet-office",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "411AC0000000089"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "internal-affairs",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "411AC0000000091"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "cabinet-office",
+      "internal-affairs"
+    ]
+  },
+  "leakageGroupId": "holdout-ambiguity-central-reform-read-alias",
+  "request": {
+    "query": "「中央省庁等改革関連法」と呼ばれるものから、本文を一つ読みたいです。"
+  },
+  "schemaVersion": 2
+}

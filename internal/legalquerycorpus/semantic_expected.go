@@ -120,10 +120,17 @@ func (p ExpectedPlan) Validate() error {
 		len(p.meanings) != 0 {
 		return fmt.Errorf("standalone structured query は meanings を持てません")
 	}
+	stepLimitExceeded := len(p.reasonCodes) == 1 &&
+		p.reasonCodes[0] == legalquery.ReasonCodeStepLimitExceeded
+	if stepLimitExceeded &&
+		(len(p.meanings) != 0 || len(p.selectedMeaningIDs) != 0) {
+		return fmt.Errorf("step_limit_exceeded は meanings または selection を持てません")
+	}
 	return validateExpectedPlanShape(
 		p.decision,
 		len(p.meanings),
 		len(p.selectedMeaningIDs),
+		stepLimitExceeded,
 	)
 }
 
@@ -316,6 +323,7 @@ func validateExpectedPlanShape(
 	decision legalquery.PlanDecision,
 	meaningCount int,
 	selectedCount int,
+	stepLimitExceeded bool,
 ) error {
 	switch decision {
 	case legalquery.PlanDecisionSingle:
@@ -323,6 +331,9 @@ func validateExpectedPlanShape(
 	case legalquery.PlanDecisionHedged:
 		return requireExpectedCounts(meaningCount, selectedCount, 2, 16, 2, 2)
 	case legalquery.PlanDecisionNeedsClarification:
+		if stepLimitExceeded {
+			return requireExpectedCounts(meaningCount, selectedCount, 0, 0, 0, 0)
+		}
 		return requireExpectedCounts(meaningCount, selectedCount, 1, 16, 0, 2)
 	case legalquery.PlanDecisionCapabilityUnavailable:
 		return requireExpectedCounts(meaningCount, selectedCount, 1, 16, 1, 2)
@@ -371,6 +382,10 @@ func validateExpectedReasonCodes(
 	case legalquery.PlanDecisionHedged:
 		return requireExpectedExactReason(values, legalquery.ReasonCodeHedgedCloseCandidates)
 	case legalquery.PlanDecisionNeedsClarification:
+		if len(values) == 1 &&
+			values[0] == legalquery.ReasonCodeStepLimitExceeded {
+			return nil
+		}
 		return requireExpectedReasons(
 			values,
 			1,
@@ -448,16 +463,18 @@ func expectedReasonRank(value legalquery.ReasonCode) (int, bool) {
 		return 2, true
 	case legalquery.ReasonCodeAmbiguousCandidates:
 		return 3, true
-	case legalquery.ReasonCodeRequiredPackDisabled:
+	case legalquery.ReasonCodeStepLimitExceeded:
 		return 4, true
-	case legalquery.ReasonCodeNonJapaneseQuery:
+	case legalquery.ReasonCodeRequiredPackDisabled:
 		return 5, true
-	case legalquery.ReasonCodeStandaloneStructuredQuery:
+	case legalquery.ReasonCodeNonJapaneseQuery:
 		return 6, true
-	case legalquery.ReasonCodeMixedUnsupportedIntent:
+	case legalquery.ReasonCodeStandaloneStructuredQuery:
 		return 7, true
-	case legalquery.ReasonCodeUnsupportedTaskOrResource:
+	case legalquery.ReasonCodeMixedUnsupportedIntent:
 		return 8, true
+	case legalquery.ReasonCodeUnsupportedTaskOrResource:
+		return 9, true
 	default:
 		return 0, false
 	}

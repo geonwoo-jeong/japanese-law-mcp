@@ -1,0 +1,27 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-input-02",
+  "coverageIds": [
+    "input-query-empty"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "query",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "holdout-input-empty-ascii-space",
+  "request": {
+    "limitPerAttempt": 0,
+    "query": "   ",
+    "ref": {
+      "key": {
+        "resourceId": "405AC0000000088",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "E-Gov-Law-Api-V2"
+    }
+  },
+  "schemaVersion": 2
+}

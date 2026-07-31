@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-intent-04",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "個人データ",
+                "第三者提供"
+              ],
+              "anyTerms": [],
+              "excludeTerms": [
+                "匿名加工情報"
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-intent-content-all-exclude",
+  "request": {
+    "limitPerAttempt": 12,
+    "query": "法令本文から「個人データ」と「第三者提供」の両方を含み「匿名加工情報」を除く箇所を検索する"
+  },
+  "schemaVersion": 2
+}

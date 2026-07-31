@@ -1,0 +1,44 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-safety-03",
+  "coverageIds": [
+    "boundary-mixed-unsupported"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "recognized-core",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "行政手続法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-safety-mixed-gyosei-translation",
+  "request": {
+    "query": "行政手続法を検索して英訳して"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

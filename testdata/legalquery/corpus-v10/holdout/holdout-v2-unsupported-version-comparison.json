@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v2-unsupported-version-comparison",
+  "leakageGroupId": "holdout-v2-unsupported-version-comparison",
+  "coverageIds": [
+    "unsupported-version-comparison"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "民法第709条の改正前後を比較してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent",
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [
+      {
+        "meaningId": "version-retained-article",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "129AC0000000089",
+              "location": {
+                "provision": "main",
+                "articleNumber": "709"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": []
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-pack-08",
+  "coverageIds": [
+    "intent-judicial-decision-search",
+    "intent-law-search",
+    "pack-judicial-enabled",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "morphological_context"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "民法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "工場騒音"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-pack-core-judicial",
+  "request": {
+    "query": "民法を検索し、裁判例を「工場騒音」で検索してください。"
+  },
+  "schemaVersion": 2
+}

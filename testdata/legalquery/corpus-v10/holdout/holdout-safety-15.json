@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-safety-15",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "holdout-safety-nonja-civil-read",
+  "request": {
+    "query": "read the Civil Code"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

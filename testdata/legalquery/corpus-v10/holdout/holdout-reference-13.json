@@ -1,0 +1,62 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-reference-13",
+  "coverageIds": [
+    "reference-source-resource-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "321CONSTITUTION",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2",
+                  "versionId": "321CONSTITUTION_19470503_000000000000000"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "holdout-reference-source-ref-constitution",
+  "request": {
+    "query": "参照で指定した法令本文を読む",
+    "ref": {
+      "key": {
+        "resourceId": "321CONSTITUTION",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2",
+        "versionId": "321CONSTITUTION_19470503_000000000000000"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

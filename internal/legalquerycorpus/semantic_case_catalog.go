@@ -1,6 +1,9 @@
 package legalquerycorpus
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 const (
 	semanticCategoryAmbiguity                 = "ambiguity"
@@ -25,6 +28,7 @@ type semanticCoverageDefinition struct {
 }
 
 func validateSemanticCoverage(
+	schemaVersion int,
 	coverageIDs []string,
 	safetyVariant *SafetyVariant,
 ) error {
@@ -34,7 +38,7 @@ func validateSemanticCoverage(
 	previous := ""
 	requiresSafetyVariant := false
 	for index, coverageID := range coverageIDs {
-		if !isSemanticCoverageID(coverageID) {
+		if !isSemanticCoverageIDForSchemaVersion(schemaVersion, coverageID) {
 			return fmt.Errorf("coverageIds に未定義の値があります")
 		}
 		if index > 0 && previous >= coverageID {
@@ -42,7 +46,7 @@ func validateSemanticCoverage(
 		}
 		previous = coverageID
 		requiresSafetyVariant = requiresSafetyVariant ||
-			isSemanticSafetyCoverageID(coverageID)
+			isSemanticSafetyCoverageIDForSchemaVersion(schemaVersion, coverageID)
 	}
 	if requiresSafetyVariant != (safetyVariant != nil) {
 		return fmt.Errorf("safetyVariant の存在が safety coverage と一致しません")
@@ -73,17 +77,37 @@ func validateSemanticEnabledPacks(values []string) error {
 }
 
 func isSemanticCoverageID(value string) bool {
-	_, exists := semanticCoverageDefinitionFor(value)
+	_, exists := semanticCoverageDefinitionForSchemaVersion(
+		corpusSchemaVersionV1,
+		value,
+	)
 	return exists
 }
 
 func isSemanticSafetyCoverageID(value string) bool {
-	definition, exists := semanticCoverageDefinitionFor(value)
+	definition, exists := semanticCoverageDefinitionForSchemaVersion(
+		corpusSchemaVersionV1,
+		value,
+	)
+	return exists && definition.requiresSafetyVariantPair
+}
+
+func isSemanticCoverageIDForSchemaVersion(version int, value string) bool {
+	_, exists := semanticCoverageDefinitionForSchemaVersion(version, value)
+	return exists
+}
+
+func isSemanticSafetyCoverageIDForSchemaVersion(version int, value string) bool {
+	definition, exists := semanticCoverageDefinitionForSchemaVersion(version, value)
 	return exists && definition.requiresSafetyVariantPair
 }
 
 func semanticCoverageIDs() []string {
-	definitions := semanticCoverageDefinitions()
+	return semanticCoverageIDsForSchemaVersion(corpusSchemaVersionV1)
+}
+
+func semanticCoverageIDsForSchemaVersion(version int) []string {
+	definitions := semanticCoverageDefinitionsForSchemaVersion(version)
 	values := make([]string, 0, len(definitions))
 	for _, definition := range definitions {
 		values = append(values, definition.id)
@@ -108,10 +132,16 @@ func semanticCategoryIDs() []string {
 	}
 }
 
-func semanticCategoryIDsForCoverageIDs(coverageIDs []string) []string {
+func semanticCategoryIDsForCoverageIDs(
+	schemaVersion int,
+	coverageIDs []string,
+) []string {
 	present := make(map[string]struct{}, len(coverageIDs))
 	for _, coverageID := range coverageIDs {
-		definition, exists := semanticCoverageDefinitionFor(coverageID)
+		definition, exists := semanticCoverageDefinitionForSchemaVersion(
+			schemaVersion,
+			coverageID,
+		)
 		if exists {
 			present[definition.categoryID] = struct{}{}
 		}
@@ -128,24 +158,47 @@ func semanticCategoryIDsForCoverageIDs(coverageIDs []string) []string {
 func semanticCoverageDefinitionFor(
 	coverageID string,
 ) (semanticCoverageDefinition, bool) {
-	low, high := 0, len(semanticCoverageCatalog)
+	return semanticCoverageDefinitionForSchemaVersion(
+		corpusSchemaVersionV1,
+		coverageID,
+	)
+}
+
+func semanticCoverageDefinitionForSchemaVersion(
+	schemaVersion int,
+	coverageID string,
+) (semanticCoverageDefinition, bool) {
+	catalog := semanticCoverageDefinitionsForSchemaVersion(schemaVersion)
+	low, high := 0, len(catalog)
 	for low < high {
 		middle := low + (high-low)/2
-		if semanticCoverageCatalog[middle].id < coverageID {
+		if catalog[middle].id < coverageID {
 			low = middle + 1
 		} else {
 			high = middle
 		}
 	}
-	if low < len(semanticCoverageCatalog) &&
-		semanticCoverageCatalog[low].id == coverageID {
-		return semanticCoverageCatalog[low], true
+	if low < len(catalog) && catalog[low].id == coverageID {
+		return catalog[low], true
 	}
 	return semanticCoverageDefinition{}, false
 }
 
 func semanticCoverageDefinitions() []semanticCoverageDefinition {
 	return append([]semanticCoverageDefinition{}, semanticCoverageCatalog[:]...)
+}
+
+func semanticCoverageDefinitionsForSchemaVersion(
+	schemaVersion int,
+) []semanticCoverageDefinition {
+	switch schemaVersion {
+	case corpusSchemaVersionV1:
+		return semanticCoverageDefinitions()
+	case corpusSchemaVersionV2:
+		return append([]semanticCoverageDefinition{}, semanticCoverageCatalogV2...)
+	default:
+		return nil
+	}
 }
 
 // semanticCoverageCatalog は、ID 昇順の固定 catalog であり初期化後に変更しない。
@@ -205,6 +258,44 @@ var semanticCoverageCatalog = [...]semanticCoverageDefinition{
 	standardSemanticCoverage("unsupported-translation", semanticCategoryUnsupportedScope),
 	standardSemanticCoverage("unsupported-unadopted-pack", semanticCategoryUnsupportedScope),
 }
+
+var semanticCoverageCatalogV2 = func() []semanticCoverageDefinition {
+	values := semanticCoverageDefinitions()
+	values = append(values,
+		safetySemanticCoverage(
+			"boundary-no-unbounded-fanout",
+			semanticCategorySafetyExecutionBoundary,
+		),
+		safetySemanticCoverage(
+			"boundary-unmarked-enumeration",
+			semanticCategorySafetyExecutionBoundary,
+		),
+		safetySemanticCoverage(
+			"boundary-unsupported-candidate-scope",
+			semanticCategorySafetyExecutionBoundary,
+		),
+		safetySemanticCoverage(
+			"boundary-unsupported-cue-context",
+			semanticCategorySafetyExecutionBoundary,
+		),
+		standardSemanticCoverage(
+			"structure-shared-terminal-cue",
+			semanticCategoryStructuredLocationAndDate,
+		),
+		standardSemanticCoverage(
+			"unsupported-relationship-analysis",
+			semanticCategoryUnsupportedScope,
+		),
+		standardSemanticCoverage(
+			"unsupported-version-comparison",
+			semanticCategoryUnsupportedScope,
+		),
+	)
+	sort.Slice(values, func(left int, right int) bool {
+		return values[left].id < values[right].id
+	})
+	return values
+}()
 
 func standardSemanticCoverage(
 	id string,
