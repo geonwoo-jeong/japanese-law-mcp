@@ -156,6 +156,34 @@ schema 検証は通過した。独立 review は semantic 9.0 / 10、testability
 security 9.0 / 10、blocker 0 で通過した。この時点では `default-4` request、
 review attestation および holdout 実行はまだ作成していない。
 
+続く次候補の第 4.3 段階では、`corpus-v11` の development 四十三件だけを使い、
+法令コアを `core-2026-07-31-38`、cue 集合を
+`core-cues-2026-07-31-17`、profile set を
+`profile-set-sha256-0b00c3409408684b825f3c0bdf1c874bdc99e5383564d8e6b66fe83d4e417a69`
+へ校正した。校正 fingerprint は
+`456d237f980e1114638064411fb49ef91d281989b0578279b1081011eba2d9b0` で、
+request error は二件中二件、plan は四十一件中二十八件、meaning は四十三件中
+三十八件、evidence は三十八件中十一件、concept assertion は一件中一件が一致した。
+候補 source と SOT の現行検証、完了済み request の不変 replay を分離し、
+repository の pending/replay 両状態を検証した。独立 review は実装 9.2 / 10、
+testability 9.0 / 10、security 9.0 / 10、blocker 0 であり、commit
+`1424b508d1f094ea8921c6a26ab1335ecb84cc5c` と replay 修正 commit
+`b1ff1cb1ffbd32260867861c69b7ba388aad5d7e` に対する権威 CI
+`30687556430` は成功した。この校正でも holdout fixture と評価結果は参照していない。
+
+次候補の第 4.4 段階では、candidate content
+`candidate-content-sha256-e8a5633b1acaf75bd9f2851dfe814ec1342178a9c3bf31ff11c03e900fda47d3`
+を raw SHA-256
+`28135a61617088cb14d1c100fb97e17454666fead9dfaa0a9f27df032290481f`
+へ固定した。同じ exact byte と 52 件の SOT へ architecture 100 / 100、
+testability 96 / 100、blocker 0 の独立 review を結び付け、`corpus-v11`、
+`legal-query-evaluator-v1` および予約名 `default-4` を持つ request
+`evaluation-sha256-2f8790cd9a969372660571031ed00069565443521ca840cdce9ef86fb1290c42`
+を追加して `current.json` を未評価 request へ進めた。`default-3` の failed result と
+failed report は変更不能な消費済み履歴として保持する。候補 command は起動せず、
+`default-4` の report、result、failed report および baseline は作成していない。
+production adoption は引き続き `corpus-v9`、`default-1` および現行 profile set を指す。
+
 ## 推奨順序
 
 段階そのものの定義、順序および進行条件の定義元は
@@ -194,6 +222,8 @@ review attestation および holdout 実行はまだ作成していない。
 | 4.5 再準備 | 2026-07-31 | 10.0 / 10（testability 8.4 / 10、実装 8.9 / 10） | 9.1 / 10 | 0 | report 前に停止した `default-2` の三回の dispatch では有効 result と holdout 消費がないことを確認。`HOME` 非依存 cache、execution 不一致の失敗分類、raw draft の個別 evidence mapping と縮約後十六件上限を修正し、旧準備を不変に保持したまま `default-3` の exact content、二件の review attestation、request および current pointer を追加。準備 commit の権威 CI と一回の manual dispatch は成功し、構造上有効な `outcome=failed` を handoff |
 | 4.5 handoff | 2026-08-01 | 10.0 / 10（testability 10.0 / 10） | 10.0 / 10 | 0 | failed report と result の request/report digest binding、baseline 非生成、消費済み履歴一件、current failed result および replay byte を確認。更新後 commit の権威 CI は成功し、同じ commit の tracked byte replay artifact 二件が tracked history と完全一致 |
 | 次 cycle corpus-v11 | 2026-08-01 | 9.0 / 10（testability 9.0 / 10） | 9.0 / 10 | 0 | schema version 2、development 43 件、独立生成した holdout 251 件、execution 8 件、安定 leakage group 139 件、消費済み `corpus-v10` manifest との digest 非交差、alias 衝突・曖昧性・pack 有無・実事件参照・表記揺れ・誤記・v2 境界の代表意味、再現性および不変性。`default-4` と holdout 実行は対象外 |
+| 次 cycle 4.3 | 2026-08-01 | 9.2 / 10（testability 9.0 / 10） | 9.0 / 10 | 0 | `corpus-v11` development だけによる `core-38` と profile set の校正、四十三件 scorecard と fingerprint、pending current と完了済み replay の外部参照検証分離。holdout 非参照 |
+| 次 cycle 4.4 準備 | 2026-08-01 | architecture 10.0 / 10（testability 9.6 / 10） | — | 0 | exact candidate content、二件の content-bound review、`corpus-v11` / `default-4` request、未評価 current pointer。候補 command、report、result、failed report および baseline は未生成 |
 
 4.4 の最終 security review で残った非 blocker のうち、非 `GO*` 環境の継承は、
 4.5 の bootstrap が `PATH`、`GOROOT`、`GOMODCACHE`、`GOCACHE`、`TMPDIR` と固定
@@ -258,6 +288,9 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 4.3 | 完了 | holdout を使わない development 専用 loader、原 byte digest、次版 profile set 校正および四十三件全体の決定的 fingerprint |
 | 4.4 | 完了 | 内容固定済み候補 request、review attestation、`current.json` pointer、manual CI handoff 入口および候補 baseline writer |
 | 4.5 | 完了（`outcome=failed`、holdout 消費済み） | 一回の holdout 判定、変更不能な result と `default-3` の failed history handoff、権威 CI および tracked byte replay |
+| 次 cycle 4.2 | 完了 | 過去の全評価と leakage group が交差しない `corpus-v11` の独立準備 |
+| 次 cycle 4.3 | 完了 | `corpus-v11` development だけによる `core-38` と固定 profile set の校正 |
+| 次 cycle 4.4 | 準備済み（未評価） | exact candidate content、二件の review attestation、`default-4` request および pending pointer。評価出力は未生成 |
 
 ## 段階の境界
 

@@ -63,7 +63,10 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 
 func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで再読込できる(t *testing.T) {
 	t.Parallel()
-	const expectedEvaluationID = "evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c"
+	const (
+		expectedEvaluationID = "evaluation-sha256-2f8790cd9a969372660571031ed00069565443521ca840cdce9ef86fb1290c42"
+		historyEvaluationID  = "evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c"
+	)
 
 	root := candidateRepositoryRoot(t)
 	validator, err := NewReferenceValidator(root)
@@ -96,21 +99,24 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 	if len(current.History) != 1 {
 		t.Fatalf("candidate-evaluation-single-holdout-use: 消費済み履歴数 = %d", len(current.History))
 	}
-	if current.CurrentResult == nil {
-		t.Fatal("candidate-evaluation-failure-history: current failed result がありません")
+	if current.CurrentResult != nil {
+		t.Fatalf("candidate-evaluation-current-single-target: 未評価 current に result があります: %#v", current.CurrentResult)
 	}
-	if current.CurrentResult.EvaluationID != expectedEvaluationID ||
-		current.CurrentResult.Outcome != legalquerycandidateeval.EvaluationOutcomeFailed {
-		t.Fatalf("candidate-evaluation-failure-history: current result = %#v", current.CurrentResult)
+	history := current.History[0]
+	if history.Request.EvaluationID != historyEvaluationID ||
+		history.Request.BaselineVersion != "default-3" ||
+		history.Result.EvaluationID != historyEvaluationID ||
+		history.Result.Outcome != legalquerycandidateeval.EvaluationOutcomeFailed {
+		t.Fatalf("candidate-evaluation-failure-history: 消費済み履歴 = %#v", history)
+	}
+	if prepared.Request.CorpusVersion != "corpus-v11" ||
+		prepared.Request.BaselineVersion != "default-4" {
+		t.Fatalf("candidate-evaluation-request-identity: current request = %#v", prepared.Request)
 	}
 	if len(current.RequestRaw) == 0 ||
-		len(current.CurrentResultRaw) == 0 ||
-		len(current.CurrentReportRaw) == 0 {
-		t.Fatal("candidate-evaluation-report-result-binding: current result の replay byte が空です")
-	}
-	if legalquerycandidateeval.RawSHA256(current.RequestRaw) != current.CurrentResult.RequestSHA256 ||
-		legalquerycandidateeval.RawSHA256(current.CurrentReportRaw) != current.CurrentResult.ReportSHA256 {
-		t.Fatal("candidate-evaluation-report-result-binding: current result の原 byte binding が一致しません")
+		len(current.CurrentResultRaw) != 0 ||
+		len(current.CurrentReportRaw) != 0 {
+		t.Fatal("candidate-evaluation-current-single-target: 未評価 current の原 byte 状態が不正です")
 	}
 }
 
