@@ -24,6 +24,10 @@ func Execute(ctx context.Context, input Input) (Handoff, error) {
 	if err != nil {
 		return Handoff{}, err
 	}
+	evaluate := evaluatePreparedCandidate
+	if prepared.tracked != nil {
+		evaluate = evaluateTrackedCandidate
+	}
 	dependencies := Dependencies{
 		Load: func(_ context.Context, repositoryRoot string) (PreparedEvaluation, error) {
 			if repositoryRoot != prepared.repository {
@@ -31,7 +35,7 @@ func Execute(ctx context.Context, input Input) (Handoff, error) {
 			}
 			return clonePreparedEvaluation(prepared), nil
 		},
-		Evaluate: evaluatePreparedCandidate,
+		Evaluate: evaluate,
 		Accept: func(raw []byte) (bool, error) {
 			return acceptCandidateReport(ctx, prepared.repository, raw)
 		},
@@ -87,6 +91,25 @@ func loadPreparedEvaluation(
 		trackedRaw:       bytes.Clone(current.CurrentResultRaw),
 		trackedReportRaw: bytes.Clone(current.CurrentReportRaw),
 	}, nil
+}
+
+func evaluateTrackedCandidate(
+	ctx context.Context,
+	prepared PreparedEvaluation,
+) ([]byte, error) {
+	if err := checkRunContext(ctx); err != nil {
+		return nil, err
+	}
+	if prepared.tracked == nil ||
+		prepared.EvaluationID != prepared.tracked.EvaluationID ||
+		prepared.request.EvaluationID != prepared.EvaluationID ||
+		legalquerycandidateeval.RawSHA256(prepared.RequestRaw) !=
+			prepared.tracked.RequestSHA256 ||
+		legalquerycandidateeval.RawSHA256(prepared.trackedReportRaw) !=
+			prepared.tracked.ReportSHA256 {
+		return nil, fmt.Errorf("tracked replay identity が一致しません")
+	}
+	return bytes.Clone(prepared.trackedReportRaw), nil
 }
 
 func evaluatePreparedCandidate(
