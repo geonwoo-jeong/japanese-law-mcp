@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-07",
   "coverageIds": [
-    "ambiguity-three-or-more-candidates"
+    "ambiguity-multiple-concepts"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,14 +16,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "研究データ公開"
+                "遠隔本人確認"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -40,14 +40,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "営業秘密保護"
+                "電子署名"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -61,14 +61,11 @@
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-07",
+  "leakageGroupId": "lqg-topic-6fd774d3b49ba13d4e1eb736da60308560b50aef46fae09e",
   "request": {
-    "query": "「研究データ公開」について、法令本文上の「研究データ公開」と「営業秘密保護」のどちらを探すべきか候補を示してください。"
+    "query": "遠隔本人確認と電子署名のどちらに関する条文か候補を示してください。"
   },
   "schemaVersion": 2
 }

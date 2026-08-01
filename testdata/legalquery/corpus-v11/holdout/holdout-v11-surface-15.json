@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-15",
   "coverageIds": [
-    "surface-whitespace-variation"
+    "surface-orthographic-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504co0000000254",
+  "leakageGroupId": "lqg-law-504co0000000254",
   "request": {
-    "query": "キャッシュ レス法施行令を検索してください。"
+    "query": "ｷｬｯｼｭﾚｽ法施行令を検索してください。"
   },
   "schemaVersion": 2
 }

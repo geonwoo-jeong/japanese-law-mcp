@@ -37,7 +37,7 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-input-19",
+  "leakageGroupId": "lqg-law-507ac0000000053",
   "request": {
     "limitPerAttempt": 20,
     "query": "ＡＩ法を検索してください。"

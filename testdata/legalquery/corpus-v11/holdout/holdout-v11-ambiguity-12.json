@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-12",
   "coverageIds": [
-    "ambiguity-weak-general-term"
+    "ambiguity-three-or-more-candidates"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,7 +16,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
@@ -40,7 +40,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
@@ -56,19 +56,40 @@
             "task": "search"
           }
         ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "concept-candidate-03",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "境界確定"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
       }
     ],
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-12",
+  "leakageGroupId": "lqg-topic-7378e953d17085037b2bd5f19987a5861a70f6a78c55c0d4",
   "request": {
-    "query": "「土地利用調査」について、法令本文上の「土地利用調査」と「所有者探索」のどちらを探すべきか候補を示してください。"
+    "query": "土地利用調査、所有者探索、境界確定の三つについて法令本文の候補を示してください。"
   },
   "schemaVersion": 2
 }

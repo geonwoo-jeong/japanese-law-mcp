@@ -10,7 +10,7 @@
     "field": "ref",
     "kind": "request_error"
   },
-  "leakageGroupId": "v11-input-20",
+  "leakageGroupId": "lqg-topic-e775c0cee2933c8463ba69ccdce4955e3d456dfc9f4b6c7b",
   "request": {
     "query": "資源型の違う参照を読んでください。",
     "ref": {

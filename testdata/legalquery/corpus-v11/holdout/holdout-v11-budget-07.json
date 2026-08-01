@@ -37,7 +37,7 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501m60002000003",
+  "leakageGroupId": "lqg-law-501m60002000003",
   "request": {
     "limitPerAttempt": 20,
     "query": "小型無人機等飛行禁止法施行規則を二十件以内で検索してください。"

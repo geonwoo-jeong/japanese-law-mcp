@@ -14,7 +14,7 @@
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-safety-16",
+  "leakageGroupId": "lqg-topic-ac137db5718e6c93f6483914ab40a7e1dfd30005f12c891b",
   "request": {
     "query": "find court decisions now"
   },

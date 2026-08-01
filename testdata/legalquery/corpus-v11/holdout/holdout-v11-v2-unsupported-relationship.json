@@ -14,9 +14,9 @@
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-v2-unsupported-relationship",
+  "leakageGroupId": "lqg-topic-5fe8c488abd102d26ebcdd627637aedb7bc3b687e03d57ff",
   "request": {
-    "query": "人工知能法と個人情報保護法の関係を法的に分析してください。"
+    "query": "旅館業法と行旅法の適用関係を分析してください。"
   },
   "schemaVersion": 2
 }

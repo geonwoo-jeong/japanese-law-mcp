@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "寄附勧誘"
+              "query": "無人機飛行"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-15",
+  "leakageGroupId": "lqg-topic-492263798bfcb3d68011c632eecde7005203d5f5f482687a",
   "request": {
-    "query": "寄附勧誘の裁判例を検索してください。"
+    "query": "無人機飛行の裁判例を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

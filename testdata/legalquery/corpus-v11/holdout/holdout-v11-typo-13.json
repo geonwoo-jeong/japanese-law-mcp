@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "障害者による情報の取得及び利用並びに意思疎通に係る施策の推進に関する法律"
+              "query": "情報通信技術を利用する方法による国の歳入等の納付に関する法律施行令"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504ac0100000050",
+  "leakageGroupId": "lqg-law-504co0000000254",
   "request": {
-    "query": "障害者情報アクセシビリティ・誤コミュニケーション施策推進法を検索してください。"
+    "query": "キャッシュ誤レス法施行令を検索してください。"
   },
   "schemaVersion": 2
 }

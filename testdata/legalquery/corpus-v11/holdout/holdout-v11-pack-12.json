@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "環境負荷表示"
+              "query": "海洋設備占用"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-12",
+  "leakageGroupId": "lqg-topic-5bc143e8c56e1b0d8492cd7af02cada6a330e9c3aa38d52b",
   "request": {
-    "query": "環境負荷表示の裁判例を検索してください。"
+    "query": "海洋設備占用の裁判例を検索してください。"
   },
   "safetyVariant": "adversarial",
   "schemaVersion": 2

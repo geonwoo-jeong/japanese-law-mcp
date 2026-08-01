@@ -10,13 +10,13 @@
     "kind": "plan",
     "meanings": [],
     "reasonCodes": [
-      "unsupported_task_or_resource"
+      "mixed_unsupported_intent"
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-v2-candidate-scope-ordinary",
+  "leakageGroupId": "lqg-topic-7c60eda765b47e622531c82934852f8bb6fe8ad9985488c7",
   "request": {
-    "query": "法律以外の社内規程候補を検索してください。"
+    "query": "旅館業法と税務通達を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

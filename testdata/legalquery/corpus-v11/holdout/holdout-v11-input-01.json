@@ -10,9 +10,9 @@
     "field": "query",
     "kind": "request_error"
   },
-  "leakageGroupId": "v11-input-empty-crlf-tab",
+  "leakageGroupId": "lqg-topic-8bf1d89accd2a6e1c1122f536d63bd338e30d485a719cc14",
   "request": {
-    "query": "\r\n\t"
+    "query": ""
   },
   "schemaVersion": 2
 }

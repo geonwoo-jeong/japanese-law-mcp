@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "環境と調和のとれた食料システムの確立のための環境負荷低減事業活動の促進等に関する法律施行規則"
+              "query": "人工知能関連技術の研究開発及び活用の推進に関する法律"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504m60000200042",
+  "leakageGroupId": "lqg-law-507ac0000000053",
   "request": {
-    "query": "みどりの食料シ誤ステム法施行規則を検索してください。"
+    "query": "Ａ誤Ｉ法を検索してください。"
   },
   "schemaVersion": 2
 }

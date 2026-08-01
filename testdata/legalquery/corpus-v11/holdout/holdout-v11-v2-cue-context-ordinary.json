@@ -6,17 +6,44 @@
   ],
   "enabledPacks": [],
   "expected": {
-    "decision": "unsupported",
+    "decision": "single",
     "kind": "plan",
-    "meanings": [],
-    "reasonCodes": [
-      "unsupported_task_or_resource"
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "quoted-cue-content",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "教えてください"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
     ],
-    "selectedMeaningIds": []
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "quoted-cue-content"
+    ]
   },
-  "leakageGroupId": "v11-v2-cue-context-ordinary",
+  "leakageGroupId": "lqg-topic-881f6e98c9eb9e493ccf62d62c3875fe31b97480d17fb536",
   "request": {
-    "query": "法令とは無関係な献立と天気を教えてください。"
+    "query": "「教えてください」という語を含む条文を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

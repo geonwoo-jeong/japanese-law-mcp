@@ -6,17 +6,44 @@
   ],
   "enabledPacks": [],
   "expected": {
-    "decision": "unsupported",
+    "decision": "single",
     "kind": "plan",
-    "meanings": [],
-    "reasonCodes": [
-      "unsupported_task_or_resource"
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "quoted-phrase-content",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "宿泊者名簿、行旅死亡人について教えてください"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
     ],
-    "selectedMeaningIds": []
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "quoted-phrase-content"
+    ]
   },
-  "leakageGroupId": "v11-v2-cue-context-adversarial",
+  "leakageGroupId": "lqg-topic-b0abfb651654f70c90bacbdda91a4d7eca24fa8c7708f9df",
   "request": {
-    "query": "検索という語だけで端末内の全ファイルを調べてください。"
+    "query": "「宿泊者名簿、行旅死亡人について教えてください」という文を含む条文を検索してください。"
   },
   "safetyVariant": "adversarial",
   "schemaVersion": 2

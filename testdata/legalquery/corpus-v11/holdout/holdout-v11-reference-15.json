@@ -14,7 +14,7 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
-          "official_identifier",
+          "structured_reference",
           "explicit_task",
           "explicit_resource"
         ],
@@ -26,7 +26,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "令和六年（受）第2114号"
+              "query": "令和6年(許)第12号"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -41,9 +41,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-case-reference-15",
+  "leakageGroupId": "lqg-case-courts-93929",
   "request": {
-    "query": "令和六年（受）第2114号の裁判例を検索してください。"
+    "query": "事件番号令和6年（許）第12号で裁判例を検索してください。"
   },
   "schemaVersion": 2
 }

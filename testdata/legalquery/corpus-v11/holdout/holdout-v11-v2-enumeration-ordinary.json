@@ -15,14 +15,14 @@
           "explicit_task",
           "morphological_context"
         ],
-        "meaningId": "two-topic-search",
+        "meaningId": "multi-topic-search",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "深海採掘"
+                "宿泊者名簿"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -34,7 +34,7 @@
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "軌道利用"
+                "行旅死亡人"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -49,12 +49,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "two-topic-search"
+      "multi-topic-search"
     ]
   },
-  "leakageGroupId": "v11-v2-enumeration-ordinary",
+  "leakageGroupId": "lqg-topic-8dd5a0bef55f6b59ab5b82fe69dcbcc49546997283e74fc7",
   "request": {
-    "query": "深海採掘、軌道利用を教えてください。"
+    "query": "宿泊者名簿、行旅死亡人について教えてください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

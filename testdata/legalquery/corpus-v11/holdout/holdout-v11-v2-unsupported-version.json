@@ -14,9 +14,9 @@
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-v2-unsupported-version",
+  "leakageGroupId": "lqg-law-421ac0000000066",
   "request": {
-    "query": "人工知能法の制定時と現行版を比較してください。"
+    "query": "公文書管理法の2020年版と現行版を比較してください。"
   },
   "schemaVersion": 2
 }

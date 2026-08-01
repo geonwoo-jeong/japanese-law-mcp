@@ -15,14 +15,14 @@
           "explicit_task",
           "morphological_context"
         ],
-        "meaningId": "two-topic-search",
+        "meaningId": "multi-topic-search",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "極地通信"
+                "埋立免許"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -34,7 +34,31 @@
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "量子認証"
+                "排出水"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "製造物"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "行政文書"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -49,12 +73,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "two-topic-search"
+      "multi-topic-search"
     ]
   },
-  "leakageGroupId": "v11-v2-enumeration-adversarial",
+  "leakageGroupId": "lqg-topic-6a547eafbdce1586a86617795ab94c829c88f4f7ca291751",
   "request": {
-    "query": "極地通信　量子認証を教えてください。"
+    "query": "埋立免許、排出水、製造物、行政文書について教えてください。"
   },
   "safetyVariant": "adversarial",
   "schemaVersion": 2

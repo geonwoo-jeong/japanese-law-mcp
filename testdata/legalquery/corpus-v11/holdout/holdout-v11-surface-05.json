@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-05",
   "coverageIds": [
-    "surface-whitespace-variation"
+    "surface-orthographic-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501m60000002004",
+  "leakageGroupId": "lqg-law-501m60000002004",
   "request": {
-    "query": "アイヌ施策推 進法施行規則を検索してください。"
+    "query": "ｱｲﾇ施策推進法施行規則を検索してください。"
   },
   "schemaVersion": 2
 }

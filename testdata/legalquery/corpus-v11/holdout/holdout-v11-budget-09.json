@@ -37,7 +37,7 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-503ac0000000032",
+  "leakageGroupId": "lqg-law-503ac0000000032",
   "request": {
     "limitPerAttempt": 20,
     "query": "取引ＤＰＦ法を二十件以内で検索してください。"

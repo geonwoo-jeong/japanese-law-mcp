@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-02",
   "coverageIds": [
-    "ambiguity-multiple-concepts"
+    "ambiguity-alias-collision"
   ],
   "enabledPacks": [],
   "expected": {
@@ -14,21 +14,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "遠隔本人確認"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "揮発油等の品質の確保等に関する法律"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -38,21 +34,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "電子署名"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "住宅の品質確保の促進等に関する法律"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -62,13 +54,13 @@
       "ambiguous_candidates"
     ],
     "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
+      "law-candidate-01",
+      "law-candidate-02"
     ]
   },
-  "leakageGroupId": "v11-ambiguity-02",
+  "leakageGroupId": "lqg-ls-ceea3f77e0fbd0504bff50838ba1e5784864bd643bc3f4ca4e0f6637",
   "request": {
-    "query": "「遠隔本人確認」について、法令本文上の「遠隔本人確認」と「電子署名」のどちらを探すべきか候補を示してください。"
+    "query": "品確法という略称に該当する法令候補を示してください。"
   },
   "schemaVersion": 2
 }

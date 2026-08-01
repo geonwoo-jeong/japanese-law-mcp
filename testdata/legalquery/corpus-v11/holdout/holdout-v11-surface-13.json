@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-13",
   "coverageIds": [
-    "surface-whitespace-variation"
+    "surface-orthographic-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504ac0100000050",
+  "leakageGroupId": "lqg-law-504ac0100000050",
   "request": {
-    "query": "障害者情報アクセシビリティ・ コミュニケーション施策推進法を検索してください。"
+    "query": "障害者情報ｱｸｾｼビﾘﾃｨ･ｺﾐｭﾆｹｰｼｮﾝ施策推進法を検索してください。"
   },
   "schemaVersion": 2
 }

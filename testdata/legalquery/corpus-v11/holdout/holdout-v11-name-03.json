@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501ac1000000048",
+  "leakageGroupId": "lqg-law-501ac1000000048",
   "request": {
-    "query": "日本語教育推進法を検索してください。"
+    "query": "日本語教育推進法という出典付き別名から法令を検索してください。"
   },
   "schemaVersion": 2
 }

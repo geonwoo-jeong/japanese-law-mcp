@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-06",
   "coverageIds": [
-    "surface-orthographic-variation"
+    "surface-whitespace-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501m60000010042",
+  "leakageGroupId": "lqg-law-501m60000010042",
   "request": {
-    "query": "『表題部所有者不明土地法施行規則』を検索してください。"
+    "query": "表題部所有者不 明土地法施行規則を検索してください。"
   },
   "schemaVersion": 2
 }

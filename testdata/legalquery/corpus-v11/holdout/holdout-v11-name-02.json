@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501ac1000000019",
+  "leakageGroupId": "lqg-law-501ac1000000019",
   "request": {
-    "query": "食品ロス削減推進法を検索してください。"
+    "query": "食品ロス削減推進法という公式略称の法令を検索してください。"
   },
   "schemaVersion": 2
 }

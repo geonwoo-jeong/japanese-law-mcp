@@ -28,7 +28,7 @@
             "logicalInput": {
               "ref": {
                 "key": {
-                  "resourceId": "v11-intent-14",
+                  "resourceId": "93868/detail2",
                   "resourceType": "judicial-decision",
                   "sourceId": "courts-hanrei"
                 },
@@ -48,12 +48,12 @@
       "judicial-read"
     ]
   },
-  "leakageGroupId": "v11-law-504co0000000229-intent-6",
+  "leakageGroupId": "lqg-case-courts-93868",
   "request": {
     "query": "指定参照の裁判例を取得してください。",
     "ref": {
       "key": {
-        "resourceId": "v11-intent-14",
+        "resourceId": "93868/detail2",
         "resourceType": "judicial-decision",
         "sourceId": "courts-hanrei"
       },

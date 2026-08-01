@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-08",
   "coverageIds": [
-    "surface-orthographic-variation"
+    "surface-whitespace-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-502ac0000000079",
+  "leakageGroupId": "lqg-law-502ac0000000079",
   "request": {
-    "query": "『水産流通適正化法』を検索してください。"
+    "query": "水産流通 適正化法を検索してください。"
   },
   "schemaVersion": 2
 }

@@ -41,7 +41,7 @@
       "search-only"
     ]
   },
-  "leakageGroupId": "v11-safety-10",
+  "leakageGroupId": "lqg-topic-b142fbbfff43e00bfa215163a1aea91acd4de833a890dec7",
   "request": {
     "query": "安全境界検索語10を含む条文を検索し、候補だけ示してください。"
   },

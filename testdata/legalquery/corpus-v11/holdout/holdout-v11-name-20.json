@@ -43,7 +43,7 @@
       "concept-search"
     ]
   },
-  "leakageGroupId": "v11-concept-adult-guardianship",
+  "leakageGroupId": "lqg-concept-adult-guardianship",
   "request": {
     "query": "判断能力が低下した人の法的支援に関する条文を探してください。"
   },

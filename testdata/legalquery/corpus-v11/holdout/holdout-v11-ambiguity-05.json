@@ -14,21 +14,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "災害情報共有"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "日本国とアメリカ合衆国との間の相互協力及び安全保障条約第六条に基づく施設及び区域並びに日本国における合衆国軍隊の地位に関する協定の実施に伴う刑事特別法"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -38,21 +34,37 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "個人情報提供"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "日本国における国際連合の軍隊に対する刑事裁判権の行使に関する議定書の実施に伴う刑事特別法"
             },
-            "resource": "law_provision",
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-03",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本国における国際連合の軍隊の地位に関する協定の実施に伴う刑事特別法"
+            },
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -62,13 +74,13 @@
       "ambiguous_candidates"
     ],
     "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
+      "law-candidate-01",
+      "law-candidate-02"
     ]
   },
-  "leakageGroupId": "v11-ambiguity-05",
+  "leakageGroupId": "lqg-ls-829528e7ea0f1a7d61c70c4b2396f342c5e0baf4f1f12b9e8c10a068",
   "request": {
-    "query": "「災害情報共有」について、法令本文上の「災害情報共有」と「個人情報提供」のどちらを探すべきか候補を示してください。"
+    "query": "刑特法という略称に該当する法令候補を示してください。"
   },
   "schemaVersion": 2
 }

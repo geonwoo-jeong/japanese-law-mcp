@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504co0000000254",
+  "leakageGroupId": "lqg-law-504co0000000254",
   "request": {
-    "query": "キャッシュレス法施行令を検索してください。"
+    "query": "キャッシュレス法施行令という出典付き別名から法令を検索してください。"
   },
   "schemaVersion": 2
 }

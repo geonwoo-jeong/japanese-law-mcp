@@ -37,7 +37,7 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-507m60000008103",
+  "leakageGroupId": "lqg-law-507m60000008103",
   "request": {
     "limitPerAttempt": 20,
     "query": "行手法施行規則を固定予算で検索してください。"

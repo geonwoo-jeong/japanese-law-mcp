@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-09",
   "coverageIds": [
-    "ambiguity-alias-collision"
+    "ambiguity-multiple-concepts"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,14 +16,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "無人航空機登録"
+                "再生資源利用"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -40,14 +40,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "飛行許可"
+                "廃棄物処理"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -61,14 +61,11 @@
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-09",
+  "leakageGroupId": "lqg-topic-f4c7c9adbac71b25b71c17f0491c312c0764693708f6d086",
   "request": {
-    "query": "「無人航空機登録」について、法令本文上の「無人航空機登録」と「飛行許可」のどちらを探すべきか候補を示してください。"
+    "query": "再生資源利用と廃棄物処理のどちらに関する条文か候補を示してください。"
   },
   "schemaVersion": 2
 }

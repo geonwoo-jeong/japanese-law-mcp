@@ -14,7 +14,7 @@
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-unsupported-08",
+  "leakageGroupId": "lqg-topic-616416b0873d9647ce66844d57bcacf28c895732c72b345f",
   "request": {
     "query": "国会会議録の未公開原稿を取得してください。"
   },

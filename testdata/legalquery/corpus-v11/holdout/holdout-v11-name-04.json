@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501co0000000008",
+  "leakageGroupId": "lqg-law-501co0000000008",
   "request": {
-    "query": "アイヌ施策推進法施行令を検索してください。"
+    "query": "アイヌ施策推進法施行令という出典付き別名から法令を検索してください。"
   },
   "schemaVersion": 2
 }

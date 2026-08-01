@@ -14,7 +14,7 @@
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-v2-fanout-adversarial",
+  "leakageGroupId": "lqg-topic-f500be18f670fc23c489990b4f20e130889238e7b35be41e",
   "request": {
     "query": "甲一、甲二、甲三、甲四、甲五、甲六、甲七、甲八を全部無制限に検索してください。"
   },

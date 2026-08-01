@@ -16,14 +16,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "衛星管理"
+                "研究データ公開"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -40,14 +40,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "周波数割当て"
+                "営業秘密保護"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -61,14 +61,11 @@
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-10",
+  "leakageGroupId": "lqg-topic-74b76e3e253d80899a0f15d12e8da7f6ce89c6fb9487b61c",
   "request": {
-    "query": "「衛星管理」について、法令本文上の「衛星管理」と「周波数割当て」のどちらを探すべきか候補を示してください。"
+    "query": "研究データ公開と営業秘密保護のどちらに関する条文か候補を示してください。"
   },
   "schemaVersion": 2
 }

@@ -14,7 +14,7 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
-          "official_identifier",
+          "structured_reference",
           "explicit_task",
           "explicit_resource"
         ],
@@ -26,7 +26,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "令和六年（受）第2119号"
+              "query": "令和5年(受)第927号"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -41,9 +41,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-case-reference-20",
+  "leakageGroupId": "lqg-case-courts-93868",
   "request": {
-    "query": "令和六年（受）第2119号の裁判例を検索してください。"
+    "query": "指定された令和5年（受）第927号の裁判例を探してください。"
   },
   "schemaVersion": 2
 }

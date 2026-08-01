@@ -16,19 +16,15 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-name",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "森林由来証明"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "管理"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -37,17 +33,16 @@
         "conceptIds": [],
         "evidenceCodes": [
           "explicit_task",
-          "explicit_resource",
-          "morphological_context"
+          "general_term"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-provision",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "木材流通記録"
+                "管理"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -59,16 +54,14 @@
       }
     ],
     "reasonCodes": [
+      "below_execution_threshold",
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-16",
+  "leakageGroupId": "lqg-topic-c6d8c52c9d02483a6eb94b99446ef3f1321808abfdd522e9",
   "request": {
-    "query": "「森林由来証明」について、法令本文上の「森林由来証明」と「木材流通記録」のどちらを探すべきか候補を示してください。"
+    "query": "管理について法情報を探したいです。"
   },
   "schemaVersion": 2
 }

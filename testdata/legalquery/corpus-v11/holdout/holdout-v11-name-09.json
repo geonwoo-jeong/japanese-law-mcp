@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-503ac0000000032",
+  "leakageGroupId": "lqg-law-503ac0000000032",
   "request": {
-    "query": "取引デジタルプラットフォームを利用する消費者の利益の保護に関する法律を検索してください。"
+    "query": "取引デジタルプラットフォームを利用する消費者の利益の保護に関する法律という正式名称の法令を検索してください。"
   },
   "schemaVersion": 2
 }

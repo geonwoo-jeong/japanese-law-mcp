@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-17",
   "coverageIds": [
-    "ambiguity-alias-collision"
+    "ambiguity-weak-general-term"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,19 +16,15 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-name",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "公益通報保護"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "保護"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -37,17 +33,16 @@
         "conceptIds": [],
         "evidenceCodes": [
           "explicit_task",
-          "explicit_resource",
-          "morphological_context"
+          "general_term"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-provision",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "秘密保持義務"
+                "保護"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -59,16 +54,14 @@
       }
     ],
     "reasonCodes": [
+      "below_execution_threshold",
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-17",
+  "leakageGroupId": "lqg-topic-39bc3eb740c9a4da97cea20260061491094792c0962a0624",
   "request": {
-    "query": "「公益通報保護」について、法令本文上の「公益通報保護」と「秘密保持義務」のどちらを探すべきか候補を示してください。"
+    "query": "保護について法情報を探したいです。"
   },
   "schemaVersion": 2
 }

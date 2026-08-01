@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504co0000000229",
+  "leakageGroupId": "lqg-law-504co0000000229",
   "request": {
-    "query": "みどりの食料システム法施行令を検索してください。"
+    "query": "みどりの食料システム法施行令という公式略称の法令を検索してください。"
   },
   "schemaVersion": 2
 }

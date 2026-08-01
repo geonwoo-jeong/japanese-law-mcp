@@ -10,7 +10,7 @@
     "field": "ref",
     "kind": "request_error"
   },
-  "leakageGroupId": "v11-input-11",
+  "leakageGroupId": "lqg-topic-6803070bd6676a5c82fc93c23f31729ef82b6cd5b8ec7370",
   "request": {
     "query": "空の参照を読んでください。",
     "ref": {

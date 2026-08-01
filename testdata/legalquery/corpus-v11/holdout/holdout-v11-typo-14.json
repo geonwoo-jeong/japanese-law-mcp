@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "環境と調和のとれた食料システムの確立のための環境負荷低減事業活動の促進等に関する法律施行令"
+              "query": "特定水産動植物等の国内流通の適正化等に関する法律施行規則"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504co0000000229",
+  "leakageGroupId": "lqg-law-504m60000200039",
   "request": {
-    "query": "みどりの食料シテム法施行令を検索してください。"
+    "query": "水産流通適正法施行規則を検索してください。"
   },
   "schemaVersion": 2
 }

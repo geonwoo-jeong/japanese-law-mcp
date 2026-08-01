@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "土地利用調査"
+              "query": "匿名医療情報"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-13",
+  "leakageGroupId": "lqg-topic-fab55ade739650239d0ab486a34beec6001cb53de3646687",
   "request": {
-    "query": "土地利用調査の裁判例を検索してください。"
+    "query": "匿名医療情報の裁判例を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

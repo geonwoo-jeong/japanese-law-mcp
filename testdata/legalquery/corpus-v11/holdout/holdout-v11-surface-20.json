@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-20",
   "coverageIds": [
-    "surface-orthographic-variation"
+    "surface-whitespace-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-507m60000008103",
+  "leakageGroupId": "lqg-law-507m60000008103",
   "request": {
-    "query": "『行手法施行規則』を検索してください。"
+    "query": "行手法 施行規則を検索してください。"
   },
   "schemaVersion": 2
 }

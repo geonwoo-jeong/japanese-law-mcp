@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "表題部所有者探索"
+              "query": "森林認証"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-16",
+  "leakageGroupId": "lqg-topic-d357f490a09da279abf77e450352441cb3c427c3f7e67fb3",
   "request": {
-    "query": "表題部所有者探索の裁判例を検索してください。"
+    "query": "森林認証の裁判例を検索してください。"
   },
   "safetyVariant": "adversarial",
   "schemaVersion": 2

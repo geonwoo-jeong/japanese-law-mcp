@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-13",
   "coverageIds": [
-    "ambiguity-alias-collision"
+    "ambiguity-three-or-more-candidates"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,7 +16,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
@@ -40,7 +40,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
@@ -56,19 +56,40 @@
             "task": "search"
           }
         ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "concept-candidate-03",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "環境影響評価"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
       }
     ],
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-13",
+  "leakageGroupId": "lqg-topic-bc644120bc83735ffc956c600c080b5d017229e498190985",
   "request": {
-    "query": "「気候変動適応」について、法令本文上の「気候変動適応」と「排出量算定」のどちらを探すべきか候補を示してください。"
+    "query": "気候変動適応、排出量算定、環境影響評価の三つについて法令本文の候補を示してください。"
   },
   "schemaVersion": 2
 }

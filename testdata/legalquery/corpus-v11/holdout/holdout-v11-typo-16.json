@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "特定水産動植物等の国内流通の適正化等に関する法律施行規則"
+              "query": "特定受託事業者に係る取引の適正化等に関する法律"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504m60000200039",
+  "leakageGroupId": "lqg-law-505ac0000000025",
   "request": {
-    "query": "水産流通適正法化施行規則を検索してください。"
+    "query": "フリーランス・事業間者取引適正化等法を検索してください。"
   },
   "schemaVersion": 2
 }

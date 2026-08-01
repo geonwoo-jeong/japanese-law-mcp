@@ -38,7 +38,7 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-501ac1000000019",
+  "leakageGroupId": "lqg-law-501ac1000000019",
   "request": {
     "limitPerAttempt": 20,
     "query": "食品ロス削減推進法を取得上限内で検索してください。"

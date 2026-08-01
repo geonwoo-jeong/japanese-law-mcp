@@ -16,7 +16,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
@@ -40,7 +40,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
@@ -56,19 +56,40 @@
             "task": "search"
           }
         ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "concept-candidate-03",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "漁獲報告"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
       }
     ],
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-15",
+  "leakageGroupId": "lqg-topic-ec6c02366973d6d69f0c07817fe0a99795fdf8dc3d0af833",
   "request": {
-    "query": "「水産流通記録」について、法令本文上の「水産流通記録」と「輸出証明」のどちらを探すべきか候補を示してください。"
+    "query": "水産流通記録、輸出証明、漁獲報告の三つについて法令本文の候補を示してください。"
   },
   "schemaVersion": 2
 }

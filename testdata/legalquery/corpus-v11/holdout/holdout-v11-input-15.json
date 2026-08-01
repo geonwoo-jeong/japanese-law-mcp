@@ -10,7 +10,7 @@
     "field": "limitPerAttempt",
     "kind": "request_error"
   },
-  "leakageGroupId": "v11-input-15",
+  "leakageGroupId": "lqg-topic-68943c157f8498b83e022d8d26cc6c18b4dfd44019486e6e",
   "request": {
     "limitPerAttempt": 100,
     "query": "法令本文を検索してください。"

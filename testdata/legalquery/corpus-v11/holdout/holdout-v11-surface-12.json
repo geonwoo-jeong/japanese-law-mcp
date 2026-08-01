@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-12",
   "coverageIds": [
-    "surface-orthographic-variation"
+    "surface-whitespace-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504ac0000000105",
+  "leakageGroupId": "lqg-law-504ac0000000105",
   "request": {
-    "query": "『不当寄附勧誘防止法』を検索してください。"
+    "query": "不当寄附 勧誘防止法を検索してください。"
   },
   "schemaVersion": 2
 }

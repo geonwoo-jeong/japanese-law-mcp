@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-04",
   "coverageIds": [
-    "ambiguity-weak-general-term"
+    "ambiguity-alias-collision"
   ],
   "enabledPacks": [],
   "expected": {
@@ -14,21 +14,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "自動運転認証"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "労働関係調整法"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -38,21 +34,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "道路使用許可"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "労働組合法"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -62,13 +54,13 @@
       "ambiguous_candidates"
     ],
     "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
+      "law-candidate-01",
+      "law-candidate-02"
     ]
   },
-  "leakageGroupId": "v11-ambiguity-04",
+  "leakageGroupId": "lqg-ls-0d15cd007c3f57fbf6aad40175fe23b29954a828fbbcf3ff5c6191ab",
   "request": {
-    "query": "「自動運転認証」について、法令本文上の「自動運転認証」と「道路使用許可」のどちらを探すべきか候補を示してください。"
+    "query": "労働三法という略称に該当する法令候補を示してください。"
   },
   "schemaVersion": 2
 }

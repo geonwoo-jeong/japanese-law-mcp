@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "取引デジタルプラットフォームを利用する消費者の利益の保護に関する法律"
+              "query": "環境と調和のとれた食料システムの確立のための環境負荷低減事業活動の促進等に関する法律"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-503ac0000000032",
+  "leakageGroupId": "lqg-law-504ac0000000037",
   "request": {
-    "query": "取引Ｄ誤ＰＦ法を検索してください。"
+    "query": "みどりの食誤料システム法を検索してください。"
   },
   "schemaVersion": 2
 }

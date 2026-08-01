@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-18",
   "coverageIds": [
-    "ambiguity-multiple-concepts"
+    "ambiguity-weak-general-term"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,19 +16,15 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-name",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "デジタル市場監視"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "促進"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -37,17 +33,16 @@
         "conceptIds": [],
         "evidenceCodes": [
           "explicit_task",
-          "explicit_resource",
-          "morphological_context"
+          "general_term"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-provision",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "消費者救済"
+                "促進"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -59,16 +54,14 @@
       }
     ],
     "reasonCodes": [
+      "below_execution_threshold",
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-18",
+  "leakageGroupId": "lqg-topic-2ea51dae69da326fdbf16071d35a91c1205a09191c659148",
   "request": {
-    "query": "「デジタル市場監視」について、法令本文上の「デジタル市場監視」と「消費者救済」のどちらを探すべきか候補を示してください。"
+    "query": "促進について法情報を探したいです。"
   },
   "schemaVersion": 2
 }

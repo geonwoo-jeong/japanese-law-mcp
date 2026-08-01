@@ -14,7 +14,7 @@
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-safety-19",
+  "leakageGroupId": "lqg-topic-bf2e073e411d65e13d73b523057accad4fc4c604fbb98970",
   "request": {
     "query": "read the first result"
   },

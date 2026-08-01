@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-09",
   "coverageIds": [
-    "surface-whitespace-variation"
+    "surface-orthographic-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-503ac0000000032",
+  "leakageGroupId": "lqg-law-503ac0000000032",
   "request": {
-    "query": "取引Ｄ ＰＦ法を検索してください。"
+    "query": "取引DPF法を検索してください。"
   },
   "schemaVersion": 2
 }

@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "デジタル行政手続"
+              "query": "人工知能開発"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-20",
+  "leakageGroupId": "lqg-topic-be10439008aa913ee6272575046c54cc2225a3b0e90465b2",
   "request": {
-    "query": "デジタル行政手続の裁判例を検索してください。"
+    "query": "人工知能開発の裁判例を検索してください。"
   },
   "safetyVariant": "adversarial",
   "schemaVersion": 2

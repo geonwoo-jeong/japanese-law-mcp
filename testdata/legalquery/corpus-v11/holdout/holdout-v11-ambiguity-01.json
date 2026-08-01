@@ -14,21 +14,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "電子申請"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "投資事業有限責任組合契約に関する法律"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -38,21 +34,17 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "morphological_context"
+          "official_alias"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "電子納付"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "株式会社農林漁業成長産業化支援機構法"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -62,13 +54,13 @@
       "ambiguous_candidates"
     ],
     "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
+      "law-candidate-01",
+      "law-candidate-02"
     ]
   },
-  "leakageGroupId": "v11-ambiguity-01",
+  "leakageGroupId": "lqg-ls-a2a2f05229bb47f8c9c9e0d14d30887982534133bf717da0b92e9c66",
   "request": {
-    "query": "「電子申請」について、法令本文上の「電子申請」と「電子納付」のどちらを探すべきか候補を示してください。"
+    "query": "ファンド法という略称に該当する法令候補を示してください。"
   },
   "schemaVersion": 2
 }

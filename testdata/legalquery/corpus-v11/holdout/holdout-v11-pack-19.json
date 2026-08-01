@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "アイヌ施策"
+              "query": "重要情報保護"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-19",
+  "leakageGroupId": "lqg-topic-5fac296e1286966c2643a7a3f77f4df2ab58ab777e1b220d",
   "request": {
-    "query": "アイヌ施策の裁判例を検索してください。"
+    "query": "重要情報保護の裁判例を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

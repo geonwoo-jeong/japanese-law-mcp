@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "行政手続法第十五条第四項等に規定する総務省令で定める方法を定める省令"
+              "query": "食品ロスの削減の推進に関する法律"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-507m60000008103",
+  "leakageGroupId": "lqg-law-501ac1000000019",
   "request": {
-    "query": "行手法行施規則を検索してください。"
+    "query": "食品ロス減削推進法を検索してください。"
   },
   "schemaVersion": 2
 }

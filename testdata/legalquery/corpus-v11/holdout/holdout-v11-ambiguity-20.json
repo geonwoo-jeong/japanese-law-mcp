@@ -16,19 +16,15 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-name",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "重要情報指定"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "支援"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -37,17 +33,16 @@
         "conceptIds": [],
         "evidenceCodes": [
           "explicit_task",
-          "explicit_resource",
-          "morphological_context"
+          "general_term"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-provision",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "適合事業者認定"
+                "支援"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -59,16 +54,14 @@
       }
     ],
     "reasonCodes": [
+      "below_execution_threshold",
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-20",
+  "leakageGroupId": "lqg-topic-9db46700d00b25105611caf2820d4f40f8131f24ca726692",
   "request": {
-    "query": "「重要情報指定」について、法令本文上の「重要情報指定」と「適合事業者認定」のどちらを探すべきか候補を示してください。"
+    "query": "支援について法情報を探したいです。"
   },
   "schemaVersion": 2
 }

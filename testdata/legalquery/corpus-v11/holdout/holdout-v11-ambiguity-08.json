@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-08",
   "coverageIds": [
-    "ambiguity-weak-general-term"
+    "ambiguity-multiple-concepts"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,14 +16,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "越境送金確認"
+                "海域利用許可"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -40,14 +40,14 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "本人確認義務"
+                "漁業調整"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -61,14 +61,11 @@
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-08",
+  "leakageGroupId": "lqg-topic-722441a23cd696c6a6d1a4f681f660c8b46217795028b617",
   "request": {
-    "query": "「越境送金確認」について、法令本文上の「越境送金確認」と「本人確認義務」のどちらを探すべきか候補を示してください。"
+    "query": "海域利用許可と漁業調整のどちらに関する条文か候補を示してください。"
   },
   "schemaVersion": 2
 }

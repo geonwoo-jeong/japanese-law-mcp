@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "特定受託事業者に係る取引の適正化等に関する法律"
+              "query": "行政手続法第十五条第四項等に規定する総務省令で定める方法を定める省令"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-505ac0000000025",
+  "leakageGroupId": "lqg-law-507m60000008103",
   "request": {
-    "query": "フリーランス・事業間取引適正化等法を検索してください。"
+    "query": "行手法行規則を検索してください。"
   },
   "schemaVersion": 2
 }

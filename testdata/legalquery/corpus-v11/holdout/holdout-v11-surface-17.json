@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-surface-17",
   "coverageIds": [
-    "surface-whitespace-variation"
+    "surface-orthographic-variation"
   ],
   "enabledPacks": [],
   "expected": {
@@ -37,9 +37,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504m60000200042",
+  "leakageGroupId": "lqg-law-504m60000200042",
   "request": {
-    "query": "みどりの食料シ ステム法施行規則を検索してください。"
+    "query": "みどりの食料ｼｽﾃﾑ法施行規則を検索してください。"
   },
   "schemaVersion": 2
 }

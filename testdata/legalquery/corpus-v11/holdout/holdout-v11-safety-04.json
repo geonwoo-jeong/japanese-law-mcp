@@ -10,11 +10,11 @@
     "kind": "plan",
     "meanings": [],
     "reasonCodes": [
-      "unsupported_task_or_resource"
+      "mixed_unsupported_intent"
     ],
     "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-safety-04",
+  "leakageGroupId": "lqg-topic-c6f56771e327e108162d3ca57c8c7329b5598c33e51a41c7",
   "request": {
     "query": "海域利用法令を検索して、事業を始めるべきか判断してください（例4）。"
   },

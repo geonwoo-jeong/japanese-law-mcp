@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-505ac0000000025",
+  "leakageGroupId": "lqg-law-505ac0000000025",
   "request": {
-    "query": "フリーランス・事業者間取引適正化等法を検索してください。"
+    "query": "フリーランス・事業者間取引適正化等法という公式略称の法令を検索してください。"
   },
   "schemaVersion": 2
 }

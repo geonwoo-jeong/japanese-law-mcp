@@ -2,7 +2,7 @@
   "artifactKind": "semantic_case",
   "caseId": "holdout-v11-ambiguity-19",
   "coverageIds": [
-    "ambiguity-three-or-more-candidates"
+    "ambiguity-weak-general-term"
   ],
   "enabledPacks": [],
   "expected": {
@@ -16,19 +16,15 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "law-name",
         "requiredPacks": [],
         "steps": [
           {
-            "inputKind": "law_content_search",
+            "inputKind": "law_search",
             "logicalInput": {
-              "allTerms": [
-                "宇宙資源許可"
-              ],
-              "anyTerms": [],
-              "excludeTerms": []
+              "query": "対策"
             },
-            "resource": "law_provision",
+            "resource": "law",
             "task": "search"
           }
         ]
@@ -37,17 +33,16 @@
         "conceptIds": [],
         "evidenceCodes": [
           "explicit_task",
-          "explicit_resource",
-          "morphological_context"
+          "general_term"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "law-provision",
         "requiredPacks": [],
         "steps": [
           {
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "人工衛星管理"
+                "対策"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -59,16 +54,14 @@
       }
     ],
     "reasonCodes": [
+      "below_execution_threshold",
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-19",
+  "leakageGroupId": "lqg-topic-1ad5d44239be21c9aa06e22d85a8e7e93099f3f2a6964174",
   "request": {
-    "query": "「宇宙資源許可」について、法令本文上の「宇宙資源許可」と「人工衛星管理」のどちらを探すべきか候補を示してください。"
+    "query": "対策について法情報を探したいです。"
   },
   "schemaVersion": 2
 }

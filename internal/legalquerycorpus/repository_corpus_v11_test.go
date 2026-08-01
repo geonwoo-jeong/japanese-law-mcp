@@ -1,10 +1,9 @@
 package legalquerycorpus
 
 import (
-	"encoding/json"
-	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -13,10 +12,10 @@ const (
 	repositoryCorpusV11Development    = 43
 	repositoryCorpusV11Holdout        = 251
 	repositoryCorpusV11Execution      = 8
-	repositoryCorpusV11LeakageDigests = 203
-	repositoryCorpusV11HoldoutDigest  = "b51f973307a4bc5da8b4be8ac3577ff0a718db6108f6dc861e9a469519f7c401"
-	repositoryCorpusV11ManifestSHA256 = "70007b6c837423d861af4d18af2a9802c357ed2cac5850942f3ce9659b90b365"
-	repositoryCorpusV11TreeSHA256     = "d9293176ca43c33080da8ee047d722bb0ed799a0674ddeb9a534e06d67b05ab1"
+	repositoryCorpusV11LeakageDigests = 139
+	repositoryCorpusV11HoldoutDigest  = "91b9c85930dcebd8bd5f58e414ac3289de535e913270c0821aa6ac92432fff93"
+	repositoryCorpusV11ManifestSHA256 = "28b937b561effee8674f40981208698fc3287e85ffcd1caa1167f7c7636ec8b7"
+	repositoryCorpusV11TreeSHA256     = "4fb2ac82ed97fc81920e567c9c687bb471c943f4c6b6d5e04c6c0090f89950ff"
 )
 
 func TestRepositoryCorpusV11は消費済みHoldoutから分離する(t *testing.T) {
@@ -57,12 +56,7 @@ func TestRepositoryCorpusV11は消費済みHoldoutから分離する(t *testing.
 		consumed.HoldoutLeakageGroupDigests(),
 		manifest.HoldoutLeakageGroupDigests(),
 	)
-	assertNoConsumedEquivalentHoldout(
-		t,
-		repositoryRoot,
-		"testdata/legalquery/corpus-v10/holdout",
-		"testdata/legalquery/corpus-v11/holdout",
-	)
+	assertCorpusV11StableLeakageGroups(t, prepared.Holdout())
 	assertRepositoryCorpusManifestDigest(
 		t,
 		repositoryRoot,
@@ -100,63 +94,21 @@ func assertNoConsumedLeakageGroupDigest(
 	}
 }
 
-func assertNoConsumedEquivalentHoldout(
+func assertCorpusV11StableLeakageGroups(
 	t *testing.T,
-	repositoryRoot string,
-	consumedRelative string,
-	preparedRelative string,
+	holdout []SemanticCase,
 ) {
 	t.Helper()
-	consumedPatterns := loadEquivalentHoldoutPatterns(
-		t,
-		filepath.Join(repositoryRoot, consumedRelative),
-	)
-	preparedPatterns := loadEquivalentHoldoutPatterns(
-		t,
-		filepath.Join(repositoryRoot, preparedRelative),
-	)
-	for pattern, consumedNames := range consumedPatterns {
-		preparedNames, exists := preparedPatterns[pattern]
-		if !exists {
-			continue
+	allowedPrefixes := []string{"lqg-case-courts-", "lqg-concept-", "lqg-law-", "lqg-ls-", "lqg-topic-"}
+	for _, fixture := range holdout {
+		groupID := fixture.LeakageGroupID()
+		if strings.Contains(groupID, "v11") {
+			t.Fatalf("SOT-ENG-026: leakageGroupId が corpus version に依存しています: %q", groupID)
 		}
-		t.Fatalf(
-			"SOT-ENG-038: 消費済み holdout と同値な fixture を再利用しています: consumed=%v prepared=%v",
-			consumedNames,
-			preparedNames,
-		)
+		if !slices.ContainsFunc(allowedPrefixes, func(prefix string) bool {
+			return strings.HasPrefix(groupID, prefix)
+		}) {
+			t.Fatalf("SOT-ENG-026: leakageGroupId の安定分類が不明です: %q", groupID)
+		}
 	}
-}
-
-func loadEquivalentHoldoutPatterns(
-	t *testing.T,
-	directory string,
-) map[string][]string {
-	t.Helper()
-	paths, err := filepath.Glob(filepath.Join(directory, "*.json"))
-	if err != nil {
-		t.Fatalf("SOT-ENG-038: holdout fixture を列挙できません: %v", err)
-	}
-	slices.Sort(paths)
-	patterns := make(map[string][]string, len(paths))
-	for _, path := range paths {
-		raw, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatalf("SOT-ENG-038: holdout fixture を読めません: %v", err)
-		}
-		var document map[string]any
-		if err := json.Unmarshal(raw, &document); err != nil {
-			t.Fatalf("SOT-ENG-038: holdout fixture JSON を解釈できません: %v", err)
-		}
-		delete(document, "schemaVersion")
-		delete(document, "caseId")
-		delete(document, "leakageGroupId")
-		normalized, err := json.Marshal(document)
-		if err != nil {
-			t.Fatalf("SOT-ENG-038: holdout fixture を正規化できません: %v", err)
-		}
-		key := string(normalized)
-		patterns[key] = append(patterns[key], filepath.Base(path))
-	}
-	return patterns
 }

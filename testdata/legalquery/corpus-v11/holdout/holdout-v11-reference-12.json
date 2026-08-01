@@ -38,7 +38,7 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "v11-law-504ac0000000105-reference-1",
+  "leakageGroupId": "lqg-law-504ac0000000105",
   "request": {
     "query": "リビジョンID 504AC0000000105_20260401_506AC0000000033 の法令本文を取得してください。"
   },

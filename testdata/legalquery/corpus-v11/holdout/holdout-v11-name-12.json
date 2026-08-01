@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504ac0000000105",
+  "leakageGroupId": "lqg-law-504ac0000000105",
   "request": {
-    "query": "不当寄附勧誘防止法を検索してください。"
+    "query": "不当寄附勧誘防止法という出典付き別名から法令を検索してください。"
   },
   "schemaVersion": 2
 }

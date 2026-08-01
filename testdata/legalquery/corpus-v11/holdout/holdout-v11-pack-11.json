@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "衛星管理責任"
+              "query": "宇宙開発契約"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-11",
+  "leakageGroupId": "lqg-topic-a7508c7191e07d235759d305d572c594e91932d17fd6176c",
   "request": {
-    "query": "衛星管理責任の裁判例を検索してください。"
+    "query": "宇宙開発契約の裁判例を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

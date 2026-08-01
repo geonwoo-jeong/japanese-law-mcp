@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "環境と調和のとれた食料システムの確立のための環境負荷低減事業活動の促進等に関する法律"
+              "query": "情報通信技術を利用する方法による国の歳入等の納付に関する法律"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-504ac0000000037",
+  "leakageGroupId": "lqg-law-504ac0000000039",
   "request": {
-    "query": "みどりの食システム法を検索してください。"
+    "query": "キャッシレス法を検索してください。"
   },
   "schemaVersion": 2
 }

@@ -10,7 +10,7 @@
     "field": "query",
     "kind": "request_error"
   },
-  "leakageGroupId": "v11-input-03",
+  "leakageGroupId": "lqg-topic-7a5d3972e8d070c65b58120f5ca3a348525476d5fd24464d",
   "request": {
     "query": "法令\u0002入力2"
   },

@@ -23,7 +23,7 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "人工知能関連技術の研究開発及び活用の推進に関する法律"
+              "query": "表題部所有者不明土地の登記及び管理の適正化に関する法律"
             },
             "resource": "law",
             "task": "search"
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "v11-law-507ac0000000053",
+  "leakageGroupId": "lqg-law-501ac0000000015",
   "request": {
-    "query": "Ａ誤法を検索してください。"
+    "query": "表題部所有誤不明土地法を検索してください。"
   },
   "schemaVersion": 2
 }

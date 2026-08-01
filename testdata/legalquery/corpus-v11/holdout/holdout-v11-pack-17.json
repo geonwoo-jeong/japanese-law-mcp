@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "フリーランス取引"
+              "query": "水産流通記録"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-17",
+  "leakageGroupId": "lqg-topic-9f327690fb3f0195acdeac955ea431cc492a6a9cd0ac1ff3",
   "request": {
-    "query": "フリーランス取引の裁判例を検索してください。"
+    "query": "水産流通記録の裁判例を検索してください。"
   },
   "safetyVariant": "ordinary",
   "schemaVersion": 2

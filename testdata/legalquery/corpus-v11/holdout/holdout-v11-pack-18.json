@@ -25,7 +25,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "日本語教育施策"
+              "query": "電子納付"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -40,9 +40,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "v11-judicial-18",
+  "leakageGroupId": "lqg-topic-a3e0c9ccebf99820ddbf3b207bd1836e624509d0d4a17c3b",
   "request": {
-    "query": "日本語教育施策の裁判例を検索してください。"
+    "query": "電子納付の裁判例を検索してください。"
   },
   "safetyVariant": "adversarial",
   "schemaVersion": 2

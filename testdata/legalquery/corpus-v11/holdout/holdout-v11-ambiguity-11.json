@@ -16,7 +16,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-first",
+        "meaningId": "concept-candidate-01",
         "requiredPacks": [],
         "steps": [
           {
@@ -40,7 +40,7 @@
           "explicit_resource",
           "morphological_context"
         ],
-        "meaningId": "ambiguity-second",
+        "meaningId": "concept-candidate-02",
         "requiredPacks": [],
         "steps": [
           {
@@ -56,19 +56,40 @@
             "task": "search"
           }
         ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "concept-candidate-03",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "景品表示"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
       }
     ],
     "reasonCodes": [
       "ambiguous_candidates"
     ],
-    "selectedMeaningIds": [
-      "ambiguity-first",
-      "ambiguity-second"
-    ]
+    "selectedMeaningIds": []
   },
-  "leakageGroupId": "v11-ambiguity-11",
+  "leakageGroupId": "lqg-topic-6bafd32c00bf00f8d79bef0f51353e3873e8e37958b64f2f",
   "request": {
-    "query": "「食品表示」について、法令本文上の「食品表示」と「広告表示」のどちらを探すべきか候補を示してください。"
+    "query": "食品表示、広告表示、景品表示の三つについて法令本文の候補を示してください。"
   },
   "schemaVersion": 2
 }
