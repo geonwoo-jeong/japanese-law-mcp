@@ -84,7 +84,7 @@ fail-closed な CI handoff 入口および候補 baseline writer を追加した
 result、failed report または候補 baseline の中身は生成せず、Git が追跡できない
 空 history root は loader 側で論理的 empty として扱う。実際の
 `testdata/legalquery/candidate-evaluations/` subtree は canonical byte で生成し、
-閉じた loader の自己検証を通過した。次の 4.5 だけが holdout の一回実行と
+閉じた loader の自己検証を通過した。後続の 4.5 だけが holdout の一回実行と
 結果 handoff を担当する。
 
 第 4.5 段階の準備実装と独立 review は完了した。passed/failed の result 契約、request/result 履歴だけを
@@ -123,8 +123,20 @@ byte を変えず、failed history と result history へ handoff した。予�
 
 準備実装の最終 review は 8.9 / 10、security review は 9.1 / 10 で、blocker は
 いずれも零である。handoff 成果物の review は実装 9.8 / 10、testability
-10.0 / 10、security 10.0 / 10、blocker 0 で通過した。tracked byte replay は
-handoff commit に対する権威 CI の成功後に実行する。
+10.0 / 10、security 10.0 / 10、blocker 0 で通過した。handoff commit
+`71833e6d19b8efc2634c55f797578141dc86da22` の権威 CI `30682417467` では、
+既存の production test が空の tracked result を期待したままであることを検出した。
+その assertion を current failed result、request digest および report digest の照合へ
+更新した commit `f60da386d821f73f76ec3db12a4c2b99744c8338` は、code 10.0 / 10、
+testability 10.0 / 10、security 10.0 / 10、blocker 0 の独立 review と権威 CI
+`30682743993` を通過した。
+
+同じ commit に固定した tracked byte replay `30682972843` も成功した。artifact 名は
+`candidate-evaluation-f60da386d821f73f76ec3db12a4c2b99744c8338` で、通常 file は
+`result.json` と `report.json` の二件だけだった。両 file は tracked history と byte
+単位で一致し、SHA-256 はそれぞれ
+`313130ccdb69f43ef1b3bcbae38498e91eddd590d3ddc3407bc50cdd08a2510a` と
+`5d702ccb1b27b34e2007444dd8d25640c08c2ddc46f7aff206324fe9692377ba` だった。
 
 したがって、`corpus-v10` の holdout digest は消費済みであり、`default-3` は
 採用対象から外れる。relation 対応の意味判定、`default-3` および対応する検索例
@@ -144,7 +156,7 @@ passed/failed holdout と leakage group が重ならない新しい holdout の�
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
 | 3 | 完了 | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
-| 4 | 着手中（4.5 は `failed`、tracked byte replay 待ち） | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-3` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定を行った | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
+| 4 | 完了（判定は `failed`） | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-3` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定と tracked byte replay を完了した | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
 | 5 | 保留（`default-3` は不合格） | passed の候補が得られた場合だけ、全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 未着手 | `GET /laws`、`GET /keyword`、`GET /law_data` の parser を一 endpoint ずつ移行した後、法令検索の canonical target 優先を application 層へ接続する | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
 | 7 | 未着手 | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを現行標準へ同期する | `SOT-SCN-010`、`SOT-ENG-039` |
@@ -167,13 +179,14 @@ passed/failed holdout と leakage group が重ならない新しい holdout の�
 | 4.2 | 2026-07-31 | 8.8 / 10（testability 8.5 / 10） | 9.1 / 10 | 0 | schema version 2 の三成果物と typed decoder、development assertion 十一件、追加 coverage 七件と safety pair、leakage digest の再計算と原 ID 非露出、`corpus-v9`・schema version 1 および `corpus-v10` の byte 固定、`step_limit_exceeded` だけに限定した空 meaning 境界 |
 | 4.3 | 2026-07-31 | 9.4 / 10（testability 9.0 / 10） | 9.3 / 10 | 0 | schema と development だけを開く loader、原 byte content digest、二回の独立構成、四十三件全体の fingerprint と scorecard、core・裁判例の専用校正 artifact、active からの非到達性、共有末尾の同値縮約後四 step 境界 |
 | 4.4 | 2026-07-31 | 9.6 / 10（testability 9.2 / 10） | 8.6 / 10 | 0 | schema v2 の五成果物、52 件 SOT digest 付き review attestation、`corpus-v10`/`default-2` request、`current.json` pointer、空 history root の fail-closed 解釈、manual CI handoff 入口、候補 baseline writer、canonical subtree の自己検証 |
-| 4.5 再準備 | 2026-07-31 | 10.0 / 10（testability 8.4 / 10、実装 8.9 / 10） | 9.1 / 10 | 0 | report 前に停止した `default-2` の三回の dispatch では有効 result と holdout 消費がないことを確認。`HOME` 非依存 cache、execution 不一致の失敗分類、raw draft の個別 evidence mapping と縮約後十六件上限を修正し、旧準備を不変に保持したまま `default-3` の exact content、二件の review attestation、request および current pointer を追加。準備 commit の権威 CI と一回の manual dispatch は成功し、構造上有効な `outcome=failed` を handoff。tracked byte replay は未完了 |
-| 4.5 handoff | 2026-07-31 | 9.8 / 10（testability 10.0 / 10） | 10.0 / 10 | 0 | failed report と result の request/report digest binding、baseline 非生成、消費済み履歴一件、current failed result および replay byte を確認。handoff commit の権威 CI と tracked byte replay は未完了 |
+| 4.5 再準備 | 2026-07-31 | 10.0 / 10（testability 8.4 / 10、実装 8.9 / 10） | 9.1 / 10 | 0 | report 前に停止した `default-2` の三回の dispatch では有効 result と holdout 消費がないことを確認。`HOME` 非依存 cache、execution 不一致の失敗分類、raw draft の個別 evidence mapping と縮約後十六件上限を修正し、旧準備を不変に保持したまま `default-3` の exact content、二件の review attestation、request および current pointer を追加。準備 commit の権威 CI と一回の manual dispatch は成功し、構造上有効な `outcome=failed` を handoff |
+| 4.5 handoff | 2026-08-01 | 10.0 / 10（testability 10.0 / 10） | 10.0 / 10 | 0 | failed report と result の request/report digest binding、baseline 非生成、消費済み履歴一件、current failed result および replay byte を確認。更新後 commit の権威 CI は成功し、同じ commit の tracked byte replay artifact 二件が tracked history と完全一致 |
 
 4.4 の最終 security review で残った非 blocker のうち、非 `GO*` 環境の継承は、
 4.5 の bootstrap が `PATH`、`GOROOT`、`GOMODCACHE`、`GOCACHE`、`TMPDIR` と固定
 `GO*` 以外を拒否することで閉じた。Go executable の provenance と read-only module
-cache の実効性は、固定 setup-go を使う 4.5 の権威 CI で確認する。
+cache の実効性は、固定 setup-go を使う候補評価 `30682022985` と tracked replay
+`30682972843` で確認した。
 
 ## 第 3 段階以降の SOT 文書 review
 
@@ -196,7 +209,8 @@ cache の実効性は、固定 setup-go を使う 4.5 の権威 CI で確認す�
 handoff 境界の準備実装、三件の report 前停止への修正、新しい `default-3` に
 対する独立 review、準備 commit の権威 CI および一回の manual dispatch を完了した。
 判定は `failed` であり、failed report と result の handoff および独立 review は
-完了した。handoff commit の権威 CI と tracked byte replay を次に検証する。
+完了した。更新後 commit の権威 CI と tracked byte replay も完了したため、第 4 段階は
+不合格の結果を変更不能な履歴へ固定して終了した。第 5 段階へは進まない。
 
 ## 第 3 段階の内部進捗
 
@@ -230,7 +244,7 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 4.2 | 完了 | schema version 2、新規 holdout を含む `corpus-v10`、集合分離、development assertion、coverage、leakage digest および旧版・準備版の byte 固定 |
 | 4.3 | 完了 | holdout を使わない development 専用 loader、原 byte digest、次版 profile set 校正および四十三件全体の決定的 fingerprint |
 | 4.4 | 完了 | 内容固定済み候補 request、review attestation、`current.json` pointer、manual CI handoff 入口および候補 baseline writer |
-| 4.5 | `outcome=failed` handoff・review 完了（holdout 消費済み、tracked byte replay 待ち） | 一回の holdout 判定、変更不能な result と `default-3` の failed history handoff |
+| 4.5 | 完了（`outcome=failed`、holdout 消費済み） | 一回の holdout 判定、変更不能な result と `default-3` の failed history handoff、権威 CI および tracked byte replay |
 
 ## 段階の境界
 
