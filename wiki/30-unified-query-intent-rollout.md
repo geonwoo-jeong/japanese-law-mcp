@@ -144,16 +144,17 @@ testability 10.0 / 10、security 10.0 / 10、blocker 0 の独立 review と権�
 passed/failed holdout と leakage group が重ならない新しい holdout の独立 review と、
 第 3 段階以降の新しい候補準備が必要である。
 
-次の候補 cycle の最初の単位として、local では `corpus-v11` を準備した。development
+次の候補 cycle の最初の単位として、repository に `corpus-v11` を準備した。development
 43 件と execution 8 件は `corpus-v10` から byte を変えずに引き継ぎ、holdout 251 件は
 新しい fixture として再生成した。manifest の holdout digest は
-`91b9c85930dcebd8bd5f58e414ac3289de535e913270c0821aa6ac92432fff93`、
+`a3574dd0271a6ec66761270e869c80144aef72910c64919a8561d90f0592ce30`、
 holdout leakage group digest 数は 139 件である。`leakageGroupId` は
 `lqg-law-`、`lqg-ls-`、`lqg-topic-`、`lqg-case-courts-` および
 `lqg-concept-` の安定 prefix に限定し、`corpus-v10` manifest の digest 集合との交差を
 拒否する targeted test を追加した。`./internal/legalquerycorpus` の最小 test と
-schema 検証は通過したが、この時点では `default-4` request、review attestation
-および holdout 実行はまだ作成していない。
+schema 検証は通過した。独立 review は semantic 9.0 / 10、testability 9.0 / 10、
+security 9.0 / 10、blocker 0 で通過した。この時点では `default-4` request、
+review attestation および holdout 実行はまだ作成していない。
 
 ## 推奨順序
 
@@ -192,6 +193,7 @@ schema 検証は通過したが、この時点では `default-4` request、revie
 | 4.4 | 2026-07-31 | 9.6 / 10（testability 9.2 / 10） | 8.6 / 10 | 0 | schema v2 の五成果物、52 件 SOT digest 付き review attestation、`corpus-v10`/`default-2` request、`current.json` pointer、空 history root の fail-closed 解釈、manual CI handoff 入口、候補 baseline writer、canonical subtree の自己検証 |
 | 4.5 再準備 | 2026-07-31 | 10.0 / 10（testability 8.4 / 10、実装 8.9 / 10） | 9.1 / 10 | 0 | report 前に停止した `default-2` の三回の dispatch では有効 result と holdout 消費がないことを確認。`HOME` 非依存 cache、execution 不一致の失敗分類、raw draft の個別 evidence mapping と縮約後十六件上限を修正し、旧準備を不変に保持したまま `default-3` の exact content、二件の review attestation、request および current pointer を追加。準備 commit の権威 CI と一回の manual dispatch は成功し、構造上有効な `outcome=failed` を handoff |
 | 4.5 handoff | 2026-08-01 | 10.0 / 10（testability 10.0 / 10） | 10.0 / 10 | 0 | failed report と result の request/report digest binding、baseline 非生成、消費済み履歴一件、current failed result および replay byte を確認。更新後 commit の権威 CI は成功し、同じ commit の tracked byte replay artifact 二件が tracked history と完全一致 |
+| 次 cycle corpus-v11 | 2026-08-01 | 9.0 / 10（testability 9.0 / 10） | 9.0 / 10 | 0 | schema version 2、development 43 件、独立生成した holdout 251 件、execution 8 件、安定 leakage group 139 件、消費済み `corpus-v10` manifest との digest 非交差、alias 衝突・曖昧性・pack 有無・実事件参照・表記揺れ・誤記・v2 境界の代表意味、再現性および不変性。`default-4` と holdout 実行は対象外 |
 
 4.4 の最終 security review で残った非 blocker のうち、非 `GO*` 環境の継承は、
 4.5 の bootstrap が `PATH`、`GOROOT`、`GOMODCACHE`、`GOCACHE`、`TMPDIR` と固定
