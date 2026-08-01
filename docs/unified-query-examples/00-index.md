@@ -8,9 +8,8 @@
 - `corpusVersion`: `corpus-v9`
 - `baselineVersion`: `default-1`
 
-採用済みでも未実装の挙動、`corpus-v10`、置換済み準備の `default-2`、
-評価準備中の `default-3` および将来の test ID は掲載しない。実装との差分は
-[実装状況](../../wiki/10-implementation-status.md)、
+採用済みでも未実装の挙動、`corpus-v10`、`default-2` および将来の test ID は
+掲載しない。実装との差分は [実装状況](../../wiki/10-implementation-status.md)、
 カタログの契約は
 [SOT-ENG-029](../../sot/50-engineering/29-unified-query-example-catalog.md) を参照する。
 
