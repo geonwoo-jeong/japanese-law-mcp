@@ -47,7 +47,7 @@ func main() {
 }
 
 func run(ctx context.Context) int {
-	return cli.Execute(cli.Options{ //nolint:contextcheck // SOT-ENG-010: ctx は Options.Context を介して Cobra の ExecuteContextC へ渡す。
+	return cli.Execute(cli.Options{
 		Context:       ctx,
 		Args:          os.Args[1:],
 		Stdin:         os.Stdin,

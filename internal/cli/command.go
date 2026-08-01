@@ -22,7 +22,7 @@ type commandOptions struct {
 	run           Runner
 }
 
-func newCommand(options commandOptions) *cobra.Command {
+func newCommand(ctx context.Context, options commandOptions) *cobra.Command {
 	var configFile string
 
 	root := &cobra.Command{
@@ -53,7 +53,7 @@ func newCommand(options commandOptions) *cobra.Command {
 			if options.run == nil {
 				return runtimeError()
 			}
-			if err := options.run(cmd.Context(), cfg); err != nil {
+			if err := options.run(ctx, cfg); err != nil {
 				if errors.Is(err, context.Canceled) {
 					return nil
 				}

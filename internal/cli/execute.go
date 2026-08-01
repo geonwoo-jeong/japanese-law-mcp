@@ -45,7 +45,7 @@ func Execute(options Options) int {
 		return classified.code
 	}
 
-	command := newCommand(commandOptions{
+	command := newCommand(options.Context, commandOptions{
 		in:            in,
 		out:           out,
 		errOut:        errOut,
