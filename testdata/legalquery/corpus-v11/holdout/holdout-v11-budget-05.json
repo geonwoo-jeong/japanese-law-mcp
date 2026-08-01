@@ -1,0 +1,71 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-budget-05",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "four-law-searches",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "アイヌの人々の誇りが尊重される社会を実現するための施策の推進に関する法律施行規則"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "表題部所有者不明土地の登記及び管理の適正化に関する法律施行規則"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "防衛省関係重要施設の周辺地域の上空における小型無人機等の飛行の禁止に関する法律施行規則"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "特定水産動植物等の国内流通の適正化等に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "four-law-searches"
+    ]
+  },
+  "leakageGroupId": "v11-budget-multi-05",
+  "request": {
+    "limitPerAttempt": 5,
+    "query": "アイヌ施策推進法施行規則、表題部所有者不明土地法施行規則、小型無人機等飛行禁止法施行規則、水産流通適正化法を個別に検索してください。"
+  },
+  "schemaVersion": 2
+}

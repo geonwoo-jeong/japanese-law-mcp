@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-unsupported-05",
+  "coverageIds": [
+    "unsupported-relationship-analysis"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-unsupported-05",
+  "request": {
+    "query": "二つの法令の委任関係を法的に分析してください。"
+  },
+  "schemaVersion": 2
+}

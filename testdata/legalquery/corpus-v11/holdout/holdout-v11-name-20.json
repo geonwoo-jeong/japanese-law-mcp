@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-name-20",
+  "coverageIds": [
+    "concept-single"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "adult-guardianship"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "legal_concept"
+        ],
+        "meaningId": "concept-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "成年後見"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "concept-search"
+    ]
+  },
+  "leakageGroupId": "v11-concept-adult-guardianship",
+  "request": {
+    "query": "判断能力が低下した人の法的支援に関する条文を探してください。"
+  },
+  "schemaVersion": 2
+}

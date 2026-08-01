@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-structure-19",
+  "coverageIds": [
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "paragraph-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "507AC0000000053",
+              "location": {
+                "articleNumber": "38",
+                "paragraphNumber": 2,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "paragraph-read"
+    ]
+  },
+  "leakageGroupId": "v11-law-507ac0000000053-structure-2",
+  "request": {
+    "query": "法令ID 507AC0000000053 の第38条第2項を読んでください。"
+  },
+  "schemaVersion": 2
+}

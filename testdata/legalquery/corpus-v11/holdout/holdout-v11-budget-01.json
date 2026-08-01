@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-budget-01",
+  "coverageIds": [
+    "boundary-budget-limit",
+    "budget-item-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "表題部所有者不明土地の登記及び管理の適正化に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "v11-law-501ac0000000015",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "表題部所有者不明土地法を取得上限内で検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

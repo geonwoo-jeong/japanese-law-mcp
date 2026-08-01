@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-budget-14",
+  "coverageIds": [
+    "budget-page-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "content-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "海洋設備届出用語14"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "content-search"
+    ]
+  },
+  "leakageGroupId": "v11-budget-page-14",
+  "request": {
+    "query": "海洋設備届出用語14を含む条文を検索してください。"
+  },
+  "schemaVersion": 2
+}

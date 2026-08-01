@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-reference-07",
+  "coverageIds": [
+    "reference-revision-id"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "501M60002000003",
+              "revisionId": "501M60002000003_20220620_504M60002000006"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  },
+  "leakageGroupId": "v11-law-501m60002000003-reference-1",
+  "request": {
+    "query": "リビジョンID 501M60002000003_20220620_504M60002000006 の法令本文を取得してください。"
+  },
+  "schemaVersion": 2
+}

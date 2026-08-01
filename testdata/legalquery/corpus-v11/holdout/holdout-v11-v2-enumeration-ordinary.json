@@ -1,0 +1,61 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-v2-enumeration-ordinary",
+  "coverageIds": [
+    "boundary-unmarked-enumeration"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "meaningId": "two-topic-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "深海採掘"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "軌道利用"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "two-topic-search"
+    ]
+  },
+  "leakageGroupId": "v11-v2-enumeration-ordinary",
+  "request": {
+    "query": "深海採掘、軌道利用を教えてください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

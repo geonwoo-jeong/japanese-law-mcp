@@ -1,0 +1,47 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-structure-17",
+  "coverageIds": [
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "dated-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2024-05-17",
+              "query": "環境と調和のとれた食料システムの確立のための環境負荷低減事業活動の促進等に関する法律施行規則"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "dated-search"
+    ]
+  },
+  "leakageGroupId": "v11-law-504m60000200042-structure-0",
+  "request": {
+    "query": "2024年5月17日時点のみどりの食料システム法施行規則を検索してください。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-surface-13",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "障害者による情報の取得及び利用並びに意思疎通に係る施策の推進に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "v11-law-504ac0100000050",
+  "request": {
+    "query": "障害者情報アクセシビリティ・ コミュニケーション施策推進法を検索してください。"
+  },
+  "schemaVersion": 2
+}

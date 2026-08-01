@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-v2-shared-terminal",
+  "coverageIds": [
+    "structure-shared-terminal-cue"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "meaningId": "shared-terminal",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "宇宙資源登録"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "海洋設備届出"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "shared-terminal"
+    ]
+  },
+  "leakageGroupId": "v11-v2-shared-terminal",
+  "request": {
+    "query": "宇宙資源登録、海洋設備届出を教えてください。"
+  },
+  "schemaVersion": 2
+}

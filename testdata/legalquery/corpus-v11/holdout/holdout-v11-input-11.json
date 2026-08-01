@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-input-11",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "ref",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "v11-input-11",
+  "request": {
+    "query": "空の参照を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "",
+        "resourceType": "law",
+        "sourceId": ""
+      },
+      "providerId": ""
+    }
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-v2-candidate-scope-ordinary",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-v2-candidate-scope-ordinary",
+  "request": {
+    "query": "法律以外の社内規程候補を検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

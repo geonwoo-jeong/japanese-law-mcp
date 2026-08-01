@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-v2-fanout-ordinary",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-v2-fanout-ordinary",
+  "request": {
+    "query": "量子相続、月面抵当、海底登記、軌道担保、火星許認可をそれぞれ法令本文から探してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

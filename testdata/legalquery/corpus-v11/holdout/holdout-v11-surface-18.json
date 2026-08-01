@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-surface-18",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "特定受託事業者に係る取引の適正化等に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  },
+  "leakageGroupId": "v11-law-505ac0000000025",
+  "request": {
+    "query": "『フリーランス・事業者間取引適正化等法』を検索してください。"
+  },
+  "schemaVersion": 2
+}

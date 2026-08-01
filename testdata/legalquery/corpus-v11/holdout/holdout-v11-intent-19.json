@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-intent-19",
+  "coverageIds": [
+    "intent-law-updates"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-updates",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-07-19"
+            },
+            "resource": "law",
+            "task": "list_updates"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-updates"
+    ]
+  },
+  "leakageGroupId": "v11-law-507ac0000000053-intent-4",
+  "request": {
+    "query": "2025年7月19日の法令更新一覧を取得してください。"
+  },
+  "schemaVersion": 2
+}

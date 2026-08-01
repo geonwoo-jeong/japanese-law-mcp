@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-input-20",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "ref",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "v11-input-20",
+  "request": {
+    "query": "資源型の違う参照を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "",
+        "resourceType": "judicial-decision",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

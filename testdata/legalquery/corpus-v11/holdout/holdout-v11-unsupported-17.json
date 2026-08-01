@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-unsupported-17",
+  "coverageIds": [
+    "unsupported-relationship-analysis"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-unsupported-17",
+  "request": {
+    "query": "法律同士の抵触を最終判断してください。"
+  },
+  "schemaVersion": 2
+}

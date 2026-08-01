@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-intent-10",
+  "coverageIds": [
+    "intent-law-read"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "504AC0000000037"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  },
+  "leakageGroupId": "v11-law-504ac0000000037-intent-2",
+  "request": {
+    "query": "法令ID 504AC0000000037 の本文を取得してください。"
+  },
+  "schemaVersion": 2
+}

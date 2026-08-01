@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-unsupported-13",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-unsupported-13",
+  "request": {
+    "query": "寄附勧誘への対応方針を法的に決めてください。"
+  },
+  "schemaVersion": 2
+}

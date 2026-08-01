@@ -1,0 +1,64 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-intent-07",
+  "coverageIds": [
+    "intent-judicial-decision-read"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "judicial-read",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "v11-intent-07",
+                  "resourceType": "judicial-decision",
+                  "sourceId": "courts-hanrei"
+                },
+                "providerId": "courts-hanrei-html"
+              }
+            },
+            "resource": "judicial_decision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "judicial-read"
+    ]
+  },
+  "leakageGroupId": "v11-law-501m60002000003-intent-6",
+  "request": {
+    "query": "指定参照の裁判例を取得してください。",
+    "ref": {
+      "key": {
+        "resourceId": "v11-intent-07",
+        "resourceType": "judicial-decision",
+        "sourceId": "courts-hanrei"
+      },
+      "providerId": "courts-hanrei-html"
+    }
+  },
+  "schemaVersion": 2
+}

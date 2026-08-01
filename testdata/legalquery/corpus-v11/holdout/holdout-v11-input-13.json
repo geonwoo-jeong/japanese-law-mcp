@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-input-13",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "v11-input-13",
+  "request": {
+    "limitPerAttempt": -1,
+    "query": "別の法令を検索してください。"
+  },
+  "schemaVersion": 2
+}

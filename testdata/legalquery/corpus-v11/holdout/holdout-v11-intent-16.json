@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-intent-16",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "content-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "届出記録用語16"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "content-search"
+    ]
+  },
+  "leakageGroupId": "v11-law-504m60000200039-intent-1",
+  "request": {
+    "query": "届出記録用語16を含む条文を探してください。"
+  },
+  "schemaVersion": 2
+}

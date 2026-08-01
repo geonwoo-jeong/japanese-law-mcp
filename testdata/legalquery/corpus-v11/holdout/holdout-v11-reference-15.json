@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-reference-15",
+  "coverageIds": [
+    "reference-case-reference"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "judicial-search",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "令和六年（受）第2114号"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  },
+  "leakageGroupId": "v11-case-reference-15",
+  "request": {
+    "query": "令和六年（受）第2114号の裁判例を検索してください。"
+  },
+  "schemaVersion": 2
+}

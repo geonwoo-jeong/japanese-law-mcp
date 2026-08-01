@@ -1,0 +1,47 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-structure-09",
+  "coverageIds": [
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "dated-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2024-09-09",
+              "query": "取引デジタルプラットフォームを利用する消費者の利益の保護に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "dated-search"
+    ]
+  },
+  "leakageGroupId": "v11-law-503ac0000000032-structure-0",
+  "request": {
+    "query": "2024年9月9日時点の取引ＤＰＦ法を検索してください。"
+  },
+  "schemaVersion": 2
+}

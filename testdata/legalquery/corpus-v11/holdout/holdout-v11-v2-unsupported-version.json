@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-v2-unsupported-version",
+  "coverageIds": [
+    "unsupported-version-comparison"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-v2-unsupported-version",
+  "request": {
+    "query": "人工知能法の制定時と現行版を比較してください。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,74 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-ambiguity-16",
+  "coverageIds": [
+    "ambiguity-weak-general-term"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "ambiguity-first",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "森林由来証明"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "ambiguity-second",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "木材流通記録"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "ambiguity-first",
+      "ambiguity-second"
+    ]
+  },
+  "leakageGroupId": "v11-ambiguity-16",
+  "request": {
+    "query": "「森林由来証明」について、法令本文上の「森林由来証明」と「木材流通記録」のどちらを探すべきか候補を示してください。"
+  },
+  "schemaVersion": 2
+}

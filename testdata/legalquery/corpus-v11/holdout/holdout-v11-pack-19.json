@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-pack-19",
+  "coverageIds": [
+    "boundary-pack-disabled",
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "capability_unavailable",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "judicial-search",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "アイヌ施策"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "required_pack_disabled"
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  },
+  "leakageGroupId": "v11-judicial-19",
+  "request": {
+    "query": "アイヌ施策の裁判例を検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

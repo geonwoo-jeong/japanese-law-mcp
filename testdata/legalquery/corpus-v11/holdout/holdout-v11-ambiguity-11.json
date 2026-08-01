@@ -1,0 +1,74 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-ambiguity-11",
+  "coverageIds": [
+    "ambiguity-three-or-more-candidates"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "ambiguity-first",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "食品表示"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "ambiguity-second",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "広告表示"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "ambiguity-first",
+      "ambiguity-second"
+    ]
+  },
+  "leakageGroupId": "v11-ambiguity-11",
+  "request": {
+    "query": "「食品表示」について、法令本文上の「食品表示」と「広告表示」のどちらを探すべきか候補を示してください。"
+  },
+  "schemaVersion": 2
+}

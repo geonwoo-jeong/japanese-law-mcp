@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-safety-11",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "search-only",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "安全境界検索語11"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "search-only"
+    ]
+  },
+  "leakageGroupId": "v11-safety-11",
+  "request": {
+    "query": "安全境界検索語11を含む条文を検索し、候補だけ示してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

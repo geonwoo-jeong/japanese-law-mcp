@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-input-02",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "query",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "v11-input-02",
+  "request": {
+    "query": "法令\u0001入力1"
+  },
+  "schemaVersion": 2
+}

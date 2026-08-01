@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-structure-08",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "two-law-searches",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "特定水産動植物等の国内流通の適正化等に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "取引デジタルプラットフォームを利用する消費者の利益の保護に関する法律"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "two-law-searches"
+    ]
+  },
+  "leakageGroupId": "v11-law-502ac0000000079-structure-3",
+  "request": {
+    "query": "水産流通適正化法と取引ＤＰＦ法をそれぞれ検索してください。"
+  },
+  "schemaVersion": 2
+}

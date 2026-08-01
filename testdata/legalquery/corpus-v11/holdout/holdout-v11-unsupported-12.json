@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v11-unsupported-12",
+  "coverageIds": [
+    "unsupported-version-comparison"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "v11-unsupported-12",
+  "request": {
+    "query": "施行前後の条文を自動で比較してください。"
+  },
+  "schemaVersion": 2
+}
