@@ -109,8 +109,7 @@ func (e *Evaluator) evaluateExecutionCase(
 	if !hasPlan ||
 		(plan.Decision() != legalquery.PlanDecisionSingle &&
 			plan.Decision() != legalquery.PlanDecisionHedged) {
-		return legalqueryeval.ExecutionCaseEvaluation{},
-			fmt.Errorf("execution fixture の semantic case が実行 plan を返しません")
+		return unexecutableExecutionCaseEvaluation(executionCase)
 	}
 	fixture, err := resolveExecutionFixture(
 		semanticCase,
@@ -119,7 +118,8 @@ func (e *Evaluator) evaluateExecutionCase(
 		executionCase,
 	)
 	if err != nil {
-		return legalqueryeval.ExecutionCaseEvaluation{}, err
+		// SOT-ENG-024: 候補 plan と固定 fixture の不一致は評価失敗として集計する。
+		return unexecutableExecutionCaseEvaluation(executionCase)
 	}
 	facade, err := newExecutionFixtureFacade(fixture)
 	if err != nil {
@@ -137,6 +137,19 @@ func (e *Evaluator) evaluateExecutionCase(
 		facade,
 		execution,
 		executeErr,
+	)
+}
+
+func unexecutableExecutionCaseEvaluation(
+	executionCase legalquerycorpus.ExecutionCase,
+) (legalqueryeval.ExecutionCaseEvaluation, error) {
+	return legalqueryeval.NewExecutionCaseEvaluation(
+		legalqueryeval.ExecutionCaseEvaluationValues{
+			CaseID:                     executionCase.CaseID(),
+			ExpectedMatched:            false,
+			AttemptOrderMatched:        false,
+			AttemptOrderViolationCount: len(executionCase.Expected().Attempts()),
+		},
 	)
 }
 
