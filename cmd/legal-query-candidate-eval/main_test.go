@@ -279,7 +279,7 @@ func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
 func TestPreparedHandoffParsesWorkerExitStatusWithoutLeakingRawStderr(t *testing.T) {
 	t.Parallel()
 
-	secret := "永住許可 /private/path credential-value"
+	secret := "永住許可 /private/path redacted-marker"
 	_, err := preparedHandoffWithRunner(
 		context.Background(),
 		fixedOutputDirectory,

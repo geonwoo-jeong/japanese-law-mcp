@@ -33,7 +33,7 @@ func (e codedFailure) FailureExitCode() int {
 func TestRunは段階別失敗Codeだけを返す(t *testing.T) {
 	t.Parallel()
 
-	secret := "secret-query 永住許可 /private/path credential-value"
+	secret := "secret-query 永住許可 /private/path redacted-marker"
 	var stdout, stderr bytes.Buffer
 	code := run(
 		context.Background(),

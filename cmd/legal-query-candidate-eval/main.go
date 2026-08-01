@@ -320,6 +320,7 @@ func runCandidateWorker(
 	stderr io.Writer,
 ) error {
 	commandArgs := append([]string{"run"}, args...)
+	//nolint:gosec // SOT-ENG-038: 実行対象・引数・環境は固定 command と閉じた build 環境だけを受理する。
 	command := exec.CommandContext(ctx, "go", commandArgs...)
 	command.Dir = fixedRepository
 	command.Env = append([]string(nil), environment...)
