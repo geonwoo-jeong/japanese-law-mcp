@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-v2-shared-terminal",
+  "coverageIds": [
+    "structure-shared-terminal-cue"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "meaningId": "shared-terminal",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "沿岸漁業権"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "船員の最低年齢"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "shared-terminal"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-coastal-fishing-right-and-seaman-age",
+  "request": {
+    "query": "沿岸漁業権と船員の最低年齢をそれぞれ教えてください。"
+  },
+  "schemaVersion": 2
+}

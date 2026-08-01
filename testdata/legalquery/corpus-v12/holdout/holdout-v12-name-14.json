@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-name-14",
+  "leakageGroupId": "lqg-law-328co0000000264",
+  "coverageIds": [
+    "name-sourced-alias"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "公的資料で独占禁止法審査官指定政令と呼ばれる法令を探してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "私的独占の禁止及び公正取引の確保に関する法律第四十七条第二項の審査官の指定に関する政令"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

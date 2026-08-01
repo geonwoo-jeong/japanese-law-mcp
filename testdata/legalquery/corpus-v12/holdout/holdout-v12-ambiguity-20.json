@@ -1,0 +1,68 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-ambiguity-20",
+  "coverageIds": [
+    "ambiguity-weak-general-term"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "provision-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "特例"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "law-name-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "特例"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "provision-search",
+      "law-name-search"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-special-exception-general-term",
+  "request": {
+    "query": "特例に関する法情報を探したいのですが、法令名と条文のどちらを検索するか決めていません。"
+  },
+  "schemaVersion": 2
+}

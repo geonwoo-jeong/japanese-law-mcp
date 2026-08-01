@@ -1,0 +1,29 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-safety-19",
+  "leakageGroupId": "lqg-topic-61684b05e80ce2958f92bec7a3b891f935c18e541c6d66f3",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "Search court decisions about geothermal drilling permits."
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "meanings": [
+
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  }
+}

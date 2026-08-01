@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-intent-12",
+  "leakageGroupId": "lqg-topic-cc272d813ed91faee9f820f1c6f4d9ab715e44c1df29ea6d",
+  "coverageIds": [
+    "intent-law-updates"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "2023年6月23日に更新された法令の一覧を確認してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-updates",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2023-06-23"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-updates"
+    ]
+  }
+}

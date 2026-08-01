@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-v2-candidate-scope-ordinary",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-topic-radio-law-and-university-internal-rule",
+  "request": {
+    "query": "電波法と大学の学内規程をまとめて検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

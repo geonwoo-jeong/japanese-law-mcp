@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-v2-unsupported-version",
+  "coverageIds": [
+    "unsupported-version-comparison"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-law-soil-contamination-version-comparison",
+  "request": {
+    "query": "土壌汚染対策法の2019年時点の条文と現行条文を差分比較してください。"
+  },
+  "schemaVersion": 2
+}

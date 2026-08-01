@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-input-12",
+  "leakageGroupId": "lqg-topic-91507aa270e7ce3f17e33b2ebfdc620e461cdb53c8dca582",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "付与した資源参照の本文を取得してください。",
+    "ref": {
+      "providerId": "public-legal-records",
+      "key": {
+        "sourceId": "public-legal-records",
+        "resourceType": "administrative-guidance",
+        "resourceId": "guidance-2026-08"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-v2-fanout-adversarial",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-topic-eight-private-law-searches-without-limit",
+  "request": {
+    "query": "保証契約、債権譲渡、相続放棄、共有物分割、抵当権抹消、供託、執行抗告、破産免責を件数制限なしで全部検索してください。"
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 2
+}

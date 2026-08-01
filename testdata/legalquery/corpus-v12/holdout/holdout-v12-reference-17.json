@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-reference-17",
+  "leakageGroupId": "lqg-law-331m50000100057",
+  "coverageIds": [
+    "reference-revision-id"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "改正版識別子 331M50000100057_20201225_502M60000100208 の法令本文を開いてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "revision-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "331M50000100057",
+              "revisionId": "331M50000100057_20201225_502M60000100208"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "revision-read"
+    ]
+  }
+}

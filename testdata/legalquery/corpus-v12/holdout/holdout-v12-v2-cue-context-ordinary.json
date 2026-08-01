@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-v2-cue-context-ordinary",
+  "coverageIds": [
+    "boundary-unsupported-cue-context"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "quoted-cue-content",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "一覧してください"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "quoted-cue-content"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-quoted-list-request-phrase",
+  "request": {
+    "query": "「一覧してください」という文言を含む法令条文を検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-budget-06",
+  "leakageGroupId": "lqg-ls-c701c6b2ddbdcaabdd812cd69919ee16dfa008b87f9047b65639d758",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "土壌汚染防止法、公害罪法、下請振興法、自転車道法の四法令を個別に検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "農用地の土壌の汚染防止等に関する法律"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "人の健康に係る公害犯罪の処罰に関する法律"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "受託中小企業振興法"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "自転車道の整備等に関する法律"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-law-searches"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-intent-17",
+  "leakageGroupId": "lqg-law-323ac0000000109",
+  "coverageIds": [
+    "intent-law-read"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "識別子 323AC0000000109 で登録された法令の全文を表示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "323AC0000000109"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  }
+}

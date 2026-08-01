@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-structure-08",
+  "leakageGroupId": "lqg-ls-2f4382cf3e791eafc7fa79e6bb8627556bce2bf0ba4e0ab3075d5926",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "畜安法施行令、あわせて医薬品医療機器等法施行規則をそれぞれ法令名検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "two-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "畜産経営の安定に関する法律施行令"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "医薬品、医療機器等の品質、有効性及び安全性の確保等に関する法律施行規則"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "two-law-searches"
+    ]
+  }
+}

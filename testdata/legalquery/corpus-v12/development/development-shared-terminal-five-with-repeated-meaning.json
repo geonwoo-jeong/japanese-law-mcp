@@ -1,0 +1,89 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "development-shared-terminal-five-with-repeated-meaning",
+  "leakageGroupId": "development-shared-terminal-five-repeated",
+  "coverageIds": [
+    "intent-law-content-search",
+    "structure-multiple-explicit-intents",
+    "structure-shared-terminal-cue"
+  ],
+  "developmentAssertionIds": [
+    "shared-terminal-five-with-repeated-meaning"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "量子相続、月面抵当、火星登記、海底供託、月面抵当について教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "deduplicated-four-topics",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "量子相続"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "月面抵当"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "火星登記"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "海底供託"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "deduplicated-four-topics"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-input-15",
+  "leakageGroupId": "lqg-topic-ae96a5429704deec45191ae908dbd172f5d78564f8a80b9f",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "離島振興施策の根拠法令を検索してください。",
+    "limitPerAttempt": -7
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

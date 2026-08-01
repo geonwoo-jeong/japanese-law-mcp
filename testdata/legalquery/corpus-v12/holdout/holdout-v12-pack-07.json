@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-pack-07",
+  "leakageGroupId": "lqg-topic-e71b854de8d42a0592d04b8cef065fe682fb7bdf45c92626",
+  "coverageIds": [
+    "boundary-pack-disabled"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "飛行場周辺の騒音差止めに関する裁判例を、利用可能な機能の範囲で調べてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "capability_unavailable",
+    "reasonCodes": [
+      "required_pack_disabled"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "飛行場周辺の騒音差止め"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  }
+}

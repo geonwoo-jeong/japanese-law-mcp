@@ -1,0 +1,64 @@
+{
+  "actions": [
+    {
+      "meaningId": "mixed",
+      "outcome": {
+        "kind": "read_success"
+      },
+      "releaseOrder": 1,
+      "stepOrdinal": 1
+    },
+    {
+      "meaningId": "mixed",
+      "outcome": {
+        "kind": "collection_success",
+        "sourceItemCount": 25
+      },
+      "releaseOrder": 2,
+      "stepOrdinal": 2
+    },
+    {
+      "meaningId": "mixed",
+      "outcome": {
+        "kind": "collection_success",
+        "sourceItemCount": 3
+      },
+      "releaseOrder": 3,
+      "stepOrdinal": 3
+    }
+  ],
+  "artifactKind": "execution_case",
+  "caseId": "execution-mixed-composition",
+  "expected": {
+    "attempts": [
+      {
+        "meaningId": "mixed",
+        "outcome": "completed",
+        "publishedItemCount": 1,
+        "stepOrdinal": 1
+      },
+      {
+        "hasMore": true,
+        "meaningId": "mixed",
+        "outcome": "completed",
+        "publishedItemCount": 19,
+        "stepOrdinal": 2
+      },
+      {
+        "hasMore": false,
+        "meaningId": "mixed",
+        "outcome": "completed",
+        "publishedItemCount": 3,
+        "stepOrdinal": 3
+      }
+    ],
+    "returnedItemCount": 23,
+    "status": "completed",
+    "terminal": "result"
+  },
+  "scenarioIds": [
+    "execution-mixed-composition"
+  ],
+  "schemaVersion": 2,
+  "semanticCaseId": "development-execution-mixed-composition"
+}

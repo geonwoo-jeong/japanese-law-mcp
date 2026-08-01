@@ -1,0 +1,20 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-input-03",
+  "leakageGroupId": "lqg-topic-a8cd20dc47afb40863a6d568e0fa5cb988755ee8c6abc04e",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "港則に関する法令\u0001を検索してください。"
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}

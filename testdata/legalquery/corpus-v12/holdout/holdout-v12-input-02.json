@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-input-02",
+  "leakageGroupId": "lqg-law-501co0000000170",
+  "coverageIds": [
+    "input-limit-maximum-accepted"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "成育基本法施行令を、一回の取得上限二十件で法令名検索してください。",
+    "limitPerAttempt": 20
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "成育過程にある者及びその保護者並びに妊産婦に対し必要な成育医療等を切れ目なく提供するための施策の総合的な推進に関する法律施行令"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

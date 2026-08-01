@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-structure-13",
+  "leakageGroupId": "lqg-law-333co0000000045",
+  "coverageIds": [
+    "structure-complete-date"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "2024年10月6日時点の中小企業団体法施行令を法令名で検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "dated-law-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "中小企業団体の組織に関する法律施行令",
+              "asOf": "2024-10-06"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  }
+}

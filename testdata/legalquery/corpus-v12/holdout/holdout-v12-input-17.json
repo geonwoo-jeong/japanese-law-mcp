@@ -1,0 +1,21 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-input-17",
+  "leakageGroupId": "lqg-topic-bc0a7f97269276e452ad641eefb39636a8cf254709a7a025",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "海上運送の規制法令を探してください。",
+    "limitPerAttempt": 144
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

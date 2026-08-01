@@ -1,0 +1,57 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-structure-15",
+  "leakageGroupId": "lqg-law-335m50000002060",
+  "coverageIds": [
+    "structure-paragraph"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令ID 335M50000002060 の第29条第5項を確認したいです。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "paragraph-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "335M50000002060",
+              "location": {
+                "provision": "main",
+                "articleNumber": "29",
+                "paragraphNumber": 5
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "paragraph-read"
+    ]
+  }
+}

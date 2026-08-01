@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-budget-20",
+  "leakageGroupId": "lqg-ls-6eb6fe89af7c3ab2c23b0acdb2cd9bd6c351b34548aa89681df5b997",
+  "coverageIds": [
+    "budget-ranked-candidate-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "銃刀法推薦数規則と公拡法のどちらを指すか不明なので、候補を順位付きで示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "candidate-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "銃砲刀剣類所持等取締法第四条第一項第四号に規定する政令で定める者が行なう推薦の数を定める規則"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "candidate-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "公有地の拡大の推進に関する法律"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "candidate-1",
+      "candidate-2"
+    ]
+  }
+}

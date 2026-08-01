@@ -224,6 +224,7 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 | 次 cycle corpus-v11 | 2026-08-01 | 9.0 / 10（testability 9.0 / 10） | 9.0 / 10 | 0 | schema version 2、development 43 件、独立生成した holdout 251 件、execution 8 件、安定 leakage group 139 件、消費済み `corpus-v10` manifest との digest 非交差、alias 衝突・曖昧性・pack 有無・実事件参照・表記揺れ・誤記・v2 境界の代表意味、再現性および不変性。`default-4` と holdout 実行は対象外 |
 | 次 cycle 4.3 | 2026-08-01 | 9.2 / 10（testability 9.0 / 10） | 9.0 / 10 | 0 | `corpus-v11` development だけによる `core-38` と profile set の校正、四十三件 scorecard と fingerprint、pending current と完了済み replay の外部参照検証分離。holdout 非参照 |
 | 次 cycle 4.4 準備 | 2026-08-01 | architecture 10.0 / 10（testability 9.6 / 10） | — | 0 | exact candidate content、二件の content-bound review、`corpus-v11` / `default-4` request、未評価 current pointer。候補 command、report、result、failed report および baseline は未生成 |
+| 再準備 cycle corpus-v12 | 2026-08-01 | semantic 9.5 / 10 | testability・security 8.3 / 10 | 0 | schema version 2、development 43 件、独立生成した holdout 251 件、execution 8 件、安定 leakage group 204 件、`corpus-v10`・`corpus-v11` との holdout・leakage・正規化意味群の非交差、v11 からの development・execution byte 継承、再現性および不変性。候補 request と holdout 実行は対象外 |
 
 4.4 の最終 security review で残った非 blocker のうち、非 `GO*` 環境の継承は、
 4.5 の bootstrap が `PATH`、`GOROOT`、`GOMODCACHE`、`GOCACHE`、`TMPDIR` と固定
@@ -292,6 +293,7 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 次 cycle 4.3 | 完了 | `corpus-v11` development だけによる `core-38` と固定 profile set の校正 |
 | 次 cycle 4.4 | 不確定終了（再実行禁止） | exact candidate content、二件の review attestation、`default-4` request および pending pointer。専用 CI は artifact なしで非零終了し、report 完成前とは証明できない |
 | 次 cycle 診断契約 | 草案 review 完了 | `SOT-ENG-040` の report 完成境界、閉じた終了 code、privacy、unknown の fail-closed および coordinated adoption 条件 |
+| 再準備 cycle 4.2 | 完了 | `corpus-v12` の独立 holdout、過去の `corpus-v10` と `corpus-v11` からの leakage 分離、再現性および不変 byte の固定 |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -314,6 +316,17 @@ child 開始前の `worker_start` と開始後の `unknown` の厳密分離、re
 privacy 同期が未完了である。これらを修正する実装や新しい manual dispatch は、
 草案の採用条件、新しい holdout、別 request とその content-bound review を同じ順序で
 準備する後続作業まで行わない。
+
+再準備 cycle の第 4.2 段階として、`corpus-v12` を独立変更で準備した。
+development 四十三件と execution 八件は `corpus-v11` から byte を変えずに継承し、
+holdout 二百五十一件と leakage group 二百四件を新しく固定した。holdout digest は
+`6cd334e801499b0fe7de55532afb4c32254af4e66cc69e4922b71f38124fbfc0` である。
+`corpus-v10` と `corpus-v11` の holdout digest、leakage group digest および
+正規化した request と期待意味の組との交差を拒否し、最初の review で見つかった
+過去の空入力意味群の再ラベル付けを別の入力境界へ置き換えた。再 review は semantic
+9.5 / 10、testability・security 8.3 / 10、blocker 0 で通過した。この変更では
+profile、辞書、候補 request、pointer、report、result、baseline および manual workflow を
+変更または実行していない。
 
 ## 段階の境界
 

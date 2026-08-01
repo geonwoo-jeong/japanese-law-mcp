@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v12-unsupported-02",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-topic-genetic-data-consent-decision",
+  "request": {
+    "query": "研究機関から届いた遺伝情報提供の同意書に応じてよいか判断してください。"
+  },
+  "schemaVersion": 2
+}

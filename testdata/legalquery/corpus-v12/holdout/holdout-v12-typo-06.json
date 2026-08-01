@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-typo-06",
+  "leakageGroupId": "lqg-law-338m50000040025",
+  "coverageIds": [
+    "typo-deletion"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "戦没者妻特給法第四条第二項の規定によ発行する国債の発行交付等に関する省令という名前の法令を確認したいです。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "戦没者等の妻に対する特別給付金支給法第四条第二項の規定により発行する国債の発行交付等に関する省令"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

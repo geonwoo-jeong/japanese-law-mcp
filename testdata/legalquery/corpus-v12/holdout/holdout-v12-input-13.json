@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-input-13",
+  "leakageGroupId": "lqg-topic-01e6d3a3b2e38bb3ea0b770cc1754b580e2aeed363bbf79d",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "付与した資源参照の本文を取得してください。",
+    "ref": {
+      "providerId": "-court-records",
+      "key": {
+        "sourceId": "court-records",
+        "resourceType": "judicial-decision",
+        "resourceId": "case-2026-0812"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

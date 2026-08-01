@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v12-reference-18",
+  "leakageGroupId": "lqg-law-331m50000800003",
+  "coverageIds": [
+    "reference-law-number"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令番号が「昭和三十一年運輸省令第三号」の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-number-search",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "昭和三十一年運輸省令第三号"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-number-search"
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-execution-all-failed",
+  "coverageIds": [
+    "ambiguity-multiple-concepts",
+    "intent-law-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "hedged",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "general_term"
+        ],
+        "meaningId": "law-name",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "供託"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "general_term"
+        ],
+        "meaningId": "law-provision",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "供託"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "hedged_close_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-name",
+      "law-provision"
+    ]
+  },
+  "leakageGroupId": "development-execution-all-failed",
+  "request": {
+    "query": "実行検証用に供託を法令名と条文の二候補で検索してください。"
+  },
+  "schemaVersion": 2
+}
