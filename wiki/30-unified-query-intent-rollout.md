@@ -290,7 +290,30 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 4.5 | 完了（`outcome=failed`、holdout 消費済み） | 一回の holdout 判定、変更不能な result と `default-3` の failed history handoff、権威 CI および tracked byte replay |
 | 次 cycle 4.2 | 完了 | 過去の全評価と leakage group が交差しない `corpus-v11` の独立準備 |
 | 次 cycle 4.3 | 完了 | `corpus-v11` development だけによる `core-38` と固定 profile set の校正 |
-| 次 cycle 4.4 | 準備済み（未評価） | exact candidate content、二件の review attestation、`default-4` request および pending pointer。評価出力は未生成 |
+| 次 cycle 4.4 | 不確定終了（再実行禁止） | exact candidate content、二件の review attestation、`default-4` request および pending pointer。専用 CI は artifact なしで非零終了し、report 完成前とは証明できない |
+| 次 cycle 診断契約 | 草案 review 完了 | `SOT-ENG-040` の report 完成境界、閉じた終了 code、privacy、unknown の fail-closed および coordinated adoption 条件 |
+
+### `default-4` の不確定終了と診断契約
+
+`default-4` は準備 commit `eccc9c5866f10405c26db165ce968d44d5324c21` に対する
+manual workflow `30688691089` で一回起動した。worker command は generic な
+非零終了となり、report/result artifact は upload されなかった。ただし artifact の
+欠落だけでは、構造上有効な report の完成前に失敗したとは証明できない。したがって
+同じ `evaluationId` を再実行せず、`default-4`、`corpus-v11` の holdout digest および
+全 leakage group digest を後続 request で再利用しない。
+
+失敗位置を query、fixture、case ID または内部 error 本文なしで判別する設計は、
+`SOT-ENG-040` の草案に分離した。初回レビューは `4.0 / 10`、blocker 一件であり、
+`SOT-ENG-038` の CI log privacy と不確定 retry 条件の衝突を指摘された。修正後の
+独立レビューは `9.0 / 10` と `9.2 / 10`、いずれも blocker 零、major 零となった。
+
+診断実装の先行 commit `b69da4f`、`cce4d0a`、`c69d0dc` および `60326c2` は、
+この草案の採用完了とは扱わない。現時点では少なくとも、失敗 stdout/stderr の空化、
+child 開始前の `worker_start` と開始後の `unknown` の厳密分離、report と result の
+直列化失敗を完成境界の前後へ正しく分類する検証、および active `SOT-ENG-038` の
+privacy 同期が未完了である。これらを修正する実装や新しい manual dispatch は、
+草案の採用条件、新しい holdout、別 request とその content-bound review を同じ順序で
+準備する後続作業まで行わない。
 
 ## 段階の境界
 
