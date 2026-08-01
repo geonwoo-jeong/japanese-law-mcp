@@ -279,7 +279,7 @@ func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
 func TestPreparedHandoffParsesWorkerExitStatusWithoutLeakingRawStderr(t *testing.T) {
 	t.Parallel()
 
-	secret := "永住許可 /private/path redacted-marker"
+	forbiddenSample := "永住許可 /private/path redacted-marker"
 	_, err := preparedHandoffWithRunner(
 		context.Background(),
 		fixedOutputDirectory,
@@ -299,7 +299,7 @@ func TestPreparedHandoffParsesWorkerExitStatusWithoutLeakingRawStderr(t *testing
 		fixedOutputDirectory,
 		fixedEnvironment(),
 		func(_ context.Context, _ []string, _ []string, _ io.Writer, stderr io.Writer) error {
-			_, _ = io.WriteString(stderr, secret+"\nexit status 18\n")
+			_, _ = io.WriteString(stderr, forbiddenSample+"\nexit status 18\n")
 			return errors.New("go run failed")
 		},
 		func(string) (candidateHandoff, error) {
@@ -311,7 +311,7 @@ func TestPreparedHandoffParsesWorkerExitStatusWithoutLeakingRawStderr(t *testing
 	if !errors.As(err, &failed) || failed.FailureExitCode() != workerFailureHandoffWrite {
 		t.Fatalf("%s: err=%v, want code %d", verificationOutcomeExit, err, workerFailureHandoffWrite)
 	}
-	if strings.Contains(err.Error(), secret) {
+	if strings.Contains(err.Error(), forbiddenSample) {
 		t.Fatalf("%s: raw stderr secret が error に残りました", verificationOutputPrivacy)
 	}
 }

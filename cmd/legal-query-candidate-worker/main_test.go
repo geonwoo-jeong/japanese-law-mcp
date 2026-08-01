@@ -33,7 +33,7 @@ func (e codedFailure) FailureExitCode() int {
 func TestRunは段階別失敗Codeだけを返す(t *testing.T) {
 	t.Parallel()
 
-	secret := "secret-query 永住許可 /private/path redacted-marker"
+	forbiddenSample := "sample-query 永住許可 /private/path redacted-marker"
 	var stdout, stderr bytes.Buffer
 	code := run(
 		context.Background(),
@@ -46,7 +46,7 @@ func TestRunは段階別失敗Codeだけを返す(t *testing.T) {
 		func(context.Context, legalquerycandidateworker.Input) (legalquerycandidateworker.Handoff, error) {
 			return legalquerycandidateworker.Handoff{}, codedFailure{
 				code: legalquerycandidateworker.FailureCodeHandoffWrite,
-				err:  errors.New(secret),
+				err:  errors.New(forbiddenSample),
 			}
 		},
 	)
@@ -60,7 +60,7 @@ func TestRunは段階別失敗Codeだけを返す(t *testing.T) {
 	if !strings.Contains(output, "候補評価 worker を正常に完了できませんでした") {
 		t.Fatalf("stderr=%q, want generic failure", output)
 	}
-	if strings.Contains(output, secret) {
+	if strings.Contains(output, forbiddenSample) {
 		t.Fatalf("stderr leaked secret: %q", output)
 	}
 }
