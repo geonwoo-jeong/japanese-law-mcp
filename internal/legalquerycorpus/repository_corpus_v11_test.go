@@ -13,9 +13,9 @@ const (
 	repositoryCorpusV11Holdout        = 251
 	repositoryCorpusV11Execution      = 8
 	repositoryCorpusV11LeakageDigests = 139
-	repositoryCorpusV11HoldoutDigest  = "91b9c85930dcebd8bd5f58e414ac3289de535e913270c0821aa6ac92432fff93"
-	repositoryCorpusV11ManifestSHA256 = "28b937b561effee8674f40981208698fc3287e85ffcd1caa1167f7c7636ec8b7"
-	repositoryCorpusV11TreeSHA256     = "4fb2ac82ed97fc81920e567c9c687bb471c943f4c6b6d5e04c6c0090f89950ff"
+	repositoryCorpusV11HoldoutDigest  = "a3574dd0271a6ec66761270e869c80144aef72910c64919a8561d90f0592ce30"
+	repositoryCorpusV11ManifestSHA256 = "080d2a5b6d1d51c01a24b6cdbc6c923d76b77df3740a6cb075b80d650a966d48"
+	repositoryCorpusV11TreeSHA256     = "f05c7086ee934e2ea6404455638c2398a95c4c663fbf1236c977db693e3a588b"
 )
 
 func TestRepositoryCorpusV11は消費済みHoldoutから分離する(t *testing.T) {
