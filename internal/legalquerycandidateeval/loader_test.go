@@ -256,6 +256,9 @@ func prepareCandidateEvaluationFixture(t *testing.T, root string) EvaluationRequ
 			t.Fatalf("candidate evaluation test directory を作れません: %v", err)
 		}
 	}
+	if err := os.MkdirAll(filepath.Join(root, "testdata/legalquery/baselines/versions"), 0o750); err != nil {
+		t.Fatalf("candidate evaluation baseline test directory を作れません: %v", err)
+	}
 	writeCandidateFixture(t, root, filepath.Join(base, "schema-v2.json"), CanonicalSchemaV2())
 	manifest := manifestWithID(t)
 	architecture := validReviewAttestation(t, manifest, ReviewScopeArchitecture, "authority-a")

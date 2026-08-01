@@ -17,6 +17,8 @@ import (
 const (
 	verificationCIAuthority       = "candidate-evaluation-ci-authority"
 	verificationBuildIsolation    = "candidate-evaluation-build-context-isolation"
+	verificationOutcomeExit       = "candidate-evaluation-outcome-exit-semantics"
+	verificationOutputPrivacy     = "candidate-evaluation-output-privacy"
 	verificationProductionBlocked = "candidate-evaluation-production-unreachable"
 )
 
@@ -85,12 +87,18 @@ func TestFixedBuildEnvironment(t *testing.T) {
 	}
 }
 
-func TestFixedBuildEnvironmentRejectsDriftAndHiddenGoState(t *testing.T) {
+func TestChildWorkerEnvironmentRejectsDriftAndAmbientState(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]func([]string) []string{
 		"必須値の欠落": func(values []string) []string {
 			return withoutEnvironment(values, "GOWORK")
+		},
+		"PATH の欠落": func(values []string) []string {
+			return withoutEnvironment(values, "PATH")
+		},
+		"TMPDIR の欠落": func(values []string) []string {
+			return withoutEnvironment(values, "TMPDIR")
 		},
 		"必須値の差": func(values []string) []string {
 			return replaceEnvironment(values, "GOARCH", "arm64")
@@ -107,8 +115,35 @@ func TestFixedBuildEnvironmentRejectsDriftAndHiddenGoState(t *testing.T) {
 		"private proxy": func(values []string) []string {
 			return append(values, "GOPRIVATE=example.invalid")
 		},
+		"HOME": func(values []string) []string {
+			return append(values, "HOME=/home/runner")
+		},
+		"credential": func(values []string) []string {
+			return append(values, "CANDIDATE_TEST_TOKEN=credential-test-value")
+		},
+		"任意の環境変数": func(values []string) []string {
+			return append(values, "LANG=ja_JP.UTF-8")
+		},
+		"不正な環境 entry": func(values []string) []string {
+			return append(values, "MALFORMED")
+		},
 		"重複 key": func(values []string) []string {
 			return append(values, "GOOS=linux")
+		},
+		"相対 PATH": func(values []string) []string {
+			return replaceEnvironment(values, "PATH", "/opt/go/bin:bin")
+		},
+		"相対 GOROOT": func(values []string) []string {
+			return replaceEnvironment(values, "GOROOT", "opt/go")
+		},
+		"相対 GOMODCACHE": func(values []string) []string {
+			return replaceEnvironment(values, "GOMODCACHE", "tmp/modcache")
+		},
+		"相対 GOCACHE": func(values []string) []string {
+			return replaceEnvironment(values, "GOCACHE", "tmp/buildcache")
+		},
+		"相対 TMPDIR": func(values []string) []string {
+			return replaceEnvironment(values, "TMPDIR", "tmp/candidate")
 		},
 	}
 	for name, mutate := range cases {
@@ -122,32 +157,89 @@ func TestFixedBuildEnvironmentRejectsDriftAndHiddenGoState(t *testing.T) {
 	}
 }
 
-func TestPreparedBoundaryNeverProducesEvaluation(t *testing.T) {
+func TestRunReturnsSuccessForPassedAndFailedHandoffs(t *testing.T) {
+	t.Parallel()
+
+	cases := []candidateHandoff{
+		{
+			EvaluationID: "evaluation-sha256-" + strings.Repeat("a", 64),
+			Outcome:      "passed",
+			ReportSHA256: strings.Repeat("b", 64),
+		},
+		{
+			EvaluationID: "evaluation-sha256-" + strings.Repeat("c", 64),
+			Outcome:      "failed",
+			ReportSHA256: strings.Repeat("d", 64),
+		},
+	}
+	for _, handoff := range cases {
+		handoff := handoff
+		t.Run(handoff.Outcome, func(t *testing.T) {
+			t.Parallel()
+
+			var stdout, stderr bytes.Buffer
+			code := run(
+				fixedArguments(),
+				fixedEnvironment(),
+				&stdout,
+				&stderr,
+				func(candidateOptions) (candidateHandoff, error) {
+					return handoff, nil
+				},
+			)
+			if code != exitSuccess {
+				t.Fatalf("%s: outcome=%s exit code=%d, want %d", verificationOutcomeExit, handoff.Outcome, code, exitSuccess)
+			}
+			if stderr.Len() != 0 {
+				t.Fatalf("%s: outcome=%s stderr=%q, want empty", verificationOutcomeExit, handoff.Outcome, stderr.String())
+			}
+		})
+	}
+}
+
+func TestRunReturnsNonZeroOnlyForInfrastructureFailure(t *testing.T) {
 	t.Parallel()
 
 	var stdout, stderr bytes.Buffer
 	code := run(
-		[]string{
-			"--repository=.",
-			"--output-directory=./.artifacts/legal-query-candidate-evaluation",
-		},
+		fixedArguments(),
 		fixedEnvironment(),
 		&stdout,
 		&stderr,
-		preparedHandoff,
+		func(candidateOptions) (candidateHandoff, error) {
+			return candidateHandoff{}, errors.New("worker infrastructure failure")
+		},
 	)
-	if code != exitValidation {
-		t.Fatalf("%s: exit code = %d, want %d", verificationProductionBlocked, code, exitValidation)
+	if code == exitSuccess {
+		t.Fatalf("%s: infrastructure failure が exit 0 になりました", verificationOutcomeExit)
 	}
-	if stdout.Len() != 0 {
-		t.Fatalf("%s: stdout = %q, want empty", verificationProductionBlocked, stdout.String())
+}
+
+func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
+	t.Parallel()
+
+	sensitive := []string{
+		"永住許可の条件を教えて",
+		"/home/runner/private/verified-source",
+		"credential-test-value-do-not-use",
 	}
-	if !errors.Is(preparedHandoff(candidateOptions{}), errWorkerNotConnected) {
-		t.Fatalf("%s: prepared handoff が固定 sentinel を返しません", verificationProductionBlocked)
+	var stdout, stderr bytes.Buffer
+	code := run(
+		fixedArguments(),
+		fixedEnvironment(),
+		&stdout,
+		&stderr,
+		func(candidateOptions) (candidateHandoff, error) {
+			return candidateHandoff{}, errors.New(strings.Join(sensitive, " "))
+		},
+	)
+	if code == exitSuccess {
+		t.Fatalf("%s: worker failure が exit 0 になりました", verificationOutputPrivacy)
 	}
-	for _, forbidden := range []string{"report.json", "result.json", "holdout"} {
-		if strings.Contains(stderr.String(), forbidden) {
-			t.Fatalf("%s: stderr に非公開情報 %q が含まれます", verificationProductionBlocked, forbidden)
+	output := stdout.String() + stderr.String()
+	for _, forbidden := range sensitive {
+		if strings.Contains(output, forbidden) {
+			t.Errorf("%s: stdout/stderr に非公開値が含まれます", verificationOutputPrivacy)
 		}
 	}
 }
@@ -156,9 +248,9 @@ func TestRunRejectsBeforeExecutor(t *testing.T) {
 	t.Parallel()
 
 	called := false
-	executor := func(candidateOptions) error {
+	executor := func(candidateOptions) (candidateHandoff, error) {
 		called = true
-		return nil
+		return candidateHandoff{}, nil
 	}
 	var stdout, stderr bytes.Buffer
 	code := run(
@@ -315,10 +407,55 @@ func TestManualWorkflowContract(t *testing.T) {
 			t.Errorf("%s: action が完全な commit SHA で固定されていません: %s", verificationCIAuthority, trimmed)
 		}
 	}
+
+	moduleStepName := "- name: 固定 module archive を準備する"
+	workerStepName := "- name: 閉じた候補評価 command を実行する"
+	moduleStep := workflowStep(text, moduleStepName)
+	workerStep := workflowStep(text, workerStepName)
+	if moduleStep == "" || workerStep == "" ||
+		strings.Index(text, moduleStepName) >= strings.Index(text, workerStepName) {
+		t.Errorf("%s: module 準備が閉じた worker 実行より前にありません", verificationBuildIsolation)
+	}
+	if !strings.Contains(moduleStep, "chmod -R a-w") {
+		t.Errorf("%s: module 準備物を worker 実行前に read-only にしていません", verificationBuildIsolation)
+	}
+	for _, fragment := range []string{
+		"env -i",
+		"PATH=\"$PATH\"",
+		"GOROOT=\"$CANDIDATE_GOROOT\"",
+		"GOMODCACHE=\"$CANDIDATE_GOMODCACHE\"",
+		"GOCACHE=\"$CANDIDATE_GOCACHE\"",
+		"TMPDIR=\"$CANDIDATE_TMPDIR\"",
+		"GOPROXY=off",
+	} {
+		if !strings.Contains(workerStep, fragment) {
+			t.Errorf("%s: 閉じた worker step に %q がありません", verificationBuildIsolation, fragment)
+		}
+	}
+
+	uploadStep := workflowStep(text, "- name: 候補評価 handoff を保存する")
+	exactUploadPaths := "path: |\n" +
+		"            ./.artifacts/legal-query-candidate-evaluation/*/report.json\n" +
+		"            ./.artifacts/legal-query-candidate-evaluation/*/result.json"
+	if !strings.Contains(uploadStep, exactUploadPaths) {
+		t.Errorf("%s: workflow artifact は同じ評価 directory の report/result 二 file だけを upload しなければなりません", verificationCIAuthority)
+	}
+}
+
+func fixedArguments() []string {
+	return []string{
+		"--repository=.",
+		"--output-directory=./.artifacts/legal-query-candidate-evaluation",
+	}
 }
 
 func fixedEnvironment() []string {
 	return []string{
+		"PATH=/opt/go/bin:/usr/bin",
+		"GOROOT=/opt/go",
+		"GOMODCACHE=/tmp/modcache",
+		"GOCACHE=/tmp/buildcache",
+		"TMPDIR=/tmp/candidate",
 		"GOWORK=off",
 		"GOENV=off",
 		"GOTOOLCHAIN=local",
@@ -331,10 +468,20 @@ func fixedEnvironment() []string {
 		"GOEXPERIMENT=",
 		"CGO_ENABLED=0",
 		"GOMAXPROCS=1",
-		"GOROOT=/opt/go",
-		"GOMODCACHE=/tmp/modcache",
-		"GOCACHE=/tmp/buildcache",
 	}
+}
+
+func workflowStep(workflow, name string) string {
+	start := strings.Index(workflow, name)
+	if start < 0 {
+		return ""
+	}
+	rest := workflow[start:]
+	next := strings.Index(rest[len(name):], "\n      - name:")
+	if next < 0 {
+		return rest
+	}
+	return rest[:len(name)+next]
 }
 
 func withoutEnvironment(values []string, key string) []string {

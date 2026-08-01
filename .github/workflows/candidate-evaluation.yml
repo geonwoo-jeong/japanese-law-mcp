@@ -73,8 +73,54 @@ jobs:
           check-latest: false
           cache: false
 
-      # SOT-ENG-038: 第4.4段階では通常 CI から到達せず、手動 dispatch も実行しない。
-      # 第4.5段階で閉じた worker registry と archive staging を接続してから一回だけ実行する。
+      - name: 固定 module archive を準備する
+        shell: bash
+        run: |
+          set -euo pipefail
+          CANDIDATE_GOMODCACHE="$RUNNER_TEMP/candidate-module-cache"
+          install -d -m 0700 "$CANDIDATE_GOMODCACHE"
+          EVALUATION_ID="$(jq -er '.evaluationId' testdata/legalquery/candidate-evaluations/current.json)"
+          if [[ ! "$EVALUATION_ID" =~ ^evaluation-sha256-[0-9a-f]{64}$ ]]; then
+            echo "候補評価 pointer の evaluation ID が不正です。" >&2
+            exit 1
+          fi
+          REQUEST_PATH="testdata/legalquery/candidate-evaluations/requests/${EVALUATION_ID}.json"
+          CONTENT_ID="$(jq -er '.candidateContentId' "$REQUEST_PATH")"
+          if [[ ! "$CONTENT_ID" =~ ^candidate-content-sha256-[0-9a-f]{64}$ ]]; then
+            echo "候補評価 request の candidate content ID が不正です。" >&2
+            exit 1
+          fi
+          MANIFEST_PATH="testdata/legalquery/candidate-evaluations/content-manifests/${CONTENT_ID}.json"
+          mapfile -t CONTENT_MODULES < <(jq -er '.semanticSourceSet.moduleDependencies[] | "\(.modulePath)@\(.version)"' "$MANIFEST_PATH")
+          if [[ "${#CONTENT_MODULES[@]}" -gt 1024 ]]; then
+            echo "候補 content manifest の module 集合が上限を超えています。" >&2
+            exit 1
+          fi
+          WORKER_REGISTRY_MODULES=(
+            "github.com/google/jsonschema-go@v0.4.3"
+            "golang.org/x/mod@v0.38.0"
+          )
+          env -i \
+            PATH="$PATH" \
+            GOMODCACHE="$CANDIDATE_GOMODCACHE" \
+            GOWORK=off GOENV=off GOTOOLCHAIN=local \
+            GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+            GOFLAGS='-mod=readonly -buildvcs=false' \
+            go mod download "${CONTENT_MODULES[@]}" "${WORKER_REGISTRY_MODULES[@]}"
+          while IFS=$'\t' read -r MODULE_PATH VERSION ZIP_SHA ZIP_BYTES MOD_SHA; do
+            ARCHIVE_ROOT="$CANDIDATE_GOMODCACHE/cache/download/$MODULE_PATH/@v"
+            ZIP_PATH="$ARCHIVE_ROOT/$VERSION.zip"
+            MOD_PATH="$ARCHIVE_ROOT/$VERSION.mod"
+            if [[ ! -f "$ZIP_PATH" || ! -f "$MOD_PATH" ||
+                  "$(sha256sum "$ZIP_PATH" | cut -d' ' -f1)" != "$ZIP_SHA" ||
+                  "$(stat -c '%s' "$ZIP_PATH")" != "$ZIP_BYTES" ||
+                  "$(sha256sum "$MOD_PATH" | cut -d' ' -f1)" != "$MOD_SHA" ]]; then
+              echo "候補 content manifest の module archive identity が一致しません。" >&2
+              exit 1
+            fi
+          done < <(jq -er '.semanticSourceSet.moduleDependencies[] | [.modulePath,.version,.moduleZipRawSha256,(.moduleZipByteLength|tostring),.moduleGoModRawSha256] | @tsv' "$MANIFEST_PATH")
+          chmod -R a-w "$CANDIDATE_GOMODCACHE"
+
       - name: 閉じた候補評価 command を実行する
         shell: bash
         run: |
@@ -83,7 +129,7 @@ jobs:
           CANDIDATE_GOMODCACHE="$RUNNER_TEMP/candidate-module-cache"
           CANDIDATE_GOCACHE="$RUNNER_TEMP/candidate-build-cache"
           CANDIDATE_TMPDIR="$RUNNER_TEMP/candidate-tmp"
-          install -d -m 0700 "$CANDIDATE_GOMODCACHE" "$CANDIDATE_GOCACHE" "$CANDIDATE_TMPDIR"
+          install -d -m 0700 "$CANDIDATE_GOCACHE" "$CANDIDATE_TMPDIR"
           env -i \
             PATH="$PATH" \
             GOROOT="$CANDIDATE_GOROOT" \
@@ -150,7 +196,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: candidate-evaluation-${{ inputs.preparation_commit }}
-          path: ./.artifacts/legal-query-candidate-evaluation
+          path: |
+            ./.artifacts/legal-query-candidate-evaluation/*/report.json
+            ./.artifacts/legal-query-candidate-evaluation/*/result.json
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1

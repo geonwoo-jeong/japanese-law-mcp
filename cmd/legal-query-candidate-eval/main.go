@@ -1,16 +1,20 @@
 // legal-query-candidate-eval は、統合照会候補を CI へ handoff する専用 bootstrap である。
 //
-// 第 4 段階 4 では引数と build context だけを固定し、第 4 段階 5 の閉じた worker
-// registry が接続されるまで候補評価を開始しない。
+// 第 4 段階 5 では引数と環境を固定し、候補評価 worker の公開可能な handoff だけを返す。
 package main
 
 import (
-	"errors"
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -22,14 +26,18 @@ const (
 	exitUsage      = 2
 )
 
-var errWorkerNotConnected = errors.New("第4.5段階の閉じた worker registry は未接続です")
-
 type candidateOptions struct {
 	Repository      string
 	OutputDirectory string
 }
 
-type candidateExecutor func(candidateOptions) error
+type candidateHandoff struct {
+	EvaluationID string
+	Outcome      string
+	ReportSHA256 string
+}
+
+type candidateExecutor func(candidateOptions) (candidateHandoff, error)
 
 func main() {
 	os.Exit(run(
@@ -60,12 +68,47 @@ func run(
 		_, _ = fmt.Fprintln(stderr, "候補評価 bootstrap の実行境界がありません")
 		return exitValidation
 	}
-	if err := execute(options); err != nil {
-		_, _ = fmt.Fprintf(stderr, "候補評価 bootstrap は準備状態です: %v\n", err)
+	handoff, err := execute(options)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "候補評価 worker を正常に完了できませんでした")
 		return exitValidation
 	}
-	_, _ = fmt.Fprintln(stdout, "候補評価 handoff が完了しました")
+	if err := validateCandidateHandoff(handoff); err != nil {
+		_, _ = fmt.Fprintln(stderr, "候補評価 worker の handoff が不正です")
+		return exitValidation
+	}
+	_, _ = fmt.Fprintf(
+		stdout,
+		"evaluationId=%s outcome=%s reportSha256=%s\n",
+		handoff.EvaluationID,
+		handoff.Outcome,
+		handoff.ReportSHA256,
+	)
 	return exitSuccess
+}
+
+func validateCandidateHandoff(handoff candidateHandoff) error {
+	if !strings.HasPrefix(handoff.EvaluationID, "evaluation-sha256-") ||
+		len(handoff.EvaluationID) != len("evaluation-sha256-")+64 ||
+		!lowerHex(handoff.EvaluationID[len("evaluation-sha256-"):]) {
+		return fmt.Errorf("evaluationId が不正です")
+	}
+	if handoff.Outcome != "passed" && handoff.Outcome != "failed" {
+		return fmt.Errorf("outcome が不正です")
+	}
+	if len(handoff.ReportSHA256) != 64 || !lowerHex(handoff.ReportSHA256) {
+		return fmt.Errorf("reportSha256 が不正です")
+	}
+	return nil
+}
+
+func lowerHex(value string) bool {
+	for _, character := range value {
+		if (character < '0' || character > '9') && (character < 'a' || character > 'f') {
+			return false
+		}
+	}
+	return true
 }
 
 func parseFixedArguments(args []string) (candidateOptions, error) {
@@ -117,13 +160,22 @@ func validateBuildEnvironment(environment []string) error {
 			return fmt.Errorf("%s は固定値 %q と一致しません", expected.key, expected.value)
 		}
 	}
-	for _, key := range []string{"GOROOT", "GOMODCACHE", "GOCACHE"} {
+	for _, key := range []string{"GOROOT", "GOMODCACHE", "GOCACHE", "TMPDIR"} {
 		value, ok := values[key]
 		if !ok || value == "" {
-			continue
+			return fmt.Errorf("%s が設定されていません", key)
 		}
 		if strings.ContainsRune(value, '\x00') || !filepath.IsAbs(value) {
 			return fmt.Errorf("%s は絶対 path でなければなりません", key)
+		}
+	}
+	pathValue, ok := values["PATH"]
+	if !ok || pathValue == "" {
+		return fmt.Errorf("PATH が設定されていません")
+	}
+	for _, entry := range filepath.SplitList(pathValue) {
+		if entry == "" || strings.ContainsRune(entry, '\x00') || !filepath.IsAbs(entry) {
+			return fmt.Errorf("PATH の各要素は絶対 path でなければなりません")
 		}
 	}
 	return nil
@@ -134,20 +186,17 @@ func closedGoEnvironment(environment []string) (map[string]string, error) {
 		"GOWORK": {}, "GOENV": {}, "GOTOOLCHAIN": {}, "GOPROXY": {},
 		"GOSUMDB": {}, "GOFLAGS": {}, "GOOS": {}, "GOARCH": {},
 		"GOAMD64": {}, "GOEXPERIMENT": {}, "CGO_ENABLED": {}, "GOMAXPROCS": {},
-		"GOROOT": {}, "GOMODCACHE": {}, "GOCACHE": {},
+		"PATH": {}, "GOROOT": {}, "GOMODCACHE": {}, "GOCACHE": {}, "TMPDIR": {},
 	}
 	result := make(map[string]string, len(allowed))
 	for _, entry := range environment {
 		key, value, found := strings.Cut(entry, "=")
 		if !found {
-			continue
+			return nil, fmt.Errorf("形式が不正な環境変数があります")
 		}
 		_, relevant := allowed[key]
-		if !relevant && !strings.HasPrefix(key, "GO") {
-			continue
-		}
 		if !relevant {
-			return nil, fmt.Errorf("許可されていない Go 環境変数 %s があります", key)
+			return nil, fmt.Errorf("許可されていない環境変数 %s があります", key)
 		}
 		if _, duplicate := result[key]; duplicate {
 			return nil, fmt.Errorf("環境変数 %s が重複しています", key)
@@ -157,6 +206,102 @@ func closedGoEnvironment(environment []string) (map[string]string, error) {
 	return result, nil
 }
 
-func preparedHandoff(candidateOptions) error {
-	return errWorkerNotConnected
+func preparedHandoff(_ candidateOptions) (candidateHandoff, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
+	defer cancel()
+	command := exec.CommandContext(
+		ctx,
+		"go",
+		"run",
+		"./cmd/legal-query-candidate-worker",
+		"--repository="+fixedRepository,
+		"--output-directory="+fixedOutputDirectory,
+	)
+	command.Dir = fixedRepository
+	command.Env = append([]string(nil), os.Environ()...)
+	command.Stdin = strings.NewReader("")
+	command.Stdout = io.Discard
+	command.Stderr = io.Discard
+	if err := command.Run(); err != nil {
+		return candidateHandoff{}, fmt.Errorf("candidate worker を実行できません")
+	}
+	return readCandidateHandoff(fixedOutputDirectory)
+}
+
+type workerResultDocument struct {
+	ArtifactKind  string `json:"artifactKind"`
+	SchemaVersion int    `json:"schemaVersion"`
+	EvaluationID  string `json:"evaluationId"`
+	RequestSHA256 string `json:"requestSha256"`
+	Outcome       string `json:"outcome"`
+	ReportSHA256  string `json:"reportSha256"`
+}
+
+func readCandidateHandoff(outputRoot string) (candidateHandoff, error) {
+	rootInfo, err := os.Lstat(outputRoot)
+	if err != nil || rootInfo.Mode()&os.ModeSymlink != 0 || !rootInfo.IsDir() {
+		return candidateHandoff{}, fmt.Errorf("candidate output root が不正です")
+	}
+	entries, err := os.ReadDir(outputRoot)
+	if err != nil || len(entries) != 1 || !entries[0].IsDir() || entries[0].Type()&os.ModeSymlink != 0 {
+		return candidateHandoff{}, fmt.Errorf("candidate output entry が不正です")
+	}
+	evaluationID := entries[0].Name()
+	evaluationRoot := filepath.Join(outputRoot, evaluationID)
+	children, err := os.ReadDir(evaluationRoot)
+	if err != nil || len(children) != 2 ||
+		children[0].Name() != "report.json" || children[1].Name() != "result.json" {
+		return candidateHandoff{}, fmt.Errorf("candidate handoff file 集合が不正です")
+	}
+	for _, child := range children {
+		info, infoErr := child.Info()
+		if infoErr != nil || child.Type()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
+			return candidateHandoff{}, fmt.Errorf("candidate handoff file が不正です")
+		}
+	}
+
+	resultRaw, err := readBoundedFile(filepath.Join(evaluationRoot, "result.json"), 256<<10)
+	if err != nil {
+		return candidateHandoff{}, err
+	}
+	var result workerResultDocument
+	decoder := json.NewDecoder(strings.NewReader(string(resultRaw)))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&result); err != nil {
+		return candidateHandoff{}, fmt.Errorf("candidate result を decode できません")
+	}
+	reportRaw, err := readBoundedFile(filepath.Join(evaluationRoot, "report.json"), 4<<20)
+	if err != nil {
+		return candidateHandoff{}, err
+	}
+	reportDigest := sha256.Sum256(reportRaw)
+	handoff := candidateHandoff{
+		EvaluationID: result.EvaluationID,
+		Outcome:      result.Outcome,
+		ReportSHA256: result.ReportSHA256,
+	}
+	if result.ArtifactKind != "legal_query_candidate_evaluation_result" ||
+		result.SchemaVersion != 2 || result.EvaluationID != evaluationID ||
+		len(result.RequestSHA256) != 64 || !lowerHex(result.RequestSHA256) ||
+		result.ReportSHA256 != hex.EncodeToString(reportDigest[:]) {
+		return candidateHandoff{}, fmt.Errorf("candidate result binding が不正です")
+	}
+	if err := validateCandidateHandoff(handoff); err != nil {
+		return candidateHandoff{}, err
+	}
+	return handoff, nil
+}
+
+func readBoundedFile(path string, maximum int64) ([]byte, error) {
+	info, err := os.Lstat(path)
+	if err != nil || info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() ||
+		info.Size() < 1 || info.Size() > maximum {
+		return nil, fmt.Errorf("candidate handoff file の size が不正です")
+	}
+	//nolint:gosec // SOT-ENG-038: Lstat 済みの固定 handoff subtree 内通常 file だけを読む。
+	raw, err := os.ReadFile(path)
+	if err != nil || int64(len(raw)) != info.Size() {
+		return nil, fmt.Errorf("candidate handoff file を読めません")
+	}
+	return raw, nil
 }

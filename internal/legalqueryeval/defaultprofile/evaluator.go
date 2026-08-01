@@ -15,7 +15,14 @@ import (
 
 // Evaluator は、製品と同じ前処理器と default profile set を不変に保持する。
 type Evaluator struct {
-	planning legalqueryplanning.Dependencies
+	planning Planning
+}
+
+// Planning は、標準または候補の固定 profile set を評価器へ渡す閉じた境界である。
+type Planning interface {
+	Preprocessor() legalquery.QueryPreprocessor
+	Profiles() legalquery.QueryProfileSet
+	ProfileMetadata() []legalquery.QueryProfileMetadata
 }
 
 // New は、repository 内の組込み成果物だけを使う evaluator を構築する。
@@ -23,6 +30,22 @@ func New() (*Evaluator, error) {
 	planning, err := legalqueryplanning.LoadEmbedded()
 	if err != nil {
 		return nil, err
+	}
+	return NewWithPlanning(planning)
+}
+
+// NewWithPlanning は、CI 専用候補を含む明示的な固定 planning 依存を構成する。
+func NewWithPlanning(planning Planning) (*Evaluator, error) {
+	if planning == nil {
+		return nil, fmt.Errorf("planning 依存は nil にできません")
+	}
+	profiles := planning.Profiles()
+	if err := profiles.Validate(); err != nil {
+		return nil, fmt.Errorf("planning profile set が不正です: %w", err)
+	}
+	metadata := planning.ProfileMetadata()
+	if len(metadata) == 0 {
+		return nil, fmt.Errorf("planning profile metadata は一件以上必要です")
 	}
 	return &Evaluator{planning: planning}, nil
 }

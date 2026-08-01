@@ -13,6 +13,7 @@ const (
 	maximumManifestBytes      = 4 << 20
 	maximumAttestationBytes   = 256 << 10
 	maximumRequestBytes       = 256 << 10
+	maximumResultBytes        = 256 << 10
 	maximumDocumentDepth      = 16
 	maximumSmallValueCount    = 8192
 	maximumManifestValueCount = 65536
@@ -62,6 +63,18 @@ func DecodeEvaluationRequest(raw []byte) (EvaluationRequest, error) {
 	}
 	if err := validateEvaluationRequest(document); err != nil {
 		return EvaluationRequest{}, err
+	}
+	return document, nil
+}
+
+// DecodeEvaluationResult は closed canonical result を検証して返す。
+func DecodeEvaluationResult(raw []byte) (EvaluationResult, error) {
+	var document EvaluationResult
+	if err := decodeCanonical(raw, maximumResultBytes, maximumSmallValueCount, &document); err != nil {
+		return EvaluationResult{}, fmt.Errorf("candidate evaluation result が不正です: %w", err)
+	}
+	if err := validateEvaluationResult(document); err != nil {
+		return EvaluationResult{}, err
 	}
 	return document, nil
 }

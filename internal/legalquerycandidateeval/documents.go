@@ -9,6 +9,10 @@ const (
 	ArtifactKindCandidateContent  = "legal_query_candidate_content"
 	ArtifactKindReviewAttestation = "legal_query_candidate_review_attestation"
 	ArtifactKindEvaluationRequest = "legal_query_candidate_evaluation_request"
+	ArtifactKindEvaluationResult  = "legal_query_candidate_evaluation_result"
+
+	EvaluationOutcomePassed = "passed"
+	EvaluationOutcomeFailed = "failed"
 
 	ReviewScopeArchitecture = "architecture"
 	ReviewScopeTestability  = "testability"
@@ -179,4 +183,14 @@ type ReviewAttestationReference struct {
 	ReviewScope       string `json:"reviewScope"`
 	AttestationID     string `json:"attestationId"`
 	AttestationSHA256 string `json:"attestationSha256"`
+}
+
+// EvaluationResult は、評価 request と完成した report の原 byte を一意に結ぶ。
+type EvaluationResult struct {
+	ArtifactKind  string `json:"artifactKind"`
+	SchemaVersion int    `json:"schemaVersion"`
+	EvaluationID  string `json:"evaluationId"`
+	RequestSHA256 string `json:"requestSha256"`
+	Outcome       string `json:"outcome"`
+	ReportSHA256  string `json:"reportSha256"`
 }

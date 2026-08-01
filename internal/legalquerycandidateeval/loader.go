@@ -92,7 +92,7 @@ func loadPreparedCurrentFromRoot(
 	if err != nil {
 		return PreparedCurrent{}, err
 	}
-	artifacts, err := loadPreparationArtifacts(ctx, root, schema, layout)
+	artifacts, err := loadPreparationArtifacts(ctx, root, schema, layout, true)
 	if err != nil {
 		return PreparedCurrent{}, err
 	}
@@ -126,6 +126,7 @@ func loadPreparationArtifacts(
 	root *legalqueryartifact.Repository,
 	schema SchemaV2,
 	layout preparationRootLayout,
+	preparationOnly bool,
 ) (preparationArtifacts, error) {
 	manifests, err := loadArtifactDirectory(
 		ctx, root, "content-manifests", schema,
@@ -154,11 +155,16 @@ func loadPreparationArtifacts(
 	if err != nil {
 		return preparationArtifacts{}, err
 	}
-	if len(manifests) == 0 || len(attestations) == 0 || len(requests) != 1 {
-		return preparationArtifacts{}, fmt.Errorf("評価準備成果物は一つの current request へ閉じる必要があります")
+	if len(manifests) == 0 || len(attestations) == 0 || len(requests) == 0 {
+		return preparationArtifacts{}, fmt.Errorf("candidate evaluation 成果物が空です")
 	}
-	if err := requireEmptyHistory(root, layout); err != nil {
-		return preparationArtifacts{}, err
+	if preparationOnly {
+		if len(requests) != 1 {
+			return preparationArtifacts{}, fmt.Errorf("評価準備成果物は一つの current request へ閉じる必要があります")
+		}
+		if err := requireEmptyHistory(root, layout); err != nil {
+			return preparationArtifacts{}, err
+		}
 	}
 	return preparationArtifacts{manifests: manifests, attestations: attestations, requests: requests}, nil
 }
