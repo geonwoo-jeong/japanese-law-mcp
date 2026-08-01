@@ -144,6 +144,17 @@ testability 10.0 / 10、security 10.0 / 10、blocker 0 の独立 review と権�
 passed/failed holdout と leakage group が重ならない新しい holdout の独立 review と、
 第 3 段階以降の新しい候補準備が必要である。
 
+次の候補 cycle の最初の単位として、local では `corpus-v11` を準備した。development
+43 件と execution 8 件は `corpus-v10` から byte を変えずに引き継ぎ、holdout 251 件は
+新しい fixture として再生成した。manifest の holdout digest は
+`91b9c85930dcebd8bd5f58e414ac3289de535e913270c0821aa6ac92432fff93`、
+holdout leakage group digest 数は 139 件である。`leakageGroupId` は
+`lqg-law-`、`lqg-ls-`、`lqg-topic-`、`lqg-case-courts-` および
+`lqg-concept-` の安定 prefix に限定し、`corpus-v10` manifest の digest 集合との交差を
+拒否する targeted test を追加した。`./internal/legalquerycorpus` の最小 test と
+schema 検証は通過したが、この時点では `default-4` request、review attestation
+および holdout 実行はまだ作成していない。
+
 ## 推奨順序
 
 段階そのものの定義、順序および進行条件の定義元は
