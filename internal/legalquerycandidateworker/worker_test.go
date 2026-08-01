@@ -105,28 +105,43 @@ func TestRunは失敗時に部分Outputを残さない(t *testing.T) {
 	t.Parallel()
 
 	base := syntheticDependencies([]byte("synthetic request\n"), true)
-	cases := map[string]func(Dependencies) Dependencies{
-		"load": func(value Dependencies) Dependencies {
-			value.Load = func(context.Context, string) (PreparedEvaluation, error) {
-				return PreparedEvaluation{}, errors.New("load failure")
-			}
-			return value
+	cases := map[string]struct {
+		mutate   func(Dependencies) Dependencies
+		wantCode int
+	}{
+		"load": {
+			mutate: func(value Dependencies) Dependencies {
+				value.Load = func(context.Context, string) (PreparedEvaluation, error) {
+					return PreparedEvaluation{}, errors.New("load failure")
+				}
+				return value
+			},
+			wantCode: FailureCodePreparedLoad,
 		},
-		"identity": func(value Dependencies) Dependencies {
-			value.Load = func(context.Context, string) (PreparedEvaluation, error) {
-				return PreparedEvaluation{EvaluationID: "invalid", RequestRaw: []byte("request")}, nil
-			}
-			return value
+		"identity": {
+			mutate: func(value Dependencies) Dependencies {
+				value.Load = func(context.Context, string) (PreparedEvaluation, error) {
+					return PreparedEvaluation{EvaluationID: "invalid", RequestRaw: []byte("request")}, nil
+				}
+				return value
+			},
+			wantCode: FailureCodeRequestBinding,
 		},
-		"evaluate": func(value Dependencies) Dependencies {
-			value.Evaluate = func(context.Context, PreparedEvaluation) ([]byte, error) {
-				return nil, errors.New("evaluation failure")
-			}
-			return value
+		"evaluate": {
+			mutate: func(value Dependencies) Dependencies {
+				value.Evaluate = func(context.Context, PreparedEvaluation) ([]byte, error) {
+					return nil, errors.New("evaluation failure")
+				}
+				return value
+			},
+			wantCode: FailureCodeEvaluateBuild,
 		},
-		"accept": func(value Dependencies) Dependencies {
-			value.Accept = func([]byte) (bool, error) { return false, errors.New("accept failure") }
-			return value
+		"accept": {
+			mutate: func(value Dependencies) Dependencies {
+				value.Accept = func([]byte) (bool, error) { return false, errors.New("accept failure") }
+				return value
+			},
+			wantCode: FailureCodeAccept,
 		},
 	}
 	for name, mutate := range cases {
@@ -134,8 +149,12 @@ func TestRunは失敗時に部分Outputを残さない(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			root := filepath.Join(t.TempDir(), "output")
-			if _, err := Run(context.Background(), Input{RepositoryRoot: ".", OutputRoot: root}, mutate(base)); err == nil {
+			_, err := Run(context.Background(), Input{RepositoryRoot: ".", OutputRoot: root}, mutate.mutate(base))
+			if err == nil {
 				t.Fatalf("%s failure を受理しました", name)
+			}
+			if code := FailureExitCode(err); code != mutate.wantCode {
+				t.Fatalf("%s failure code=%d, want %d", name, code, mutate.wantCode)
 			}
 			if _, err := os.Lstat(root); !errors.Is(err, os.ErrNotExist) {
 				t.Fatalf("%s failure 後に output が残りました: %v", name, err)

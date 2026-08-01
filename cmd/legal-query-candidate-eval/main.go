@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -22,10 +23,26 @@ import (
 const (
 	fixedRepository      = "."
 	fixedOutputDirectory = "./.artifacts/legal-query-candidate-evaluation"
+	maximumWorkerStderr  = 4096
 
 	exitSuccess    = 0
 	exitValidation = 1
 	exitUsage      = 2
+)
+
+const (
+	workerFailurePreparedLoad   = 10
+	workerFailureRequestBinding = 11
+	workerFailureEvaluateBuild  = 12
+	workerFailureReportBinding  = 13
+	workerFailureAccept         = 14
+	workerFailureResultBind     = 15
+	workerFailureResultEncode   = 16
+	workerFailureResultDecode   = 17
+	workerFailureHandoffWrite   = 18
+	workerFailureTrackedReplay  = 19
+	workerFailureSpawn          = 20
+	workerFailureUnknown        = 21
 )
 
 type candidateOptions struct {
@@ -40,6 +57,27 @@ type candidateHandoff struct {
 }
 
 type candidateExecutor func(context.Context, candidateOptions) (candidateHandoff, error)
+
+type workerFailure interface {
+	FailureExitCode() int
+}
+
+type workerFailureError struct {
+	code int
+	err  error
+}
+
+func (e workerFailureError) Error() string {
+	return "候補評価 worker の失敗段階を特定しました"
+}
+
+func (e workerFailureError) Unwrap() error {
+	return e.err
+}
+
+func (e workerFailureError) FailureExitCode() int {
+	return e.code
+}
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -82,7 +120,7 @@ func run(
 	handoff, err := execute(ctx, options)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "候補評価 worker を正常に完了できませんでした")
-		return exitValidation
+		return failureExitCode(err)
 	}
 	if err := validateCandidateHandoff(handoff); err != nil {
 		_, _ = fmt.Fprintln(stderr, "候補評価 worker の handoff が不正です")
@@ -96,6 +134,17 @@ func run(
 		handoff.ReportSHA256,
 	)
 	return exitSuccess
+}
+
+func failureExitCode(err error) int {
+	var failed workerFailure
+	if errors.As(err, &failed) {
+		code := failed.FailureExitCode()
+		if isWorkerFailureCode(code) {
+			return code
+		}
+	}
+	return exitValidation
 }
 
 func validateCandidateHandoff(handoff candidateHandoff) error {
@@ -217,26 +266,134 @@ func closedGoEnvironment(environment []string) (map[string]string, error) {
 	return result, nil
 }
 
+type commandRunner func(context.Context, []string, []string, io.Writer, io.Writer) error
+
 func preparedHandoff(ctx context.Context, _ candidateOptions) (candidateHandoff, error) {
+	return preparedHandoffWithRunner(
+		ctx,
+		fixedOutputDirectory,
+		append([]string(nil), os.Environ()...),
+		runCandidateWorker,
+		readCandidateHandoff,
+	)
+}
+
+func preparedHandoffWithRunner(
+	ctx context.Context,
+	outputDirectory string,
+	environment []string,
+	runner commandRunner,
+	reader func(string) (candidateHandoff, error),
+) (candidateHandoff, error) {
 	ctx, cancel := context.WithTimeout(ctx, 25*time.Minute)
 	defer cancel()
-	command := exec.CommandContext(
-		ctx,
-		"go",
-		"run",
-		"./cmd/legal-query-candidate-worker",
-		"--repository="+fixedRepository,
-		"--output-directory="+fixedOutputDirectory,
-	)
-	command.Dir = fixedRepository
-	command.Env = append([]string(nil), os.Environ()...)
-	command.Stdin = strings.NewReader("")
-	command.Stdout = io.Discard
-	command.Stderr = io.Discard
-	if err := command.Run(); err != nil {
-		return candidateHandoff{}, fmt.Errorf("candidate worker を実行できません")
+	if runner == nil {
+		return candidateHandoff{}, fmt.Errorf("candidate worker の実行境界がありません")
 	}
-	return readCandidateHandoff(fixedOutputDirectory)
+	if reader == nil {
+		return candidateHandoff{}, fmt.Errorf("candidate handoff reader がありません")
+	}
+	var stderr tailBuffer
+	stderr.max = maximumWorkerStderr
+	err := runner(
+		ctx,
+		[]string{
+			"./cmd/legal-query-candidate-worker",
+			"--repository=" + fixedRepository,
+			"--output-directory=" + fixedOutputDirectory,
+		},
+		append([]string(nil), environment...),
+		io.Discard,
+		&stderr,
+	)
+	if err != nil {
+		return candidateHandoff{}, classifyWorkerFailure(err, stderr.String())
+	}
+	return reader(outputDirectory)
+}
+
+func runCandidateWorker(
+	ctx context.Context,
+	args []string,
+	environment []string,
+	stdout io.Writer,
+	stderr io.Writer,
+) error {
+	commandArgs := append([]string{"run"}, args...)
+	command := exec.CommandContext(ctx, "go", commandArgs...)
+	command.Dir = fixedRepository
+	command.Env = append([]string(nil), environment...)
+	command.Stdin = strings.NewReader("")
+	command.Stdout = stdout
+	command.Stderr = stderr
+	return command.Run()
+}
+
+func classifyWorkerFailure(err error, stderr string) error {
+	if code, ok := parseWorkerExitStatus(stderr); ok {
+		return workerFailureError{code: code, err: err}
+	}
+	return workerFailureError{code: workerFailureSpawn, err: err}
+}
+
+func parseWorkerExitStatus(stderr string) (int, bool) {
+	lines := strings.Split(stderr, "\n")
+	for index := len(lines) - 1; index >= 0; index-- {
+		line := strings.TrimSpace(lines[index])
+		if line == "" {
+			continue
+		}
+		const prefix = "exit status "
+		if !strings.HasPrefix(line, prefix) {
+			return 0, false
+		}
+		value := line[len(prefix):]
+		code := 0
+		for _, character := range value {
+			if character < '0' || character > '9' {
+				return workerFailureUnknown, true
+			}
+			code = code*10 + int(character-'0')
+		}
+		if code == exitValidation {
+			return workerFailureSpawn, true
+		}
+		if isWorkerFailureCode(code) {
+			return code, true
+		}
+		return workerFailureUnknown, true
+	}
+	return 0, false
+}
+
+func isWorkerFailureCode(code int) bool {
+	return code >= workerFailurePreparedLoad && code <= workerFailureUnknown
+}
+
+type tailBuffer struct {
+	max  int
+	data []byte
+}
+
+func (b *tailBuffer) Write(p []byte) (int, error) {
+	if b.max <= 0 {
+		return len(p), nil
+	}
+	if len(p) >= b.max {
+		b.data = append(b.data[:0], p[len(p)-b.max:]...)
+		return len(p), nil
+	}
+	total := len(b.data) + len(p)
+	if total > b.max {
+		drop := total - b.max
+		b.data = append(b.data[:0], b.data[drop:]...)
+	}
+	b.data = append(b.data, p...)
+	return len(p), nil
+}
+
+func (b *tailBuffer) String() string {
+	return string(b.data)
 }
 
 type workerResultDocument struct {

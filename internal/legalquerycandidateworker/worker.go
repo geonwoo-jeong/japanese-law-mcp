@@ -57,30 +57,45 @@ type Handoff struct {
 // Run は評価を一回実行し、report/result の二 file を exclusive create する。
 func Run(ctx context.Context, input Input, dependencies Dependencies) (Handoff, error) {
 	if err := validateRunBoundary(ctx, input, dependencies); err != nil {
-		return Handoff{}, err
+		return Handoff{}, wrapFailure(FailureCodeUnknown, err)
 	}
 	prepared, err := dependencies.Load(ctx, input.RepositoryRoot)
 	if err != nil {
-		return Handoff{}, fmt.Errorf("候補評価 request を準備できません: %w", err)
+		return Handoff{}, wrapFailure(
+			FailureCodePreparedLoad,
+			fmt.Errorf("候補評価 request を準備できません: %w", err),
+		)
 	}
 	if !evaluationIDPattern.MatchString(prepared.EvaluationID) ||
 		len(prepared.RequestRaw) == 0 || len(prepared.RequestRaw) > maximumRequestBytes {
-		return Handoff{}, fmt.Errorf("候補評価 request identity が不正です")
+		return Handoff{}, wrapFailure(
+			FailureCodeRequestBinding,
+			fmt.Errorf("候補評価 request identity が不正です"),
+		)
 	}
 	requestRaw := bytes.Clone(prepared.RequestRaw)
 	evaluationInput := clonePreparedEvaluation(prepared)
 	evaluationInput.RequestRaw = bytes.Clone(requestRaw)
 	reportRaw, err := dependencies.Evaluate(ctx, evaluationInput)
 	if err != nil {
-		return Handoff{}, fmt.Errorf("候補評価 report を構成できません: %w", err)
+		return Handoff{}, wrapFailure(
+			FailureCodeEvaluateBuild,
+			fmt.Errorf("候補評価 report を構成できません: %w", err),
+		)
 	}
 	if len(reportRaw) == 0 || len(reportRaw) > maximumReportBytes {
-		return Handoff{}, fmt.Errorf("候補評価 report の size が上限外です")
+		return Handoff{}, wrapFailure(
+			FailureCodeEvaluateBuild,
+			fmt.Errorf("候補評価 report の size が上限外です"),
+		)
 	}
 	reportRaw = bytes.Clone(reportRaw)
 	accepted, err := dependencies.Accept(bytes.Clone(reportRaw))
 	if err != nil {
-		return Handoff{}, fmt.Errorf("候補評価の受入判定を完了できません: %w", err)
+		return Handoff{}, wrapFailure(
+			FailureCodeAccept,
+			fmt.Errorf("候補評価の受入判定を完了できません: %w", err),
+		)
 	}
 	outcome := legalquerycandidateeval.EvaluationOutcomeFailed
 	if accepted {
@@ -102,24 +117,33 @@ func Run(ctx context.Context, input Input, dependencies Dependencies) (Handoff, 
 			outcome,
 		)
 		if err != nil {
-			return Handoff{}, fmt.Errorf("候補評価 result を request へ結合できません: %w", err)
+			return Handoff{}, wrapFailure(
+				FailureCodeResultBind,
+				fmt.Errorf("候補評価 result を request へ結合できません: %w", err),
+			)
 		}
 	}
 	resultRaw, err := legalquerycandidateeval.MarshalCanonicalJSON(result)
 	if err != nil {
-		return Handoff{}, err
+		return Handoff{}, wrapFailure(FailureCodeResultEncode, err)
 	}
 	if len(resultRaw) > maximumResultBytes {
-		return Handoff{}, fmt.Errorf("候補評価 result の size が上限外です")
+		return Handoff{}, wrapFailure(
+			FailureCodeResultEncode,
+			fmt.Errorf("候補評価 result の size が上限外です"),
+		)
 	}
 	if _, err := legalquerycandidateeval.DecodeEvaluationResult(resultRaw); err != nil {
-		return Handoff{}, fmt.Errorf("候補評価 result が不正です: %w", err)
+		return Handoff{}, wrapFailure(
+			FailureCodeResultDecode,
+			fmt.Errorf("候補評価 result が不正です: %w", err),
+		)
 	}
 	if err := checkRunContext(ctx); err != nil {
-		return Handoff{}, err
+		return Handoff{}, wrapFailure(FailureCodeHandoffWrite, err)
 	}
 	if err := writeClosedHandoff(input.OutputRoot, prepared.EvaluationID, reportRaw, resultRaw); err != nil {
-		return Handoff{}, err
+		return Handoff{}, wrapFailure(FailureCodeHandoffWrite, err)
 	}
 	return Handoff{
 		EvaluationID: prepared.EvaluationID,

@@ -22,7 +22,7 @@ import (
 func Execute(ctx context.Context, input Input) (Handoff, error) {
 	prepared, err := loadPreparedEvaluation(ctx, input.RepositoryRoot)
 	if err != nil {
-		return Handoff{}, err
+		return Handoff{}, wrapFailure(FailureCodePreparedLoad, err)
 	}
 	evaluate := evaluatePreparedCandidate
 	if prepared.tracked != nil {
@@ -49,7 +49,7 @@ func Execute(ctx context.Context, input Input) (Handoff, error) {
 	}
 	if err := verifyTrackedReplay(input.OutputRoot, prepared, handoff); err != nil {
 		removeGeneratedOutput(input.OutputRoot)
-		return Handoff{}, err
+		return Handoff{}, wrapFailure(FailureCodeTrackedReplay, err)
 	}
 	return handoff, nil
 }
@@ -119,33 +119,39 @@ func evaluatePreparedCandidate(
 	request := prepared.request
 	if request.EvaluationID != prepared.EvaluationID ||
 		request.CandidateContentID != prepared.content.CandidateContentID {
-		return nil, fmt.Errorf("candidate request と content identity が一致しません")
+		return nil, wrapFailure(
+			FailureCodeRequestBinding,
+			fmt.Errorf("candidate request と content identity が一致しません"),
+		)
 	}
 	candidate, err := legalquerycandidateprofile.Load()
 	if err != nil {
-		return nil, err
+		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
 	if err := verifyCandidatePlanningIdentity(candidate, prepared.content); err != nil {
-		return nil, err
+		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
 	corpusDirectory := filepath.Join("testdata", "legalquery", request.CorpusVersion)
 	corpus, err := legalquerycorpus.Load(ctx, prepared.repository, corpusDirectory)
 	if err != nil {
-		return nil, err
+		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
 	manifest := corpus.Manifest()
 	if manifest.CorpusVersion() != request.CorpusVersion ||
 		manifest.HoldoutDigest() != request.HoldoutDigest ||
 		!slices.Equal(manifest.HoldoutLeakageGroupDigests(), request.HoldoutLeakageGroupDigests) {
-		return nil, fmt.Errorf("candidate corpus が request と一致しません")
+		return nil, wrapFailure(
+			FailureCodeEvaluateBuild,
+			fmt.Errorf("candidate corpus が request と一致しません"),
+		)
 	}
 	evaluator, err := defaultprofile.NewWithPlanning(candidate)
 	if err != nil {
-		return nil, err
+		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
 	report, err := evaluator.BuildStandardReport(ctx, corpus, request.BaselineVersion)
 	if err != nil {
-		return nil, err
+		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
 	profileSet := report.ProfileSet()
 	if report.CorpusVersion() != request.CorpusVersion ||
@@ -154,11 +160,17 @@ func evaluatePreparedCandidate(
 		profileSet.ProfileSetID() != prepared.content.ProfileSet.ProfileSetID ||
 		profileSet.ProfileSetVersion() != prepared.content.ProfileSet.ProfileSetVersion ||
 		profileSet.RankingVersion() != prepared.content.ProfileSet.RankingVersion {
-		return nil, fmt.Errorf("candidate report identity が request と一致しません")
+		return nil, wrapFailure(
+			FailureCodeReportBinding,
+			fmt.Errorf("candidate report identity が request と一致しません"),
+		)
 	}
 	raw, err := json.Marshal(report)
 	if err != nil {
-		return nil, fmt.Errorf("candidate report を canonical JSON にできません: %w", err)
+		return nil, wrapFailure(
+			FailureCodeResultEncode,
+			fmt.Errorf("candidate report を canonical JSON にできません: %w", err),
+		)
 	}
 	return append(raw, '\n'), nil
 }

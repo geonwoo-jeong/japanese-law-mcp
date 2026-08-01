@@ -7,12 +7,15 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateworker"
 )
 
 const (
@@ -218,6 +221,31 @@ func TestRunReturnsNonZeroOnlyForInfrastructureFailure(t *testing.T) {
 	}
 }
 
+func TestRunPropagatesAllowlistedFailureCode(t *testing.T) {
+	t.Parallel()
+
+	var stdout, stderr bytes.Buffer
+	code := run(
+		context.Background(),
+		fixedArguments(),
+		fixedEnvironment(),
+		&stdout,
+		&stderr,
+		func(context.Context, candidateOptions) (candidateHandoff, error) {
+			return candidateHandoff{}, workerFailureError{
+				code: workerFailureTrackedReplay,
+				err:  errors.New("sensitive tracked replay detail"),
+			}
+		},
+	)
+	if code != workerFailureTrackedReplay {
+		t.Fatalf("%s: code=%d, want %d", verificationOutcomeExit, code, workerFailureTrackedReplay)
+	}
+	if strings.Contains(stdout.String()+stderr.String(), "sensitive tracked replay detail") {
+		t.Fatalf("%s: generic stderr が内部 detail を漏らしました", verificationOutputPrivacy)
+	}
+}
+
 func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
 	t.Parallel()
 
@@ -244,6 +272,139 @@ func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
 	for _, forbidden := range sensitive {
 		if strings.Contains(output, forbidden) {
 			t.Errorf("%s: stdout/stderr に非公開値が含まれます", verificationOutputPrivacy)
+		}
+	}
+}
+
+func TestPreparedHandoffParsesWorkerExitStatusWithoutLeakingRawStderr(t *testing.T) {
+	t.Parallel()
+
+	secret := "永住許可 /private/path credential-value"
+	_, err := preparedHandoffWithRunner(
+		context.Background(),
+		fixedOutputDirectory,
+		fixedEnvironment(),
+		func(context.Context, []string, []string, io.Writer, io.Writer) error {
+			_, _ = io.WriteString(io.Discard, "")
+			return nil
+		},
+		nil,
+	)
+	if err == nil {
+		t.Fatal("nil reader を受理しました")
+	}
+
+	_, err = preparedHandoffWithRunner(
+		context.Background(),
+		fixedOutputDirectory,
+		fixedEnvironment(),
+		func(_ context.Context, _ []string, _ []string, _ io.Writer, stderr io.Writer) error {
+			_, _ = io.WriteString(stderr, secret+"\nexit status 18\n")
+			return errors.New("go run failed")
+		},
+		func(string) (candidateHandoff, error) {
+			t.Fatal("worker failure で handoff reader が呼ばれました")
+			return candidateHandoff{}, nil
+		},
+	)
+	var failed workerFailure
+	if !errors.As(err, &failed) || failed.FailureExitCode() != workerFailureHandoffWrite {
+		t.Fatalf("%s: err=%v, want code %d", verificationOutcomeExit, err, workerFailureHandoffWrite)
+	}
+	if strings.Contains(err.Error(), secret) {
+		t.Fatalf("%s: raw stderr secret が error に残りました", verificationOutputPrivacy)
+	}
+}
+
+func TestPreparedHandoffClassifiesUnknownAndSpawnFailures(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		stderr    string
+		wantCode  int
+		runnerErr error
+	}{
+		{
+			name:      "非許可コードはunknown",
+			stderr:    "exit status 99\n",
+			wantCode:  workerFailureUnknown,
+			runnerErr: errors.New("failed"),
+		},
+		{
+			name:      "終了コードなしはspawn",
+			stderr:    "fork/exec go: no such file or directory\n",
+			wantCode:  workerFailureSpawn,
+			runnerErr: errors.New("failed"),
+		},
+		{
+			name:      "go run の exit status 1 はspawn",
+			stderr:    "exit status 1\n",
+			wantCode:  workerFailureSpawn,
+			runnerErr: errors.New("failed"),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := preparedHandoffWithRunner(
+				context.Background(),
+				fixedOutputDirectory,
+				fixedEnvironment(),
+				func(_ context.Context, _ []string, _ []string, _ io.Writer, stderr io.Writer) error {
+					_, _ = io.WriteString(stderr, test.stderr)
+					return test.runnerErr
+				},
+				func(string) (candidateHandoff, error) {
+					t.Fatal("failure で handoff reader が呼ばれました")
+					return candidateHandoff{}, nil
+				},
+			)
+			var failed workerFailure
+			if !errors.As(err, &failed) || failed.FailureExitCode() != test.wantCode {
+				t.Fatalf("%s: err=%v, want code %d", verificationOutcomeExit, err, test.wantCode)
+			}
+		})
+	}
+}
+
+func TestWorkerFailureCodeTableMatchesInternalWorker(t *testing.T) {
+	t.Parallel()
+
+	want := []int{
+		legalquerycandidateworker.FailureCodePreparedLoad,
+		legalquerycandidateworker.FailureCodeRequestBinding,
+		legalquerycandidateworker.FailureCodeEvaluateBuild,
+		legalquerycandidateworker.FailureCodeReportBinding,
+		legalquerycandidateworker.FailureCodeAccept,
+		legalquerycandidateworker.FailureCodeResultBind,
+		legalquerycandidateworker.FailureCodeResultEncode,
+		legalquerycandidateworker.FailureCodeResultDecode,
+		legalquerycandidateworker.FailureCodeHandoffWrite,
+		legalquerycandidateworker.FailureCodeTrackedReplay,
+		legalquerycandidateworker.FailureCodeWorkerSpawn,
+		legalquerycandidateworker.FailureCodeUnknown,
+	}
+	got := []int{
+		workerFailurePreparedLoad,
+		workerFailureRequestBinding,
+		workerFailureEvaluateBuild,
+		workerFailureReportBinding,
+		workerFailureAccept,
+		workerFailureResultBind,
+		workerFailureResultEncode,
+		workerFailureResultDecode,
+		workerFailureHandoffWrite,
+		workerFailureTrackedReplay,
+		workerFailureSpawn,
+		workerFailureUnknown,
+	}
+	if len(got) != len(want) {
+		t.Fatalf("failure code count=%d, want %d", len(got), len(want))
+	}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("failure code[%d]=%d, want %d", index, got[index], want[index])
 		}
 	}
 }
