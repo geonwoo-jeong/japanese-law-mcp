@@ -45,6 +45,40 @@ func TestLoadCurrentEvaluationは未評価とReplay履歴を同じ入口で返�
 	}
 }
 
+func TestLoadCurrentEvaluationはReport前に継承されたRequestを保持して新Currentを返す(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	fixture := prepareSupersededCandidateEvaluationFixture(t, root, "default-3")
+	validator := &recordingReferenceValidator{}
+	current, err := LoadCurrentEvaluation(context.Background(), root, validator)
+	if err != nil {
+		t.Fatalf("report 前に継承された current evaluation を拒否しました: %v", err)
+	}
+	if current.Prepared.Request.EvaluationID != fixture.currentRequest.EvaluationID ||
+		current.Prepared.CandidateContent.CandidateContentID != fixture.currentManifest.CandidateContentID ||
+		current.CurrentResult != nil || len(current.History) != 0 {
+		t.Fatalf("継承後の current evaluation が不正です: %+v", current)
+	}
+	if fixture.previousRequest.BaselineVersion != "default-2" ||
+		fixture.currentRequest.BaselineVersion != "default-3" {
+		t.Fatalf(
+			"継承前後の baseline 予約が不正です: previous=%q current=%q",
+			fixture.previousRequest.BaselineVersion,
+			fixture.currentRequest.BaselineVersion,
+		)
+	}
+	if validator.manifestCalls != 1 || validator.requestCalls != 1 ||
+		len(validator.manifestIDs) != 1 || validator.manifestIDs[0] != fixture.currentManifest.CandidateContentID ||
+		len(validator.requestIDs) != 1 || validator.requestIDs[0] != fixture.currentRequest.EvaluationID {
+		t.Fatalf(
+			"external validator が current 以外を検証しました: manifests=%v requests=%v",
+			validator.manifestIDs,
+			validator.requestIDs,
+		)
+	}
+}
+
 func TestLoadCurrentEvaluationはResultのRequestBinding変更を拒否する(t *testing.T) {
 	t.Parallel()
 

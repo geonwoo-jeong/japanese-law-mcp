@@ -16,12 +16,16 @@ func TestLoadは校正済み二Profileを固定順で構成する(t *testing.T) 
 	metadata := set.ProfileMetadata()
 	if len(metadata) != 2 ||
 		metadata[0].ProfileID() != "core" ||
-		metadata[0].ProfileVersion() != "core-2026-07-31-36" ||
+		metadata[0].ProfileVersion() != "core-2026-07-31-37" ||
 		metadata[1].ProfileID() != "judicial-cases" ||
 		metadata[1].ProfileVersion() != "judicial-cases-2026-07-31-12" ||
 		set.Profiles().RankingVersion() != "legal-query-ranking-2026-07-31-2" ||
-		set.Profiles().ProfileVersion() != "profile-set-sha256-5107d2ab16dd1668fe316c34d153b4eed3990ac6555db80f1617630529fe7c6c" {
-		t.Fatalf("SOT-ENG-038: 候補 identity が固定値と一致しません: %#v", metadata)
+		set.Profiles().ProfileVersion() != "profile-set-sha256-1c8c43fa032148bf0cadd2548afef04b3b0927a9d1a621ef175f5bee781c41a3" {
+		t.Fatalf(
+			"SOT-ENG-038: 候補 identity が固定値と一致しません: metadata=%#v profileSetVersion=%q",
+			metadata,
+			set.Profiles().ProfileVersion(),
+		)
 	}
 }
 

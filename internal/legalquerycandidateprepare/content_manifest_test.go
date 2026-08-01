@@ -23,13 +23,13 @@ func TestBuildContentManifestは校正済み候補と許可辞書だけを固定
 	}
 	if manifest.CandidateContentID == "" ||
 		manifest.ProfileSet.ProfileSetID != "default" ||
-		manifest.ProfileSet.ProfileSetVersion != "profile-set-sha256-5107d2ab16dd1668fe316c34d153b4eed3990ac6555db80f1617630529fe7c6c" ||
+		manifest.ProfileSet.ProfileSetVersion != "profile-set-sha256-1c8c43fa032148bf0cadd2548afef04b3b0927a9d1a621ef175f5bee781c41a3" ||
 		manifest.ProfileSet.RankingVersion != "legal-query-ranking-2026-07-31-2" {
 		t.Fatalf("candidate-evaluation-candidate-content-identity: profileSet = %#v", manifest.ProfileSet)
 	}
 	if len(manifest.ProfileArtifacts) != 2 ||
 		manifest.ProfileArtifacts[0].ProfileID != "core" ||
-		manifest.ProfileArtifacts[0].ProfileVersion != "core-2026-07-31-36" ||
+		manifest.ProfileArtifacts[0].ProfileVersion != "core-2026-07-31-37" ||
 		manifest.ProfileArtifacts[1].ProfileID != "judicial-cases" ||
 		manifest.ProfileArtifacts[1].ProfileVersion != "judicial-cases-2026-07-31-12" {
 		t.Fatalf("candidate-evaluation-candidate-content-identity: profiles = %#v", manifest.ProfileArtifacts)

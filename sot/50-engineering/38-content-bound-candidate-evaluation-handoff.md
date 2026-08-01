@@ -54,6 +54,14 @@ schema version 2 だけを使用する。
 `failed-reports/` の file も同様に不変とする。`current.json` は、次に評価する
 一件の既存 request へ進めるときだけ置き換え、任意 path を持たない。
 
+構造上有効な report が完成する前の失敗により、候補 source、対象 SOT または
+review を変更しなければ同じ request を再試行できない場合は、旧成果物を削除せず、
+新しい content manifest、二件の review attestation、request および未使用の
+`baselineVersion` を追加して `current.json` だけを新 request へ進める。pointer から
+外れ、result を持たない旧 request は「置換済み準備」として保持する。置換済み準備は
+report と result を生成せず、holdout の消費履歴には数えないが、その
+`baselineVersion` は後続 request で再利用しない。
+
 成功 report は `SOT-ENG-036` の
 `baselines/versions/{baselineVersion}.json` にだけ保存し、
 `candidate-evaluations/` へ同じ byte を複製しない。失敗 report は
@@ -692,6 +700,15 @@ retry、artifact upload の再試行または後続 replay は再現確認であ
 数えない。有効な report ができる前の infrastructure 失敗だけは同じ ID で
 再試行できる。
 
+有効な report ができる前でも、修正後の semantic source set、対象 SOT または
+review binding が旧 request と一致しなくなった場合は、同じ ID の内容を変えない。
+前述の置換済み準備として旧 request と全参照成果物を保持し、別の
+`evaluationId` と未使用の `baselineVersion` を持つ新 request へ pointer を進める。
+新 request の source と SOT の外部参照検証は current request と、それが直接参照する
+manifest と attestation だけを対象にする。置換済み準備は file 名、canonical byte、
+内部 ID、digest、request から manifest・attestation への binding および資源上限を
+引き続き検証するが、現在の source tree または現在の SOT byte との一致を要求しない。
+
 一つの `holdoutDigest` に、構造上有効な result を持つ異なる
 `evaluationId` を二件以上作らない。result 完成後に profile、evaluator、corpus、
 辞書、期待値または受入規則を変えた次候補は、新しい corpus version、新しい
@@ -758,6 +775,15 @@ loader は repository root 内の固定 subtree だけを OS の root API から
 `review-attestations/`、`requests/`、`results/` および `failed-reports/` だけを
 持つ。各 directory は対応する正規形 ID の `.json` 通常 file だけを持ち、
 subdirectory、未知 entry、未登録 file、device、FIFO および socket を拒否する。
+
+result がない準備 tree は、一件の current request に加えて零件以上の置換済み準備を
+持てる。全 request の `baselineVersion` は一意とし、各 manifest と attestation は
+いずれか一件以上の request から参照され、各 request は正確な二件の attestation と
+一件の manifest へ閉じて binding されなければならない。current 以外の result なし
+request を current として実行せず、その reservation、件数および byte を履歴上限から
+除外しない。current pointer が存在しない request を指す場合、同じ baseline の重複、
+孤立成果物、置換済み準備に対応する baseline file 若しくは failed report、または
+result 完成後の同一 holdout 再評価は fail-closed とする。
 
 content manifest が参照する lexicon と local source、root module file、
 evaluator version registry が列挙する worker source、および新しい評価の

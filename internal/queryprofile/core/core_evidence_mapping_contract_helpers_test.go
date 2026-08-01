@@ -174,7 +174,11 @@ func mustCoreStepEvidence(
 ) []profileevidence.Evidence {
 	t.Helper()
 	reference := evaluation.drafts[draftIndex]
-	evidence, err := evaluation.mapping.StepEvidence(
+	mapping, err := evaluation.mappingFor(reference.draftID)
+	if err != nil {
+		t.Fatalf("core evidence mapping を取得できません: %v", err)
+	}
+	evidence, err := mapping.StepEvidence(
 		reference.draftID,
 		reference.stepIDs[stepIndex],
 	)
@@ -191,7 +195,11 @@ func assertCoreDraftClusterEligible(
 ) profileevidence.ClusterKey {
 	t.Helper()
 	reference := evaluation.drafts[draftIndex]
-	key, eligible, err := evaluation.mapping.ClusterKey(reference.draftID)
+	mapping, err := evaluation.mappingFor(reference.draftID)
+	if err != nil {
+		t.Fatalf("%s: mapping を取得できません: %v", coreEvidenceMappingPositiveID, err)
+	}
+	key, eligible, err := mapping.ClusterKey(reference.draftID)
 	if err != nil || !eligible {
 		t.Fatalf(
 			"%s: cluster eligibility = %t, key=%q, err=%v",
@@ -228,7 +236,11 @@ func assertCoreDraftNotEligible(
 		return
 	}
 	reference := evaluation.drafts[0]
-	_, eligible, clusterErr := evaluation.mapping.ClusterKey(reference.draftID)
+	mapping, mappingErr := evaluation.mappingFor(reference.draftID)
+	if mappingErr != nil {
+		t.Fatalf("%s: mapping を取得できません: %v", verificationID, mappingErr)
+	}
+	_, eligible, clusterErr := mapping.ClusterKey(reference.draftID)
 	if clusterErr != nil {
 		t.Fatalf("%s: cluster 検証に失敗しました: %v", verificationID, clusterErr)
 	}

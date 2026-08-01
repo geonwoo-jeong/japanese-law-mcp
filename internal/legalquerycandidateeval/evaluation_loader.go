@@ -72,7 +72,7 @@ func loadCurrentEvaluationFromRoot(
 	if !exists {
 		return CurrentEvaluation{}, fmt.Errorf("current evaluation request が存在しません")
 	}
-	if err := validateExternalReferences(ctx, artifacts, referenceValidator); err != nil {
+	if err := validateExternalReferences(ctx, current.document, artifacts, referenceValidator); err != nil {
 		return CurrentEvaluation{}, err
 	}
 	results, err := loadTrackedResults(ctx, root, schema, layout)
@@ -150,14 +150,6 @@ func bindTrackedResults(
 			value := result.document
 			currentResult = &value
 			currentResultRaw = bytes.Clone(result.raw)
-		}
-	}
-	for evaluationID := range requests {
-		if evaluationID == currentID {
-			continue
-		}
-		if _, consumed := results[evaluationID]; !consumed {
-			return nil, nil, nil, fmt.Errorf("current 以外の未評価 request があります")
 		}
 	}
 	return history, currentResult, currentResultRaw, nil

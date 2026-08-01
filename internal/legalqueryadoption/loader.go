@@ -53,6 +53,12 @@ func LoadCurrent(ctx context.Context) (Manifest, error) {
 	return manifest, nil
 }
 
+// LoadCurrentFromRoot は、指定 repository root の current adoption tuple を返す。
+// catalog 検証を伴う公開読取とは分け、内部の固定参照検証だけで使用する。
+func LoadCurrentFromRoot(ctx context.Context, repositoryRoot string) (Manifest, error) {
+	return loadCurrent(ctx, repositoryRoot)
+}
+
 func loadCurrent(
 	ctx context.Context,
 	repositoryRoot string,

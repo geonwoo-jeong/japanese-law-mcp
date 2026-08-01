@@ -37,7 +37,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		HoldoutLeakageGroupDigests: manifest.HoldoutLeakageGroupDigests(),
 		RequiredReviewSOTs:         references,
 		RequiredReviewSOTSetSHA256: legalquerycandidateeval.SOTSetSHA256(references),
-		BaselineVersion:            "default-2",
+		BaselineVersion:            "default-3",
 	}
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
@@ -45,6 +45,14 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		t.Fatalf("candidate-evaluation-request-identity: 外部参照を検証できません: %v", err)
 	}
 
+	request.BaselineVersion = "default-1"
+	if _, err := validator.ValidateEvaluationRequest(
+		context.Background(), []byte("canonical request placeholder\n"), request,
+	); err == nil {
+		t.Fatal("candidate-evaluation-request-identity: active baseline 版を候補予約として受理しました")
+	}
+
+	request.BaselineVersion = "default-3"
 	request.EvaluatorVersion = "legal-query-evaluator-v999"
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,

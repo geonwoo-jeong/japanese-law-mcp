@@ -103,7 +103,7 @@ func loadPreparedCurrentFromRoot(
 	if !exists {
 		return PreparedCurrent{}, fmt.Errorf("current evaluation request が存在しません")
 	}
-	if err := validateExternalReferences(ctx, artifacts, referenceValidator); err != nil {
+	if err := validateExternalReferences(ctx, current.document, artifacts, referenceValidator); err != nil {
 		return PreparedCurrent{}, err
 	}
 	return prepareCurrent(pointer, current.document, artifacts), nil
@@ -159,9 +159,6 @@ func loadPreparationArtifacts(
 		return preparationArtifacts{}, fmt.Errorf("candidate evaluation 成果物が空です")
 	}
 	if preparationOnly {
-		if len(requests) != 1 {
-			return preparationArtifacts{}, fmt.Errorf("評価準備成果物は一つの current request へ閉じる必要があります")
-		}
 		if err := requireEmptyHistory(root, layout); err != nil {
 			return preparationArtifacts{}, err
 		}
@@ -305,36 +302,39 @@ func bindAttestation(
 
 func validateExternalReferences(
 	ctx context.Context,
+	currentRequest EvaluationRequest,
 	artifacts preparationArtifacts,
 	validator ReferenceValidator,
 ) error {
-	for _, id := range sortedKeys(artifacts.manifests) {
-		artifact := artifacts.manifests[id]
-		document, err := DecodeCandidateContentManifest(artifact.raw)
-		if err != nil {
-			return fmt.Errorf("検証済み candidate content を複製できません: %w", err)
-		}
-		if err := validator.ValidateCandidateContent(
-			ctx, bytes.Clone(artifact.raw), document,
-		); err != nil {
-			return fmt.Errorf("candidate content の外部参照検証に失敗しました: %w", err)
-		}
+	currentManifest, exists := artifacts.manifests[currentRequest.CandidateContentID]
+	if !exists {
+		return fmt.Errorf("current request の candidate content が存在しません")
 	}
-	for _, id := range sortedKeys(artifacts.requests) {
-		artifact := artifacts.requests[id]
-		document, err := DecodeEvaluationRequest(artifact.raw)
-		if err != nil {
-			return fmt.Errorf("検証済み evaluation request を複製できません: %w", err)
-		}
-		validation, err := validator.ValidateEvaluationRequest(
-			ctx, bytes.Clone(artifact.raw), document,
-		)
-		if err != nil {
-			return fmt.Errorf("evaluation request の外部参照検証に失敗しました: %w", err)
-		}
-		if err := validateCurrentSOTBinding(document, validation); err != nil {
-			return err
-		}
+	manifestDocument, err := DecodeCandidateContentManifest(currentManifest.raw)
+	if err != nil {
+		return fmt.Errorf("検証済み candidate content を複製できません: %w", err)
+	}
+	if err := validator.ValidateCandidateContent(
+		ctx, bytes.Clone(currentManifest.raw), manifestDocument,
+	); err != nil {
+		return fmt.Errorf("candidate content の外部参照検証に失敗しました: %w", err)
+	}
+	currentRequestArtifact, exists := artifacts.requests[currentRequest.EvaluationID]
+	if !exists {
+		return fmt.Errorf("current evaluation request が存在しません")
+	}
+	requestDocument, err := DecodeEvaluationRequest(currentRequestArtifact.raw)
+	if err != nil {
+		return fmt.Errorf("検証済み evaluation request を複製できません: %w", err)
+	}
+	validation, err := validator.ValidateEvaluationRequest(
+		ctx, bytes.Clone(currentRequestArtifact.raw), requestDocument,
+	)
+	if err != nil {
+		return fmt.Errorf("evaluation request の外部参照検証に失敗しました: %w", err)
+	}
+	if err := validateCurrentSOTBinding(requestDocument, validation); err != nil {
+		return err
 	}
 	return nil
 }

@@ -17,10 +17,10 @@ import (
 
 const (
 	nextProfileSetDevelopmentOnlyCalibrationID = "next-profile-set-development-only-calibration"
-	nextCalibratedCoreVersion                  = "core-2026-07-31-36"
+	nextCalibratedCoreVersion                  = "core-2026-07-31-37"
 	nextCalibratedJudicialVersion              = "judicial-cases-2026-07-31-12"
 	nextCalibratedProfileSetVersion            = "profile-set-sha256-" +
-		"5107d2ab16dd1668fe316c34d153b4eed3990ac6555db80f1617630529fe7c6c"
+		"1c8c43fa032148bf0cadd2548afef04b3b0927a9d1a621ef175f5bee781c41a3"
 )
 
 func TestNextProfileSetはDevelopmentだけで校正版を固定する(t *testing.T) {

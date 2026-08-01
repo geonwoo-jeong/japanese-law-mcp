@@ -11,6 +11,8 @@ import (
 type recordingReferenceValidator struct {
 	manifestCalls int
 	requestCalls  int
+	manifestIDs   []string
+	requestIDs    []string
 	reject        bool
 	currentSOTs   []SOTReference
 }
@@ -18,9 +20,10 @@ type recordingReferenceValidator struct {
 func (v *recordingReferenceValidator) ValidateCandidateContent(
 	_ context.Context,
 	_ []byte,
-	_ CandidateContentManifest,
+	document CandidateContentManifest,
 ) error {
 	v.manifestCalls++
+	v.manifestIDs = append(v.manifestIDs, document.CandidateContentID)
 	if v.reject {
 		return errRejectedReference
 	}
@@ -33,6 +36,7 @@ func (v *recordingReferenceValidator) ValidateEvaluationRequest(
 	document EvaluationRequest,
 ) (RequestReferenceValidation, error) {
 	v.requestCalls++
+	v.requestIDs = append(v.requestIDs, document.EvaluationID)
 	if v.reject {
 		return RequestReferenceValidation{}, errRejectedReference
 	}
@@ -150,19 +154,50 @@ func TestLoadPreparedCurrentは固定Schema以外を拒否する(t *testing.T) {
 	}
 }
 
-func TestLoadPreparedCurrentは複数の未評価Requestを拒否する(t *testing.T) {
+func TestLoadPreparedCurrentはReport前に継承されたRequestを保持して新Currentを返す(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	request := prepareCandidateEvaluationFixture(t, root)
-	request.BaselineVersion = "default-3"
-	request.EvaluationID = mustEvaluationID(t, request)
-	writeCandidateFixture(t, root, filepath.Join(
-		"testdata/legalquery/candidate-evaluations/requests",
-		request.EvaluationID+".json",
-	), mustCanonicalJSON(t, request))
-	if _, err := LoadPreparedCurrent(context.Background(), root, &recordingReferenceValidator{}); err == nil {
-		t.Fatal("複数の未評価 request を受理しました")
+	fixture := prepareSupersededCandidateEvaluationFixture(t, root, "default-3")
+	validator := &recordingReferenceValidator{}
+	prepared, err := LoadPreparedCurrent(context.Background(), root, validator)
+	if err != nil {
+		t.Fatalf("report 前に継承された準備成果物を拒否しました: %v", err)
+	}
+	if prepared.Request.EvaluationID != fixture.currentRequest.EvaluationID ||
+		prepared.CandidateContent.CandidateContentID != fixture.currentManifest.CandidateContentID {
+		t.Fatalf("current の準備成果物が一致しません: %+v", prepared)
+	}
+	if fixture.previousRequest.BaselineVersion != "default-2" ||
+		fixture.currentRequest.BaselineVersion != "default-3" {
+		t.Fatalf(
+			"継承前後の baseline 予約が不正です: previous=%q current=%q",
+			fixture.previousRequest.BaselineVersion,
+			fixture.currentRequest.BaselineVersion,
+		)
+	}
+	if validator.manifestCalls != 1 || validator.requestCalls != 1 ||
+		len(validator.manifestIDs) != 1 || validator.manifestIDs[0] != fixture.currentManifest.CandidateContentID ||
+		len(validator.requestIDs) != 1 || validator.requestIDs[0] != fixture.currentRequest.EvaluationID {
+		t.Fatalf(
+			"external validator が current 以外を検証しました: manifests=%v requests=%v",
+			validator.manifestIDs,
+			validator.requestIDs,
+		)
+	}
+}
+
+func TestLoadPreparedCurrentは継承済みRequestのBaseline予約再利用を拒否する(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	prepareSupersededCandidateEvaluationFixture(t, root, "default-2")
+	if _, err := LoadPreparedCurrent(
+		context.Background(),
+		root,
+		&recordingReferenceValidator{},
+	); err == nil || !strings.Contains(err.Error(), "baselineVersion") {
+		t.Fatalf("継承済み request の baseline 予約再利用を正しく拒否しませんでした: %v", err)
 	}
 }
 
@@ -271,6 +306,71 @@ func prepareCandidateEvaluationFixture(t *testing.T, root string) EvaluationRequ
 	pointer := PointerDocument{ArtifactKind: ArtifactKindPointer, SchemaVersion: SchemaVersionV2, EvaluationID: request.EvaluationID}
 	writeCandidateFixture(t, root, filepath.Join(base, "current.json"), mustCanonicalJSON(t, pointer))
 	return request
+}
+
+type supersededCandidateEvaluationFixture struct {
+	previousRequest EvaluationRequest
+	currentRequest  EvaluationRequest
+	currentManifest CandidateContentManifest
+}
+
+func prepareSupersededCandidateEvaluationFixture(
+	t *testing.T,
+	root string,
+	currentBaselineVersion string,
+) supersededCandidateEvaluationFixture {
+	t.Helper()
+	previous := prepareCandidateEvaluationFixture(t, root)
+	base := filepath.Join("testdata", "legalquery", "candidate-evaluations")
+
+	manifest := manifestWithID(t)
+	manifest.ProfileSet.ProfileSetVersion = "profile-set-v2"
+	manifest.Composition.ProfileSetVersion = "profile-set-v2"
+	manifest.Composition.CompositionVersion = "composition-v2"
+	manifest.Composition.DescriptorSHA256 = mustCompositionDigest(t, manifest.Composition)
+	manifest.CandidateContentID = mustCandidateID(t, manifest)
+	architecture := validReviewAttestation(t, manifest, ReviewScopeArchitecture, "authority-c")
+	testability := validReviewAttestation(t, manifest, ReviewScopeTestability, "authority-d")
+	request := validEvaluationRequest(t, manifest)
+	request.ReviewAttestations = []ReviewAttestationReference{
+		{
+			ReviewScope:       ReviewScopeArchitecture,
+			AttestationID:     architecture.AttestationID,
+			AttestationSHA256: RawSHA256(mustCanonicalJSON(t, architecture)),
+		},
+		{
+			ReviewScope:       ReviewScopeTestability,
+			AttestationID:     testability.AttestationID,
+			AttestationSHA256: RawSHA256(mustCanonicalJSON(t, testability)),
+		},
+	}
+	request.BaselineVersion = currentBaselineVersion
+	request.EvaluationID = mustEvaluationID(t, request)
+
+	writeCandidateFixture(t, root, filepath.Join(
+		base, "content-manifests", manifest.CandidateContentID+".json",
+	), mustCanonicalJSON(t, manifest))
+	writeCandidateFixture(t, root, filepath.Join(
+		base, "review-attestations", architecture.AttestationID+".json",
+	), mustCanonicalJSON(t, architecture))
+	writeCandidateFixture(t, root, filepath.Join(
+		base, "review-attestations", testability.AttestationID+".json",
+	), mustCanonicalJSON(t, testability))
+	writeCandidateFixture(t, root, filepath.Join(
+		base, "requests", request.EvaluationID+".json",
+	), mustCanonicalJSON(t, request))
+	pointer := PointerDocument{
+		ArtifactKind:  ArtifactKindPointer,
+		SchemaVersion: SchemaVersionV2,
+		EvaluationID:  request.EvaluationID,
+	}
+	writeCandidateFixture(t, root, filepath.Join(base, "current.json"), mustCanonicalJSON(t, pointer))
+
+	return supersededCandidateEvaluationFixture{
+		previousRequest: previous,
+		currentRequest:  request,
+		currentManifest: manifest,
+	}
 }
 
 func writeCandidateFixture(t *testing.T, root, relative string, raw []byte) {

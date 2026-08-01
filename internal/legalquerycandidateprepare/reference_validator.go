@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryadoption"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/evaluators"
@@ -75,9 +76,13 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			fmt.Errorf("evaluatorVersion が現行の閉じた evaluator と一致しません")
 	}
-	if document.BaselineVersion != "default-2" {
+	adoption, err := legalqueryadoption.LoadCurrentFromRoot(ctx, v.repositoryRoot)
+	if err != nil {
+		return legalquerycandidateeval.RequestReferenceValidation{}, err
+	}
+	if document.BaselineVersion == adoption.BaselineVersion() {
 		return legalquerycandidateeval.RequestReferenceValidation{},
-			fmt.Errorf("初回候補の baselineVersion が default-2 ではありません")
+			fmt.Errorf("現行 baselineVersion は候補予約に使用できません")
 	}
 	references, err := BuildRequiredSOTReferences(ctx, v.repositoryRoot)
 	if err != nil {

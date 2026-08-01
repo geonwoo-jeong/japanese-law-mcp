@@ -155,6 +155,13 @@ current adoption tuple から到達する production 経路を確認する
 常に固定する版ではない。初回導入後の現行値は current adoption tuple を
 定義元とする。
 
+`default-2` の構造上有効な report が完成する前に、候補 source または review 対象を
+修正しなければ再試行できなくなった場合は、第 4 段階 4 の再準備として扱う。
+`SOT-ENG-038` に従って `default-2` の不変な準備成果物を置換済み準備として残し、
+次の未使用予約名、二件の content-bound review、新しい request および pointer を
+一変更で準備する。有効な result がない旧 request を holdout 消費または第 4 段階 5 の
+完了へ読み替えず、新 request の権威 CI が成功する前に manual dispatch へ進まない。
+
 holdout の結果を見て同じ候補 profile set の値、辞書、規則または期待値を
 調整しない。受入基準を満たさない場合は第 5 段階へ進まず、失敗した候補を
 採用対象から外して、新しい準備変更として第 3 段階以降をやり直す。

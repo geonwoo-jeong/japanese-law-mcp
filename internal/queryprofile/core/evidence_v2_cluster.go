@@ -95,7 +95,11 @@ func mergeCoreEvidenceEquivalentDrafts(
 		if err != nil {
 			return nil, err
 		}
-		key, eligible, err := evaluation.mapping.ClusterKey(reference.draftID)
+		mapping, err := evaluation.mappingFor(reference.draftID)
+		if err != nil {
+			return nil, err
+		}
+		key, eligible, err := mapping.ClusterKey(reference.draftID)
 		if err != nil {
 			return nil, err
 		}
@@ -232,7 +236,11 @@ func (p *Profile) prepareCoreEvidenceDrafts(
 		if err != nil {
 			return nil, err
 		}
-		cluster, eligible, err := evaluation.mapping.ClusterKey(
+		mapping, err := evaluation.mappingFor(reference.draftID)
+		if err != nil {
+			return nil, err
+		}
+		cluster, eligible, err := mapping.ClusterKey(
 			reference.draftID,
 		)
 		if err != nil {
@@ -242,7 +250,7 @@ func (p *Profile) prepareCoreEvidenceDrafts(
 			continue
 		}
 		summary, err := coreNormalizedEvidenceFor(
-			evaluation.mapping,
+			mapping,
 			reference,
 			evaluation.facts.byID,
 		)

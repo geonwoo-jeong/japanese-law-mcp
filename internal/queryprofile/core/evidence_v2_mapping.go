@@ -10,9 +10,9 @@ import (
 )
 
 type coreEvidenceEvaluation struct {
-	mapping profileevidence.Mapping
-	drafts  []coreEvidenceDraftRef
-	facts   coreEvidenceFactSet
+	mappings map[string]profileevidence.Mapping
+	drafts   []coreEvidenceDraftRef
+	facts    coreEvidenceFactSet
 }
 
 type coreEvidenceDraftRef struct {
@@ -59,6 +59,19 @@ type coreCueFactMetadata struct {
 	directTask bool
 }
 
+func (e coreEvidenceEvaluation) mappingFor(
+	draftID string,
+) (profileevidence.Mapping, error) {
+	mapping, exists := e.mappings[draftID]
+	if !exists {
+		return profileevidence.Mapping{}, fmt.Errorf(
+			"core evidence draft %q の mapping がありません",
+			draftID,
+		)
+	}
+	return mapping, nil
+}
+
 func buildCoreEvidenceEvaluation(
 	input legalquery.CandidateGenerationInput,
 	cues resolvedCues,
@@ -86,10 +99,10 @@ func buildCoreEvidenceEvaluation(
 		return coreEvidenceEvaluation{}, err
 	}
 
-	values := profileevidence.MappingValues{
-		ProfileID: profileID,
-		Facts:     facts.values,
-	}
+	mappings := make(
+		map[string]profileevidence.Mapping,
+		len(drafts),
+	)
 	references := make([]coreEvidenceDraftRef, 0, len(drafts))
 	for index, draft := range drafts {
 		draftValue, reference, retained, buildErr :=
@@ -100,20 +113,32 @@ func buildCoreEvidenceEvaluation(
 		if !retained {
 			continue
 		}
-		values.Drafts = append(values.Drafts, draftValue)
+		mapping, mappingErr := profileevidence.NewMapping(
+			profileevidence.MappingValues{
+				ProfileID: profileID,
+				Facts:     facts.values,
+				Drafts:    []profileevidence.DraftValues{draftValue},
+			},
+		)
+		if mappingErr != nil {
+			return coreEvidenceEvaluation{}, fmt.Errorf(
+				"core evidence mapping を構築できません: %w",
+				mappingErr,
+			)
+		}
+		if _, exists := mappings[reference.draftID]; exists {
+			return coreEvidenceEvaluation{}, fmt.Errorf(
+				"core evidence draft %q の mapping が重複しています",
+				reference.draftID,
+			)
+		}
+		mappings[reference.draftID] = mapping
 		references = append(references, reference)
 	}
-	mapping, err := profileevidence.NewMapping(values)
-	if err != nil {
-		return coreEvidenceEvaluation{}, fmt.Errorf(
-			"core evidence mapping を構築できません: %w",
-			err,
-		)
-	}
 	return coreEvidenceEvaluation{
-		mapping: mapping,
-		drafts:  references,
-		facts:   facts,
+		mappings: mappings,
+		drafts:   references,
+		facts:    facts,
 	}, nil
 }
 
