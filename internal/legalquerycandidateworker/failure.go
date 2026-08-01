@@ -13,8 +13,9 @@ const (
 	FailureCodeResultDecode   = 17
 	FailureCodeHandoffWrite   = 18
 	FailureCodeTrackedReplay  = 19
-	FailureCodeWorkerSpawn    = 20
-	FailureCodeUnknown        = 21
+	FailureCodeHandoffRead    = 20
+	FailureCodeWorkerSpawn    = 21
+	FailureCodeUnknown        = 22
 )
 
 type stageFailure interface {

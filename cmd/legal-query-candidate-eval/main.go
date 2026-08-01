@@ -41,8 +41,9 @@ const (
 	workerFailureResultDecode   = 17
 	workerFailureHandoffWrite   = 18
 	workerFailureTrackedReplay  = 19
-	workerFailureSpawn          = 20
-	workerFailureUnknown        = 21
+	workerFailureHandoffRead    = 20
+	workerFailureSpawn          = 21
+	workerFailureUnknown        = 22
 )
 
 type candidateOptions struct {
@@ -309,7 +310,14 @@ func preparedHandoffWithRunner(
 	if err != nil {
 		return candidateHandoff{}, classifyWorkerFailure(err, stderr.String())
 	}
-	return reader(outputDirectory)
+	handoff, err := reader(outputDirectory)
+	if err != nil {
+		return candidateHandoff{}, workerFailureError{
+			code: workerFailureHandoffRead,
+			err:  err,
+		}
+	}
+	return handoff, nil
 }
 
 func runCandidateWorker(
@@ -359,7 +367,7 @@ func parseWorkerExitStatus(stderr string) (int, bool) {
 		if code == exitValidation {
 			return workerFailureSpawn, true
 		}
-		if isWorkerFailureCode(code) {
+		if isChildWorkerExitCode(code) {
 			return code, true
 		}
 		return workerFailureUnknown, true
@@ -369,6 +377,11 @@ func parseWorkerExitStatus(stderr string) (int, bool) {
 
 func isWorkerFailureCode(code int) bool {
 	return code >= workerFailurePreparedLoad && code <= workerFailureUnknown
+}
+
+func isChildWorkerExitCode(code int) bool {
+	return (code >= workerFailurePreparedLoad && code <= workerFailureTrackedReplay) ||
+		code == workerFailureUnknown
 }
 
 type tailBuffer struct {

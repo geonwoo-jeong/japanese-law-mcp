@@ -39,3 +39,4 @@
 - [37-unified-query-candidate-evaluation-handoff.md](37-unified-query-candidate-evaluation-handoff.md)
 - [38-content-bound-candidate-evaluation-handoff.md](38-content-bound-candidate-evaluation-handoff.md)
 - [39-content-bound-unified-query-rollout-stages.md](39-content-bound-unified-query-rollout-stages.md)
+- [40-candidate-evaluation-failure-diagnostics.md](40-candidate-evaluation-failure-diagnostics.md)

@@ -123,7 +123,7 @@ func TestChildWorkerEnvironmentRejectsDriftAndAmbientState(t *testing.T) {
 			return append(values, "HOME=/home/runner")
 		},
 		"credential": func(values []string) []string {
-			return append(values, "CANDIDATE_TEST_TOKEN=credential-test-value")
+			return append(values, "CANDIDATE_TEST_TOKEN=sample-private-token")
 		},
 		"任意の環境変数": func(values []string) []string {
 			return append(values, "LANG=ja_JP.UTF-8")
@@ -252,7 +252,7 @@ func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
 	sensitive := []string{
 		"永住許可の条件を教えて",
 		"/home/runner/private/verified-source",
-		"credential-test-value-do-not-use",
+		"sample-private-token-do-not-use",
 	}
 	var stdout, stderr bytes.Buffer
 	code := run(
@@ -316,6 +316,33 @@ func TestPreparedHandoffParsesWorkerExitStatusWithoutLeakingRawStderr(t *testing
 	}
 }
 
+func TestPreparedHandoffReaderFailureUsesDedicatedCode(t *testing.T) {
+	t.Parallel()
+
+	forbiddenSample := "永住許可 /private/path handoff-read-marker"
+	_, err := preparedHandoffWithRunner(
+		context.Background(),
+		fixedOutputDirectory,
+		fixedEnvironment(),
+		func(_ context.Context, args []string, _ []string, _ io.Writer, _ io.Writer) error {
+			if len(args) != 3 || args[2] != "--output-directory="+fixedOutputDirectory {
+				t.Fatalf("%s: args=%#v", verificationCIAuthority, args)
+			}
+			return nil
+		},
+		func(string) (candidateHandoff, error) {
+			return candidateHandoff{}, errors.New(forbiddenSample)
+		},
+	)
+	var failed workerFailure
+	if !errors.As(err, &failed) || failed.FailureExitCode() != workerFailureHandoffRead {
+		t.Fatalf("%s: err=%v, want code %d", verificationOutcomeExit, err, workerFailureHandoffRead)
+	}
+	if strings.Contains(err.Error(), forbiddenSample) {
+		t.Fatalf("%s: reader detail が error に残りました", verificationOutputPrivacy)
+	}
+}
+
 func TestPreparedHandoffClassifiesUnknownAndSpawnFailures(t *testing.T) {
 	t.Parallel()
 
@@ -340,6 +367,18 @@ func TestPreparedHandoffClassifiesUnknownAndSpawnFailures(t *testing.T) {
 		{
 			name:      "go run の exit status 1 はspawn",
 			stderr:    "exit status 1\n",
+			wantCode:  workerFailureSpawn,
+			runnerErr: errors.New("failed"),
+		},
+		{
+			name:      "最後の非空行だけを使う",
+			stderr:    "exit status 18\nexit status 99\n",
+			wantCode:  workerFailureUnknown,
+			runnerErr: errors.New("failed"),
+		},
+		{
+			name:      "末尾が非終了行ならspawn",
+			stderr:    "exit status 18\ngeneric worker line\n",
 			wantCode:  workerFailureSpawn,
 			runnerErr: errors.New("failed"),
 		},
@@ -368,6 +407,22 @@ func TestPreparedHandoffClassifiesUnknownAndSpawnFailures(t *testing.T) {
 	}
 }
 
+func TestTailBufferKeepsOnlyBoundedSuffix(t *testing.T) {
+	t.Parallel()
+
+	var buffer tailBuffer
+	buffer.max = 8
+	if _, err := buffer.Write([]byte("12345")); err != nil {
+		t.Fatalf("first write failed: %v", err)
+	}
+	if _, err := buffer.Write([]byte("67890")); err != nil {
+		t.Fatalf("second write failed: %v", err)
+	}
+	if got := buffer.String(); got != "34567890" {
+		t.Fatalf("tail=%q, want %q", got, "34567890")
+	}
+}
+
 func TestWorkerFailureCodeTableMatchesInternalWorker(t *testing.T) {
 	t.Parallel()
 
@@ -382,6 +437,7 @@ func TestWorkerFailureCodeTableMatchesInternalWorker(t *testing.T) {
 		legalquerycandidateworker.FailureCodeResultDecode,
 		legalquerycandidateworker.FailureCodeHandoffWrite,
 		legalquerycandidateworker.FailureCodeTrackedReplay,
+		legalquerycandidateworker.FailureCodeHandoffRead,
 		legalquerycandidateworker.FailureCodeWorkerSpawn,
 		legalquerycandidateworker.FailureCodeUnknown,
 	}
@@ -396,6 +452,7 @@ func TestWorkerFailureCodeTableMatchesInternalWorker(t *testing.T) {
 		workerFailureResultDecode,
 		workerFailureHandoffWrite,
 		workerFailureTrackedReplay,
+		workerFailureHandoffRead,
 		workerFailureSpawn,
 		workerFailureUnknown,
 	}
