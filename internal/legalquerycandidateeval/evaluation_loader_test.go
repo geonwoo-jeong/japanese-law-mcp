@@ -11,12 +11,20 @@ func TestLoadCurrentEvaluationは未評価とReplay履歴を同じ入口で返�
 
 	root := t.TempDir()
 	request := prepareCandidateEvaluationFixture(t, root)
-	current, err := LoadCurrentEvaluation(context.Background(), root, &recordingReferenceValidator{})
+	pendingValidator := &recordingReferenceValidator{}
+	current, err := LoadCurrentEvaluation(context.Background(), root, pendingValidator)
 	if err != nil {
 		t.Fatalf("未評価 current を読めません: %v", err)
 	}
 	if current.Prepared.Request.EvaluationID != request.EvaluationID || current.CurrentResult != nil || len(current.History) != 0 {
 		t.Fatalf("未評価 current の状態が不正です: %+v", current)
+	}
+	if pendingValidator.manifestCalls != 1 || pendingValidator.requestCalls != 1 {
+		t.Fatalf(
+			"未評価 current の外部参照検証 = manifest:%d request:%d",
+			pendingValidator.manifestCalls,
+			pendingValidator.requestCalls,
+		)
 	}
 
 	requestRaw := mustCanonicalJSON(t, request)
@@ -36,12 +44,20 @@ func TestLoadCurrentEvaluationは未評価とReplay履歴を同じ入口で返�
 		"testdata/legalquery/candidate-evaluations/failed-reports",
 		request.EvaluationID+".json",
 	), reportRaw)
-	current, err = LoadCurrentEvaluation(context.Background(), root, &recordingReferenceValidator{})
+	replayValidator := &recordingReferenceValidator{reject: true}
+	current, err = LoadCurrentEvaluation(context.Background(), root, replayValidator)
 	if err != nil {
 		t.Fatalf("tracked replay current を読めません: %v", err)
 	}
 	if current.CurrentResult == nil || *current.CurrentResult != result || len(current.History) != 1 {
 		t.Fatalf("tracked replay 履歴が一致しません: %+v", current)
+	}
+	if replayValidator.manifestCalls != 0 || replayValidator.requestCalls != 0 {
+		t.Fatalf(
+			"tracked replay が現在の外部参照を再検証しました: manifest:%d request:%d",
+			replayValidator.manifestCalls,
+			replayValidator.requestCalls,
+		)
 	}
 }
 

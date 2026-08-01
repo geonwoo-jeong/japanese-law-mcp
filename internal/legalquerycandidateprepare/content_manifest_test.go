@@ -11,6 +11,12 @@ func TestBuildContentManifestは校正済み候補と許可辞書だけを固定
 	t *testing.T,
 ) {
 	t.Parallel()
+	const (
+		wantCoreMetadataSHA256     = "e231e76f77ca2f15d05e25682a4f886ecde0e5a5911ed84615089cddeef945eb"
+		wantCoreCueSHA256          = "051274a729bd74b014e5cf6b628e843db498c56445475b503eb27e99e6610cd2"
+		wantJudicialMetadataSHA256 = "8bc09fb8f1426c5305e23bfa32b2a062d9670cc12be2447117b0d83d709d5f04"
+		wantJudicialCueSHA256      = "6fe7f943d5ca80d9f88fbc06e85050710f104940322b04cde22f309f33fdb1ac"
+	)
 
 	repository, err := filepath.Abs(filepath.Join("..", ".."))
 	if err != nil {
@@ -23,15 +29,23 @@ func TestBuildContentManifestは校正済み候補と許可辞書だけを固定
 	}
 	if manifest.CandidateContentID == "" ||
 		manifest.ProfileSet.ProfileSetID != "default" ||
-		manifest.ProfileSet.ProfileSetVersion != "profile-set-sha256-1c8c43fa032148bf0cadd2548afef04b3b0927a9d1a621ef175f5bee781c41a3" ||
+		manifest.ProfileSet.ProfileSetVersion != "profile-set-sha256-0b00c3409408684b825f3c0bdf1c874bdc99e5383564d8e6b66fe83d4e417a69" ||
 		manifest.ProfileSet.RankingVersion != "legal-query-ranking-2026-07-31-2" {
 		t.Fatalf("candidate-evaluation-candidate-content-identity: profileSet = %#v", manifest.ProfileSet)
 	}
 	if len(manifest.ProfileArtifacts) != 2 ||
 		manifest.ProfileArtifacts[0].ProfileID != "core" ||
-		manifest.ProfileArtifacts[0].ProfileVersion != "core-2026-07-31-37" ||
+		manifest.ProfileArtifacts[0].ProfileVersion != "core-2026-07-31-38" ||
+		manifest.ProfileArtifacts[0].MetadataSchemaVersion != 2 ||
+		manifest.ProfileArtifacts[0].MetadataCanonicalSHA256 != wantCoreMetadataSHA256 ||
+		manifest.ProfileArtifacts[0].CueSetVersion != "core-cues-2026-07-31-17" ||
+		manifest.ProfileArtifacts[0].CueArtifactSHA256 != wantCoreCueSHA256 ||
 		manifest.ProfileArtifacts[1].ProfileID != "judicial-cases" ||
-		manifest.ProfileArtifacts[1].ProfileVersion != "judicial-cases-2026-07-31-12" {
+		manifest.ProfileArtifacts[1].ProfileVersion != "judicial-cases-2026-07-31-12" ||
+		manifest.ProfileArtifacts[1].MetadataSchemaVersion != 2 ||
+		manifest.ProfileArtifacts[1].MetadataCanonicalSHA256 != wantJudicialMetadataSHA256 ||
+		manifest.ProfileArtifacts[1].CueSetVersion != "judicial-cases-cues-2026-07-31-5" ||
+		manifest.ProfileArtifacts[1].CueArtifactSHA256 != wantJudicialCueSHA256 {
 		t.Fatalf("candidate-evaluation-candidate-content-identity: profiles = %#v", manifest.ProfileArtifacts)
 	}
 	if len(manifest.LexiconArtifacts) != 2 ||

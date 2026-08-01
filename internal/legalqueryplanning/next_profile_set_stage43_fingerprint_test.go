@@ -15,7 +15,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
-const stage43ExpectedCalibrationFingerprint = "73d4a5d02241c9f5dae8d668e427e0b4923418e522173d393abf2c1dc9aa2d9b"
+const stage43ExpectedCalibrationFingerprint = "456d237f980e1114638064411fb49ef91d281989b0578279b1081011eba2d9b0"
 
 func stage43ExpectedCalibrationScorecard() stage43CalibrationScorecard {
 	return stage43CalibrationScorecard{
@@ -23,11 +23,11 @@ func stage43ExpectedCalibrationScorecard() stage43CalibrationScorecard {
 		RequestErrorCount:       2,
 		RequestErrorMatched:     2,
 		PlanCount:               41,
-		PlanOutcomeMatched:      26,
+		PlanOutcomeMatched:      28,
 		MeaningCount:            43,
 		MeaningSignatureMatched: 38,
 		EvidenceApplicable:      38,
-		EvidenceMatched:         10,
+		EvidenceMatched:         11,
 		ConceptApplicable:       1,
 		ConceptMatched:          1,
 	}

@@ -72,9 +72,6 @@ func loadCurrentEvaluationFromRoot(
 	if !exists {
 		return CurrentEvaluation{}, fmt.Errorf("current evaluation request が存在しません")
 	}
-	if err := validateExternalReferences(ctx, current.document, artifacts, referenceValidator); err != nil {
-		return CurrentEvaluation{}, err
-	}
 	results, err := loadTrackedResults(ctx, root, schema, layout)
 	if err != nil {
 		return CurrentEvaluation{}, err
@@ -86,6 +83,19 @@ func loadCurrentEvaluationFromRoot(
 	)
 	if err != nil {
 		return CurrentEvaluation{}, err
+	}
+	// 未評価の current だけを現在の source と照合する。評価済みの
+	// current は不変な request/result/report の replay であり、後続候補の
+	// source への変更に結び付けない。
+	if currentResult == nil {
+		if err := validateExternalReferences(
+			ctx,
+			current.document,
+			artifacts,
+			referenceValidator,
+		); err != nil {
+			return CurrentEvaluation{}, err
+		}
 	}
 	reports, err := validateTrackedReportBindings(repository, root, artifacts.requests, results, layout)
 	if err != nil {

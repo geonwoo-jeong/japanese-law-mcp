@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "profileId": "core",
-  "cueSetVersion": "core-cues-2026-07-31-16",
+  "cueSetVersion": "core-cues-2026-07-31-17",
   "cues": [
     {
       "cueId": "operator-all",
@@ -202,6 +202,15 @@
       ]
     },
     {
+      "cueId": "syntax-task-predicate-search-modifier",
+      "category": "syntax",
+      "value": "task_predicate",
+      "syntaxRole": "task_predicate",
+      "terms": [
+        "横断検索してください"
+      ]
+    },
+    {
       "cueId": "task-list-updates",
       "category": "task",
       "value": "list_updates",
@@ -241,6 +250,7 @@
       "syntaxRole": "task_expression",
       "terms": [
         "探したい",
+        "探したいです",
         "探して",
         "探してください",
         "探す",
@@ -291,6 +301,7 @@
         "当たるか",
         "有効か",
         "法的に判断",
+        "法的に判断してください",
         "署名すべき",
         "違法ですか",
         "違法なら",

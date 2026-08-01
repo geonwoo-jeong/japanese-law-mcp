@@ -17,10 +17,10 @@ import (
 
 const (
 	nextProfileSetDevelopmentOnlyCalibrationID = "next-profile-set-development-only-calibration"
-	nextCalibratedCoreVersion                  = "core-2026-07-31-37"
+	nextCalibratedCoreVersion                  = "core-2026-07-31-38"
 	nextCalibratedJudicialVersion              = "judicial-cases-2026-07-31-12"
 	nextCalibratedProfileSetVersion            = "profile-set-sha256-" +
-		"1c8c43fa032148bf0cadd2548afef04b3b0927a9d1a621ef175f5bee781c41a3"
+		"0b00c3409408684b825f3c0bdf1c874bdc99e5383564d8e6b66fe83d4e417a69"
 )
 
 func TestNextProfileSetはDevelopmentだけで校正版を固定する(t *testing.T) {
@@ -42,7 +42,7 @@ func TestNextProfileSetはDevelopmentだけで校正版を固定する(t *testin
 		t,
 		repository,
 	)
-	if firstDevelopment.CorpusVersion() != "corpus-v10" ||
+	if firstDevelopment.CorpusVersion() != "corpus-v11" ||
 		firstDevelopment.SchemaVersion() != 2 ||
 		len(firstDevelopment.Cases()) != 43 ||
 		firstDevelopment.ContentDigest() != secondDevelopment.ContentDigest() {
@@ -78,7 +78,7 @@ func loadStage43CalibrationRun(
 	development, err := legalquerycorpus.LoadDevelopment(
 		t.Context(),
 		developmentOnlyRepository,
-		"testdata/legalquery/corpus-v10/development",
+		"testdata/legalquery/corpus-v11/development",
 	)
 	if err != nil {
 		t.Fatalf(
@@ -105,7 +105,7 @@ func assertStage43CalibratedVersions(t *testing.T, dependencies Dependencies) {
 	if len(metadata) != 2 ||
 		metadata[0].ProfileID() != "core" ||
 		metadata[0].ProfileVersion() != nextCalibratedCoreVersion ||
-		metadata[0].CueSetVersion() != "core-cues-2026-07-31-16" ||
+		metadata[0].CueSetVersion() != "core-cues-2026-07-31-17" ||
 		metadata[1].ProfileID() != JudicialCasesPackID ||
 		metadata[1].ProfileVersion() != nextCalibratedJudicialVersion ||
 		metadata[1].CueSetVersion() !=
@@ -393,12 +393,12 @@ func TestNextProfileSetはDevelopmentOnly入力だけで再現する(t *testing.
 			developmentOnlyRepository,
 			"testdata",
 			"legalquery",
-			"corpus-v10",
+			"corpus-v11",
 		),
 	)
 	if !slices.Equal(entries, []string{"development"}) {
 		t.Fatalf(
-			"%s: copied corpus-v10 entries = %#v",
+			"%s: copied corpus-v11 entries = %#v",
 			nextProfileSetDevelopmentOnlyCalibrationID,
 			entries,
 		)
@@ -406,7 +406,7 @@ func TestNextProfileSetはDevelopmentOnly入力だけで再現する(t *testing.
 	if _, err := legalquerycorpus.LoadDevelopment(
 		context.Background(),
 		developmentOnlyRepository,
-		"testdata/legalquery/corpus-v10/development",
+		"testdata/legalquery/corpus-v11/development",
 	); err != nil {
 		t.Fatalf(
 			"%s: development-only repository を読めません: %v",
@@ -461,14 +461,14 @@ func stage43DevelopmentOnlyRepository(
 			repositoryRoot,
 			"testdata",
 			"legalquery",
-			"corpus-v10",
+			"corpus-v11",
 			"development",
 		),
 		filepath.Join(
 			root,
 			"testdata",
 			"legalquery",
-			"corpus-v10",
+			"corpus-v11",
 			"development",
 		),
 	)
