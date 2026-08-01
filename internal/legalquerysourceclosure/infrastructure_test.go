@@ -93,6 +93,111 @@ func TestNewLocalBuilderCreatesConcreteDependencies(t *testing.T) {
 	}
 }
 
+func TestNewLocalBuilderはHOMEなしの閉じた環境だけで構成する(t *testing.T) {
+	const childProcessName = "candidate-evaluation-build-context-isolation"
+
+	if os.Args[0] == childProcessName {
+		builder, err := NewLocalBuilder(t.Context())
+		if err != nil {
+			t.Fatalf("candidate-evaluation-build-context-isolation: NewLocalBuilder() error = %v", err)
+		}
+		toolchain, ok := builder.Toolchain.(*CommandToolchain)
+		if !ok {
+			t.Fatalf("candidate-evaluation-build-context-isolation: toolchain = %T", builder.Toolchain)
+		}
+		goBinary, err := exec.LookPath("go")
+		if err != nil {
+			t.Fatalf("candidate-evaluation-build-context-isolation: Go command を解決できません: %v", err)
+		}
+		goBinary, err = filepath.EvalSymlinks(goBinary)
+		if err != nil {
+			t.Fatalf("candidate-evaluation-build-context-isolation: Go command の symlink を解決できません: %v", err)
+		}
+		wantInfrastructure := ToolchainInfrastructure{
+			GoBinary:           goBinary,
+			GoRoot:             os.Getenv("GOROOT"),
+			ModuleCache:        os.Getenv("GOMODCACHE"),
+			BuildCache:         os.Getenv("GOCACHE"),
+			TemporaryDirectory: os.Getenv("TMPDIR"),
+		}
+		if toolchain.infrastructure != wantInfrastructure {
+			t.Fatalf("candidate-evaluation-build-context-isolation: infrastructure = %#v, want %#v", toolchain.infrastructure, wantInfrastructure)
+		}
+		modules, ok := builder.Modules.(*ModuleCacheProvider)
+		if !ok {
+			t.Fatalf("candidate-evaluation-build-context-isolation: module provider = %T", builder.Modules)
+		}
+		if modules.cacheRoot != wantInfrastructure.ModuleCache {
+			t.Fatalf("candidate-evaluation-build-context-isolation: module cache = %q, want %q", modules.cacheRoot, wantInfrastructure.ModuleCache)
+		}
+		return
+	}
+
+	goBinary, err := exec.LookPath("go")
+	if err != nil {
+		t.Skip("Go command がありません")
+	}
+	goBinary, err = filepath.EvalSymlinks(goBinary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	goRoot := testRuntimeGoRoot(t, goBinary)
+	moduleCache := t.TempDir()
+	buildCache := t.TempDir()
+	temporaryDirectory := t.TempDir()
+	testBinary, err := os.Executable()
+	if err != nil {
+		t.Fatalf("test executable を解決できません: %v", err)
+	}
+	command := exec.CommandContext( //nolint:gosec // SOT-ENG-038: os.Executable で得た同じ test binary と固定 test 名だけを子 process へ渡す。
+		t.Context(),
+		testBinary,
+		"-test.run=^TestNewLocalBuilderはHOMEなしの閉じた環境だけで構成する$",
+	)
+	command.Args[0] = childProcessName
+	command.Env = []string{
+		"PATH=" + filepath.Dir(goBinary),
+		"GOROOT=" + goRoot,
+		"GOMODCACHE=" + moduleCache,
+		"GOCACHE=" + buildCache,
+		"TMPDIR=" + temporaryDirectory,
+	}
+	output, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("candidate-evaluation-build-context-isolation: HOME なしの閉じた環境で builder を構成できません: %v\n%s", err, output)
+	}
+}
+
+func TestNewLocalBuilderはHOMEなしの閉じた環境でCachePath欠落を拒否する(t *testing.T) {
+	goBinary, err := exec.LookPath("go")
+	if err != nil {
+		t.Skip("Go command がありません")
+	}
+	goBinary, err = filepath.EvalSymlinks(goBinary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, missing := range []string{"GOROOT", "GOMODCACHE", "GOCACHE", "TMPDIR"} {
+		t.Run(missing, func(t *testing.T) {
+			infrastructureRoot := t.TempDir()
+			t.Setenv("GOROOT", infrastructureRoot)
+			t.Setenv("GOMODCACHE", infrastructureRoot)
+			t.Setenv("GOCACHE", infrastructureRoot)
+			t.Setenv("TMPDIR", infrastructureRoot)
+			t.Setenv(missing, "")
+
+			_, err := newClosedEnvironmentBuilder(goBinary)
+			if err == nil || !strings.Contains(err.Error(), missing) {
+				t.Fatalf(
+					"candidate-evaluation-build-context-isolation: %s 欠落の error = %v",
+					missing,
+					err,
+				)
+			}
+		})
+	}
+}
+
 func TestNewLocalBuilderは取消済みContextを拒否する(t *testing.T) {
 	t.Parallel()
 

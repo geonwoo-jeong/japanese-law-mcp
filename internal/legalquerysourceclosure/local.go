@@ -11,8 +11,9 @@ import (
 
 const maximumGoEnvironmentBytes = 32 << 10
 
-// NewLocalBuilder は、PATH 上の Go executable とその既定 cache を固定した builder を返す。
-// ambient GO* 変数と workspace は discovery と dependency 列挙のどちらにも継承しない。
+// NewLocalBuilder は、PATH 上の Go executable と固定済み cache を使う builder を返す。
+// HOME のない閉じた CI 環境では allowlist 済み infrastructure path を使い、
+// 通常環境では既定 cache を閉じた go env command で発見する。
 func NewLocalBuilder(ctx context.Context) (Builder, error) {
 	if ctx == nil {
 		return Builder{}, fmt.Errorf("go cache discovery context は nil にできません")
@@ -31,6 +32,9 @@ func NewLocalBuilder(ctx context.Context) (Builder, error) {
 	binary, err = validateGoBinary(binary)
 	if err != nil {
 		return Builder{}, err
+	}
+	if os.Getenv("HOME") == "" {
+		return newClosedEnvironmentBuilder(binary)
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -62,17 +66,48 @@ func NewLocalBuilder(ctx context.Context) (Builder, error) {
 	if err := json.Unmarshal(output, &environment); err != nil {
 		return Builder{}, fmt.Errorf("go env cache discovery output を解析できません")
 	}
-	toolchain, err := NewCommandToolchain(ToolchainInfrastructure{
+	return newInfrastructureBuilder(ToolchainInfrastructure{
 		GoBinary:           binary,
 		GoRoot:             environment.GoRoot,
 		ModuleCache:        environment.ModuleCache,
 		BuildCache:         environment.BuildCache,
 		TemporaryDirectory: os.TempDir(),
 	})
+}
+
+func newClosedEnvironmentBuilder(goBinary string) (Builder, error) {
+	required := []struct {
+		name  string
+		value string
+	}{
+		{name: "GOROOT", value: os.Getenv("GOROOT")},
+		{name: "GOMODCACHE", value: os.Getenv("GOMODCACHE")},
+		{name: "GOCACHE", value: os.Getenv("GOCACHE")},
+		{name: "TMPDIR", value: os.Getenv("TMPDIR")},
+	}
+	for _, variable := range required {
+		if variable.value == "" {
+			return Builder{}, fmt.Errorf(
+				"閉じた go cache 環境に %s がありません",
+				variable.name,
+			)
+		}
+	}
+	return newInfrastructureBuilder(ToolchainInfrastructure{
+		GoBinary:           goBinary,
+		GoRoot:             required[0].value,
+		ModuleCache:        required[1].value,
+		BuildCache:         required[2].value,
+		TemporaryDirectory: required[3].value,
+	})
+}
+
+func newInfrastructureBuilder(infrastructure ToolchainInfrastructure) (Builder, error) {
+	toolchain, err := NewCommandToolchain(infrastructure)
 	if err != nil {
 		return Builder{}, err
 	}
-	modules, err := NewModuleCacheProvider(environment.ModuleCache)
+	modules, err := NewModuleCacheProvider(infrastructure.ModuleCache)
 	if err != nil {
 		return Builder{}, err
 	}
