@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"go/ast"
 	"go/parser"
@@ -179,11 +180,12 @@ func TestRunReturnsSuccessForPassedAndFailedHandoffs(t *testing.T) {
 
 			var stdout, stderr bytes.Buffer
 			code := run(
+				context.Background(),
 				fixedArguments(),
 				fixedEnvironment(),
 				&stdout,
 				&stderr,
-				func(candidateOptions) (candidateHandoff, error) {
+				func(context.Context, candidateOptions) (candidateHandoff, error) {
 					return handoff, nil
 				},
 			)
@@ -202,11 +204,12 @@ func TestRunReturnsNonZeroOnlyForInfrastructureFailure(t *testing.T) {
 
 	var stdout, stderr bytes.Buffer
 	code := run(
+		context.Background(),
 		fixedArguments(),
 		fixedEnvironment(),
 		&stdout,
 		&stderr,
-		func(candidateOptions) (candidateHandoff, error) {
+		func(context.Context, candidateOptions) (candidateHandoff, error) {
 			return candidateHandoff{}, errors.New("worker infrastructure failure")
 		},
 	)
@@ -225,11 +228,12 @@ func TestRunDoesNotExposeWorkerInputOrInfrastructureValues(t *testing.T) {
 	}
 	var stdout, stderr bytes.Buffer
 	code := run(
+		context.Background(),
 		fixedArguments(),
 		fixedEnvironment(),
 		&stdout,
 		&stderr,
-		func(candidateOptions) (candidateHandoff, error) {
+		func(context.Context, candidateOptions) (candidateHandoff, error) {
 			return candidateHandoff{}, errors.New(strings.Join(sensitive, " "))
 		},
 	)
@@ -248,12 +252,13 @@ func TestRunRejectsBeforeExecutor(t *testing.T) {
 	t.Parallel()
 
 	called := false
-	executor := func(candidateOptions) (candidateHandoff, error) {
+	executor := func(context.Context, candidateOptions) (candidateHandoff, error) {
 		called = true
 		return candidateHandoff{}, nil
 	}
 	var stdout, stderr bytes.Buffer
 	code := run(
+		context.Background(),
 		[]string{"--repository=.", "--output-directory=./invalid"},
 		fixedEnvironment(),
 		&stdout,

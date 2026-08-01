@@ -12,8 +12,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -37,24 +39,33 @@ type candidateHandoff struct {
 	ReportSHA256 string
 }
 
-type candidateExecutor func(candidateOptions) (candidateHandoff, error)
+type candidateExecutor func(context.Context, candidateOptions) (candidateHandoff, error)
 
 func main() {
-	os.Exit(run(
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	code := run(
+		ctx,
 		os.Args[1:],
 		os.Environ(),
 		os.Stdout,
 		os.Stderr,
 		preparedHandoff,
-	))
+	)
+	stop()
+	os.Exit(code)
 }
 
 func run(
+	ctx context.Context,
 	args []string,
 	environment []string,
 	stdout, stderr io.Writer,
 	execute candidateExecutor,
 ) int {
+	if ctx == nil || ctx.Err() != nil {
+		_, _ = fmt.Fprintln(stderr, "候補評価 bootstrap の context が不正です")
+		return exitValidation
+	}
 	options, err := parseFixedArguments(args)
 	if err != nil {
 		_, _ = fmt.Fprintf(stderr, "候補評価 bootstrap の引数が不正です: %v\n", err)
@@ -68,7 +79,7 @@ func run(
 		_, _ = fmt.Fprintln(stderr, "候補評価 bootstrap の実行境界がありません")
 		return exitValidation
 	}
-	handoff, err := execute(options)
+	handoff, err := execute(ctx, options)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "候補評価 worker を正常に完了できませんでした")
 		return exitValidation
@@ -206,8 +217,8 @@ func closedGoEnvironment(environment []string) (map[string]string, error) {
 	return result, nil
 }
 
-func preparedHandoff(_ candidateOptions) (candidateHandoff, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
+func preparedHandoff(ctx context.Context, _ candidateOptions) (candidateHandoff, error) {
+	ctx, cancel := context.WithTimeout(ctx, 25*time.Minute)
 	defer cancel()
 	command := exec.CommandContext(
 		ctx,
