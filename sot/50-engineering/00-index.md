@@ -40,3 +40,4 @@
 - [38-content-bound-candidate-evaluation-handoff.md](38-content-bound-candidate-evaluation-handoff.md)
 - [39-content-bound-unified-query-rollout-stages.md](39-content-bound-unified-query-rollout-stages.md)
 - [40-candidate-evaluation-failure-diagnostics.md](40-candidate-evaluation-failure-diagnostics.md)
+- [41-candidate-evaluation-case-failure-mapping.md](41-candidate-evaluation-case-failure-mapping.md)

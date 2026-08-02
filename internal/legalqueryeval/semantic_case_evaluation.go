@@ -212,6 +212,33 @@ func EvaluateSemanticPlanArgumentErrorCaseV2(
 			err,
 		)
 	}
+	return evaluateSemanticMissingPlanCase(semanticCase, expectedPlan), nil
+}
+
+// EvaluateSemanticPlanGenerationFailureCaseV3 は、有効な plan 入力を候補 planning が
+// 処理できなかった場合を semantic 評価失敗へ変換する。
+func EvaluateSemanticPlanGenerationFailureCaseV3(
+	semanticCase legalquerycorpus.SemanticCase,
+) (SemanticCaseEvaluation, error) {
+	if err := semanticCase.Validate(); err != nil {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"semantic case が有効ではありません: %w",
+			err,
+		)
+	}
+	expectedPlan, ok := semanticCase.Expected().(legalquerycorpus.ExpectedPlan)
+	if !ok {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"semantic case の expected.kind は plan でなければなりません",
+		)
+	}
+	return evaluateSemanticMissingPlanCase(semanticCase, expectedPlan), nil
+}
+
+func evaluateSemanticMissingPlanCase(
+	semanticCase legalquerycorpus.SemanticCase,
+	expectedPlan legalquerycorpus.ExpectedPlan,
+) SemanticCaseEvaluation {
 	meanings := make(
 		[]MeaningEvaluation,
 		0,
@@ -231,7 +258,7 @@ func EvaluateSemanticPlanArgumentErrorCaseV2(
 			len(meanings) > 0,
 		meanings:    meanings,
 		initialized: true,
-	}, nil
+	}
 }
 
 // EvaluateSemanticAcceptedRequestErrorCaseV2 は、request_error を期待した入力が

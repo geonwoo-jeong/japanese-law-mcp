@@ -4,14 +4,26 @@ import "testing"
 
 func TestNewはExactEvaluatorVersionだけを受理する(t *testing.T) {
 	t.Parallel()
+	const verificationID = "candidate-evaluator-v3-exact-version-routing"
 
-	if _, err := New(Version1); err != nil {
+	v1, err := New(Version1)
+	if err != nil {
 		t.Fatalf("profile-set-evaluator-version-identity: v1 を拒否しました: %v", err)
 	}
-	if _, err := New(Version2); err != nil {
+	v2, err := New(Version2)
+	if err != nil {
 		t.Fatalf("profile-set-evaluator-version-identity: v2 を拒否しました: %v", err)
 	}
-	for _, invalid := range []string{"current", "legal-query-evaluator-v*", "legal-query-evaluator-v3"} {
+	v3, err := New(Version3)
+	if err != nil {
+		t.Fatalf("profile-set-evaluator-version-identity: v3 を拒否しました: %v", err)
+	}
+	if v1.ScoresCandidatePlanningFailure() ||
+		v2.ScoresCandidatePlanningFailure() ||
+		!v3.ScoresCandidatePlanningFailure() {
+		t.Fatalf("%s: v1/v2/v3 の候補失敗 policy が一致しません", verificationID)
+	}
+	for _, invalid := range []string{"current", "legal-query-evaluator-v*", "legal-query-evaluator-v4"} {
 		if _, err := New(invalid); err == nil {
 			t.Fatalf("profile-set-evaluator-version-identity: %q を受理しました", invalid)
 		}
@@ -29,12 +41,12 @@ func TestCurrentVersionはVersion2を指す(t *testing.T) {
 func TestIsSupportedは実装済みのExactVersionだけを返す(t *testing.T) {
 	t.Parallel()
 
-	for _, version := range []string{Version1, Version2} {
+	for _, version := range []string{Version1, Version2, Version3} {
 		if !IsSupported(version) {
 			t.Fatalf("profile-set-evaluator-version-identity: %q を未対応と判定しました", version)
 		}
 	}
-	for _, version := range []string{"", "current", "legal-query-evaluator-v3"} {
+	for _, version := range []string{"", "current", "legal-query-evaluator-v4"} {
 		if IsSupported(version) {
 			t.Fatalf("profile-set-evaluator-version-identity: %q を対応済みと判定しました", version)
 		}

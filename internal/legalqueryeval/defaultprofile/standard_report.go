@@ -21,7 +21,7 @@ func (e *Evaluator) BuildStandardReport(
 	}
 	evaluateReproducibility :=
 		legalqueryeval.EvaluateSemanticHoldoutReproducibility
-	if e.boundaryPolicy == requestBoundaryScoredMismatch {
+	if scoresRequestBoundaryMismatch(e.boundaryPolicy) {
 		evaluateReproducibility =
 			legalqueryeval.EvaluateSemanticHoldoutReproducibilityV2
 	}

@@ -49,10 +49,17 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	request.EvaluatorVersion = evaluators.Version1
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
-	); err != nil {
-		t.Fatalf("candidate-evaluation-evaluator-version-match: 履歴 v1 を拒否しました: %v", err)
+	); err == nil {
+		t.Fatal("candidate-evaluation-evaluator-version-match: current ではない v1 を新規準備として受理しました")
+	}
+	request.EvaluatorVersion = evaluators.Version3
+	if _, err := validator.ValidateEvaluationRequest(
+		context.Background(), []byte("canonical request placeholder\n"), request,
+	); err == nil {
+		t.Fatal("candidate-evaluator-v3-exact-version-routing: schema v2 の新規準備が v3 を受理しました")
 	}
 
+	request.EvaluatorVersion = evaluators.CurrentVersion
 	request.BaselineVersion = "default-1"
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,

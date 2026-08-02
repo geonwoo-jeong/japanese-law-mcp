@@ -77,7 +77,7 @@ func TestEvaluatorは内蔵DefaultProfileで代表Holdoutを評価する(t *test
 					if requestErr != nil {
 						t.Fatalf("診断用 request を構築できません: %v", requestErr)
 					}
-					plan, planErr := evaluator.selectPlan(
+					plan, _, planErr := evaluator.selectPlan(
 						context.Background(),
 						semanticCase,
 						request,

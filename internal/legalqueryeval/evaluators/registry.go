@@ -12,6 +12,8 @@ const (
 	Version1 = "legal-query-evaluator-v1"
 	// Version2 は、現在の標準 evaluator の意味版である。
 	Version2 = "legal-query-evaluator-v2"
+	// Version3 は、候補 planning failure を評価失敗へ変換する次期意味版である。
+	Version3 = "legal-query-evaluator-v3"
 	// CurrentVersion は、新しい request が予約する evaluator version である。
 	CurrentVersion = Version2
 )
@@ -31,6 +33,12 @@ func New(version string) (*defaultprofile.Evaluator, error) {
 			return nil, fmt.Errorf("標準 evaluator を構築できません: %w", err)
 		}
 		return evaluator, nil
+	case Version3:
+		evaluator, err := defaultprofile.NewV3()
+		if err != nil {
+			return nil, fmt.Errorf("標準 evaluator を構築できません: %w", err)
+		}
+		return evaluator, nil
 	default:
 		return nil, fmt.Errorf("未対応の evaluatorVersion です")
 	}
@@ -39,7 +47,7 @@ func New(version string) (*defaultprofile.Evaluator, error) {
 // IsSupported は、履歴再現を含む実装済みの exact version かを返す。
 func IsSupported(version string) bool {
 	switch version {
-	case Version1, Version2:
+	case Version1, Version2, Version3:
 		return true
 	default:
 		return false

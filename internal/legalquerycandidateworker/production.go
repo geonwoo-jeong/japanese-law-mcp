@@ -177,6 +177,8 @@ func newCandidateEvaluator(
 		return defaultprofile.NewWithPlanning(candidate)
 	case evaluators.Version2:
 		return defaultprofile.NewWithPlanningV2(candidate)
+	case evaluators.Version3:
+		return defaultprofile.NewWithPlanningV3(candidate)
 	default:
 		return nil, fmt.Errorf("candidate evaluator version が未対応です")
 	}

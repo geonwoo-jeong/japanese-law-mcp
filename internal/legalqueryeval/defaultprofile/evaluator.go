@@ -20,10 +20,21 @@ type Evaluator struct {
 }
 
 type requestBoundaryPolicy uint8
+type candidatePlanningStage uint8
+type candidateCaseFailure interface {
+	CandidateCaseFailure()
+}
 
 const (
 	requestBoundaryStrict requestBoundaryPolicy = iota + 1
 	requestBoundaryScoredMismatch
+	planningFailureScoredMismatch
+)
+
+const (
+	candidatePlanningStageNone candidatePlanningStage = iota
+	candidatePlanningStagePreprocess
+	candidatePlanningStageProfileCollect
 )
 
 // Planning は、標準または候補の固定 profile set を評価器へ渡す閉じた境界である。
@@ -35,7 +46,13 @@ type Planning interface {
 
 // ScoresRequestBoundaryMismatch は、request 境界不一致を評価失敗へ変換するか返す。
 func (e *Evaluator) ScoresRequestBoundaryMismatch() bool {
-	return e != nil && e.boundaryPolicy == requestBoundaryScoredMismatch
+	return e != nil && scoresRequestBoundaryMismatch(e.boundaryPolicy)
+}
+
+// ScoresCandidatePlanningFailure は、候補所有段階の入力別 failure を評価失敗へ
+// 変換するか返す。
+func (e *Evaluator) ScoresCandidatePlanningFailure() bool {
+	return e != nil && e.boundaryPolicy == planningFailureScoredMismatch
 }
 
 // New は、repository 内の組込み成果物だけを使う evaluator を構築する。
@@ -56,6 +73,16 @@ func NewV2() (*Evaluator, error) {
 	return NewWithPlanningV2(planning)
 }
 
+// NewV3 は、有効な plan 入力の候補 planning failure を評価失敗へ変換する
+// evaluator を構築する。
+func NewV3() (*Evaluator, error) {
+	planning, err := legalqueryplanning.LoadEmbedded()
+	if err != nil {
+		return nil, err
+	}
+	return NewWithPlanningV3(planning)
+}
+
 // NewWithPlanning は、CI 専用候補を含む明示的な固定 planning 依存を構成する。
 func NewWithPlanning(planning Planning) (*Evaluator, error) {
 	return newWithPlanning(planning, requestBoundaryStrict)
@@ -67,6 +94,15 @@ func NewWithPlanningV2(planning Planning) (*Evaluator, error) {
 	return newWithPlanning(planning, requestBoundaryScoredMismatch)
 }
 
+// NewWithPlanningV3 は、有効な plan 入力の候補 planning failure を評価失敗へ
+// 変換する evaluator を構築する。
+func NewWithPlanningV3(planning Planning) (*Evaluator, error) {
+	return newWithPlanning(
+		planning,
+		planningFailureScoredMismatch,
+	)
+}
+
 func newWithPlanning(
 	planning Planning,
 	policy requestBoundaryPolicy,
@@ -75,7 +111,8 @@ func newWithPlanning(
 		return nil, fmt.Errorf("planning 依存は nil にできません")
 	}
 	if policy != requestBoundaryStrict &&
-		policy != requestBoundaryScoredMismatch {
+		policy != requestBoundaryScoredMismatch &&
+		policy != planningFailureScoredMismatch {
 		return nil, fmt.Errorf("request boundary policy が定義されていません")
 	}
 	profiles := planning.Profiles()
@@ -155,7 +192,7 @@ func (e *Evaluator) EvaluateWithPlan(
 				false,
 				boundaryErr
 		}
-		plan, selectErr := e.selectPlan(ctx, semanticCase, request)
+		plan, _, selectErr := e.selectPlan(ctx, semanticCase, request)
 		if selectErr != nil {
 			return legalqueryeval.SemanticCaseEvaluation{},
 				legalquery.LegalQueryPlan{}, false, selectErr
@@ -171,8 +208,28 @@ func (e *Evaluator) EvaluateWithPlan(
 		return evaluation, plan, true, nil
 	}
 
-	plan, err := e.selectPlan(ctx, semanticCase, request)
+	if e.boundaryPolicy == planningFailureScoredMismatch {
+		if _, err := semanticCasePackState(semanticCase); err != nil {
+			return legalqueryeval.SemanticCaseEvaluation{},
+				legalquery.LegalQueryPlan{},
+				false,
+				err
+		}
+	}
+	plan, failureStage, err := e.selectPlan(ctx, semanticCase, request)
 	if err != nil {
+		if shouldScoreCandidatePlanningFailure(
+			ctx,
+			err,
+			failureStage,
+			e.boundaryPolicy,
+		) {
+			evaluation, evaluationErr :=
+				legalqueryeval.EvaluateSemanticPlanGenerationFailureCaseV3(
+					semanticCase,
+				)
+			return evaluation, legalquery.LegalQueryPlan{}, false, evaluationErr
+		}
 		return legalqueryeval.SemanticCaseEvaluation{},
 			legalquery.LegalQueryPlan{},
 			false,
@@ -205,34 +262,59 @@ func evaluateAcceptedRequestError(
 	)
 }
 
+func scoresRequestBoundaryMismatch(policy requestBoundaryPolicy) bool {
+	return policy == requestBoundaryScoredMismatch ||
+		policy == planningFailureScoredMismatch
+}
+
+func shouldScoreCandidatePlanningFailure(
+	ctx context.Context,
+	err error,
+	stage candidatePlanningStage,
+	policy requestBoundaryPolicy,
+) bool {
+	if policy != planningFailureScoredMismatch ||
+		ctx == nil || err == nil || ctx.Err() != nil ||
+		errors.Is(err, context.Canceled) ||
+		errors.Is(err, context.DeadlineExceeded) ||
+		!isCandidateCaseFailure(err) {
+		return false
+	}
+	return stage == candidatePlanningStagePreprocess ||
+		stage == candidatePlanningStageProfileCollect
+}
+
+func isCandidateCaseFailure(err error) bool {
+	var failure candidateCaseFailure
+	return errors.As(err, &failure)
+}
+
 func (e *Evaluator) selectPlan(
 	ctx context.Context,
 	semanticCase legalquerycorpus.SemanticCase,
 	request legalquery.Request,
-) (legalquery.LegalQueryPlan, error) {
+) (legalquery.LegalQueryPlan, candidatePlanningStage, error) {
 	preprocessed, err := e.planning.Preprocessor().Preprocess(ctx, request)
 	if err != nil {
-		return legalquery.LegalQueryPlan{}, fmt.Errorf(
-			"統合照会の前処理に失敗しました: %w",
-			err,
-		)
+		return legalquery.LegalQueryPlan{},
+			candidatePlanningStagePreprocess,
+			fmt.Errorf(
+				"統合照会の前処理に失敗しました: %w",
+				err,
+			)
 	}
 	profileSetResult, err := e.planning.Profiles().Collect(preprocessed)
 	if err != nil {
-		return legalquery.LegalQueryPlan{}, fmt.Errorf(
-			"default profile の候補生成に失敗しました: %w",
-			err,
-		)
+		return legalquery.LegalQueryPlan{},
+			candidatePlanningStageProfileCollect,
+			fmt.Errorf(
+				"default profile の候補生成に失敗しました: %w",
+				err,
+			)
 	}
-	packState, err := legalquery.NewStaticPackState(
-		[]string{legalqueryplanning.JudicialCasesPackID},
-		semanticCase.EnabledPacks(),
-	)
+	packState, err := semanticCasePackState(semanticCase)
 	if err != nil {
-		return legalquery.LegalQueryPlan{}, fmt.Errorf(
-			"semantic case の pack 状態が有効ではありません: %w",
-			err,
-		)
+		return legalquery.LegalQueryPlan{}, candidatePlanningStageNone, err
 	}
 	plan, err := legalquery.SelectLegalQueryPlan(legalquery.SelectorInput{
 		ProfileSetResult: profileSetResult,
@@ -240,12 +322,28 @@ func (e *Evaluator) selectPlan(
 		LimitPerAttempt:  request.LimitPerAttempt(),
 	})
 	if err != nil {
-		return legalquery.LegalQueryPlan{}, fmt.Errorf(
+		return legalquery.LegalQueryPlan{}, candidatePlanningStageNone, fmt.Errorf(
 			"default profile の plan を選択できません: %w",
 			err,
 		)
 	}
-	return plan, nil
+	return plan, candidatePlanningStageNone, nil
+}
+
+func semanticCasePackState(
+	semanticCase legalquerycorpus.SemanticCase,
+) (legalquery.StaticPackState, error) {
+	packState, err := legalquery.NewStaticPackState(
+		[]string{legalqueryplanning.JudicialCasesPackID},
+		semanticCase.EnabledPacks(),
+	)
+	if err != nil {
+		return legalquery.StaticPackState{}, fmt.Errorf(
+			"semantic case の pack 状態が有効ではありません: %w",
+			err,
+		)
+	}
+	return packState, nil
 }
 
 func evaluateRequestError(
@@ -262,7 +360,7 @@ func evaluateRequestError(
 	}
 	if semanticCase.Expected().Kind() !=
 		legalquerycorpus.SemanticExpectedKindRequestError {
-		if policy == requestBoundaryScoredMismatch {
+		if scoresRequestBoundaryMismatch(policy) {
 			return legalqueryeval.EvaluateSemanticPlanArgumentErrorCaseV2(
 				semanticCase,
 				argumentError,

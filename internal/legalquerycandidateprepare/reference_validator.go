@@ -84,6 +84,10 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			err
 	}
+	if document.EvaluatorVersion != evaluators.CurrentVersion {
+		return legalquerycandidateeval.RequestReferenceValidation{},
+			fmt.Errorf("新しい evaluation request は current evaluatorVersion を必要とします")
+	}
 	adoption, err := legalqueryadoption.LoadCurrentFromRoot(ctx, v.repositoryRoot)
 	if err != nil {
 		return legalquerycandidateeval.RequestReferenceValidation{}, err

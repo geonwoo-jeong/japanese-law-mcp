@@ -185,6 +185,7 @@ func TestEvaluateTrackedCandidateは不変なReplayBindingだけを受理する(
 
 func TestNewCandidateEvaluatorはVersionごとのBuilder境界を保つ(t *testing.T) {
 	t.Parallel()
+	const verificationID = "candidate-evaluator-v3-exact-version-routing"
 
 	candidate, err := legalquerycandidateprofile.Load()
 	if err != nil {
@@ -198,9 +199,19 @@ func TestNewCandidateEvaluatorはVersionごとのBuilder境界を保つ(t *testi
 	if err != nil {
 		t.Fatalf("candidate evaluator version routing: v2 を拒否しました: %v", err)
 	}
+	v3, err := newCandidateEvaluator(evaluators.Version3, candidate)
+	if err != nil {
+		t.Fatalf("candidate evaluator version routing: v3 を拒否しました: %v", err)
+	}
 	if v1.ScoresRequestBoundaryMismatch() ||
-		!v2.ScoresRequestBoundaryMismatch() {
-		t.Fatal("candidate evaluator version routing: v1/v2 の request 境界 policy が逆転しました")
+		!v2.ScoresRequestBoundaryMismatch() ||
+		!v3.ScoresRequestBoundaryMismatch() {
+		t.Fatal("candidate evaluator version routing: v1/v2/v3 の request 境界 policy が逆転しました")
+	}
+	if v1.ScoresCandidatePlanningFailure() ||
+		v2.ScoresCandidatePlanningFailure() ||
+		!v3.ScoresCandidatePlanningFailure() {
+		t.Fatalf("%s: v1/v2/v3 の候補失敗 policy が一致しません", verificationID)
 	}
 	if _, err := newCandidateEvaluator("legal-query-evaluator-v999", candidate); err == nil {
 		t.Fatal("candidate evaluator version routing: 未知版を受理しました")
