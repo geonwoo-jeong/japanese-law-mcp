@@ -358,6 +358,11 @@ architecture `92 / 100` と testability `80 / 100`、いずれも blocker 0 の�
 参照成果物は変更せず、同 request の holdout digest、leakage group digest および
 baseline reservation を再利用していない。この段階では candidate workflow、holdout、
 report、result、failed report または baseline を実行若しくは生成していない。
+同じ差分の最終 code review は `9.1 / 10`、security/privacy review は
+総合 `9.1 / 10`、security `9.2 / 10` で、いずれも blocker 0 となった。
+security review で最初に検出した handoff 読戻しの blocker は、bootstrap の
+標準 library 制約を保ったまま result と report の未知 field、重複 key、後方 token、
+非 canonical byte、depth および value 上限を閉じて検証することで解消した。
 
 ## 段階の境界
 

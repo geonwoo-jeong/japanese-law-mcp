@@ -10,6 +10,8 @@ import (
 	"testing"
 )
 
+const candidateHandoffFixtureEvaluationID = "evaluation-sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
 func TestCandidateHandoffはCanonicalなResultとReportだけを受理する(t *testing.T) {
 	t.Parallel()
 
@@ -17,10 +19,10 @@ func TestCandidateHandoffはCanonicalなResultとReportだけを受理する(t *
 	if err != nil {
 		t.Fatalf("標準 report fixture を読めません: %v", err)
 	}
-	evaluationID := "evaluation-sha256-" + strings.Repeat("a", 64)
+	evaluationID := candidateHandoffFixtureEvaluationID
 
 	t.Run("canonical", func(t *testing.T) {
-		root := writeCandidateHandoffFixture(t, evaluationID, reportRaw, nil)
+		root := writeCandidateHandoffFixture(t, reportRaw, nil)
 		handoff, err := readCandidateHandoff(root)
 		if err != nil {
 			t.Fatalf("canonical handoff を拒否しました: %v", err)
@@ -87,7 +89,6 @@ func TestCandidateHandoffはCanonicalなResultとReportだけを受理する(t *
 			}
 			root := writeCandidateHandoffFixture(
 				t,
-				evaluationID,
 				candidateReport,
 				test.mutateResult,
 			)
@@ -256,12 +257,12 @@ func floatPointer(value float64) *float64 {
 
 func writeCandidateHandoffFixture(
 	t *testing.T,
-	evaluationID string,
 	reportRaw []byte,
 	mutateResult func([]byte) []byte,
 ) string {
 	t.Helper()
 
+	evaluationID := candidateHandoffFixtureEvaluationID
 	reportDigest := sha256.Sum256(reportRaw)
 	result := workerResultDocument{
 		ArtifactKind:  "legal_query_candidate_evaluation_result",
@@ -285,10 +286,19 @@ func writeCandidateHandoffFixture(
 	if err := os.Mkdir(evaluationRoot, 0o700); err != nil {
 		t.Fatalf("handoff directory を作れません: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(evaluationRoot, "report.json"), reportRaw, 0o600); err != nil {
+	evaluationTree, err := os.OpenRoot(evaluationRoot)
+	if err != nil {
+		t.Fatalf("handoff root を開けません: %v", err)
+	}
+	defer func() {
+		if closeErr := evaluationTree.Close(); closeErr != nil {
+			t.Fatalf("handoff root を閉じられません: %v", closeErr)
+		}
+	}()
+	if err := evaluationTree.WriteFile("report.json", reportRaw, 0o600); err != nil {
 		t.Fatalf("report fixture を書けません: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(evaluationRoot, "result.json"), resultRaw, 0o600); err != nil {
+	if err := evaluationTree.WriteFile("result.json", resultRaw, 0o600); err != nil {
 		t.Fatalf("result fixture を書けません: %v", err)
 	}
 	return root
