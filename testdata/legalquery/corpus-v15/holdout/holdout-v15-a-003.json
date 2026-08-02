@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-003",
+  "leakageGroupId": "lqg-ume-public-law-theme-003",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "都市緑地保全の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-003-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "516AC0000000031"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "meaning-a-003-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "516AC0000000032"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-003-1",
+      "meaning-a-003-2"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-010",
+  "leakageGroupId": "lqg-camellia-legal-topic-010",
+  "coverageIds": [
+    "budget-ranked-candidate-limit"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "文化財の保存活用に関する法令名を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-010-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "文化財の保存活用の候補1 資料D010"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "meaning-d-010-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "文化財の保存活用の候補2 資料D010"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-010-1",
+      "meaning-d-010-2"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-062",
+  "leakageGroupId": "lqg-ume-public-law-theme-062",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "史跡保存管理の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

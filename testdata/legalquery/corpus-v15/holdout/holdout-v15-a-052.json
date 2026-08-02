@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-052",
+  "leakageGroupId": "lqg-ume-public-law-theme-052",
+  "coverageIds": [
+    "typo-insertion"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "刑事訴訟証拠の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-052-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "刑事訴訟証拠規定帳票A052-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-052-1"
+    ]
+  }
+}

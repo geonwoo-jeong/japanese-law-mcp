@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-unsupported-resource",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "development-unsupported-resource",
+  "request": {
+    "query": "都道府県の未公開内部文書を横断検索してください。"
+  },
+  "schemaVersion": 2
+}

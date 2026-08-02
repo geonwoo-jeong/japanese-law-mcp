@@ -1,0 +1,62 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-035",
+  "leakageGroupId": "lqg-momiji-regulation-domain-035",
+  "coverageIds": [
+    "reference-source-resource-ref"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "地方交付税算定に関する法令を検索してください。",
+    "ref": {
+      "providerId": "e-gov-law-api-v2",
+      "key": {
+        "sourceId": "e-gov-law-api-v2",
+        "resourceType": "law",
+        "resourceId": "515AC0000000035",
+        "versionId": "515AC0000000035_20260601_515AC0000000999"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-035-1",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "e-gov-law-api-v2",
+                "key": {
+                  "sourceId": "e-gov-law-api-v2",
+                  "resourceType": "law",
+                  "resourceId": "515AC0000000035",
+                  "versionId": "515AC0000000035_20260601_515AC0000000999"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-035-1"
+    ]
+  }
+}

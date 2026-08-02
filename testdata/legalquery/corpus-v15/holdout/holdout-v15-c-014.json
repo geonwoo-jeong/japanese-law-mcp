@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-014",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-014",
+  "coverageIds": [
+    "input-query-maximum-accepted"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "漁業調整制度に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

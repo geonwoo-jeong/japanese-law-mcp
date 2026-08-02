@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-054",
+  "leakageGroupId": "lqg-momiji-regulation-domain-054",
+  "coverageIds": [
+    "typo-deletion"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "男女雇用機会に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-054-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "男女雇用機会規定台帳B054-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-054-1"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-060",
+  "leakageGroupId": "lqg-camellia-legal-topic-060",
+  "coverageIds": [
+    "unsupported-unadopted-pack"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "外国人技能実習の監理について未提供の国際条約データベースを検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

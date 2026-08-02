@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-012",
+  "leakageGroupId": "lqg-camellia-legal-topic-012",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "条例調査012\u001f行政文書の公開を検索してください。"
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-011",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-011",
+  "coverageIds": [
+    "boundary-pack-disabled"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "無効な裁判例機能を強制し電気事業会計を取得してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "capability_unavailable",
+    "reasonCodes": [
+      "required_pack_disabled"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-c-011-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "電気事業会計規定記録C011-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-c-011-1"
+    ]
+  }
+}

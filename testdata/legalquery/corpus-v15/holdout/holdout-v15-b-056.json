@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-056",
+  "leakageGroupId": "lqg-momiji-regulation-domain-056",
+  "coverageIds": [
+    "typo-deletion"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "児童手当支給に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-056-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "児童手当支給規定台帳B056-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-056-1"
+    ]
+  }
+}

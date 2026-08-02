@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-001",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-001",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "海上保安体制に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-c-001-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "514AC0000000011"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "meaning-c-001-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "514AC0000000012"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-c-001-1",
+      "meaning-c-001-2"
+    ]
+  }
+}

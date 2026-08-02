@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-017",
+  "leakageGroupId": "lqg-ume-public-law-theme-017",
+  "coverageIds": [
+    "intent-law-search"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "会計年度任用職員の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-017-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "会計年度任用職員規定帳票A017-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-017-1"
+    ]
+  }
+}

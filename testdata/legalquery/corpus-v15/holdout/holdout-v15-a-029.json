@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-029",
+  "leakageGroupId": "lqg-ume-public-law-theme-029",
+  "coverageIds": [
+    "pack-judicial-enabled"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "関税還付制度の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-029-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "関税還付制度規定帳票A029-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-029-1"
+    ]
+  }
+}

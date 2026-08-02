@@ -1,0 +1,71 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-budget-four-steps",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "four-searches",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "商法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "会社法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "手形法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "小切手法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "four-searches"
+    ]
+  },
+  "leakageGroupId": "development-budget-four-steps",
+  "request": {
+    "limitPerAttempt": 5,
+    "query": "商法、会社法、手形法、小切手法を個別に検索してください。"
+  },
+  "schemaVersion": 2
+}

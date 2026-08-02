@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-009",
+  "leakageGroupId": "lqg-ume-public-law-theme-009",
+  "coverageIds": [
+    "budget-page-limit"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "国土調査事業の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-009-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "国土調査事業要件帳票A009-1"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-009-1"
+    ]
+  }
+}

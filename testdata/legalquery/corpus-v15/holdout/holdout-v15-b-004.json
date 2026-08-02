@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-004",
+  "leakageGroupId": "lqg-momiji-regulation-domain-004",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "漁船登録手続に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-004-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "515AC0000000041"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "meaning-b-004-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "515AC0000000042"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-004-1",
+      "meaning-b-004-2"
+    ]
+  }
+}

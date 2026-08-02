@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-057",
+  "leakageGroupId": "lqg-ume-public-law-theme-057",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "行政訴訟制度の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-014",
+  "leakageGroupId": "lqg-momiji-regulation-domain-014",
+  "coverageIds": [
+    "input-query-maximum-accepted"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "自動車運送許可に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

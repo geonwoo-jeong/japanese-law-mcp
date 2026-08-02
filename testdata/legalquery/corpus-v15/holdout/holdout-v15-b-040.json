@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-040",
+  "leakageGroupId": "lqg-momiji-regulation-domain-040",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "農地中間管理に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-040-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "農地中間管理要件台帳B040-1"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-040-1"
+    ]
+  }
+}

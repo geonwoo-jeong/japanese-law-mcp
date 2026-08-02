@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-052",
+  "leakageGroupId": "lqg-momiji-regulation-domain-052",
+  "coverageIds": [
+    "typo-deletion"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "最低賃金決定に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-052-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "最低賃金決定規定台帳B052-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-052-1"
+    ]
+  }
+}

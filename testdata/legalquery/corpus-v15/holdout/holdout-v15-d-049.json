@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-049",
+  "leakageGroupId": "lqg-camellia-legal-topic-049",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "再生可能エネルギーの接続の法令名を検索して下さい。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-049-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "再生可能エネルギーの接続に関する制度 資料D049-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-049-1"
+    ]
+  }
+}

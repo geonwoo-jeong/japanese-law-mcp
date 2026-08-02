@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-064",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-064",
+  "coverageIds": [
+    "unsupported-version-comparison"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "情報公開審査会に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

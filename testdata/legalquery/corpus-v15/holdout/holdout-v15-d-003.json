@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-003",
+  "leakageGroupId": "lqg-camellia-legal-topic-003",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "地域脱炭素事業に関する法令名を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-003-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "513AC0000000031"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "meaning-d-003-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "513AC0000000032"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-003-1",
+      "meaning-d-003-2"
+    ]
+  }
+}

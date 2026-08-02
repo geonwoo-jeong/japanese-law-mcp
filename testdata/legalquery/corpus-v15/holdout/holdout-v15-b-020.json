@@ -1,0 +1,64 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-020",
+  "leakageGroupId": "lqg-momiji-regulation-domain-020",
+  "coverageIds": [
+    "intent-judicial-decision-read"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "通信秘密保護に関する法令を検索してください。",
+    "ref": {
+      "providerId": "courts-hanrei-html",
+      "key": {
+        "sourceId": "courts-hanrei",
+        "resourceType": "judicial-decision",
+        "resourceId": "98020/detail2/record-b-020"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-020-1",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "98020/detail2/record-b-020"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-020-1"
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-052",
+  "leakageGroupId": "lqg-camellia-legal-topic-052",
+  "coverageIds": [
+    "typo-adjacent-transposition"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "宅地造成の規制の法令名を検索してくださぃ。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-052-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "宅地造成の規制に関する制度 資料D052-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-052-1"
+    ]
+  }
+}

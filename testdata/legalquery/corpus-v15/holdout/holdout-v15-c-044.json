@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-044",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-044",
+  "coverageIds": [
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "地すべり防止に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-c-044-1",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "514AC0000000044",
+              "location": {
+                "provision": "main",
+                "articleNumber": "64",
+                "paragraphNumber": 2
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-c-044-1"
+    ]
+  }
+}

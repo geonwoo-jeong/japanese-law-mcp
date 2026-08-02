@@ -1,0 +1,64 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-031",
+  "leakageGroupId": "lqg-ume-public-law-theme-031",
+  "coverageIds": [
+    "pack-judicial-enabled"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "法人税更正の法令を検索してください。",
+    "ref": {
+      "providerId": "courts-hanrei-html",
+      "key": {
+        "sourceId": "courts-hanrei",
+        "resourceType": "judicial-decision",
+        "resourceId": "99031/detail2/record-a-031"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-031-1",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "99031/detail2/record-a-031"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-031-1"
+    ]
+  }
+}

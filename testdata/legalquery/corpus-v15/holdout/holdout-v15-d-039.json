@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-039",
+  "leakageGroupId": "lqg-camellia-legal-topic-039",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "参照を指定せずに社会福祉法人の運営の条文を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-039-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+          "法令照会語四"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-039-1"
+    ]
+  }
+}

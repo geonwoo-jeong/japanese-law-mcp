@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-062",
+  "leakageGroupId": "lqg-momiji-regulation-domain-062",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "特許審判制度に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

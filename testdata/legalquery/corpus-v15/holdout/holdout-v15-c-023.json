@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-023",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-023",
+  "coverageIds": [
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "賃貸住宅管理に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-c-023-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "賃貸住宅管理規定記録C023-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-c-023-1"
+    ]
+  }
+}

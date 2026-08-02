@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-015",
+  "leakageGroupId": "lqg-ume-public-law-theme-015",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "不動産鑑定業を検索してください。",
+    "ref": {
+      "providerId": "public-legal-archive",
+      "key": {
+        "sourceId": "public-legal-archive",
+        "resourceType": "municipal-ordinance",
+        "resourceId": "invalid-ref-holdout-v15-a-015"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

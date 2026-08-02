@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-061",
+  "leakageGroupId": "lqg-camellia-legal-topic-061",
+  "coverageIds": [
+    "unsupported-unadopted-pack"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "知的財産の利用許諾について未提供の国際条約データベースを検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

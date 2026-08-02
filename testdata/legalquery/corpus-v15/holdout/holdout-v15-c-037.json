@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-037",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-037",
+  "coverageIds": [
+    "boundary-mixed-unsupported"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "肥料取締基準に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

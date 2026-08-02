@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-041",
+  "leakageGroupId": "lqg-momiji-regulation-domain-041",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "家畜市場運営に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

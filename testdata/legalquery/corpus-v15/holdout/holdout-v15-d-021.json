@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-021",
+  "leakageGroupId": "lqg-camellia-legal-topic-021",
+  "coverageIds": [
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "電気通信の利用者保護に関する法令名を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-021-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "電気通信の利用者保護に関する制度 資料D021-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-021-1"
+    ]
+  }
+}

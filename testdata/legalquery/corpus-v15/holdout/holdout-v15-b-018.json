@@ -1,0 +1,49 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-018",
+  "leakageGroupId": "lqg-momiji-regulation-domain-018",
+  "coverageIds": [
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "電波利用管理に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-018-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "電波利用管理規定台帳B018-1"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-018-1"
+    ]
+  }
+}

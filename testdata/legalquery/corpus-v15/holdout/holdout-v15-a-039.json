@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-039",
+  "leakageGroupId": "lqg-ume-public-law-theme-039",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "年金記録訂正の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-039-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "年金記録訂正要件帳票A039-1"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-039-1"
+    ]
+  }
+}

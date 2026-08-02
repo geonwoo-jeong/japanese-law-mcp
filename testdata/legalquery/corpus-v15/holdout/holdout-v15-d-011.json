@@ -1,0 +1,75 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-011",
+  "leakageGroupId": "lqg-camellia-legal-topic-011",
+  "coverageIds": [
+    "pack-judicial-enabled",
+    "reference-source-resource-ref",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "森林吸収源対策と関連制度の法令名をそれぞれ検索してください。",
+    "ref": {
+      "providerId": "courts-hanrei-html",
+      "key": {
+        "sourceId": "courts-hanrei",
+        "resourceType": "judicial-decision",
+        "resourceId": "96011/detail2/record-d-011"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-011-1",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "森林吸収源対策に関する制度 資料D011-1"
+            }
+          },
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "96011/detail2/record-d-011"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-011-1"
+    ]
+  }
+}

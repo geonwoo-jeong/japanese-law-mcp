@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-015",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-015",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "河川整備計画を検索してください。",
+    "limitPerAttempt": -9
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

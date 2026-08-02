@@ -1,0 +1,61 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-execution-item-budget",
+  "coverageIds": [
+    "budget-item-limit",
+    "intent-law-content-search",
+    "intent-law-search",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "primary",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "租税特別措置法"
+            },
+            "resource": "law",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "特別控除"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "primary"
+    ]
+  },
+  "leakageGroupId": "development-execution-item-budget",
+  "request": {
+    "limitPerAttempt": 20,
+    "query": "実行検証用に租税特別措置法を検索し、特別控除を含む条文も検索してください。"
+  },
+  "schemaVersion": 2
+}

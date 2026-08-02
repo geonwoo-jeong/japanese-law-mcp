@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-name-concept",
+  "coverageIds": [
+    "concept-single",
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "cooling-off"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "legal_concept"
+        ],
+        "meaningId": "concept-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "申込みの撤回"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "concept-search"
+    ]
+  },
+  "leakageGroupId": "development-name-concept",
+  "request": {
+    "query": "クーリングオフに関する条文を探してください。"
+  },
+  "schemaVersion": 2
+}

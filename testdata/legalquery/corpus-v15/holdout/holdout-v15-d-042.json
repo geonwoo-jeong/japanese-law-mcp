@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-042",
+  "leakageGroupId": "lqg-camellia-legal-topic-042",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "障害福祉サービスの指定と関連制度の法令名をそれぞれ検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-d-042-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "障害福祉サービスの指定に関する制度 資料D042-1"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "障害福祉サービスの指定に関する制度 資料D042-2"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-d-042-1"
+    ]
+  }
+}

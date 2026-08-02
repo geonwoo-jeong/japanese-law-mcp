@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-015",
+  "leakageGroupId": "lqg-camellia-legal-topic-015",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "漁港施設の管理に関する法令名を検索してください。",
+    "limitPerAttempt": 21
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

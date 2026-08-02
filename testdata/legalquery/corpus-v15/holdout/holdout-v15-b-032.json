@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-032",
+  "leakageGroupId": "lqg-momiji-regulation-domain-032",
+  "coverageIds": [
+    "reference-revision-id"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "関税評価制度に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-b-032-1",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "515AC0000000032",
+              "revisionId": "515AC0000000032_20260601_515AC0000000998"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-b-032-1"
+    ]
+  }
+}

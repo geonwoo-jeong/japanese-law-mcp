@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-d-014",
+  "leakageGroupId": "lqg-camellia-legal-topic-014",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "指定した参照の鉄道踏切の安全対策を読んでください。",
+    "ref": {
+      "providerId": "public-legal-archive",
+      "key": {
+        "sourceId": "public-legal-archive",
+        "resourceType": "municipal-ordinance",
+        "resourceId": "invalid-ref-holdout-v15-d-014"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

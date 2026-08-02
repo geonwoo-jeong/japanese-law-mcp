@@ -1,0 +1,85 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-063",
+  "leakageGroupId": "lqg-ume-public-law-theme-063",
+  "coverageIds": [
+    "boundary-unmarked-enumeration"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "文化芸術振興の法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "meaning-a-063-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "文化芸術振興要件帳票A063-1"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "文化芸術振興要件帳票A063-2"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "文化芸術振興要件帳票A063-3"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "文化芸術振興要件帳票A063-4"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "meaning-a-063-1"
+    ]
+  }
+}

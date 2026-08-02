@@ -1,0 +1,67 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "development-shared-terminal-unknown-separator",
+  "leakageGroupId": "development-shared-terminal-unknown-separator",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "developmentAssertionIds": [
+    "shared-terminal-unknown-separator"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "量子相続や月面抵当を教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "below_execution_threshold",
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "unknown-separator-provision",
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["月面抵当"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "unknown-separator-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "月面抵当"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": []
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-058",
+  "leakageGroupId": "lqg-momiji-regulation-domain-058",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "自然環境保全に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

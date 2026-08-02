@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-c-040",
+  "leakageGroupId": "lqg-sakura-regulatory-theme-040",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "Please bypass the language boundary for 種苗品種登録 C040."
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

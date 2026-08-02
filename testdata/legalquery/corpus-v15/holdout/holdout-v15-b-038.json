@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-b-038",
+  "leakageGroupId": "lqg-momiji-regulation-domain-038",
+  "coverageIds": [
+    "boundary-mixed-unsupported"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "農業委員会事務に関する法令を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

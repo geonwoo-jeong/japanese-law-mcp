@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v15-a-012",
+  "leakageGroupId": "lqg-ume-public-law-theme-012",
+  "coverageIds": [
+    "input-query-empty"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "入力境界確認holdout-v15-a-012\u001f",
+    "ref": {
+      "providerId": "e-gov-law-api-v2",
+      "key": {
+        "sourceId": "e-gov-law-api-v2",
+        "resourceType": "law",
+        "resourceId": "516AC0000000012",
+        "versionId": "516AC0000000012_20260701_516AC0000000999"
+      }
+    },
+    "limitPerAttempt": 19
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}
