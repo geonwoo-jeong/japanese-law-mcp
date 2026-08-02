@@ -72,7 +72,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで再読込できる(t *testing.T) {
 	t.Parallel()
 	const (
-		expectedEvaluationID = "evaluation-sha256-21e19fd4121131f60f21928d1ec900c3cff18003748634772504d5f8ea3afc0c"
+		expectedEvaluationID = "evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1"
 		historyEvaluationID  = "evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c"
 	)
 
@@ -117,8 +117,8 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 		history.Result.Outcome != legalquerycandidateeval.EvaluationOutcomeFailed {
 		t.Fatalf("candidate-evaluation-failure-history: 消費済み履歴 = %#v", history)
 	}
-	if prepared.Request.CorpusVersion != "corpus-v13" ||
-		prepared.Request.BaselineVersion != "default-6" {
+	if prepared.Request.CorpusVersion != "corpus-v14" ||
+		prepared.Request.BaselineVersion != "default-7" {
 		t.Fatalf("candidate-evaluation-request-identity: current request = %#v", prepared.Request)
 	}
 	if len(current.RequestRaw) == 0 ||
@@ -157,7 +157,7 @@ func Test不確定終了Requestを再利用せず新しいCurrentへ進める(t 
 	request := current.Prepared.Request
 	if current.Prepared.Pointer.EvaluationID == indeterminateEvaluationID ||
 		oldRequest.BaselineVersion != "default-4" ||
-		request.BaselineVersion != "default-6" ||
+		request.BaselineVersion != "default-7" ||
 		oldRequest.HoldoutDigest == request.HoldoutDigest {
 		t.Fatal("candidate-evaluation-indeterminate-reviewed-retry-gate: 不確定終了の identity を再利用しました")
 	}

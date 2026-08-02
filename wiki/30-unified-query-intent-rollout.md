@@ -226,6 +226,9 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 | 次 cycle 4.4 準備 | 2026-08-01 | architecture 10.0 / 10（testability 9.6 / 10） | — | 0 | exact candidate content、二件の content-bound review、`corpus-v11` / `default-4` request、未評価 current pointer。候補 command、report、result、failed report および baseline は未生成 |
 | 再準備 cycle corpus-v12 | 2026-08-01 | semantic 9.5 / 10 | testability・security 8.3 / 10 | 0 | schema version 2、development 43 件、独立生成した holdout 251 件、execution 8 件、安定 leakage group 204 件、`corpus-v10`・`corpus-v11` との holdout・leakage・正規化意味群の非交差、v11 からの development・execution byte 継承、再現性および不変性。候補 request と holdout 実行は対象外 |
 | 再準備 cycle 4.3 | 2026-08-01 | 9.4 / 10（testability 9.2 / 10） | 9.1 / 10 | 0 | `corpus-v12` development 43 件だけによる既存 profile set の再校正、同一 policy・version と scorecard、新 fingerprint、holdout・候補評価成果物の非参照、既存の候補 request と pointer の不変 |
+| 後続 cycle evaluator v2 | 2026-08-02 | 8.8 / 10 | 9.0 / 10 | 0 | v1 の再現意味を保存した exact evaluator registry、期待 plan と実入力 error、期待 request error と実受理の二境界だけを semantic failure へ写像する v2、unknown version の fail-closed、development-only preflight |
+| 後続 cycle corpus-v14 | 2026-08-02 | 内容 8.3 / 10 | 構造 8.9 / 10 | 0 | development 43 件と execution 8 件の byte 継承、独立 holdout 255 件、leakage digest 228 件、過去四版との五軸非交差、十二 category、安全対および四派生観測母集団 |
+| 後続 cycle 4.4 準備 | 2026-08-02 | architecture 10.0 / 10（testability 9.2 / 10） | — | 0 | byte 不変の candidate content、同期済み 52 SOT、二件の新しい content-bound review、`legal-query-evaluator-v2`、`corpus-v14`、`default-7` request および未評価 current pointer。holdout、report、result、baseline は未生成 |
 
 4.4 の最終 security review で残った非 blocker のうち、非 `GO*` 環境の継承は、
 4.5 の bootstrap が `PATH`、`GOROOT`、`GOMODCACHE`、`GOCACHE`、`TMPDIR` と固定
@@ -298,7 +301,10 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 再準備 cycle 4.3 | 完了 | `corpus-v12` development 43 件だけによる既存 policy・version の再校正と決定的 fingerprint の固定。候補 request と pointer は不変 |
 | 再準備 cycle 4.4 | 完了 | 失敗診断契約、同期後の SOT byte に結合した二件の review、`corpus-v12` / `default-5` request および未評価 current pointer。holdout は未実行 |
 | 再準備 cycle 4.5 | report 前失敗（同一 ID の再実行禁止） | `default-5` request は二件の remote run がともに終了 code `12` で停止し、report、result および handoff を生成しなかった。三回目は実行せず、`corpus-v13` / `default-6` の新しい準備 cycle へ置き換える |
-| 再準備 cycle 4.6 | 準備完了・未評価 | judicial-cases の raw 同値 draft 縮約修正、`corpus-v13`、二件の content-bound review、`default-6` request および未評価 current pointer を原子的に固定。holdout は未実行 |
+| 再準備 cycle 4.6 | report 前失敗（同一 ID の再実行禁止） | judicial-cases の raw 同値 draft 縮約修正、`corpus-v13`、二件の content-bound review および `default-6` request を固定した後、一回の remote run が終了 code `12` で停止。report、result および handoff は未生成 |
+| 後続 cycle evaluator v2 | 完了 | v1 の再現意味を不変に保ち、期待 plan と実入力 error、および期待 request error と実受理だけを semantic failure へ写像する exact v2 と unknown version の fail-closed を固定 |
+| 後続 cycle 4.2 | 完了 | `corpus-v14` の独立 holdout、`corpus-v10` から `corpus-v13` との五軸非交差、v13 development・execution byte 継承および四派生観測母集団を固定 |
+| 後続 cycle 4.4 | 準備完了・未評価 | byte 不変の candidate content、二件の新しい review attestation、`legal-query-evaluator-v2`、`corpus-v14`、`default-7` request および current pointer を固定。manual workflow は未実行 |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -434,13 +440,36 @@ adoption は未実行である。準備 commit の全検証と remote quality ga
 `outcome=failed` report を残せず code `12` になる。
 
 後続 cycle では、既存 `legal-query-evaluator-v1` の再現意味を変更せず、上記二境界だけを
-semantic の失敗指標へ写像する `legal-query-evaluator-v2` を追加する。期待 `plan`
+semantic の失敗指標へ写像する `legal-query-evaluator-v2` を追加した。期待 `plan`
 が入力 error になった case は reproducibility の失敗にも数えるが、期待
 `request_error` が受理された case は従来どおりその母集団から除外する。
 preprocessor、profile contribution、selector、report schema または binding の内部 error は
-引き続き report 完成前失敗とする。v2 の development-only 構造検証、独立 review、権威 CI、
-新しい corpus、未使用 baseline reservation、二件の content-bound review および別 request
-を準備した後にだけ、次の manual workflow を一回起動する。
+引き続き report 完成前失敗とする。v2 の development-only 構造検証、独立 review および
+準備 commit の権威 CI は成功した。
+
+### `corpus-v14` / `default-7` の再準備
+
+`corpus-v14` は development 四十三件と execution 八件を `corpus-v13` から byte 単位で
+継承し、独立 holdout 二百五十五件と leakage digest 二百二十八件を固定した。
+`corpus-v10` から `corpus-v13` までの消費済み・廃棄済み集合に対し、case ID、完全 request、
+ComparisonKey、leakage group および期待意味署名の五軸を再利用しない。十二 category、
+安全 variant 対および四つの派生観測母集団はすべて非零である。内容 review は
+`8.3 / 10`、構造 review は `8.9 / 10`、いずれも blocker 零で通過した。
+
+候補内容は `default-6` 準備時の
+`candidate-content-sha256-538c2c573b44c43b532b66a3ec6b8bc71ddb66d6cac91c4a4327f7bad2f4a610`
+から変わっていないため、既存の immutable content manifest を再利用した。現行五十二 SOT
+の原 byte と同じ candidate content に対し、architecture `10.0 / 10` と testability
+`9.2 / 10` の独立 review を新しく固定した。どちらも approved、blocker と major は零であり、
+testability の環境前提と負例固定検証に minor 二件を残した。
+
+二件の attestation、`legal-query-evaluator-v2`、`corpus-v14` および未使用予約名
+`default-7` を結合した未評価 request は
+`evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1`
+であり、`current.json` はこの一件だけを指す。旧 `default-6` request と失敗 run は不変に
+保持し、同じ ID、baseline、holdout digest または leakage digest を再利用しない。
+この準備変更では holdout、report、result、baseline および production adoption を生成しない。
+準備 commit の権威 CI が成功した後にだけ、同じ commit の manual workflow を一回起動する。
 
 ## 段階の境界
 
