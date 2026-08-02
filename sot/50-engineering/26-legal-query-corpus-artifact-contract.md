@@ -331,6 +331,23 @@ scenario ID は次の構造条件を満たす。
 - `composition-four-step-budget`: 同じ meaning が四 step を持ち
   `decision=single` または `hedged` である
 
+`corpus-v13` 以降を candidate 評価へ渡すには、上記四観測のそれぞれについて、
+holdout の期待値から導出できる対象 case を一件以上持たなければならない。
+対象判定は評価器と同じく `selectedMeaningIds` が参照する meaning だけを用い、
+一 case の複数 meaning が同じ観測に該当しても、その観測の対象 case 数には一回だけ
+数える。`request_error` と選択されていない meaning は対象に含めない。
+
+この条件は第 4 段階 2 の corpus 評価準備検証として、loader の完全性検証が成功した
+後に確認する。一観測でも零件なら、その corpus は評価準備を完了していない。
+fixture の coverage ID、manifest field または baseline metric を増やして同じ事実を
+重複記録してはならない。評価準備検証は `internal/legalqueryeval` の外部 network を
+使わない repository test が所有し、評価器自身の期待値投影を直接使って固定検証 ID
+`legal-query-corpus-derived-observation-population` を実装する。第 4 段階 4 で新しい
+candidate evaluation request から参照できる corpus version の境界は
+`SOT-ENG-038` に従う。
+`corpus-v1` から `corpus-v12` は履歴再現のため従来の loader と評価上の意味を保ち、
+この条件を遡及して byte の変更、再生成または削除を行わない。
+
 これらは fixture file に新しい coverage ID として保存せず、評価器と baseline
 が既存の期待 meaning から導出して確認する。`same-position-tiebreak` および
 `invalid-member-origin` のように holdout の意味署名へ現れない性質は
@@ -515,6 +532,11 @@ digest 集合が manifest と完全一致し、raw ID を manifest へ複製せ�
 `legal-query-corpus-immutable-version` で、未参照かつ digest 固定前の準備中整形だけを
 同じ版で許可し、固定後または request、result、baseline、adoption manifest 若しくは
 検索例カタログから参照された版の一 byte 変更、移動、削除および再生成を拒否する。
+`legal-query-corpus-derived-observation-population` で、`corpus-v13` 以降の holdout が
+四つの派生観測をそれぞれ一件以上持つこと、一観測を零件にした合成 corpus を
+評価準備から拒否すること、および `corpus-v1` から `corpus-v12` の読取りと履歴再現を
+変えないことを固定確認する。この検証は評価器と同じ期待値投影を使用し、query、
+case ID または期待値本文を失敗出力へ含めない。
 
 race detector で同じ corpus の並行読取りが共有状態を変更しないことを確認する。検証は外部ネットワークへ接続せず、失敗時に照会本文、fixture 全体または認証情報をエラーへ含めない。
 
