@@ -28,6 +28,7 @@ func VerifyAdoptionLink(
 		return err
 	}
 	if result.EvaluationID != request.EvaluationID ||
+		result.SchemaVersion != request.SchemaVersion ||
 		result.RequestSHA256 != RawSHA256(requestRaw) {
 		return fmt.Errorf("adoption 元 request と result の結合が一致しません")
 	}

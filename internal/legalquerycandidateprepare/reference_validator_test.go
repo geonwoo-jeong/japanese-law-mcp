@@ -25,12 +25,17 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	if err != nil {
 		t.Fatalf("candidate-evaluation-request-identity: corpus manifest を読めません: %v", err)
 	}
-	references, err := BuildRequiredSOTReferences(context.Background(), root)
+	references, err := BuildRequiredSOTReferences(
+		context.Background(),
+		root,
+		legalquerycandidateeval.SchemaVersionV2,
+	)
 	if err != nil {
 		t.Fatalf("candidate-evaluation-review-content-binding: SOT 参照を作れません: %v", err)
 	}
 	manifest := corpus.Manifest()
 	request := legalquerycandidateeval.EvaluationRequest{
+		SchemaVersion:              legalquerycandidateeval.SchemaVersionV2,
 		EvaluatorVersion:           evaluators.CurrentVersion,
 		CorpusVersion:              manifest.CorpusVersion(),
 		CorpusManifestSHA256:       corpus.SHA256(),
@@ -73,6 +78,23 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		context.Background(), []byte("canonical request placeholder\n"), request,
 	); err == nil {
 		t.Fatal("candidate-evaluation-evaluator-version-match: 未知 evaluator 版を受理しました")
+	}
+}
+
+func TestReferenceValidatorはCurrent切替前のSchemaV3Requestを拒否する(t *testing.T) {
+	t.Parallel()
+
+	validator := ReferenceValidator{repositoryRoot: candidateRepositoryRoot(t)}
+	request := legalquerycandidateeval.EvaluationRequest{
+		SchemaVersion:    legalquerycandidateeval.SchemaVersionV3,
+		EvaluatorVersion: evaluators.Version3,
+	}
+	if _, err := validator.ValidateEvaluationRequest(
+		context.Background(),
+		nil,
+		request,
+	); err == nil {
+		t.Fatal("candidate-evaluation-schema-v3-production-unreachable: current 切替前に schema v3 request を受理しました")
 	}
 }
 

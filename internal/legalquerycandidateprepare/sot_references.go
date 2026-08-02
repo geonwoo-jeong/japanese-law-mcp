@@ -30,10 +30,11 @@ var sotDomains = [...]struct {
 	{prefix: "DELIVERY", path: "60-delivery"},
 }
 
-// BuildRequiredSOTReferences は、固定 index から schema v2 の review 集合を解決する。
+// BuildRequiredSOTReferences は、固定 index から schema 版に対応する review 集合を解決する。
 func BuildRequiredSOTReferences(
 	ctx context.Context,
 	repositoryRoot string,
+	schemaVersion int,
 ) ([]legalquerycandidateeval.SOTReference, error) {
 	if err := checkPrepareContext(ctx); err != nil {
 		return nil, err
@@ -47,7 +48,10 @@ func BuildRequiredSOTReferences(
 	if err != nil {
 		return nil, err
 	}
-	ids := legalquerycandidateeval.RequiredReviewSOTIDs()
+	ids, err := legalquerycandidateeval.RequiredReviewSOTIDsForSchema(schemaVersion)
+	if err != nil {
+		return nil, err
+	}
 	references := make([]legalquerycandidateeval.SOTReference, 0, len(ids))
 	for _, id := range ids {
 		if err := checkPrepareContext(ctx); err != nil {

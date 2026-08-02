@@ -1,25 +1,43 @@
 package legalquerycandidateeval
 
 import (
+	"context"
 	"fmt"
 	"sync"
 )
 
 var (
-	canonicalSchemaOnce sync.Once
-	canonicalSchema     SchemaV2
-	canonicalSchemaErr  error
+	canonicalSchemasOnce sync.Once
+	canonicalSchemas     artifactSchemas
+	canonicalSchemasErr  error
 )
 
-func validateCanonicalArtifactSchema(raw []byte) error {
-	canonicalSchemaOnce.Do(func() {
-		canonicalSchema, canonicalSchemaErr = ParseSchemaV2(CanonicalSchemaV2())
+type artifactSchemas struct {
+	v2 SchemaV2
+	v3 SchemaV3
+}
+
+func loadCanonicalArtifactSchemas() (artifactSchemas, error) {
+	canonicalSchemasOnce.Do(func() {
+		canonicalSchemas.v2, canonicalSchemasErr = ParseSchemaV2(CanonicalSchemaV2())
+		if canonicalSchemasErr != nil {
+			return
+		}
+		canonicalSchemas.v3, canonicalSchemasErr = ParseSchemaV3(CanonicalSchemaV3())
 	})
-	if canonicalSchemaErr != nil {
-		return fmt.Errorf("固定済み schema v2 を初期化できません: %w", canonicalSchemaErr)
+	if canonicalSchemasErr != nil {
+		return artifactSchemas{}, fmt.Errorf("固定済み candidate evaluation schema を初期化できません: %w", canonicalSchemasErr)
 	}
-	if err := canonicalSchema.validateRaw(raw); err != nil {
-		return err
+	return canonicalSchemas, nil
+}
+
+func (s artifactSchemas) validate(ctx context.Context, schemaVersion int, raw []byte) error {
+	switch schemaVersion {
+	case SchemaVersionV2:
+		return s.v2.Validate(ctx, raw)
+	case SchemaVersionV3:
+		return s.v3.Validate(ctx, raw)
+	default:
+		return fmt.Errorf("candidate evaluation schema version が未対応です")
 	}
-	return nil
 }

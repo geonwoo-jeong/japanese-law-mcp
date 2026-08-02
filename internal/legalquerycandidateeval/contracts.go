@@ -1,5 +1,10 @@
 package legalquerycandidateeval
 
+import (
+	"fmt"
+	"slices"
+)
+
 var requiredReviewSOTIDsV2 = [...]string{
 	"SOT-ARCH-018",
 	"SOT-ARCH-021",
@@ -55,7 +60,29 @@ var requiredReviewSOTIDsV2 = [...]string{
 	"SOT-MODEL-031",
 }
 
+var additionalRequiredReviewSOTIDsV3 = [...]string{
+	"SOT-ENG-040",
+	"SOT-ENG-041",
+	"SOT-ENG-042",
+}
+
 // RequiredReviewSOTIDs は schema v2 初回候補の閉じた SOT ID 集合を返す。
 func RequiredReviewSOTIDs() []string {
 	return append([]string(nil), requiredReviewSOTIDsV2[:]...)
+}
+
+// RequiredReviewSOTIDsForSchema は schema 版に固定された SOT ID 集合を返す。
+func RequiredReviewSOTIDsForSchema(schemaVersion int) ([]string, error) {
+	switch schemaVersion {
+	case SchemaVersionV2:
+		return RequiredReviewSOTIDs(), nil
+	case SchemaVersionV3:
+		ids := make([]string, 0, len(requiredReviewSOTIDsV2)+len(additionalRequiredReviewSOTIDsV3))
+		ids = append(ids, requiredReviewSOTIDsV2[:]...)
+		ids = append(ids, additionalRequiredReviewSOTIDsV3[:]...)
+		slices.Sort(ids)
+		return ids, nil
+	default:
+		return nil, fmt.Errorf("candidate evaluation schema version が未対応です")
+	}
 }

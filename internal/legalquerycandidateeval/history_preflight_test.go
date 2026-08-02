@@ -3,6 +3,8 @@ package legalquerycandidateeval
 import (
 	"crypto/sha256"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"sort"
 	"testing"
@@ -154,6 +156,85 @@ func TestEvaluationPreflightは消費済みBaseline予約の再利用を拒否�
 	}
 }
 
+func TestRequestReservationPreflightは新しいV2CurrentのV2予約衝突を拒否する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	template := validEvaluationRequest(t, manifestWithID(t))
+	current := syntheticHistoryRequest(t, template, 7200, "v2-current")
+	reserved := syntheticHistoryRequest(t, template, 7201, "v2-reserved")
+	reserved.HoldoutDigest = current.HoldoutDigest
+	reserved.EvaluationID = mustEvaluationID(t, reserved)
+	requests := map[string]loadedArtifact[EvaluationRequest]{
+		current.EvaluationID:  {document: current},
+		reserved.EvaluationID: {document: reserved},
+	}
+
+	if err := checkRequestReservationPreflight(current, requests); err == nil {
+		t.Fatal("candidate-evaluation-schema-v3-superseded-request-reservation: 新しい v2 current による v2 予約値の再利用を受理しました")
+	}
+}
+
+func TestRequestReservationPreflightは過去V2同士の衝突だけを遡及無効化しない(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	v2Template := validEvaluationRequest(t, manifestWithID(t))
+	first := syntheticHistoryRequest(t, v2Template, 7300, "legacy-first")
+	second := syntheticHistoryRequest(t, v2Template, 7301, "legacy-second")
+	second.HoldoutDigest = first.HoldoutDigest
+	second.HoldoutLeakageGroupDigests = append(
+		[]string(nil),
+		first.HoldoutLeakageGroupDigests...,
+	)
+	second.EvaluationID = mustEvaluationID(t, second)
+
+	v3Manifest := validCandidateManifestForSchema(t, SchemaVersionV3)
+	current := validEvaluationRequestForSchema(t, v3Manifest)
+	requests := map[string]loadedArtifact[EvaluationRequest]{
+		first.EvaluationID:   {document: first},
+		second.EvaluationID:  {document: second},
+		current.EvaluationID: {document: current},
+	}
+
+	if err := checkRequestReservationPreflight(current, requests); err != nil {
+		t.Fatalf("過去 v2 request 間だけの衝突を遡及的に拒否しました: %v", err)
+	}
+}
+
+func TestRequestReservationPreflightは既知V2評価二件だけを遡及除外する(
+	t *testing.T,
+) {
+	t.Parallel()
+
+	first := loadRepositoryEvaluationRequest(
+		t,
+		legacyV2EvaluationIDDefault2,
+	)
+	second := loadRepositoryEvaluationRequest(
+		t,
+		legacyV2EvaluationIDDefault3,
+	)
+
+	requests := map[string]loadedArtifact[EvaluationRequest]{
+		first.EvaluationID:  {document: first},
+		second.EvaluationID: {document: second},
+	}
+	if err := checkRequestReservationPreflight(second, requests); err != nil {
+		t.Fatalf("既存の default-2/default-3 評価二件に対する遡及除外を拒否しました: %v", err)
+	}
+
+	newCurrent := second
+	newCurrent.BaselineVersion = "default-8"
+	newCurrent.EvaluationID = mustEvaluationID(t, newCurrent)
+	requests[newCurrent.EvaluationID] = loadedArtifact[EvaluationRequest]{document: newCurrent}
+	if err := checkRequestReservationPreflight(newCurrent, requests); err == nil {
+		t.Fatal("既存二件だけの遡及除外を新しい v2 current へ拡張して受理しました")
+	}
+}
+
 func syntheticConsumedEvaluation(
 	t *testing.T,
 	template EvaluationRequest,
@@ -202,4 +283,30 @@ func syntheticSortedDigests(domain string, count int) []string {
 func syntheticDigest(domain string, index int) string {
 	digest := sha256.Sum256([]byte(fmt.Sprintf("%s-%d", domain, index)))
 	return fmt.Sprintf("%x", digest)
+}
+
+func loadRepositoryEvaluationRequest(t *testing.T, evaluationID string) EvaluationRequest {
+	t.Helper()
+	repositoryRoot, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("repository root を解決できません: %v", err)
+	}
+	requestPath := filepath.Join(
+		repositoryRoot,
+		"testdata",
+		"legalquery",
+		"candidate-evaluations",
+		"requests",
+		evaluationID+".json",
+	)
+	//nolint:gosec // 固定した repository 内 request だけを読む。
+	raw, err := os.ReadFile(requestPath)
+	if err != nil {
+		t.Fatalf("既存 request を読めません: %v", err)
+	}
+	request, err := DecodeEvaluationRequest(raw)
+	if err != nil {
+		t.Fatalf("既存 request が不正です: %v", err)
+	}
+	return request
 }

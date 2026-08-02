@@ -53,15 +53,15 @@ func loadCurrentEvaluationFromRoot(
 	if err != nil {
 		return CurrentEvaluation{}, err
 	}
-	schema, err := loadSchema(root)
+	schemas, err := loadSchemas(root)
 	if err != nil {
 		return CurrentEvaluation{}, err
 	}
-	pointer, err := loadPointer(ctx, root, schema)
+	pointer, err := loadPointer(ctx, root, schemas)
 	if err != nil {
 		return CurrentEvaluation{}, err
 	}
-	artifacts, err := loadPreparationArtifacts(ctx, root, schema, layout, false)
+	artifacts, err := loadPreparationArtifacts(ctx, root, schemas, layout, false)
 	if err != nil {
 		return CurrentEvaluation{}, err
 	}
@@ -75,7 +75,13 @@ func loadCurrentEvaluationFromRoot(
 	if !exists {
 		return CurrentEvaluation{}, fmt.Errorf("current evaluation request が存在しません")
 	}
-	results, err := loadTrackedResults(ctx, root, schema, layout)
+	if current.document.SchemaVersion != pointer.SchemaVersion {
+		return CurrentEvaluation{}, fmt.Errorf("pointer と current request の schemaVersion が一致しません")
+	}
+	if err := checkRequestReservationPreflight(current.document, artifacts.requests); err != nil {
+		return CurrentEvaluation{}, err
+	}
+	results, err := loadTrackedResults(ctx, root, schemas, layout)
 	if err != nil {
 		return CurrentEvaluation{}, err
 	}
@@ -104,9 +110,6 @@ func loadCurrentEvaluationFromRoot(
 	if err != nil {
 		return CurrentEvaluation{}, err
 	}
-	if err := CheckEvaluationPreflight(current.document, history); err != nil {
-		return CurrentEvaluation{}, err
-	}
 	return CurrentEvaluation{
 		Prepared:         prepareCurrent(pointer, current.document, artifacts),
 		RequestRaw:       bytes.Clone(current.raw),
@@ -120,7 +123,7 @@ func loadCurrentEvaluationFromRoot(
 func loadTrackedResults(
 	ctx context.Context,
 	root *legalqueryartifact.Repository,
-	schema SchemaV2,
+	schemas artifactSchemas,
 	layout preparationRootLayout,
 ) (map[string]loadedArtifact[EvaluationResult], error) {
 	if !layout.resultsPresent {
@@ -130,12 +133,12 @@ func loadTrackedResults(
 		ctx,
 		root,
 		"results",
-		schema,
+		schemas,
 		maximumResultFiles,
 		maximumResultTotalBytes,
 		maximumResultBytes,
 		evaluationIDPattern,
-		DecodeEvaluationResult,
+		decodeEvaluationResult,
 		func(value EvaluationResult) string { return value.EvaluationID },
 	)
 }
@@ -153,6 +156,9 @@ func bindTrackedResults(
 		request, exists := requests[evaluationID]
 		if !exists || result.document.RequestSHA256 != request.digest {
 			return nil, nil, nil, fmt.Errorf("tracked result の request binding が一致しません")
+		}
+		if result.document.SchemaVersion != request.document.SchemaVersion {
+			return nil, nil, nil, fmt.Errorf("tracked result と request の schemaVersion が一致しません")
 		}
 		consumed := ConsumedEvaluation{Request: request.document, Result: result.document}
 		if err := validateConsumedEvaluation(consumed); err != nil {

@@ -22,7 +22,11 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	if err != nil {
 		t.Fatalf("candidate content を直列化できません: %v", err)
 	}
-	references, err := BuildRequiredSOTReferences(t.Context(), repository)
+	references, err := BuildRequiredSOTReferences(
+		t.Context(),
+		repository,
+		legalquerycandidateeval.SchemaVersionV2,
+	)
 	if err != nil {
 		t.Fatalf("review SOT 集合を解決できません: %v", err)
 	}

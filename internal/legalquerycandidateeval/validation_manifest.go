@@ -4,7 +4,7 @@ import "fmt"
 
 func validateCandidateContent(document CandidateContentManifest) error {
 	if document.ArtifactKind != ArtifactKindCandidateContent ||
-		document.SchemaVersion != SchemaVersionV2 ||
+		!isSupportedSchemaVersion(document.SchemaVersion) ||
 		!candidateContentIDPattern.MatchString(document.CandidateContentID) {
 		return fmt.Errorf("candidate content manifest の版または ID が不正です")
 	}

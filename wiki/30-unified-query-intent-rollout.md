@@ -478,9 +478,11 @@ report、result および artifact を生成しなかった。同じ evaluation 
 holdout digest および leakage group digest は再利用せず、この run も再実行しない。
 
 候補所有の前処理または profile 回収 error だけを一件の定量的失敗へ写像する
-`legal-query-evaluator-v3` の exact routing は準備済みである。ただし現行候補 source には
-実 marker を接続しておらず、current evaluator と schema version 2 request は変更して
-いない。次の変更は `SOT-ENG-042` に従い、実 marker、schema version 3 の content
+`legal-query-evaluator-v3` の exact routing は準備済みである。schema version 2 の固定 byte を
+変更せず、schema version 3 の閉じた schema、成果物ごとの exact 版判別、世代混在履歴の
+replay および cross-version 参照の拒否も準備した。この共存基盤だけでは version 3 request
+を構築せず、現行候補 source の実 marker、current evaluator および schema version 2 request
+は変更していない。次の変更は `SOT-ENG-042` に従い、実 marker、schema version 3 の content
 manifest、二件の新規 review、未使用 corpus と baseline を持つ別 request、および pointer
 を一つの準備単位として作る。holdout 評価と production adoption はその後の別単位である。
 

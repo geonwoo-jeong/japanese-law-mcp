@@ -16,20 +16,28 @@ func TestBuildRequiredSOTReferencesは固定Indexから有効文書だけを解�
 	if err != nil {
 		t.Fatalf("candidate-evaluation-review-content-binding: repository を解決できません: %v", err)
 	}
-	references, err := BuildRequiredSOTReferences(t.Context(), repository)
-	if err != nil {
-		t.Fatalf("candidate-evaluation-review-content-binding: SOT 集合を解決できません: %v", err)
-	}
-	want := legalquerycandidateeval.RequiredReviewSOTIDs()
-	if len(references) != len(want) {
-		t.Fatalf("candidate-evaluation-review-content-binding: SOT 件数 = %d, want %d", len(references), len(want))
-	}
-	for index, reference := range references {
-		if reference.SOTID != want[index] || len(reference.SOTDocumentSHA256) != 64 {
-			t.Fatalf("candidate-evaluation-review-content-binding: SOT[%d] = %#v", index, reference)
+	for _, schemaVersion := range []int{
+		legalquerycandidateeval.SchemaVersionV2,
+		legalquerycandidateeval.SchemaVersionV3,
+	} {
+		references, err := BuildRequiredSOTReferences(t.Context(), repository, schemaVersion)
+		if err != nil {
+			t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の SOT 集合を解決できません: %v", schemaVersion, err)
 		}
-	}
-	if got := legalquerycandidateeval.SOTSetSHA256(references); len(got) != 64 {
-		t.Fatalf("candidate-evaluation-review-content-binding: set digest = %q", got)
+		want, err := legalquerycandidateeval.RequiredReviewSOTIDsForSchema(schemaVersion)
+		if err != nil {
+			t.Fatalf("schema version %d の SOT ID 集合を解決できません: %v", schemaVersion, err)
+		}
+		if len(references) != len(want) {
+			t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の SOT 件数 = %d, want %d", schemaVersion, len(references), len(want))
+		}
+		for index, reference := range references {
+			if reference.SOTID != want[index] || len(reference.SOTDocumentSHA256) != 64 {
+				t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の SOT[%d] = %#v", schemaVersion, index, reference)
+			}
+		}
+		if got := legalquerycandidateeval.SOTSetSHA256(references); len(got) != 64 {
+			t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の set digest = %q", schemaVersion, got)
+		}
 	}
 }

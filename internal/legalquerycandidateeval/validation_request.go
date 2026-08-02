@@ -4,12 +4,15 @@ import "fmt"
 
 func validateEvaluationRequest(document EvaluationRequest) error {
 	if document.ArtifactKind != ArtifactKindEvaluationRequest ||
-		document.SchemaVersion != SchemaVersionV2 ||
+		!isSupportedSchemaVersion(document.SchemaVersion) ||
 		!evaluationIDPattern.MatchString(document.EvaluationID) {
 		return fmt.Errorf("candidate evaluation request の版または ID が不正です")
 	}
 	if !evaluatorVersionPattern.MatchString(document.EvaluatorVersion) || len(document.EvaluatorVersion) > 64 {
 		return fmt.Errorf("evaluatorVersion が不正です")
+	}
+	if document.SchemaVersion == SchemaVersionV3 && document.EvaluatorVersion != EvaluatorVersionV3 {
+		return fmt.Errorf("schema version 3 の evaluatorVersion が固定値と一致しません")
 	}
 	if err := validateRequestCorpus(document); err != nil {
 		return err
@@ -24,7 +27,7 @@ func validateEvaluationRequest(document EvaluationRequest) error {
 		document.ReviewRubricSHA256 != ReviewRubricSHA256() {
 		return fmt.Errorf("request の review rubric が不正です")
 	}
-	if err := validateSOTReferences(document.RequiredReviewSOTs, true); err != nil {
+	if err := validateSOTReferences(document.RequiredReviewSOTs, document.SchemaVersion, true); err != nil {
 		return err
 	}
 	if document.RequiredReviewSOTSetSHA256 != SOTSetSHA256(document.RequiredReviewSOTs) {

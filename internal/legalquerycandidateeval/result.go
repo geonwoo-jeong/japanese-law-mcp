@@ -33,7 +33,7 @@ func NewEvaluationResult(
 
 	result := EvaluationResult{
 		ArtifactKind:  ArtifactKindEvaluationResult,
-		SchemaVersion: SchemaVersionV2,
+		SchemaVersion: request.SchemaVersion,
 		EvaluationID:  request.EvaluationID,
 		RequestSHA256: RawSHA256(requestRaw),
 		Outcome:       outcome,
@@ -47,7 +47,7 @@ func NewEvaluationResult(
 
 func validateEvaluationResult(result EvaluationResult) error {
 	if result.ArtifactKind != ArtifactKindEvaluationResult ||
-		result.SchemaVersion != SchemaVersionV2 ||
+		!isSupportedSchemaVersion(result.SchemaVersion) ||
 		!evaluationIDPattern.MatchString(result.EvaluationID) {
 		return fmt.Errorf("candidate evaluation result の版または ID が不正です")
 	}

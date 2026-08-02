@@ -96,7 +96,11 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			fmt.Errorf("現行 baselineVersion は候補予約に使用できません")
 	}
-	references, err := BuildRequiredSOTReferences(ctx, v.repositoryRoot)
+	references, err := BuildRequiredSOTReferences(
+		ctx,
+		v.repositoryRoot,
+		document.SchemaVersion,
+	)
 	if err != nil {
 		return legalquerycandidateeval.RequestReferenceValidation{}, err
 	}

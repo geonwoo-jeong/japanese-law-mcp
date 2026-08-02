@@ -17,35 +17,57 @@ type SchemaV2 struct {
 	resolved *jsonschema.Resolved
 }
 
+// SchemaV3 は外部参照を持たない解決済み JSON Schema である。
+type SchemaV3 struct {
+	resolved *jsonschema.Resolved
+}
+
 // ParseSchemaV2 は Draft 2020-12 schema を同一 document 内だけで解決する。
 func ParseSchemaV2(raw []byte) (SchemaV2, error) {
+	resolved, err := parseSchema(raw)
+	if err != nil {
+		return SchemaV2{}, err
+	}
+	return SchemaV2{resolved: resolved}, nil
+}
+
+// ParseSchemaV3 は Draft 2020-12 schema を同一 document 内だけで解決する。
+func ParseSchemaV3(raw []byte) (SchemaV3, error) {
+	resolved, err := parseSchema(raw)
+	if err != nil {
+		return SchemaV3{}, err
+	}
+	return SchemaV3{resolved: resolved}, nil
+}
+
+func parseSchema(raw []byte) (*jsonschema.Resolved, error) {
 	if len(raw) == 0 || len(raw) > maximumSchemaBytes {
-		return SchemaV2{}, fmt.Errorf("candidate evaluation schema の size が不正です")
+		return nil, fmt.Errorf("candidate evaluation schema の size が不正です")
 	}
 	if err := legalqueryartifact.InspectJSONObject(raw, legalqueryartifact.JSONLimits{
 		Depth: 64, Values: 65536, RejectNull: true,
 	}); err != nil {
-		return SchemaV2{}, fmt.Errorf("candidate evaluation schema の JSON が不正です: %w", err)
+		return nil, fmt.Errorf("candidate evaluation schema の JSON が不正です: %w", err)
 	}
 	var generic map[string]any
 	if err := json.Unmarshal(raw, &generic); err != nil {
-		return SchemaV2{}, fmt.Errorf("candidate evaluation schema を解釈できません")
+		return nil, fmt.Errorf("candidate evaluation schema を解釈できません")
 	}
 	if generic["$schema"] != schemaDraft202012 {
-		return SchemaV2{}, fmt.Errorf("candidate evaluation schema の draft が不正です")
+		return nil, fmt.Errorf("candidate evaluation schema の draft が不正です")
 	}
 	if err := validateSchemaReferences(generic); err != nil {
-		return SchemaV2{}, err
+		return nil, err
 	}
 	var document jsonschema.Schema
 	if err := json.Unmarshal(raw, &document); err != nil {
-		return SchemaV2{}, fmt.Errorf("candidate evaluation schema を解釈できません")
+		return nil, fmt.Errorf("candidate evaluation schema を解釈できません")
 	}
 	resolved, err := document.Resolve(nil)
 	if err != nil {
-		return SchemaV2{}, fmt.Errorf("candidate evaluation schema を自己解決できません")
+		return nil, fmt.Errorf("candidate evaluation schema を自己解決できません")
 	}
-	return SchemaV2{resolved: resolved}, nil
+	return resolved, nil
 }
 
 // Validate は一 artifact を解決済み schema に照合する。
@@ -57,17 +79,36 @@ func (s SchemaV2) Validate(ctx context.Context, raw []byte) error {
 }
 
 func (s SchemaV2) validateRaw(raw []byte) error {
-	if s.resolved == nil {
+	if err := validateResolvedSchema(s.resolved, raw); err != nil {
+		return fmt.Errorf("candidate evaluation 成果物が schema v2 に適合しません")
+	}
+	return nil
+}
+
+// Validate は一 artifact を解決済み schema に照合する。
+func (s SchemaV3) Validate(ctx context.Context, raw []byte) error {
+	if err := checkContext(ctx); err != nil {
+		return err
+	}
+	return s.validateRaw(raw)
+}
+
+func (s SchemaV3) validateRaw(raw []byte) error {
+	if err := validateResolvedSchema(s.resolved, raw); err != nil {
+		return fmt.Errorf("candidate evaluation 成果物が schema v3 に適合しません")
+	}
+	return nil
+}
+
+func validateResolvedSchema(resolved *jsonschema.Resolved, raw []byte) error {
+	if resolved == nil {
 		return fmt.Errorf("candidate evaluation schema が初期化されていません")
 	}
 	var instance any
 	if err := json.Unmarshal(raw, &instance); err != nil {
 		return fmt.Errorf("candidate evaluation 成果物を schema 用に解釈できません")
 	}
-	if err := s.resolved.Validate(instance); err != nil {
-		return fmt.Errorf("candidate evaluation 成果物が schema v2 に適合しません")
-	}
-	return nil
+	return resolved.Validate(instance)
 }
 
 func validateSchemaReferences(value any) error {

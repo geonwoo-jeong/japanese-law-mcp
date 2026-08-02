@@ -86,15 +86,15 @@ func loadPreparedCurrentFromRoot(
 	if err != nil {
 		return PreparedCurrent{}, err
 	}
-	schema, err := loadSchema(root)
+	schemas, err := loadSchemas(root)
 	if err != nil {
 		return PreparedCurrent{}, err
 	}
-	pointer, err := loadPointer(ctx, root, schema)
+	pointer, err := loadPointer(ctx, root, schemas)
 	if err != nil {
 		return PreparedCurrent{}, err
 	}
-	artifacts, err := loadPreparationArtifacts(ctx, root, schema, layout, true)
+	artifacts, err := loadPreparationArtifacts(ctx, root, schemas, layout, true)
 	if err != nil {
 		return PreparedCurrent{}, err
 	}
@@ -107,6 +107,12 @@ func loadPreparedCurrentFromRoot(
 	current, exists := artifacts.requests[pointer.EvaluationID]
 	if !exists {
 		return PreparedCurrent{}, fmt.Errorf("current evaluation request が存在しません")
+	}
+	if current.document.SchemaVersion != pointer.SchemaVersion {
+		return PreparedCurrent{}, fmt.Errorf("pointer と current request の schemaVersion が一致しません")
+	}
+	if err := checkRequestReservationPreflight(current.document, artifacts.requests); err != nil {
+		return PreparedCurrent{}, err
 	}
 	if err := validateExternalReferences(ctx, current.document, artifacts, referenceValidator); err != nil {
 		return PreparedCurrent{}, err
@@ -146,32 +152,32 @@ type loadedArtifact[T any] struct {
 func loadPreparationArtifacts(
 	ctx context.Context,
 	root *legalqueryartifact.Repository,
-	schema SchemaV2,
+	schemas artifactSchemas,
 	layout preparationRootLayout,
 	preparationOnly bool,
 ) (preparationArtifacts, error) {
 	manifests, err := loadArtifactDirectory(
-		ctx, root, "content-manifests", schema,
+		ctx, root, "content-manifests", schemas,
 		maximumManifestFiles, maximumManifestTotalBytes, maximumManifestBytes,
-		candidateContentIDPattern, DecodeCandidateContentManifest,
+		candidateContentIDPattern, decodeCandidateContentManifest,
 		func(value CandidateContentManifest) string { return value.CandidateContentID },
 	)
 	if err != nil {
 		return preparationArtifacts{}, err
 	}
 	attestations, err := loadArtifactDirectory(
-		ctx, root, "review-attestations", schema,
+		ctx, root, "review-attestations", schemas,
 		maximumAttestationFiles, maximumAttestationTotal, maximumAttestationBytes,
-		reviewAttestationIDPattern, DecodeReviewAttestation,
+		reviewAttestationIDPattern, decodeReviewAttestation,
 		func(value ReviewAttestation) string { return value.AttestationID },
 	)
 	if err != nil {
 		return preparationArtifacts{}, err
 	}
 	requests, err := loadArtifactDirectory(
-		ctx, root, "requests", schema,
+		ctx, root, "requests", schemas,
 		maximumRequestFiles, maximumRequestTotalBytes, maximumRequestBytes,
-		evaluationIDPattern, DecodeEvaluationRequest,
+		evaluationIDPattern, decodeEvaluationRequest,
 		func(value EvaluationRequest) string { return value.EvaluationID },
 	)
 	if err != nil {
@@ -192,12 +198,12 @@ func loadArtifactDirectory[T any](
 	ctx context.Context,
 	root *legalqueryartifact.Repository,
 	directoryName string,
-	schema SchemaV2,
+	schemas artifactSchemas,
 	maximumFiles int,
 	maximumTotalBytes int64,
 	maximumFileBytes int,
 	idPattern *regexp.Regexp,
-	decode func([]byte) (T, error),
+	decode func(context.Context, []byte, artifactSchemas) (T, error),
 	identity func(T) string,
 ) (map[string]loadedArtifact[T], error) {
 	directory, err := root.OpenChild(directoryName)
@@ -222,10 +228,7 @@ func loadArtifactDirectory[T any](
 		if err != nil {
 			return nil, fmt.Errorf("%s 成果物を読めません: %w", directoryName, err)
 		}
-		if err := schema.Validate(ctx, raw); err != nil {
-			return nil, err
-		}
-		document, err := decode(raw)
+		document, err := decode(ctx, raw, schemas)
 		if err != nil {
 			return nil, err
 		}
@@ -286,12 +289,18 @@ func bindRequest(
 	if !exists || manifest.digest != request.CandidateContentManifestSHA256 {
 		return fmt.Errorf("request の candidate content binding が一致しません")
 	}
+	if manifest.document.SchemaVersion != request.SchemaVersion {
+		return fmt.Errorf("request と candidate content の schemaVersion が一致しません")
+	}
 	usedManifests[request.CandidateContentID] = struct{}{}
 	authorities := make(map[string]struct{}, 2)
 	for _, reference := range request.ReviewAttestations {
 		attestation, exists := artifacts.attestations[reference.AttestationID]
 		if !exists || attestation.digest != reference.AttestationSHA256 {
 			return fmt.Errorf("request の review attestation binding が一致しません")
+		}
+		if attestation.document.SchemaVersion != request.SchemaVersion {
+			return fmt.Errorf("request と review attestation の schemaVersion が一致しません")
 		}
 		if err := bindAttestation(request, reference, attestation.document); err != nil {
 			return err
@@ -366,7 +375,7 @@ func validateCurrentSOTBinding(
 	validation RequestReferenceValidation,
 ) error {
 	references := validation.CurrentRequiredReviewSOTs
-	if err := validateSOTReferences(references, true); err != nil {
+	if err := validateSOTReferences(references, request.SchemaVersion, true); err != nil {
 		return fmt.Errorf("current SOT index の検証結果が不正です: %w", err)
 	}
 	if !slices.Equal(references, request.RequiredReviewSOTs) ||

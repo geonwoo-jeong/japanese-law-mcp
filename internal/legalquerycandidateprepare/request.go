@@ -27,7 +27,11 @@ func BuildEvaluationRequest(
 	if err := verifyCanonicalCandidateManifest(manifest, manifestRaw); err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}
-	references, err := BuildRequiredSOTReferences(ctx, repositoryRoot)
+	references, err := BuildRequiredSOTReferences(
+		ctx,
+		repositoryRoot,
+		manifest.SchemaVersion,
+	)
 	if err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}

@@ -153,6 +153,21 @@ version、holdout digest および leakage group digest を、result や failed 
 report を、failed report がある request は request/report binding を追加で検証する。
 pointer から外れ result も failed report もない置換済み準備も履歴から除外しない。
 
+current request は schema version にかかわらず各過去 request との衝突を一件ずつ拒否する。
+唯一の遡及除外は、schema version 3 の導入前に `SOT-ENG-038` の current と置換済み準備
+として有効だった、次の schema version 2 evaluation ID 二件の組だけとする。
+
+```text
+evaluation-sha256-1001bab1bab4c88533769e89e5ad7a4aed78e043239344b67a6d450b41adfdbd
+evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c
+```
+
+evaluation ID は request の canonical tuple 全体を固定するため、同じ corpus、evaluator または
+baseline の属性だけを名乗る別 request を遡及除外しない。この二 request は既存の一回利用
+規則に従って同じ holdout 予約値を保持する。repository preflight は非 current の過去 request
+同士を再比較せず、これ以外の version 2 または version 3 current と全過去 request の衝突を
+拒否する。
+
 権威 CI の workflow 記録は repository artifact loader の入力へ加えず、一回実行を開始する
 dispatch gate が evaluation ID と対象 commit の既存 run を確認する。workflow log、holdout
 内容または任意 path を request、result若しくは report へ複製しない。repository preflight

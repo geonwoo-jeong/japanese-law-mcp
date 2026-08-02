@@ -24,11 +24,15 @@ var (
 
 func validatePointer(document PointerDocument) error {
 	if document.ArtifactKind != ArtifactKindPointer ||
-		document.SchemaVersion != SchemaVersionV2 ||
+		!isSupportedSchemaVersion(document.SchemaVersion) ||
 		!evaluationIDPattern.MatchString(document.EvaluationID) {
 		return fmt.Errorf("candidate evaluation pointer の値が不正です")
 	}
 	return nil
+}
+
+func isSupportedSchemaVersion(schemaVersion int) bool {
+	return schemaVersion == SchemaVersionV2 || schemaVersion == SchemaVersionV3
 }
 
 func validateSHA256(name, value string) error {

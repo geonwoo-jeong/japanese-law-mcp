@@ -4,7 +4,7 @@ import "fmt"
 
 func validateReviewAttestation(document ReviewAttestation) error {
 	if document.ArtifactKind != ArtifactKindReviewAttestation ||
-		document.SchemaVersion != SchemaVersionV2 ||
+		!isSupportedSchemaVersion(document.SchemaVersion) ||
 		!reviewAttestationIDPattern.MatchString(document.AttestationID) ||
 		!candidateContentIDPattern.MatchString(document.CandidateContentID) {
 		return fmt.Errorf("review attestation の版または ID が不正です")
@@ -21,7 +21,7 @@ func validateReviewAttestation(document ReviewAttestation) error {
 	if !authorityIDPattern.MatchString(document.ReviewerAuthorityID) {
 		return fmt.Errorf("reviewerAuthorityId が不正です")
 	}
-	if err := validateSOTReferences(document.ReviewedSOTs, true); err != nil {
+	if err := validateSOTReferences(document.ReviewedSOTs, document.SchemaVersion, true); err != nil {
 		return err
 	}
 	if document.ReviewedSOTSetSHA256 != SOTSetSHA256(document.ReviewedSOTs) {
@@ -41,21 +41,29 @@ func validateReviewAttestation(document ReviewAttestation) error {
 	return nil
 }
 
-func validateSOTReferences(references []SOTReference, requireExact bool) error {
+func validateSOTReferences(
+	references []SOTReference,
+	schemaVersion int,
+	requireExact bool,
+) error {
 	//nolint:staticcheck // SOT-ENG-038: JSON null と空配列を別状態として閉じて検証する。
 	if references == nil || len(references) < 1 || len(references) > 128 {
 		return fmt.Errorf("review SOT 集合の件数が不正です")
 	}
-	if requireExact && len(references) != len(requiredReviewSOTIDsV2) {
-		return fmt.Errorf("review SOT 集合が schema v2 の固定集合と一致しません")
+	expected, err := RequiredReviewSOTIDsForSchema(schemaVersion)
+	if err != nil {
+		return err
+	}
+	if requireExact && len(references) != len(expected) {
+		return fmt.Errorf("review SOT 集合が schema version %d の固定集合と一致しません", schemaVersion)
 	}
 	previous := ""
 	for index, reference := range references {
 		if index > 0 && previous >= reference.SOTID {
 			return fmt.Errorf("review SOT 集合は sotId の byte 昇順でなければなりません")
 		}
-		if requireExact && reference.SOTID != requiredReviewSOTIDsV2[index] {
-			return fmt.Errorf("review SOT 集合が schema v2 の固定集合と一致しません")
+		if requireExact && reference.SOTID != expected[index] {
+			return fmt.Errorf("review SOT 集合が schema version %d の固定集合と一致しません", schemaVersion)
 		}
 		if err := validateSHA256("sotDocumentSha256", reference.SOTDocumentSHA256); err != nil {
 			return err
