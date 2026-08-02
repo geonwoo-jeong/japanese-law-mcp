@@ -44,8 +44,22 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	if err != nil {
 		t.Fatalf("testability review を直列化できません: %v", err)
 	}
+	legacyRequest, legacyErr := BuildEvaluationRequest(
+		t.Context(), repository, "corpus-v12", manifest, manifestRaw,
+		architecture, architectureRaw, testability, testabilityRaw,
+		"default-2",
+	)
+	if legacyErr == nil || legacyRequest.EvaluationID != "" {
+		t.Fatalf(
+			"candidate-evaluation-corpus-admissibility: corpus-v12 を新しい request として受理しました: evaluationId=%q corpusVersion=%q error=%v",
+			legacyRequest.EvaluationID,
+			legacyRequest.CorpusVersion,
+			legacyErr,
+		)
+	}
+
 	request, err := BuildEvaluationRequest(
-		t.Context(), repository, "corpus-v10", manifest, manifestRaw,
+		t.Context(), repository, "corpus-v13", manifest, manifestRaw,
 		architecture, architectureRaw, testability, testabilityRaw,
 		"default-2",
 	)
@@ -64,6 +78,7 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 		request.RequiredReviewSOTSetSHA256 !=
 			legalquerycandidateeval.SOTSetSHA256(references) ||
 		request.EvaluatorVersion != "legal-query-evaluator-v1" ||
+		request.CorpusVersion != "corpus-v13" ||
 		request.BaselineVersion != "default-2" {
 		t.Fatalf("candidate-evaluation-review-content-binding: request binding = %#v", request)
 	}

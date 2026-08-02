@@ -9,15 +9,28 @@ import (
 )
 
 type judicialEvidenceEvaluation struct {
-	mapping profileevidence.Mapping
-	drafts  []judicialEvidenceDraftRef
-	facts   judicialEvidenceFactSet
+	mappings map[string]profileevidence.Mapping
+	drafts   []judicialEvidenceDraftRef
+	facts    judicialEvidenceFactSet
 }
 
 type judicialEvidenceDraftRef struct {
 	draftID    string
 	stepIDs    []string
 	draftIndex int
+}
+
+func (e judicialEvidenceEvaluation) mappingFor(
+	draftID string,
+) (profileevidence.Mapping, error) {
+	mapping, exists := e.mappings[draftID]
+	if !exists {
+		return profileevidence.Mapping{}, fmt.Errorf(
+			"judicial evidence draft %q の mapping がありません",
+			draftID,
+		)
+	}
+	return mapping, nil
 }
 
 func buildJudicialEvidenceEvaluation(
@@ -45,10 +58,7 @@ func buildJudicialEvidenceEvaluation(
 	if err != nil {
 		return judicialEvidenceEvaluation{}, err
 	}
-	values := profileevidence.MappingValues{
-		ProfileID: profileID,
-		Facts:     facts.values,
-	}
+	mappings := make(map[string]profileevidence.Mapping, len(bound))
 	references := make([]judicialEvidenceDraftRef, 0, len(bound))
 	for index, draft := range bound {
 		value, reference, retained, buildErr :=
@@ -59,20 +69,33 @@ func buildJudicialEvidenceEvaluation(
 		if !retained {
 			continue
 		}
-		values.Drafts = append(values.Drafts, value)
+		mapping, mappingErr := profileevidence.NewMapping(
+			profileevidence.MappingValues{
+				ProfileID: profileID,
+				Facts:     facts.values,
+				Drafts:    []profileevidence.DraftValues{value},
+			},
+		)
+		if mappingErr != nil {
+			return judicialEvidenceEvaluation{}, fmt.Errorf(
+				"judicial evidence draft %q の mapping を構築できません: %w",
+				reference.draftID,
+				mappingErr,
+			)
+		}
+		if _, exists := mappings[reference.draftID]; exists {
+			return judicialEvidenceEvaluation{}, fmt.Errorf(
+				"judicial evidence draft %q の mapping が重複しています",
+				reference.draftID,
+			)
+		}
+		mappings[reference.draftID] = mapping
 		references = append(references, reference)
 	}
-	mapping, err := profileevidence.NewMapping(values)
-	if err != nil {
-		return judicialEvidenceEvaluation{}, fmt.Errorf(
-			"judicial evidence mapping を構築できません: %w",
-			err,
-		)
-	}
 	return judicialEvidenceEvaluation{
-		mapping: mapping,
-		drafts:  references,
-		facts:   facts,
+		mappings: mappings,
+		drafts:   references,
+		facts:    facts,
 	}, nil
 }
 
@@ -168,15 +191,6 @@ func buildJudicialEvidenceDraftValue(
 	if !judicialEvidenceDraftIsComplete(value, draft, facts) {
 		return profileevidence.DraftValues{},
 			judicialEvidenceDraftRef{}, false, nil
-	}
-	if _, err := profileevidence.NewMapping(profileevidence.MappingValues{
-		ProfileID: profileID,
-		Facts:     facts.values,
-		Drafts:    []profileevidence.DraftValues{value},
-	}); err != nil {
-		return profileevidence.DraftValues{},
-			judicialEvidenceDraftRef{}, false,
-			fmt.Errorf("%s: %w", draftID, err)
 	}
 	return value, reference, true, nil
 }

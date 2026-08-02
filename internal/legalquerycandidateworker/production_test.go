@@ -24,7 +24,7 @@ func TestReport直列化失敗はReport完成前の段階に分類する(t *test
 }
 
 func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じる(t *testing.T) {
-	const expectedEvaluationID = "evaluation-sha256-c53a7d0d28ef35bd2aab081680c1112b6aee9e649f19fb789ec2f0e0e35a4a87"
+	const expectedEvaluationID = "evaluation-sha256-21e19fd4121131f60f21928d1ec900c3cff18003748634772504d5f8ea3afc0c"
 	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
 	if err != nil {
 		t.Fatalf("production candidate を準備できません: %v", err)
@@ -35,8 +35,8 @@ func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じ
 		prepared.repository != "../.." {
 		t.Fatal("production preparation payload の identity が不正です")
 	}
-	if prepared.request.CorpusVersion != "corpus-v12" ||
-		prepared.request.BaselineVersion != "default-5" {
+	if prepared.request.CorpusVersion != "corpus-v13" ||
+		prepared.request.BaselineVersion != "default-6" {
 		t.Fatalf("production preparation request が後続予約と一致しません: %#v", prepared.request)
 	}
 	if prepared.tracked != nil || len(prepared.trackedRaw) != 0 ||

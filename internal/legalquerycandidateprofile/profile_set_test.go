@@ -21,9 +21,9 @@ func TestLoadは校正済み二Profileを固定順で構成する(t *testing.T) 
 		metadata[0].ProfileID() != "core" ||
 		metadata[0].ProfileVersion() != "core-2026-07-31-38" ||
 		metadata[1].ProfileID() != "judicial-cases" ||
-		metadata[1].ProfileVersion() != "judicial-cases-2026-07-31-12" ||
+		metadata[1].ProfileVersion() != "judicial-cases-2026-08-02-13" ||
 		set.Profiles().RankingVersion() != "legal-query-ranking-2026-07-31-2" ||
-		set.Profiles().ProfileVersion() != "profile-set-sha256-0b00c3409408684b825f3c0bdf1c874bdc99e5383564d8e6b66fe83d4e417a69" {
+		set.Profiles().ProfileVersion() != "profile-set-sha256-c6499c5843e993d749550a1ec71ca217234f807057b8ed8dc4cc4a75af282dc6" {
 		t.Fatalf(
 			"SOT-ENG-038: 候補 identity が固定値と一致しません: metadata=%#v profileSetVersion=%q",
 			metadata,

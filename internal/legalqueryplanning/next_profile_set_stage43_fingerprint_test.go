@@ -15,7 +15,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
-const stage43ExpectedCalibrationFingerprint = "785c9249653c8dcdf9bea047787995e111d8ad2bf3a3fddc86b203e2446320d4"
+const stage43ExpectedCalibrationFingerprint = "92d53008b5804f38dae39488ea8cc5a79f80ade931d88d4a8481abd4b9858999"
 
 func stage43ExpectedCalibrationScorecard() stage43CalibrationScorecard {
 	return stage43CalibrationScorecard{

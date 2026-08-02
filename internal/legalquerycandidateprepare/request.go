@@ -50,6 +50,12 @@ func BuildEvaluationRequest(
 	if err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}
+	if err := validateCandidateEvaluationCorpus(
+		corpus.Manifest().SchemaVersion(),
+		corpus.Manifest().CorpusVersion(),
+	); err != nil {
+		return legalquerycandidateeval.EvaluationRequest{}, err
+	}
 	request := newEvaluationRequest(
 		corpus,
 		manifest,

@@ -24,7 +24,7 @@ func TestLoadNextForVerificationはDevelopment校正CueをActiveから分離す�
 		t.Fatalf("SOT-ARCH-033: active 版を読み込めません: %v", err)
 	}
 	if next.Metadata().ProfileVersion() !=
-		"judicial-cases-2026-07-31-12" ||
+		"judicial-cases-2026-08-02-13" ||
 		next.Metadata().CueSetVersion() !=
 			"judicial-cases-cues-2026-07-31-5" ||
 		active.Metadata().ProfileVersion() !=

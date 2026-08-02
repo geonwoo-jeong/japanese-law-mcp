@@ -37,10 +37,8 @@ func TestRepositoryCorpusV13は全派生観測の母集団を持つ(t *testing.T
 		applicable, err := applicableDerivedObservations(expected)
 		if err != nil {
 			t.Fatalf(
-				"%s: case %q の派生観測を計算できません: %v",
+				"%s: 派生観測を計算できません",
 				repositoryCorpusV13DerivedObservationPopulationVerificationID,
-				semanticCase.CaseID(),
-				err,
 			)
 		}
 		for _, observationID := range applicable {

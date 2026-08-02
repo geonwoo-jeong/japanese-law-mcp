@@ -508,8 +508,14 @@ suffix は `evaluationId` を除く request field を上記の完全順で
 SHA-256 とする。request 原 byte、pointer および result は、同 SOT の
 canonical JSON byte 規則に従う。
 
-新しい candidate request は `SOT-ENG-026` の schema version 2 以上の corpus
-だけを参照する。`corpusManifestSha256`、`holdoutDigest` および
+新しい candidate request は `SOT-ENG-026` の schema version 2 以上かつ
+`corpus-v13` 以降で、同 SOT の派生観測母集団の評価準備検証を通過する corpus
+だけを参照する。request constructor は `corpus-v1` から `corpus-v12` を新しい
+request の ID を生成する前に拒否する。既存の不変 request、result および履歴が
+`corpus-v1` から `corpus-v12` を参照する場合は、その loader と replay を拒否せず、
+この新規作成境界を遡及的な schema 無効化に使用しない。
+
+`corpusManifestSha256`、`holdoutDigest` および
 `holdoutLeakageGroupDigests` を corpus manifest と完全一致させ、manifest の
 一部だけを別 corpus へ差し替えない。digest 配列は同 SOT の形式、byte 順、
 一意性および一件以上四百件以下を満たし、raw `leakageGroupId` を request へ
@@ -963,6 +969,12 @@ file が有効で原 byte digest と一致すること、一 byte の本文変�
 review を要求することを確認する。追跡済み result の replay では現在の SOT 状態や
 byte を参照せず、request と二件の attestation が保持する historical SOT 集合・
 digest と rubric digest の内部一致だけで同じ評価 byte を再現することを確認する。
+
+`candidate-evaluation-corpus-admissibility` は、新しい request constructor が
+`corpus-v1` から `corpus-v12` を拒否し、`corpus-v13` 以降について schema version、
+manifest digest、holdout digest および leakage digest の完全一致を要求することを
+確認する。同じ検証で、既存 request と結果履歴の loader および replay は
+`corpus-v1` から `corpus-v12` の参照を従来どおり受理することを確認する。
 
 `candidate-evaluation-build-context-isolation` は exact toolchain と選択済み module
 だけを準備した後、候補 command が `GOPROXY=off`、`GOENV=off`、

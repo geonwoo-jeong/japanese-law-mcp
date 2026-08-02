@@ -87,7 +87,11 @@ func (p *Profile) prepareJudicialEvidenceDrafts(
 				reference.draftID,
 			)
 		}
-		cluster, eligible, err := evaluation.mapping.ClusterKey(reference.draftID)
+		mapping, err := evaluation.mappingFor(reference.draftID)
+		if err != nil {
+			return nil, err
+		}
+		cluster, eligible, err := mapping.ClusterKey(reference.draftID)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +99,7 @@ func (p *Profile) prepareJudicialEvidenceDrafts(
 			continue
 		}
 		summary, err := judicialNormalizedEvidenceFor(
-			evaluation.mapping,
+			mapping,
 			reference,
 			evaluation.facts,
 		)
