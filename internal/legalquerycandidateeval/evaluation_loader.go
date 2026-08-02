@@ -68,6 +68,9 @@ func loadCurrentEvaluationFromRoot(
 	if err := validatePreparationBindings(artifacts); err != nil {
 		return CurrentEvaluation{}, err
 	}
+	if err := validateEvaluatorVersions(artifacts.requests, referenceValidator); err != nil {
+		return CurrentEvaluation{}, err
+	}
 	current, exists := artifacts.requests[pointer.EvaluationID]
 	if !exists {
 		return CurrentEvaluation{}, fmt.Errorf("current evaluation request が存在しません")

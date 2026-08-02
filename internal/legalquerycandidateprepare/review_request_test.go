@@ -77,7 +77,7 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 		legalquerycandidateeval.RawSHA256(manifestRaw) ||
 		request.RequiredReviewSOTSetSHA256 !=
 			legalquerycandidateeval.SOTSetSHA256(references) ||
-		request.EvaluatorVersion != "legal-query-evaluator-v1" ||
+		request.EvaluatorVersion != "legal-query-evaluator-v2" ||
 		request.CorpusVersion != "corpus-v13" ||
 		request.BaselineVersion != "default-2" {
 		t.Fatalf("candidate-evaluation-review-content-binding: request binding = %#v", request)

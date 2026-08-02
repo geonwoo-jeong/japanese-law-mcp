@@ -19,12 +19,17 @@ func (e *Evaluator) BuildStandardReport(
 		return legalqueryeval.StandardReport{},
 			fmt.Errorf("default profile evaluator は nil にできません")
 	}
-	semantic, reproducibility, err :=
-		legalqueryeval.EvaluateSemanticHoldoutReproducibility(
-			ctx,
-			corpus,
-			e.EvaluateWithPlan,
-		)
+	evaluateReproducibility :=
+		legalqueryeval.EvaluateSemanticHoldoutReproducibility
+	if e.boundaryPolicy == requestBoundaryScoredMismatch {
+		evaluateReproducibility =
+			legalqueryeval.EvaluateSemanticHoldoutReproducibilityV2
+	}
+	semantic, reproducibility, err := evaluateReproducibility(
+		ctx,
+		corpus,
+		e.EvaluateWithPlan,
+	)
 	if err != nil {
 		return legalqueryeval.StandardReport{}, err
 	}

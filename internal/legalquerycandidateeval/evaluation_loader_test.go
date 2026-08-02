@@ -59,6 +59,33 @@ func TestLoadCurrentEvaluationは未評価とReplay履歴を同じ入口で返�
 			replayValidator.requestCalls,
 		)
 	}
+	if replayValidator.evaluatorVersionCalls != 1 ||
+		len(replayValidator.evaluatorVersions) != 1 ||
+		replayValidator.evaluatorVersions[0] != request.EvaluatorVersion {
+		t.Fatalf(
+			"tracked replay の evaluator version 検証 = %v",
+			replayValidator.evaluatorVersions,
+		)
+	}
+
+	rejectedVersion := &recordingReferenceValidator{
+		rejectEvaluatorVersion: true,
+	}
+	if _, err := LoadCurrentEvaluation(
+		context.Background(),
+		root,
+		rejectedVersion,
+	); err == nil {
+		t.Fatal("tracked replay が未対応 evaluator version を受理しました")
+	}
+	if rejectedVersion.manifestCalls != 0 ||
+		rejectedVersion.requestCalls != 0 ||
+		rejectedVersion.evaluatorVersionCalls != 1 {
+		t.Fatalf(
+			"tracked replay の閉じた version 検証回数が不正です: %+v",
+			rejectedVersion,
+		)
+	}
 }
 
 func TestLoadCurrentEvaluationはReport前に継承されたRequestを保持して新Currentを返す(t *testing.T) {

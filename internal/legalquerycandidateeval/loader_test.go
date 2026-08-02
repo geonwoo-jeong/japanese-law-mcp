@@ -9,12 +9,26 @@ import (
 )
 
 type recordingReferenceValidator struct {
-	manifestCalls int
-	requestCalls  int
-	manifestIDs   []string
-	requestIDs    []string
-	reject        bool
-	currentSOTs   []SOTReference
+	manifestCalls          int
+	requestCalls           int
+	evaluatorVersionCalls  int
+	manifestIDs            []string
+	requestIDs             []string
+	evaluatorVersions      []string
+	reject                 bool
+	rejectEvaluatorVersion bool
+	currentSOTs            []SOTReference
+}
+
+func (v *recordingReferenceValidator) ValidateEvaluatorVersion(
+	version string,
+) error {
+	v.evaluatorVersionCalls++
+	v.evaluatorVersions = append(v.evaluatorVersions, version)
+	if v.rejectEvaluatorVersion {
+		return errRejectedReference
+	}
+	return nil
 }
 
 func (v *recordingReferenceValidator) ValidateCandidateContent(

@@ -15,14 +15,27 @@ import (
 
 // Evaluator は、製品と同じ前処理器と default profile set を不変に保持する。
 type Evaluator struct {
-	planning Planning
+	planning       Planning
+	boundaryPolicy requestBoundaryPolicy
 }
+
+type requestBoundaryPolicy uint8
+
+const (
+	requestBoundaryStrict requestBoundaryPolicy = iota + 1
+	requestBoundaryScoredMismatch
+)
 
 // Planning は、標準または候補の固定 profile set を評価器へ渡す閉じた境界である。
 type Planning interface {
 	Preprocessor() legalquery.QueryPreprocessor
 	Profiles() legalquery.QueryProfileSet
 	ProfileMetadata() []legalquery.QueryProfileMetadata
+}
+
+// ScoresRequestBoundaryMismatch は、request 境界不一致を評価失敗へ変換するか返す。
+func (e *Evaluator) ScoresRequestBoundaryMismatch() bool {
+	return e != nil && e.boundaryPolicy == requestBoundaryScoredMismatch
 }
 
 // New は、repository 内の組込み成果物だけを使う evaluator を構築する。
@@ -34,10 +47,36 @@ func New() (*Evaluator, error) {
 	return NewWithPlanning(planning)
 }
 
+// NewV2 は、request 境界不一致を semantic 評価失敗へ変換する evaluator を構築する。
+func NewV2() (*Evaluator, error) {
+	planning, err := legalqueryplanning.LoadEmbedded()
+	if err != nil {
+		return nil, err
+	}
+	return NewWithPlanningV2(planning)
+}
+
 // NewWithPlanning は、CI 専用候補を含む明示的な固定 planning 依存を構成する。
 func NewWithPlanning(planning Planning) (*Evaluator, error) {
+	return newWithPlanning(planning, requestBoundaryStrict)
+}
+
+// NewWithPlanningV2 は、CI 専用候補の request 境界不一致を評価失敗へ
+// 変換する evaluator を構築する。
+func NewWithPlanningV2(planning Planning) (*Evaluator, error) {
+	return newWithPlanning(planning, requestBoundaryScoredMismatch)
+}
+
+func newWithPlanning(
+	planning Planning,
+	policy requestBoundaryPolicy,
+) (*Evaluator, error) {
 	if planning == nil {
 		return nil, fmt.Errorf("planning 依存は nil にできません")
+	}
+	if policy != requestBoundaryStrict &&
+		policy != requestBoundaryScoredMismatch {
+		return nil, fmt.Errorf("request boundary policy が定義されていません")
 	}
 	profiles := planning.Profiles()
 	if err := profiles.Validate(); err != nil {
@@ -47,7 +86,7 @@ func NewWithPlanning(planning Planning) (*Evaluator, error) {
 	if len(metadata) == 0 {
 		return nil, fmt.Errorf("planning profile metadata は一件以上必要です")
 	}
-	return &Evaluator{planning: planning}, nil
+	return &Evaluator{planning: planning, boundaryPolicy: policy}, nil
 }
 
 // Evaluate は、一件の semantic case を製品 request、前処理器および selector で評価する。
@@ -97,17 +136,39 @@ func (e *Evaluator) EvaluateWithPlan(
 
 	request, err := productRequest(semanticCase.Request())
 	if err != nil {
-		evaluation, evaluationErr := evaluateRequestError(semanticCase, err)
+		evaluation, evaluationErr := evaluateRequestError(
+			semanticCase,
+			err,
+			e.boundaryPolicy,
+		)
 		return evaluation, legalquery.LegalQueryPlan{}, false, evaluationErr
 	}
 	if semanticCase.Expected().Kind() ==
 		legalquerycorpus.SemanticExpectedKindRequestError {
-		return legalqueryeval.SemanticCaseEvaluation{},
-			legalquery.LegalQueryPlan{},
-			false,
-			fmt.Errorf(
-				"request_error を期待する入力が製品 request に受理されました",
+		if e.boundaryPolicy == requestBoundaryStrict {
+			_, boundaryErr := evaluateAcceptedRequestError(
+				semanticCase,
+				e.boundaryPolicy,
 			)
+			return legalqueryeval.SemanticCaseEvaluation{},
+				legalquery.LegalQueryPlan{},
+				false,
+				boundaryErr
+		}
+		plan, selectErr := e.selectPlan(ctx, semanticCase, request)
+		if selectErr != nil {
+			return legalqueryeval.SemanticCaseEvaluation{},
+				legalquery.LegalQueryPlan{}, false, selectErr
+		}
+		evaluation, evaluationErr := evaluateAcceptedRequestError(
+			semanticCase,
+			e.boundaryPolicy,
+		)
+		if evaluationErr != nil {
+			return legalqueryeval.SemanticCaseEvaluation{},
+				legalquery.LegalQueryPlan{}, false, evaluationErr
+		}
+		return evaluation, plan, true, nil
 	}
 
 	plan, err := e.selectPlan(ctx, semanticCase, request)
@@ -128,6 +189,20 @@ func (e *Evaluator) EvaluateWithPlan(
 			err
 	}
 	return evaluation, plan, true, nil
+}
+
+func evaluateAcceptedRequestError(
+	semanticCase legalquerycorpus.SemanticCase,
+	policy requestBoundaryPolicy,
+) (legalqueryeval.SemanticCaseEvaluation, error) {
+	if policy == requestBoundaryStrict {
+		return legalqueryeval.SemanticCaseEvaluation{}, fmt.Errorf(
+			"request_error を期待する入力が製品 request に受理されました",
+		)
+	}
+	return legalqueryeval.EvaluateSemanticAcceptedRequestErrorCaseV2(
+		semanticCase,
+	)
 }
 
 func (e *Evaluator) selectPlan(
@@ -176,6 +251,7 @@ func (e *Evaluator) selectPlan(
 func evaluateRequestError(
 	semanticCase legalquerycorpus.SemanticCase,
 	requestErr error,
+	policy requestBoundaryPolicy,
 ) (legalqueryeval.SemanticCaseEvaluation, error) {
 	var argumentError legalquery.ArgumentError
 	if !errors.As(requestErr, &argumentError) {
@@ -186,6 +262,12 @@ func evaluateRequestError(
 	}
 	if semanticCase.Expected().Kind() !=
 		legalquerycorpus.SemanticExpectedKindRequestError {
+		if policy == requestBoundaryScoredMismatch {
+			return legalqueryeval.EvaluateSemanticPlanArgumentErrorCaseV2(
+				semanticCase,
+				argumentError,
+			)
+		}
 		return legalqueryeval.SemanticCaseEvaluation{}, fmt.Errorf(
 			"plan を期待する入力が request error になりました: %w",
 			requestErr,

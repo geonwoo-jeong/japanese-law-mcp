@@ -18,7 +18,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/evaluators"
 )
 
-// Execute は repository の current candidate を exact evaluator v1 で一回評価する。
+// Execute は repository の current candidate を request が固定する exact evaluator で一回評価する。
 func Execute(ctx context.Context, input Input) (Handoff, error) {
 	prepared, err := loadPreparedEvaluation(ctx, input.RepositoryRoot)
 	if err != nil {
@@ -67,7 +67,7 @@ func loadPreparedEvaluation(
 		return PreparedEvaluation{}, err
 	}
 	prepared := current.Prepared
-	if prepared.Request.EvaluatorVersion != evaluators.Version1 {
+	if !evaluators.IsSupported(prepared.Request.EvaluatorVersion) {
 		return PreparedEvaluation{}, fmt.Errorf("candidate evaluator version が未対応です")
 	}
 	if current.CurrentResult != nil {
@@ -145,7 +145,7 @@ func evaluatePreparedCandidate(
 			fmt.Errorf("candidate corpus が request と一致しません"),
 		)
 	}
-	evaluator, err := defaultprofile.NewWithPlanning(candidate)
+	evaluator, err := newCandidateEvaluator(request.EvaluatorVersion, candidate)
 	if err != nil {
 		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
@@ -166,6 +166,20 @@ func evaluatePreparedCandidate(
 		)
 	}
 	return encodeCandidateReport(report, json.Marshal)
+}
+
+func newCandidateEvaluator(
+	version string,
+	candidate legalquerycandidateprofile.Set,
+) (*defaultprofile.Evaluator, error) {
+	switch version {
+	case evaluators.Version1:
+		return defaultprofile.NewWithPlanning(candidate)
+	case evaluators.Version2:
+		return defaultprofile.NewWithPlanningV2(candidate)
+	default:
+		return nil, fmt.Errorf("candidate evaluator version が未対応です")
+	}
 }
 
 func encodeCandidateReport(

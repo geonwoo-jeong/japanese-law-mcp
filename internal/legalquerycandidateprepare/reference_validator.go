@@ -17,6 +17,14 @@ type ReferenceValidator struct {
 	repositoryRoot string
 }
 
+// ValidateEvaluatorVersion は、履歴 replay を含む exact version の実装有無を確認する。
+func (v ReferenceValidator) ValidateEvaluatorVersion(version string) error {
+	if !evaluators.IsSupported(version) {
+		return fmt.Errorf("evaluatorVersion が閉じた evaluator registry に存在しません")
+	}
+	return nil
+}
+
 // NewReferenceValidator は、root-scoped repository 境界を検証して返す。
 func NewReferenceValidator(repositoryRoot string) (ReferenceValidator, error) {
 	repository, err := openPrepareRepository(repositoryRoot)
@@ -72,9 +80,9 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			fmt.Errorf("候補参照 validator が初期化されていません")
 	}
-	if document.EvaluatorVersion != evaluators.Version1 {
+	if err := v.ValidateEvaluatorVersion(document.EvaluatorVersion); err != nil {
 		return legalquerycandidateeval.RequestReferenceValidation{},
-			fmt.Errorf("evaluatorVersion が現行の閉じた evaluator と一致しません")
+			err
 	}
 	adoption, err := legalqueryadoption.LoadCurrentFromRoot(ctx, v.repositoryRoot)
 	if err != nil {

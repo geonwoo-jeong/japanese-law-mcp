@@ -6,7 +6,10 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateprofile"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/evaluators"
 )
 
 func TestReport直列化失敗はReport完成前の段階に分類する(t *testing.T) {
@@ -39,9 +42,58 @@ func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じ
 		prepared.request.BaselineVersion != "default-6" {
 		t.Fatalf("production preparation request が後続予約と一致しません: %#v", prepared.request)
 	}
+	if prepared.request.EvaluatorVersion != evaluators.Version1 {
+		t.Fatalf("production preparation request の evaluatorVersion = %q", prepared.request.EvaluatorVersion)
+	}
 	if prepared.tracked != nil || len(prepared.trackedRaw) != 0 ||
 		len(prepared.trackedReportRaw) != 0 {
 		t.Fatal("production preparation が未評価 current に tracked replay を結び付けました")
+	}
+}
+
+func TestCurrentCandidateはDevelopment全件でReport構成前提を満たす(
+	t *testing.T,
+) {
+	const verificationID = "candidate-evaluation-development-structural-preflight"
+
+	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
+	if err != nil {
+		t.Fatalf("%s: candidate preparation に失敗しました", verificationID)
+	}
+	candidate, err := legalquerycandidateprofile.Load()
+	if err != nil {
+		t.Fatalf("%s: candidate profile load に失敗しました", verificationID)
+	}
+	if err := verifyCandidatePlanningIdentity(candidate, prepared.content); err != nil {
+		t.Fatalf("%s: candidate planning identity が一致しません", verificationID)
+	}
+	development, err := legalquerycorpus.LoadDevelopment(
+		context.Background(),
+		"../..",
+		"testdata/legalquery/"+prepared.request.CorpusVersion+"/development",
+	)
+	if err != nil {
+		t.Fatalf("%s: development corpus load に失敗しました", verificationID)
+	}
+	evaluator, err := newCandidateEvaluator(prepared.request.EvaluatorVersion, candidate)
+	if err != nil {
+		t.Fatalf("%s: candidate evaluator の構築に失敗しました", verificationID)
+	}
+	completed := 0
+	cases := development.Cases()
+	for _, semanticCase := range cases {
+		if _, _, _, err := evaluator.EvaluateWithPlan(
+			context.Background(),
+			semanticCase,
+		); err != nil {
+			t.Fatalf(
+				"%s: development case の構造評価に失敗しました（完了 %d/%d）",
+				verificationID,
+				completed,
+				len(cases),
+			)
+		}
+		completed++
 	}
 }
 
@@ -128,5 +180,29 @@ func TestEvaluateTrackedCandidateは不変なReplayBindingだけを受理する(
 	cancel()
 	if _, err := evaluateTrackedCandidate(cancelled, valid); err == nil {
 		t.Fatal("取消し済みの tracked replay を受理しました")
+	}
+}
+
+func TestNewCandidateEvaluatorはVersionごとのBuilder境界を保つ(t *testing.T) {
+	t.Parallel()
+
+	candidate, err := legalquerycandidateprofile.Load()
+	if err != nil {
+		t.Fatalf("candidate evaluator version routing: candidate profile load に失敗しました: %v", err)
+	}
+	v1, err := newCandidateEvaluator(evaluators.Version1, candidate)
+	if err != nil {
+		t.Fatalf("candidate evaluator version routing: v1 を拒否しました: %v", err)
+	}
+	v2, err := newCandidateEvaluator(evaluators.Version2, candidate)
+	if err != nil {
+		t.Fatalf("candidate evaluator version routing: v2 を拒否しました: %v", err)
+	}
+	if v1.ScoresRequestBoundaryMismatch() ||
+		!v2.ScoresRequestBoundaryMismatch() {
+		t.Fatal("candidate evaluator version routing: v1/v2 の request 境界 policy が逆転しました")
+	}
+	if _, err := newCandidateEvaluator("legal-query-evaluator-v999", candidate); err == nil {
+		t.Fatal("candidate evaluator version routing: 未知版を受理しました")
 	}
 }

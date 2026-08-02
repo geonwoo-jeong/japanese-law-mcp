@@ -26,8 +26,10 @@ const (
 )
 
 // ReferenceValidator は subtree 外にある内容固定参照の検証境界である。
+// evaluator version は履歴 replay を含む全 request に対して検証する。
 // raw は呼出しごとに複製され、実装は保持または変更せずに検証する。
 type ReferenceValidator interface {
+	ValidateEvaluatorVersion(string) error
 	ValidateCandidateContent(context.Context, []byte, CandidateContentManifest) error
 	ValidateEvaluationRequest(
 		context.Context,
@@ -99,6 +101,9 @@ func loadPreparedCurrentFromRoot(
 	if err := validatePreparationBindings(artifacts); err != nil {
 		return PreparedCurrent{}, err
 	}
+	if err := validateEvaluatorVersions(artifacts.requests, referenceValidator); err != nil {
+		return PreparedCurrent{}, err
+	}
 	current, exists := artifacts.requests[pointer.EvaluationID]
 	if !exists {
 		return PreparedCurrent{}, fmt.Errorf("current evaluation request が存在しません")
@@ -107,6 +112,23 @@ func loadPreparedCurrentFromRoot(
 		return PreparedCurrent{}, err
 	}
 	return prepareCurrent(pointer, current.document, artifacts), nil
+}
+
+func validateEvaluatorVersions(
+	requests map[string]loadedArtifact[EvaluationRequest],
+	validator ReferenceValidator,
+) error {
+	for _, evaluationID := range sortedKeys(requests) {
+		version := requests[evaluationID].document.EvaluatorVersion
+		if err := validator.ValidateEvaluatorVersion(version); err != nil {
+			return fmt.Errorf(
+				"evaluationId %q の evaluatorVersion が未対応です: %w",
+				evaluationID,
+				err,
+			)
+		}
+	}
+	return nil
 }
 
 type preparationArtifacts struct {

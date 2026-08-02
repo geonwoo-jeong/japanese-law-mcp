@@ -382,9 +382,10 @@ holdout 本文、query、case ID および期待値を出力しない集計で�
 `corpus-v12` の二百五十一件に対する派生観測の対象件数は
 `composition-core-pack=0`、`composition-pack-disabled=10`、
 `composition-ref-read-search=0`、`composition-four-step-budget=5` であった。
-標準 report は四観測をすべて一件以上の分母で生成するため、非零の二観測ではなく
-対象が零件の二観測によって report 構築前に必ず停止する。候補の検索品質、
-`default-5` の予約名または CI infrastructure の障害を原因とは扱わない。
+標準 report は四観測をすべて一件以上の分母で生成するため、semantic 集計が完了しても
+対象が零件の二観測によって report を完成できない構造であった。ただし終了 code `12` は
+semantic と派生観測を同じ段階へ縮約するため、この欠陥だけを当該 run の最初の停止位置と
+断定しない。`default-5` の予約名または CI infrastructure の障害を原因とは扱わない。
 
 固定済みの `corpus-v12`、request、review および二件の remote run は変更不能な
 診断記録として保持する。`SOT-ENG-038` の新規 request 作成境界では
@@ -416,6 +417,30 @@ testability review は九十六点、いずれも blocker、major および mino
 この時点では新 request の holdout 評価、report、result、baseline および production
 adoption は未実行である。準備 commit の全検証と remote quality gate が成功した後に、
 この evaluation ID を一回だけ第 4 段階 5 へ渡す。
+
+### `default-6` の report 前失敗と evaluator v2 の準備
+
+準備 commit `a0c0bbadeacdd92444a29a905c07240be028f64b` に対する manual workflow
+[`30734360848`](https://github.com/geonwoo-jeong/japanese-law-mcp/actions/runs/30734360848)
+は、候補 worker の終了 code `12`（`evaluate_build`）で停止した。report、result
+および artifact は生成されていない。同じ evaluation ID、`default-6`、holdout digest
+および leakage group digest は後続評価へ再利用せず、この run も再実行しない。
+
+`corpus-v13` は四つの派生観測母集団をすべて非零にしたため、`corpus-v12` で確認した
+零母集団だけでは今回の停止を説明できない。holdout を再実行せず evaluator の境界を
+静的に照合した結果、期待 `plan` に対する実際の入力 error、および期待
+`request_error` に対する実際の受理を、semantic 指標の不一致ではなく report 構成 error
+へ昇格させる経路が残っていた。この境界では、候補が受入基準を満たさないだけでも有効な
+`outcome=failed` report を残せず code `12` になる。
+
+後続 cycle では、既存 `legal-query-evaluator-v1` の再現意味を変更せず、上記二境界だけを
+semantic の失敗指標へ写像する `legal-query-evaluator-v2` を追加する。期待 `plan`
+が入力 error になった case は reproducibility の失敗にも数えるが、期待
+`request_error` が受理された case は従来どおりその母集団から除外する。
+preprocessor、profile contribution、selector、report schema または binding の内部 error は
+引き続き report 完成前失敗とする。v2 の development-only 構造検証、独立 review、権威 CI、
+新しい corpus、未使用 baseline reservation、二件の content-bound review および別 request
+を準備した後にだけ、次の manual workflow を一回起動する。
 
 ## 段階の境界
 

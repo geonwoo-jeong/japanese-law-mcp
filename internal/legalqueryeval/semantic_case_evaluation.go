@@ -188,6 +188,77 @@ func EvaluateSemanticRequestErrorCase(
 	}, nil
 }
 
+// EvaluateSemanticPlanArgumentErrorCaseV2 は、plan を期待した入力が
+// ArgumentError になった境界不一致を semantic 評価失敗へ変換する。
+func EvaluateSemanticPlanArgumentErrorCaseV2(
+	semanticCase legalquerycorpus.SemanticCase,
+	argumentError legalquery.ArgumentError,
+) (SemanticCaseEvaluation, error) {
+	if err := semanticCase.Validate(); err != nil {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"semantic case が有効ではありません: %w",
+			err,
+		)
+	}
+	expectedPlan, ok := semanticCase.Expected().(legalquerycorpus.ExpectedPlan)
+	if !ok {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"semantic case の expected.kind は plan でなければなりません",
+		)
+	}
+	if err := argumentError.Validate(); err != nil {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"actual request error が有効ではありません: %w",
+			err,
+		)
+	}
+	meanings := make(
+		[]MeaningEvaluation,
+		0,
+		len(expectedPlan.Meanings()),
+	)
+	for _, meaning := range expectedPlan.Meanings() {
+		meanings = append(meanings, MeaningEvaluation{
+			meaningID: meaning.MeaningID(),
+		})
+	}
+	return SemanticCaseEvaluation{
+		caseID:       semanticCase.CaseID(),
+		categoryIDs:  semanticCase.CategoryIDs(),
+		coverageIDs:  semanticCase.CoverageIDs(),
+		expectedKind: legalquerycorpus.SemanticExpectedKindPlan,
+		rankingApplicable: isRankingDecision(expectedPlan.Decision()) &&
+			len(meanings) > 0,
+		meanings:    meanings,
+		initialized: true,
+	}, nil
+}
+
+// EvaluateSemanticAcceptedRequestErrorCaseV2 は、request_error を期待した入力が
+// 受理された境界不一致を semantic 評価失敗へ変換する。
+func EvaluateSemanticAcceptedRequestErrorCaseV2(
+	semanticCase legalquerycorpus.SemanticCase,
+) (SemanticCaseEvaluation, error) {
+	if err := semanticCase.Validate(); err != nil {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"semantic case が有効ではありません: %w",
+			err,
+		)
+	}
+	if _, ok := semanticCase.Expected().(legalquerycorpus.ExpectedRequestError); !ok {
+		return SemanticCaseEvaluation{}, fmt.Errorf(
+			"semantic case の expected.kind は request_error でなければなりません",
+		)
+	}
+	return SemanticCaseEvaluation{
+		caseID:       semanticCase.CaseID(),
+		categoryIDs:  semanticCase.CategoryIDs(),
+		coverageIDs:  semanticCase.CoverageIDs(),
+		expectedKind: legalquerycorpus.SemanticExpectedKindRequestError,
+		initialized:  true,
+	}, nil
+}
+
 func evaluateExpectedMeanings(
 	expected []legalquerycorpus.ExpectedMeaning,
 	ranked []legalquery.LegalQueryCandidate,

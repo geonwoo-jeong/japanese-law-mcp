@@ -31,7 +31,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	}
 	manifest := corpus.Manifest()
 	request := legalquerycandidateeval.EvaluationRequest{
-		EvaluatorVersion:           evaluators.Version1,
+		EvaluatorVersion:           evaluators.CurrentVersion,
 		CorpusVersion:              manifest.CorpusVersion(),
 		CorpusManifestSHA256:       corpus.SHA256(),
 		HoldoutDigest:              manifest.HoldoutDigest(),
@@ -44,6 +44,13 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		context.Background(), []byte("canonical request placeholder\n"), request,
 	); err != nil {
 		t.Fatalf("candidate-evaluation-request-identity: 外部参照を検証できません: %v", err)
+	}
+
+	request.EvaluatorVersion = evaluators.Version1
+	if _, err := validator.ValidateEvaluationRequest(
+		context.Background(), []byte("canonical request placeholder\n"), request,
+	); err != nil {
+		t.Fatalf("candidate-evaluation-evaluator-version-match: 履歴 v1 を拒否しました: %v", err)
 	}
 
 	request.BaselineVersion = "default-1"
