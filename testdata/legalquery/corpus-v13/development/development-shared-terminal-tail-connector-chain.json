@@ -1,0 +1,55 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "development-shared-terminal-tail-connector-chain",
+  "leakageGroupId": "development-shared-terminal-tail-connector",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "developmentAssertionIds": [
+    "shared-terminal-tail-connector-chain"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "量子相続、月面抵当についてを教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": ["single_clear_candidate"],
+    "meanings": [
+      {
+        "meaningId": "tail-chain-fallback",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["量子相続"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["月面抵当"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": ["tail-chain-fallback"]
+  }
+}

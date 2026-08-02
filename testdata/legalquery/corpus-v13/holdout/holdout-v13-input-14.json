@@ -1,0 +1,21 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-14",
+  "leakageGroupId": "lqg-topic-c1d1d94eb0ddf44c65e659e9823fe76defb74016c5d6c5794a927e",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "文化財保存に関係する法令名を調べてください。独立資料054。",
+    "limitPerAttempt": 0
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-04",
+  "leakageGroupId": "lqg-topic-687965eba64207a2deca3fdc2c8467afa0d0bcf211b1f9e21dcdbd",
+  "coverageIds": [
+    "name-official"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "正式名称「日本国とアメリカ合衆国との間の相互協力及び安全保障条約第六条に基づく施設及び区域並びに日本国における合衆国軍隊の地位に関する協定の実施に伴う土地等の使用等に関する特別措置法」で登録されている法令を検索してください。独立資料084。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本国とアメリカ合衆国との間の相互協力及び安全保障条約第六条に基づく施設及び区域並びに日本国における合衆国軍隊の地位に関する協定の実施に伴う土地等の使用等に関する特別措置法独立資料084-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-02",
+  "leakageGroupId": "lqg-topic-e29ea15a5faa749ea19a1b28ab8dfa24f2b007bd0dbb9bdecf98c8",
+  "coverageIds": [
+    "typo-deletion"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令名を不動産定法と入力しました。該当候補を検索してください。独立資料202。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "不動産の鑑定評価に関する法律独立資料202-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-cue-context-adversarial",
+  "coverageIds": [
+    "boundary-unsupported-cue-context"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "quoted-phrase-content",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "登録免許と輸入許可をそれぞれ調べてください独立資料243-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "quoted-phrase-content"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-07e9a093cccc9eed56d153fb517c809d8119f47dd01ebf515dec8e",
+  "request": {
+    "query": "「登録免許と輸入許可をそれぞれ調べてください」という一文そのものを含む条文を検索してください。独立資料243。"
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 2
+}

@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-06",
+  "leakageGroupId": "lqg-topic-631930237b951442d56afce3eb8ae751cebd3efef01264013bb117",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "土壌汚染防止法、公害罪法、下請振興法、自転車道法の四法令を個別に検索してください。独立資料026。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "農用地の土壌の汚染防止等に関する法律独立資料026-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "人の健康に係る公害犯罪の処罰に関する法律独立資料026-02"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "受託中小企業振興法独立資料026-03"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "自転車道の整備等に関する法律独立資料026-04"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-law-searches"
+    ]
+  }
+}

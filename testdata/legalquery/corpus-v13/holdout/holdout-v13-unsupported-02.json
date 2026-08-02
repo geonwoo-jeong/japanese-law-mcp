@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-02",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-c0901bed85ec4f4a5bdb614224fcfa55ba5571171408b73dc3653d",
+  "request": {
+    "query": "研究機関から届いた遺伝情報提供の同意書に応じてよいか判断してください。独立資料222。"
+  },
+  "schemaVersion": 2
+}

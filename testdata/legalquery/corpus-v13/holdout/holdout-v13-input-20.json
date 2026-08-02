@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-20",
+  "leakageGroupId": "lqg-topic-a85c214bc98f1974293b94771910111bc382393c96a3965bb4a057",
+  "coverageIds": [
+    "input-limit-maximum-accepted"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "パイプライン事業法施行規則を法令名検索してください。独立資料060。",
+    "limitPerAttempt": 20
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "石油パイプライン事業法施行規則独立資料060-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

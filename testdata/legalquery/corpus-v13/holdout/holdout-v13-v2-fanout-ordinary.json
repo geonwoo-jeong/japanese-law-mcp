@@ -1,0 +1,29 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-fanout-ordinary",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-c96b74aee95436e40c57e36a907b06880b4485644b2970a65bd3eb",
+  "request": {
+    "query": "海難救助、種苗登録、地下水採取、森林認証、航空運送約款をそれぞれ法令本文から探してください。独立資料248。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

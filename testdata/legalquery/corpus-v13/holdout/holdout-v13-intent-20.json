@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-20",
+  "leakageGroupId": "lqg-topic-2722c64f8b8a3c6533eaaaff9c3cba8391cd2678e455574d8e8c8e",
+  "coverageIds": [
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "漁業権免許の優先順位を争点に含む裁判例を探してください。独立資料080。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "漁業権免許の優先順位独立資料080-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  }
+}

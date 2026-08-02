@@ -1,0 +1,20 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-04",
+  "leakageGroupId": "lqg-topic-820d67520abd320bd12630a6fd9ffeae03e7e80e1c29836cc32584",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "港則に関する法令\u001eを検索してください。独立資料044。"
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}

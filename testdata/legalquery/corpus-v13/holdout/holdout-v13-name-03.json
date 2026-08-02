@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-03",
+  "leakageGroupId": "lqg-topic-5fa01b48ac31c5fd38679fc48c68823c2e7a47871378aa26fb43db",
+  "coverageIds": [
+    "name-official"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "正式名称「戦傷病者戦没者遺族等援護法」で登録されている法令を検索してください。独立資料083。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "戦傷病者戦没者遺族等援護法独立資料083-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

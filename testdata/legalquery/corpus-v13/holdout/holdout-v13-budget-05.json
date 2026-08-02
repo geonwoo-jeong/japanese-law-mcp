@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-05",
+  "leakageGroupId": "lqg-topic-a810ee6a27c917df12b59f1552c6a6fb38a48b0ff379c12d1bf296",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "若者雇用促進法、海洋汚染防止法、ごみ処理法、水濁法の四法令を個別に検索してください。独立資料025。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "青少年の雇用の促進等に関する法律独立資料025-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "海洋汚染等及び海上災害の防止に関する法律独立資料025-02"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "廃棄物の処理及び清掃に関する法律独立資料025-03"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "水質汚濁防止法独立資料025-04"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-law-searches"
+    ]
+  }
+}

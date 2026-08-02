@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-20",
+  "leakageGroupId": "lqg-topic-6e540108f9647c6ee1846b01ce039bf3a8f39bbef8bb1392d8edeb",
+  "coverageIds": [
+    "typo-adjacent-transposition"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令名をＪＲＡ法行施規則と入力しました。該当候補を検索してください。独立資料220。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本中央競馬会法施行規則独立資料220-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

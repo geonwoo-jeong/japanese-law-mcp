@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-16",
+  "leakageGroupId": "lqg-topic-545bb7da5f7ed2453394f9b8f6faaae464cceee24693929547e25f",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "条文の中で「農用地区域からの除外」を定める規定を検索してください。独立資料076。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "content-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "農用地区域からの除外独立資料076-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "content-search"
+    ]
+  }
+}

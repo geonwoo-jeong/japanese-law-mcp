@@ -1,0 +1,56 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-02",
+  "leakageGroupId": "lqg-topic-eae408b73da1f657632127c296bf8bed23fd29057b61a26d68ce2b",
+  "coverageIds": [
+    "structure-article"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "334AC0000000137 の第3条の本則を読んでください。独立資料162。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "article-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "334AC0000000137-fresh-162-01",
+              "location": {
+                "provision": "main",
+                "articleNumber": "3"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  }
+}

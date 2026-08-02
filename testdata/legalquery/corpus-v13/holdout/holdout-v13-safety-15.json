@@ -1,0 +1,29 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-safety-15",
+  "leakageGroupId": "lqg-topic-f6c10c1d2271ed9e131e5faf83be78d162479ffe80c91c868594c9",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "Find statutes governing coastal setback zones.独立資料155。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "meanings": [
+
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  }
+}

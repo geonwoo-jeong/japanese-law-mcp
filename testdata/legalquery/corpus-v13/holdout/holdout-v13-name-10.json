@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-10",
+  "leakageGroupId": "lqg-topic-47db57501f9e2c71cd47e6ee82c8897f9a380f27658a520ddc38ee",
+  "coverageIds": [
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "略称の労基法労働者預金受入利率を定める省令に対応する法令名を確認してください。独立資料090。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "労働基準法第十八条第四項の規定に基づき使用者が労働者の預金を受け入れる場合の利率を定める省令独立資料090-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-15",
+  "leakageGroupId": "lqg-topic-b8bb28a5d1dfc7f1996aa16b121628d6bb90a3edc0ab108b23b45a",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "離島振興施策の根拠法令を検索してください。独立資料055。",
+    "limitPerAttempt": -7
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

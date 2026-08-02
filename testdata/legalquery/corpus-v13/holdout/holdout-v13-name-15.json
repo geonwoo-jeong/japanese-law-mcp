@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-15",
+  "leakageGroupId": "lqg-topic-36b972c8265927d691b5c64ed4d945111a716de3ba7e7663417647",
+  "coverageIds": [
+    "name-sourced-alias"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "公的資料で学教法施行令と呼ばれる法令を探してください。独立資料095。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "学校教育法施行令独立資料095-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

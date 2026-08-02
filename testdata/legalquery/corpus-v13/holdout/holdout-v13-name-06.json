@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-06",
+  "leakageGroupId": "lqg-topic-80ba04d17b616c3c5a1f6de8da6455cbf716e03c3bd8bd18f15ffa",
+  "coverageIds": [
+    "name-official"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "正式名称「長期信用銀行法」で登録されている法令を検索してください。独立資料086。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "長期信用銀行法独立資料086-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

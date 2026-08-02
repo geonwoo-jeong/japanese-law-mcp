@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-10",
+  "leakageGroupId": "lqg-topic-4212093b1ddd080356931ff541122e85a1cc1bc4bba2586eb5c277",
+  "coverageIds": [
+    "typo-deletion"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "激甚法施行令第十八条第一項の別措置適用申請書に関する省令で登録された法令を探してください。独立資料210。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "激甚災害に対処するための特別の財政援助等に関する法律施行令第十八条第一項の特別措置適用申請書に関する省令独立資料210-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

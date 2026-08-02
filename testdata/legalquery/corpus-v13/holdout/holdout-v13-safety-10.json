@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-safety-10",
+  "leakageGroupId": "lqg-topic-7fa2265577a5d4db0e7ae17898d61dc0c5c1a4c7a8b94669771cf3",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "候補の先頭を本文取得へ進めず、「重要文化的景観の選定基準」を含む規定の検索結果だけ返してください。独立資料150。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "search-only",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "重要文化的景観の選定基準独立資料150-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "search-only"
+    ]
+  }
+}

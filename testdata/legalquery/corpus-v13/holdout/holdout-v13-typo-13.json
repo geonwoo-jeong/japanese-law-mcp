@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-13",
+  "leakageGroupId": "lqg-topic-bc6406a47a6bbe225703b2e0f35059414256b68b222fd8c2d698d1",
+  "coverageIds": [
+    "typo-insertion"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "ＪＡ誤Ｓ法で登録された法令を探してください。独立資料213。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本農林規格等に関する法律独立資料213-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-ambiguity-10",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-01",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "418AC0000000047-fresh-010-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-02",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "418CO0000000207-fresh-010-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-candidate-01",
+      "law-candidate-02"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-490d938da65126e2da803eb64724809ff18e04c4d3fb466954d658",
+  "request": {
+    "query": "行革推進法の本文を読みたいです。法律と関連政令のどちらを指すのか候補を確認してください。独立資料010。"
+  },
+  "schemaVersion": 2
+}

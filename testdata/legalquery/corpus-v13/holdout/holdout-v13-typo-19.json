@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-19",
+  "leakageGroupId": "lqg-topic-dd1dbec885cdfb65ab94585bac2efec3fc20f1bc62482d09fc9e06",
+  "coverageIds": [
+    "typo-substitution"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "ＪＲＡ誤施行令で登録された法令を探してください。独立資料219。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本中央競馬会法施行令独立資料219-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

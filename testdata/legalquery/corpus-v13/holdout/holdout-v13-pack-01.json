@@ -1,0 +1,82 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-pack-01",
+  "leakageGroupId": "lqg-topic-391b3e38bee6fdeca84d7349eb5190a6b85c423511a387e39af600",
+  "coverageIds": [
+    "pack-judicial-enabled"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "独立合成対象法令を検索して本文を読み、関連裁判例を検索して指定参照も読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "独立合成対象法令"
+            }
+          },
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "fresh-composition-law"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "独立合成対象裁判例"
+            }
+          },
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "fresh-composition/detail2"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  }
+}

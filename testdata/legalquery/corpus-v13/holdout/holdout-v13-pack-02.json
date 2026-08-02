@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-pack-02",
+  "leakageGroupId": "lqg-topic-391b3e38bee6fdeca84d7349eb5190a6b85c423511a387e39af600",
+  "coverageIds": [
+    "pack-judicial-enabled"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "世界遺産登録取消しと保護義務が争点となった判決の候補を探してください。独立資料102。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "世界遺産登録取消しと保護義務独立資料102-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  }
+}

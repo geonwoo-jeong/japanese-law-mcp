@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-ambiguity-17",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "enactment-candidate-01",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "359RJNJ11008051-fresh-017-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "enactment-candidate-02",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "504RJNJ11008051-fresh-017-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "enactment-candidate-01",
+      "enactment-candidate-02"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-c53801a71bd9d83b4510f6e8491c8a486156f2be39f3863021d20c",
+  "request": {
+    "query": "人事院規則一一―八（職員の定年）の本文を読みたいのですが、同名の制定法令が二つあり選択できません。独立資料017。"
+  },
+  "schemaVersion": 2
+}

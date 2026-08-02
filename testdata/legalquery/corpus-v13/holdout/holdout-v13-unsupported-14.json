@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-14",
+  "coverageIds": [
+    "unsupported-translation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-c9b460d70341b439b6288a9916433a282b0982fb714d4590d79add",
+  "request": {
+    "query": "宇宙活動法の条文をポルトガル語に翻訳してください。独立資料234。"
+  },
+  "schemaVersion": 2
+}

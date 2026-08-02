@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-16",
+  "coverageIds": [
+    "unsupported-unadopted-pack"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-0435db3ffb08954bbac4f399acc56c8c03278c434da0307935ea45",
+  "request": {
+    "query": "未採用の特許審査履歴パックで拒絶理由通知と応答の経過を調べてください。独立資料236。"
+  },
+  "schemaVersion": 2
+}

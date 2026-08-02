@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-reference-13",
+  "leakageGroupId": "lqg-topic-3f7fbb50e6ea97114903a157686bb3c6907b78130d180dd03e4608",
+  "coverageIds": [
+    "reference-law-number"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令番号が「昭和三十一年総理府令第九十三号」の法令を検索してください。独立資料133。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-number-search",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "昭和三十一年総理府令第九十三号独立資料133-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-number-search"
+    ]
+  }
+}

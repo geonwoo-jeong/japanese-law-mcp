@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-15",
+  "leakageGroupId": "lqg-topic-4694eb87604be1b74604271f3d403a10cb3b791ee363b468dd40fd",
+  "coverageIds": [
+    "intent-law-search"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令名の手掛かりが職安法です。該当する法令を探してください。独立資料075。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "職業安定法独立資料075-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

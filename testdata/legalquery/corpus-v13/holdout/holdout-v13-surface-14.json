@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-14",
+  "leakageGroupId": "lqg-topic-2c29f2a15dffd38a6e63e022f61be353ceb2273bdf404389dfde3b",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "JAS法施行規則と書かれた法令名の候補を探してください。独立資料194。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "農林水産省関係日本農林規格等に関する法律施行規則独立資料194-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

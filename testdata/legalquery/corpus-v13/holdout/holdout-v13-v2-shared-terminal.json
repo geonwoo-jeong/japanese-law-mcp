@@ -1,0 +1,74 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-shared-terminal",
+  "coverageIds": [
+    "structure-shared-terminal-cue"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "meaningId": "shared-terminal",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "沿岸漁業権独立資料249-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "船員の最低年齢独立資料249-02"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "shared-terminal"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-f67cc84ebd2d9f587822a24d197f5a8a8e51008aa3816995097080",
+  "request": {
+    "query": "沿岸漁業権と船員の最低年齢をそれぞれ教えてください。独立資料249。"
+  },
+  "schemaVersion": 2
+}

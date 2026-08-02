@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-07",
+  "leakageGroupId": "lqg-topic-5764e59791aabb290f6c968ce30f575b87586d9393df7b55d537c3",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "表記が「財務諸 表等規則」の法令を検索してください。独立資料187。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "財務諸表等の用語、様式及び作成方法に関する規則独立資料187-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

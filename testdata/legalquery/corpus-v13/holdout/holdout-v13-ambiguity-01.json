@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-ambiguity-01",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-01",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "409M50000100068-fresh-001-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-02",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "413M60001000004-fresh-001-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-candidate-01",
+      "law-candidate-02"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-eb878a1fb25814ddb9cdbbd3ff71ecdd8f6310d2af7dd458a11819",
+  "request": {
+    "query": "「ごみ処理法施行令届出省令」に該当する二つの省令のうち、読むべき本文の候補を示してください。独立資料001。"
+  },
+  "schemaVersion": 2
+}

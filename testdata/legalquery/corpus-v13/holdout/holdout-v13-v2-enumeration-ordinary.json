@@ -1,0 +1,75 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-enumeration-ordinary",
+  "coverageIds": [
+    "boundary-unmarked-enumeration"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "meaningId": "multi-topic-search",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "養殖免許独立資料246-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "船員手帳独立資料246-02"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "multi-topic-search"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-06ee010b8c71a57549e12f5acf30f7eb75c45e87db5ee152fb7303",
+  "request": {
+    "query": "養殖免許、船員手帳について教えてください。独立資料246。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

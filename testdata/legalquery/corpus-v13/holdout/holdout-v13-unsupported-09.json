@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-09",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-a1f136f3c366d091df8189ad71030054b8eba9332194331a60602b",
+  "request": {
+    "query": "大学図書館の契約者限定データベースから行政法の学術論文を集めてください。独立資料229。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-12",
+  "leakageGroupId": "lqg-topic-7921e53daede561ebcd621f6811efb4b53e034cc9c1892e383345d",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "構造設備規則ならびに割販法施行規則をそれぞれ法令名検索してください。独立資料172。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "two-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "薬局等構造設備規則独立資料172-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "割賦販売法施行規則独立資料172-02"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "two-law-searches"
+    ]
+  }
+}

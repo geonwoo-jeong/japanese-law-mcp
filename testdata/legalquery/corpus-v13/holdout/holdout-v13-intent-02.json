@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-02",
+  "leakageGroupId": "lqg-topic-58edc60667f72208ddbf752678f9edbd4bb49416a2f002d1392db8",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "条文の中で「特別保護地区内の工作物設置」を定める規定を検索してください。独立資料062。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "content-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "特別保護地区内の工作物設置独立資料062-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "content-search"
+    ]
+  }
+}

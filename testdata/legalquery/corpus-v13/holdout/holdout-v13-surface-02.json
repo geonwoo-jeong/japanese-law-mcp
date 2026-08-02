@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-02",
+  "leakageGroupId": "lqg-topic-e29ea15a5faa749ea19a1b28ab8dfa24f2b007bd0dbb9bdecf98c8",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "不動産　鑑定法と書かれた法令名の候補を探してください。独立資料182。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "不動産の鑑定評価に関する法律独立資料182-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

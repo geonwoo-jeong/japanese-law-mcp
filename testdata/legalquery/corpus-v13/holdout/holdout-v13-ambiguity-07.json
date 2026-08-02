@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-ambiguity-07",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-01",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "325AC0000000169-fresh-007-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "law-candidate-02",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "335AC0000000036-fresh-007-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "law-candidate-01",
+      "law-candidate-02"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-6d97a4f9e5ad5d468b09af60b7838ddf079523788b247e592b0492",
+  "request": {
+    "query": "略して暫定法と呼ばれる法律は複数あるようです。本文を読む対象の候補を挙げてください。独立資料007。"
+  },
+  "schemaVersion": 2
+}

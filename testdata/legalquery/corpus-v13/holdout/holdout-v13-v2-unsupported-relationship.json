@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-unsupported-relationship",
+  "coverageIds": [
+    "unsupported-relationship-analysis"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-af7f8b874ae6891b54ead73a6968602c7d96ca314fbacd32f229c2",
+  "request": {
+    "query": "遺失物法と民法の占有に関する規定の優先関係を分析してください。独立資料250。"
+  },
+  "schemaVersion": 2
+}

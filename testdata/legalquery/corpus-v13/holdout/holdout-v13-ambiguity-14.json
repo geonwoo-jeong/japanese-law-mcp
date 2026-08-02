@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-ambiguity-14",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "enactment-candidate-01",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "416M60000400017-fresh-014-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "enactment-candidate-02",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "429M60000400022-fresh-014-01"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "enactment-candidate-01",
+      "enactment-candidate-02"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-beff8f47e22a1a34f1f463a2b8efabe98fe878104ef5fc5d15c3dd",
+  "request": {
+    "query": "ガス事業託送供給約款料金算定規則の本文を確認したいものの、同じ名称の制定法令を判別できません。独立資料014。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-16",
+  "leakageGroupId": "lqg-topic-34babe0386a65f0d855689bc39ed611155b294d67c2c6939245b47",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "畜安法施行規則と同時に無償法をそれぞれ法令名検索してください。独立資料176。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "two-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "畜産経営の安定に関する法律施行規則独立資料176-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "義務教育諸学校の教科用図書の無償に関する法律独立資料176-02"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "two-law-searches"
+    ]
+  }
+}

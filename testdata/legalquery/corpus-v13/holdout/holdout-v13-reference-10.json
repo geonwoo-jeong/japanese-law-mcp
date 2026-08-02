@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-reference-10",
+  "leakageGroupId": "lqg-topic-97ff5da639d394a850431761c3f1f0dbe2d12e5ec2d426716b104f",
+  "coverageIds": [
+    "reference-case-reference"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "令和3年（オ）第1467号に対応する判決の候補を検索してください。独立資料130。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "case-reference-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "令和3年(オ)第1467号独立資料130-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "case-reference-search"
+    ]
+  }
+}

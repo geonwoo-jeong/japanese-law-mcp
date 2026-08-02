@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-13",
+  "leakageGroupId": "lqg-topic-de05e5e809583975dd5335ab7a945b160892c1765a9d6850a690c9",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "付与した資源参照の本文を取得してください。独立資料053。",
+    "ref": {
+      "providerId": "-court-records",
+      "key": {
+        "sourceId": "court-records",
+        "resourceType": "judicial-decision",
+        "resourceId": "case-2026-0812/fresh-053"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-17",
+  "leakageGroupId": "lqg-topic-40f35bd0bc3377551599c4d537cea7cfc7b49c16f07cf8758f5730",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "MDA秘密保護法と書かれた法令名の候補を探してください。独立資料197。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日米相互防衛援助協定等に伴う秘密保護法独立資料197-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

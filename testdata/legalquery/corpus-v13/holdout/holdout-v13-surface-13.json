@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-13",
+  "leakageGroupId": "lqg-topic-bc6406a47a6bbe225703b2e0f35059414256b68b222fd8c2d698d1",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "表記が「JAS法」の法令を検索してください。独立資料193。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本農林規格等に関する法律独立資料193-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

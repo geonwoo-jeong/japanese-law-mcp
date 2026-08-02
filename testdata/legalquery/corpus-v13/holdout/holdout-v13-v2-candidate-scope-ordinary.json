@@ -1,0 +1,29 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-candidate-scope-ordinary",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-a56f9658cabadeaa2be9b35d40dfd5023ea8ba34a7419b13749f45",
+  "request": {
+    "query": "電波法と大学の学内規程をまとめて検索してください。独立資料242。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

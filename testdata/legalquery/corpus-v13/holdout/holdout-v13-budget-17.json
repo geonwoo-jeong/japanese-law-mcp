@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-17",
+  "leakageGroupId": "lqg-topic-af42a33421065dd094f21471f7dd1d19b7aadd79a8f1493adb6507",
+  "coverageIds": [
+    "budget-ranked-candidate-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "大防法施行規則と海洋汚染防止法施行規則のどちらを指すか不明なので、候補を順位付きで示してください。独立資料037。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "candidate-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "大気汚染防止法施行規則独立資料037-01"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "candidate-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "海洋汚染等及び海上災害の防止に関する法律施行規則独立資料037-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "candidate-1",
+      "candidate-2"
+    ]
+  }
+}

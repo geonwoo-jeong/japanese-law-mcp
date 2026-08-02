@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-pack-12",
+  "leakageGroupId": "lqg-topic-831cca38873ea4ea0d548f2071c981450f37b0d8326b5175dcd73b",
+  "coverageIds": [
+    "boundary-pack-disabled"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "地下水採取規制と損失補償の判決を今すぐ取得してください。独立資料112。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "capability_unavailable",
+    "reasonCodes": [
+      "required_pack_disabled"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "地下水採取規制と損失補償独立資料112-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  }
+}

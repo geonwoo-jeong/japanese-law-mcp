@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-07",
+  "leakageGroupId": "lqg-topic-1c6f172c35460f1a51e1f172ede7e682744b6fcc8c90f9c599a532",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "柔整法、ビル管理法、全幹法、電気工事業法の四法令を個別に検索してください。独立資料027。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "柔道整復師法独立資料027-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "建築物における衛生的環境の確保に関する法律独立資料027-02"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "全国新幹線鉄道整備法独立資料027-03"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "電気工事業の業務の適正化に関する法律独立資料027-04"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-law-searches"
+    ]
+  }
+}

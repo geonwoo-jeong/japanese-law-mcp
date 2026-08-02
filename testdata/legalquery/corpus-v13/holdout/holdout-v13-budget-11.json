@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-11",
+  "leakageGroupId": "lqg-topic-d15b488ca15dae0451b0eda40ce7664329a04fcd9617f5e58e1b98",
+  "coverageIds": [
+    "budget-item-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "農工法を法令名で検索し、候補は二十件以内にしてください。独立資料031。",
+    "limitPerAttempt": 20
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "農村地域への産業の導入の促進等に関する法律独立資料031-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

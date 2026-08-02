@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-20",
+  "leakageGroupId": "lqg-topic-246a2eff2f2b7a5138e31bc2d667e857f0c95c76852f633e83d9b6",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "マンション法、それぞれ辺地法をそれぞれ法令名検索してください。独立資料180。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "two-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "建物の区分所有等に関する法律独立資料180-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "辺地に係る公共的施設の総合整備のための財政上の特別措置等に関する法律独立資料180-02"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "two-law-searches"
+    ]
+  }
+}

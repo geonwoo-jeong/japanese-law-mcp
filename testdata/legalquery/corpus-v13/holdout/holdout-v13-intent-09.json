@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-09",
+  "leakageGroupId": "lqg-topic-9b0a37b8e7fb0a0e0c45d4c4078299dcb1ab0ab499592849b4f39e",
+  "coverageIds": [
+    "intent-law-content-search"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "条文の中で「海岸保全区域の占用許可」を定める規定を検索してください。独立資料069。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "content-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "海岸保全区域の占用許可独立資料069-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "content-search"
+    ]
+  }
+}

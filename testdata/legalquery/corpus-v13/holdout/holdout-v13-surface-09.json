@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-09",
+  "leakageGroupId": "lqg-topic-92666735a89b68835cd35262c37c3ceb9d338901b784d693025449",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "入力表記共同溝法 施行規則に対応する法令を確認したいです。独立資料189。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "共同溝の整備等に関する特別措置法施行規則独立資料189-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

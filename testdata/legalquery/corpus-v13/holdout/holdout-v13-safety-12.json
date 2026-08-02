@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-safety-12",
+  "leakageGroupId": "lqg-topic-4fe3ba939e03ac499df9d4fb44145c18982865a0a1c755bd2b2396",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "候補の先頭を本文取得へ進めず、「地域森林計画の樹立手続」を含む規定の検索結果だけ返してください。独立資料152。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "search-only",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "地域森林計画の樹立手続独立資料152-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "search-only"
+    ]
+  }
+}

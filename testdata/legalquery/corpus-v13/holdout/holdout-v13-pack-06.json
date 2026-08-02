@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-pack-06",
+  "leakageGroupId": "lqg-topic-ae06f33df9efed2385662f72eaf2fe81bf1e800ef016f154b970b5",
+  "coverageIds": [
+    "pack-judicial-enabled"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "飛行場周辺の騒音差止めが争点となった判決の候補を探してください。独立資料106。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "飛行場周辺の騒音差止め独立資料106-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  }
+}

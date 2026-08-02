@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-09",
+  "leakageGroupId": "lqg-topic-b866f9694518827b80bd9a5fd954d31c76649ddcd2d6155280c6c4",
+  "coverageIds": [
+    "budget-item-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "財形法を法令名で検索し、候補は二十件以内にしてください。独立資料029。",
+    "limitPerAttempt": 20
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "勤労者財産形成促進法独立資料029-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

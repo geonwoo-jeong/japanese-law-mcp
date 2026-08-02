@@ -1,0 +1,48 @@
+{
+  "actions": [
+    {
+      "meaningId": "primary",
+      "outcome": {
+        "kind": "read_success"
+      },
+      "releaseOrder": 1,
+      "stepOrdinal": 1
+    },
+    {
+      "meaningId": "primary",
+      "outcome": {
+        "kind": "collection_success",
+        "sourceItemCount": 4
+      },
+      "releaseOrder": 2,
+      "stepOrdinal": 2
+    }
+  ],
+  "artifactKind": "execution_case",
+  "caseId": "execution-nonempty",
+  "expected": {
+    "attempts": [
+      {
+        "meaningId": "primary",
+        "outcome": "completed",
+        "publishedItemCount": 1,
+        "stepOrdinal": 1
+      },
+      {
+        "hasMore": false,
+        "meaningId": "primary",
+        "outcome": "completed",
+        "publishedItemCount": 4,
+        "stepOrdinal": 2
+      }
+    ],
+    "returnedItemCount": 5,
+    "status": "completed",
+    "terminal": "result"
+  },
+  "scenarioIds": [
+    "execution-nonempty"
+  ],
+  "schemaVersion": 2,
+  "semanticCaseId": "development-execution-nonempty"
+}

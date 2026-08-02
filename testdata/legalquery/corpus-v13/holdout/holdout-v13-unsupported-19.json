@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-19",
+  "coverageIds": [
+    "unsupported-unadopted-pack"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-c6f5b84f14eecd41330dc76ac216ca721d7c0327256ef355bd3094",
+  "request": {
+    "query": "未採用の金融監督指針パックで暗号資産交換業者向けの監督項目を調べてください。独立資料239。"
+  },
+  "schemaVersion": 2
+}

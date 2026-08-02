@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-09",
+  "leakageGroupId": "lqg-topic-95b583bb6e9f60a0f41265fcd8a8cf37039f7a41a3d8502eb0de6d",
+  "coverageIds": [
+    "structure-complete-date"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "2024年2月29日時点の中協法施行令を法令名で検索してください。独立資料169。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "dated-law-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "中小企業等協同組合法施行令独立資料169-01",
+              "asOf": "2024-02-29"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  }
+}

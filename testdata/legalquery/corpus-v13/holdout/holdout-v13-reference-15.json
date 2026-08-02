@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-reference-15",
+  "leakageGroupId": "lqg-topic-d72bf532f755e1029b01e75396309189ad651f667ec060abc6f32c",
+  "coverageIds": [
+    "reference-case-reference"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "裁判所の事件参照平成30年（受）第2125号を調べてください。独立資料135。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "case-reference-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "平成30年(受)第2125号独立資料135-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "case-reference-search"
+    ]
+  }
+}

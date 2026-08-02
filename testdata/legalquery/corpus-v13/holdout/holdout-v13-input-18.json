@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-18",
+  "leakageGroupId": "lqg-topic-ad791548e4d886d0d5261db00c69293a9105a3d8d266cfdca0a48b",
+  "coverageIds": [
+    "input-limit-minimum-accepted"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "事務所則を法令名検索してください。独立資料058。",
+    "limitPerAttempt": 1
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "事務所衛生基準規則独立資料058-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

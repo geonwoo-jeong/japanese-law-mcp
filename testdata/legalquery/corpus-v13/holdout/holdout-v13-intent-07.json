@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-07",
+  "leakageGroupId": "lqg-topic-2ab967f7674b1d8dbb9dfd014ae41e626183f8b410ae2d17c037f8",
+  "coverageIds": [
+    "intent-judicial-decision-read"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "手元の裁判例参照が指す判決全文をそのまま開いてください。独立資料067。",
+    "ref": {
+      "providerId": "courts-hanrei-html",
+      "key": {
+        "sourceId": "courts-hanrei",
+        "resourceType": "judicial-decision",
+        "resourceId": "94120/detail2/fresh-067"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "judicial-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "94120/detail2/fresh-067-01"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "judicial-read"
+    ]
+  }
+}

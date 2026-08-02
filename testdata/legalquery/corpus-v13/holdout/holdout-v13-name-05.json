@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-05",
+  "leakageGroupId": "lqg-topic-e91487935fbda72d4f53236563b4f541d60fd4f5f600be500b4289",
+  "coverageIds": [
+    "name-official"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "正式名称「公共工事の前払金保証事業に関する法律」で登録されている法令を検索してください。独立資料085。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "公共工事の前払金保証事業に関する法律独立資料085-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

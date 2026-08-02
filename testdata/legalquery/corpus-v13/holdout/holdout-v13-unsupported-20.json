@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-20",
+  "coverageIds": [
+    "unsupported-unadopted-pack"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-2ad220729630c023d139ef4448c570e2e2f700d654e6e182dac445",
+  "request": {
+    "query": "未採用の公正取引委員会審決パックを有効にして、企業結合の審決を検索してください。独立資料240。"
+  },
+  "schemaVersion": 2
+}

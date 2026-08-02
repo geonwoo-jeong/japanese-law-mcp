@@ -1,0 +1,56 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-04",
+  "leakageGroupId": "lqg-topic-8cbcd9473530e3250fff92fbad3d2664715897124609318141fd57",
+  "coverageIds": [
+    "intent-law-article-read"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令ID 323CO0000000122 のうち第14条だけを確認したいです。独立資料064。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "article-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "323CO0000000122-fresh-064-01",
+              "location": {
+                "provision": "main",
+                "articleNumber": "14"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  }
+}

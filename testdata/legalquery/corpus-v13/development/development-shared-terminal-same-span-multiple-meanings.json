@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "development-shared-terminal-same-span-multiple-meanings",
+  "leakageGroupId": "development-shared-terminal-same-span-multiple",
+  "coverageIds": [
+    "intent-law-content-search",
+    "structure-multiple-explicit-intents",
+    "structure-shared-terminal-cue"
+  ],
+  "developmentAssertionIds": [
+    "shared-terminal-same-span-multiple-meanings"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "永住許可、帰化を教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "same-span-two-topics",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["永住許可"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": ["帰化"],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": ["same-span-two-topics"]
+  }
+}

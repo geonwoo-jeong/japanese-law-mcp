@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-12",
+  "leakageGroupId": "lqg-topic-4623fd2302e3728b6c7aad746ddb0f603791168d97a57ce21c660e",
+  "coverageIds": [
+    "typo-adjacent-transposition"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "ＪＩＳ法行施規則という名前の法令を確認したいです。独立資料212。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "産業標準化法施行規則独立資料212-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

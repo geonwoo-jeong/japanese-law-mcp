@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-reference-16",
+  "leakageGroupId": "lqg-topic-6dc9cf842a4e97d9bf0c6555d4fbd896a7ae5a6dffe255dc9e4157",
+  "coverageIds": [
+    "reference-law-id"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "331M50000100022 を法令IDとして本文を取得してください。独立資料136。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "331M50000100022-fresh-136-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-11",
+  "leakageGroupId": "lqg-topic-414a4e426159ab3b4102dcffb93af03cb201b4aa0fe753798b3ec7",
+  "coverageIds": [
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "略称の保証事業法施行規則に対応する法令名を確認してください。独立資料091。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "公共工事の前払金保証事業に関する法律施行規則独立資料091-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

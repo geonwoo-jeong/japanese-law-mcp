@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-20",
+  "leakageGroupId": "lqg-topic-6e540108f9647c6ee1846b01ce039bf3a8f39bbef8bb1392d8edeb",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "JRA法施行規則と書かれた法令名の候補を探してください。独立資料200。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本中央競馬会法施行規則独立資料200-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

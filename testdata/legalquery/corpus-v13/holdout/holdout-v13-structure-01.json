@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-01",
+  "leakageGroupId": "lqg-topic-212b5b85b20be16f110a80d055a9a3278564347ddc442529cf63ba",
+  "coverageIds": [
+    "structure-complete-date"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "2022年4月17日時点の駐留軍法を法令名で検索してください。独立資料161。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "dated-law-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "駐留軍関係離職者等臨時措置法独立資料161-01",
+              "asOf": "2022-04-17"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  }
+}

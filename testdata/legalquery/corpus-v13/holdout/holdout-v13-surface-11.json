@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-11",
+  "leakageGroupId": "lqg-topic-1051feab66804c2d77b0a6854b23b0740fa966e148e1437d363c2e",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "JIS法表示認定申請手数料政令と書かれた法令名の候補を探してください。独立資料191。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "産業標準化法に基づく登録申請手数料の額等を定める政令独立資料191-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

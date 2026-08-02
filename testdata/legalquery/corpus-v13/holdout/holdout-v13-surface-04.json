@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-04",
+  "leakageGroupId": "lqg-topic-b38e30556878e498ffa6e098f6da907b2f24df85b691609f58c2d8",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "表記が「戦没者妻特　給法施行令」の法令を検索してください。独立資料184。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "戦没者等の妻に対する特別給付金支給法施行令独立資料184-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

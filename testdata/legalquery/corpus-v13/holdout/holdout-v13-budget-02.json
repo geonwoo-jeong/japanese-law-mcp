@@ -1,0 +1,54 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-02",
+  "leakageGroupId": "lqg-topic-8b876e5ffdf621093e6b2a43eec3d891f8ca887063640e71bba627",
+  "coverageIds": [
+    "boundary-budget-limit",
+    "budget-item-limit"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "取得件数を勝手に増やさず、がけ崩れ防止法を上限二十件で検索してください。独立資料022。",
+    "limitPerAttempt": 20
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "急傾斜地の崩壊による災害の防止に関する法律独立資料022-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

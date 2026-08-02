@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-01",
+  "leakageGroupId": "lqg-topic-d65cfaf2931b5fda830b3e049adca409d4c25927f9e27afa574094",
+  "coverageIds": [
+    "intent-law-search"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "法令名の手掛かりが予決令臨時特例です。該当する法令を探してください。独立資料061。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "予算決算及び会計令臨時特例独立資料061-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

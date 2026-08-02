@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-12",
+  "leakageGroupId": "lqg-topic-1313413a4316ea4b65d21043989123d5f7c0e7f116a68b98a3e47c",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "付与した資源参照の本文を取得してください。独立資料052。",
+    "ref": {
+      "providerId": "public-legal-records",
+      "key": {
+        "sourceId": "public-legal-records",
+        "resourceType": "administrative-guidance",
+        "resourceId": "guidance-2026-08/fresh-052"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

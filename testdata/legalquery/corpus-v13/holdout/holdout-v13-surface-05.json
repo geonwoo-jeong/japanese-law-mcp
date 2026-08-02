@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-surface-05",
+  "leakageGroupId": "lqg-topic-958fd1497fb2cdacf55f83aaf3aa9bfb3b51433b4cf2a32602b409",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "共同溝 法施行令と書かれた法令名の候補を探してください。独立資料185。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "共同溝の整備等に関する特別措置法施行令独立資料185-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

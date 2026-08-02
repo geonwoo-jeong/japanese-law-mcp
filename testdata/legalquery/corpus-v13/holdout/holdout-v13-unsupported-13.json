@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-13",
+  "coverageIds": [
+    "unsupported-translation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-d7305ac997903a2f0f2483cd8dea64fcc7813a95ac87d4e390744f",
+  "request": {
+    "query": "船舶衝突事件の裁判例要旨を中国語に訳してください。独立資料233。"
+  },
+  "schemaVersion": 2
+}

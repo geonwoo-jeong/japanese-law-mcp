@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-09",
+  "leakageGroupId": "lqg-topic-ff13b70b6b2e3160f91d27bf18b7967ffff6ddc66e04994fb922b4",
+  "coverageIds": [
+    "name-official-abbreviation"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "略称の中協法等による倉荷証券発行許可等に関する省令に対応する法令名を確認してください。独立資料089。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "中小企業等協同組合法等による倉荷証券発行許可等に関する省令独立資料089-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

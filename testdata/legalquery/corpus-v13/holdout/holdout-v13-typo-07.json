@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-typo-07",
+  "leakageGroupId": "lqg-topic-5764e59791aabb290f6c968ce30f575b87586d9393df7b55d537c3",
+  "coverageIds": [
+    "typo-substitution"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "財務諸誤等規則で登録された法令を探してください。独立資料207。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "unique_typo_correction"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "財務諸表等の用語、様式及び作成方法に関する規則独立資料207-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

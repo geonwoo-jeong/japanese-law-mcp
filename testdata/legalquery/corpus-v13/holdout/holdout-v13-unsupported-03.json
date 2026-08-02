@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-03",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-cec285c4b336759e234984895a1faada268b0210e50a4925eb81a1",
+  "request": {
+    "query": "業務委託契約の競業避止条項に反してでも次の案件を受けてよいか、私のために決めてください。独立資料223。"
+  },
+  "schemaVersion": 2
+}

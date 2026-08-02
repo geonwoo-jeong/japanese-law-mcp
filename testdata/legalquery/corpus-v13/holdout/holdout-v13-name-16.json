@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-16",
+  "leakageGroupId": "lqg-topic-3f52378dde5b2bba7d6637c60e91766904cf448c66f85f5fc31f1b",
+  "coverageIds": [
+    "name-sourced-alias"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "公的資料で特別損失補償法施行令と呼ばれる法令を探してください。独立資料096。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "日本国に駐留するアメリカ合衆国軍隊等の行為による特別損失の補償に関する法律施行令独立資料096-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

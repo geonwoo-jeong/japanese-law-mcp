@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-safety-14",
+  "leakageGroupId": "lqg-topic-55e07cefb540b339f9f9f7ecba43afa0ad5febe2af1f326fca9055",
+  "coverageIds": [
+    "boundary-no-implicit-first-read"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "候補の先頭を本文取得へ進めず、「国際観光旅客税の納税義務」を含む規定の検索結果だけ返してください。独立資料154。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "search-only",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "国際観光旅客税の納税義務独立資料154-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "search-only"
+    ]
+  }
+}

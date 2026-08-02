@@ -1,0 +1,21 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-input-16",
+  "leakageGroupId": "lqg-topic-59517c78035de9dfce9bf66999f6eac2c87772cbcfa51122d9581e",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "家畜衛生に関する法令候補を示してください。独立資料056。",
+    "limitPerAttempt": 21
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

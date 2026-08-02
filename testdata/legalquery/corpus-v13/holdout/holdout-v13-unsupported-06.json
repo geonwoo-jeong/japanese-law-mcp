@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-06",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-1456c56925ab061122e7c7a2880396c3b146d940b514c60475ef00",
+  "request": {
+    "query": "都道府県議会の委員会で保存されている未公開録音を取得してください。独立資料226。"
+  },
+  "schemaVersion": 2
+}

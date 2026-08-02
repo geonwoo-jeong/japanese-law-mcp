@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-19",
+  "leakageGroupId": "lqg-topic-8cce1b06c660f956385efec5c3f02849a20c64f1539fadc3180e91",
+  "coverageIds": [
+    "budget-ranked-candidate-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "農住利子補給法施行規則と公害防止組織整備法施行規則のどちらを指すか不明なので、候補を順位付きで示してください。独立資料039。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "candidate-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "農地所有者等賃貸住宅建設融資利子補給臨時措置法施行規則独立資料039-01"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "candidate-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "特定工場における公害防止組織の整備に関する法律施行規則独立資料039-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "candidate-1",
+      "candidate-2"
+    ]
+  }
+}

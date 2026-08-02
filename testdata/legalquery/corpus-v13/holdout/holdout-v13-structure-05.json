@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-05",
+  "leakageGroupId": "lqg-topic-bb2f0d9411692c0a9934e7e1813a0ce708365ce3e7e869ed4d20c9",
+  "coverageIds": [
+    "structure-complete-date"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "2023年8月9日時点の銃刀法施行令を法令名で検索してください。独立資料165。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "dated-law-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "銃砲刀剣類所持等取締法施行令独立資料165-01",
+              "asOf": "2023-08-09"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  }
+}

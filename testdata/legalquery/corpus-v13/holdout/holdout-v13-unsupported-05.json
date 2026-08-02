@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-05",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-ddb68d7b03dde0d706351109e8c1c0be40b1a0f721adaa3c52915c",
+  "request": {
+    "query": "故人のオンライン保管庫へ相続人としてログインしてよいか、適法性を断定してください。独立資料225。"
+  },
+  "schemaVersion": 2
+}

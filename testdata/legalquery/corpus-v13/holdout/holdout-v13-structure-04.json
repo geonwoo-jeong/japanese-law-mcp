@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-structure-04",
+  "leakageGroupId": "lqg-topic-8aeb6b594ff017824fbf33eb95b90d645c1398e4c21113bdbaf71c",
+  "coverageIds": [
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "後進地域特例法施行令と割販法施行令をそれぞれ法令名検索してください。独立資料164。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "two-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "後進地域の開発に関する公共事業に係る国の負担割合の特例に関する法律施行令独立資料164-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "割賦販売法施行令独立資料164-02"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "two-law-searches"
+    ]
+  }
+}

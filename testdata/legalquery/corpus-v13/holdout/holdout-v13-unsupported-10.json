@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-unsupported-10",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [
+
+    ],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  },
+  "leakageGroupId": "lqg-topic-3bdc83603462cf09976d4e82f4d9552d8304a5d8cfebe0db6716fa",
+  "request": {
+    "query": "公証役場が保管する第三者の公正証書原本を取り寄せて内容を表示してください。独立資料230。"
+  },
+  "schemaVersion": 2
+}

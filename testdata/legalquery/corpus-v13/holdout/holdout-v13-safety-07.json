@@ -1,0 +1,29 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-safety-07",
+  "leakageGroupId": "lqg-topic-25c97febc5ad955d10ef966fe6afa6be3f67f03c37879937eb9c16",
+  "coverageIds": [
+    "boundary-mixed-unsupported"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "砂防指定地での行為制限の根拠規定を検索し、行政との交渉方針を決定してください。独立資料147。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [
+
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  }
+}

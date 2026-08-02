@@ -1,0 +1,107 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-v13-v2-enumeration-adversarial",
+  "coverageIds": [
+    "boundary-unmarked-enumeration"
+  ],
+  "enabledPacks": [
+
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "meaningId": "multi-topic-search",
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "衛星登録独立資料245-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "航空運送約款独立資料245-02"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "港湾区域独立資料245-03"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          },
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "保税運送独立資料245-04"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "multi-topic-search"
+    ]
+  },
+  "leakageGroupId": "lqg-topic-2b13b10e578dade1c32de23912379765284736995e0d04392d090d",
+  "request": {
+    "query": "衛星登録、航空運送約款、港湾区域、保税運送について教えてください。独立資料245。"
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 2
+}

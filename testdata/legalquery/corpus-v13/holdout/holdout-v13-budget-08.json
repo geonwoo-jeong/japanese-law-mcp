@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-08",
+  "leakageGroupId": "lqg-topic-05a4936390a3421f04d4f645cedb36c3bf8216d94e46df15c4cbc8",
+  "coverageIds": [
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "小笠原法施行令、成田財特法施行令、清酒業等安定法施行令、情報処理促進法施行令の四法令を個別に検索してください。独立資料028。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "小笠原諸島振興開発特別措置法施行令独立資料028-01"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "成田国際空港周辺整備のための国の財政上の特別措置に関する法律施行令独立資料028-02"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "清酒製造業等の安定に関する特別措置法施行令独立資料028-03"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "情報処理の促進に関する法律施行令独立資料028-04"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-law-searches"
+    ]
+  }
+}

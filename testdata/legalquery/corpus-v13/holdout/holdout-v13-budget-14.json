@@ -1,0 +1,59 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-14",
+  "leakageGroupId": "lqg-topic-561f3dd865435a113ea3526935704dc3269d23474602e301ad78e9",
+  "coverageIds": [
+    "budget-page-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "「鳥獣保護区の特別保護地区」を含む規定を検索し、最初の結果ページだけ示してください。独立資料034。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "content-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "鳥獣保護区の特別保護地区独立資料034-01"
+              ],
+              "anyTerms": [
+
+              ],
+              "excludeTerms": [
+
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "content-search"
+    ]
+  }
+}

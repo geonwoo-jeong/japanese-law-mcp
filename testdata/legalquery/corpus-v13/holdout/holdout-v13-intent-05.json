@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-intent-05",
+  "leakageGroupId": "lqg-topic-096a7c89e1f1076b2935c2172ad838f1d51b94cb14fff041b193d3",
+  "coverageIds": [
+    "intent-law-updates"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "2023年2月14日に更新された法令の一覧を確認してください。独立資料065。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-updates",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2099-05-11"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-updates"
+    ]
+  }
+}

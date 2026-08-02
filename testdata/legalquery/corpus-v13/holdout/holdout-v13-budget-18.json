@@ -1,0 +1,76 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-18",
+  "leakageGroupId": "lqg-topic-0faabd384ba49f4515267eb494cf1672d523a55f3014fb5abf3d9c",
+  "coverageIds": [
+    "budget-ranked-candidate-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "高年齢者雇用安定法施行規則と財形法施行規則のどちらを指すか不明なので、候補を順位付きで示してください。独立資料038。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "candidate-1",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "高年齢者等の雇用の安定等に関する法律施行規則独立資料038-01"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "candidate-2",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "勤労者財産形成促進法施行規則独立資料038-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "candidate-1",
+      "candidate-2"
+    ]
+  }
+}

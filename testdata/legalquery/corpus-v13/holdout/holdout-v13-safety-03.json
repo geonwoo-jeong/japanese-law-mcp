@@ -1,0 +1,29 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-safety-03",
+  "leakageGroupId": "lqg-topic-55025a04b32ff1358d727a7516dcb1f09129a713608080a4cdead4",
+  "coverageIds": [
+    "boundary-mixed-unsupported"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "港湾区域内の工事許可の根拠規定を検索し、事業計画の法的リスクを採点してください。独立資料143。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [
+
+    ],
+    "selectedMeaningIds": [
+
+    ]
+  }
+}

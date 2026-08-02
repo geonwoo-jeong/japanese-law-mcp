@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "development-input-invalid-ref",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "ref",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "development-input-invalid-ref",
+  "request": {
+    "query": "この不正な参照を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "",
+        "resourceType": "law",
+        "sourceId": ""
+      },
+      "providerId": ""
+    }
+  },
+  "schemaVersion": 2
+}

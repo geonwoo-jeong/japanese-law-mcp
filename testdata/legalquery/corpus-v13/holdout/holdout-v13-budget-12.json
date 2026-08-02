@@ -1,0 +1,52 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-budget-12",
+  "leakageGroupId": "lqg-topic-9fe9d11b207c14670c5f42296be5ab4103657226e4c06e0e271a61",
+  "coverageIds": [
+    "budget-item-limit"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "下請振興法施行令を法令名で検索し、候補は二十件以内にしてください。独立資料032。",
+    "limitPerAttempt": 20
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "受託中小企業振興法施行令独立資料032-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}

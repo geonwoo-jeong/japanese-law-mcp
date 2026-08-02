@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v13-name-13",
+  "leakageGroupId": "lqg-topic-f6a923d9e83a0085a3e93d7944e9bacae1fbb281898e4623ac159e",
+  "coverageIds": [
+    "name-sourced-alias"
+  ],
+  "enabledPacks": [
+
+  ],
+  "request": {
+    "query": "公的資料でオートレース法施行令と呼ばれる法令を探してください。独立資料093。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [
+
+        ],
+        "requiredPacks": [
+
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "小型自動車競走法施行令独立資料093-01"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-search"
+    ]
+  }
+}
