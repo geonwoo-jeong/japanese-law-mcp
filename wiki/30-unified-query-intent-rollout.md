@@ -225,6 +225,7 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 | 次 cycle 4.3 | 2026-08-01 | 9.2 / 10（testability 9.0 / 10） | 9.0 / 10 | 0 | `corpus-v11` development だけによる `core-38` と profile set の校正、四十三件 scorecard と fingerprint、pending current と完了済み replay の外部参照検証分離。holdout 非参照 |
 | 次 cycle 4.4 準備 | 2026-08-01 | architecture 10.0 / 10（testability 9.6 / 10） | — | 0 | exact candidate content、二件の content-bound review、`corpus-v11` / `default-4` request、未評価 current pointer。候補 command、report、result、failed report および baseline は未生成 |
 | 再準備 cycle corpus-v12 | 2026-08-01 | semantic 9.5 / 10 | testability・security 8.3 / 10 | 0 | schema version 2、development 43 件、独立生成した holdout 251 件、execution 8 件、安定 leakage group 204 件、`corpus-v10`・`corpus-v11` との holdout・leakage・正規化意味群の非交差、v11 からの development・execution byte 継承、再現性および不変性。候補 request と holdout 実行は対象外 |
+| 再準備 cycle 4.3 | 2026-08-01 | 9.4 / 10（testability 9.2 / 10） | 9.1 / 10 | 0 | `corpus-v12` development 43 件だけによる既存 profile set の再校正、同一 policy・version と scorecard、新 fingerprint、holdout・候補評価成果物の非参照、既存の候補 request と pointer の不変 |
 
 4.4 の最終 security review で残った非 blocker のうち、非 `GO*` 環境の継承は、
 4.5 の bootstrap が `PATH`、`GOROOT`、`GOMODCACHE`、`GOCACHE`、`TMPDIR` と固定
@@ -294,6 +295,7 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 次 cycle 4.4 | 不確定終了（再実行禁止） | exact candidate content、二件の review attestation、`default-4` request および pending pointer。専用 CI は artifact なしで非零終了し、report 完成前とは証明できない |
 | 次 cycle 診断契約 | 草案 review 完了 | `SOT-ENG-040` の report 完成境界、閉じた終了 code、privacy、unknown の fail-closed および coordinated adoption 条件 |
 | 再準備 cycle 4.2 | 完了 | `corpus-v12` の独立 holdout、過去の `corpus-v10` と `corpus-v11` からの leakage 分離、再現性および不変 byte の固定 |
+| 再準備 cycle 4.3 | 完了 | `corpus-v12` development 43 件だけによる既存 policy・version の再校正と決定的 fingerprint の固定。候補 request と pointer は不変 |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -327,6 +329,24 @@ holdout 二百五十一件と leakage group 二百四件を新しく固定した
 9.5 / 10、testability・security 8.3 / 10、blocker 0 で通過した。この変更では
 profile、辞書、候補 request、pointer、report、result、baseline および manual workflow を
 変更または実行していない。
+
+再準備 cycle の第 4.3 段階では、`corpus-v12/development` の四十三件だけを
+development-only の複製へ置き、二回独立に構成した同じ test 専用 profile set を
+校正した。development が `corpus-v11` と byte 同一であるため、policy、cue、辞書、
+候補生成規則および次の version は変更していない。
+
+- core: `core-2026-07-31-38`
+- judicial-cases: `judicial-cases-2026-07-31-12`
+- ranking: `legal-query-ranking-2026-07-31-2`
+- profile set: `profile-set-sha256-0b00c3409408684b825f3c0bdf1c874bdc99e5383564d8e6b66fe83d4e417a69`
+
+四十三件の scorecard は、request error 2 / 2、plan outcome 28 / 41、meaning
+signature 38 / 43、evidence assertion 11 / 38、concept assertion 1 / 1 で従来値と
+一致した。corpus identity を含む新しい校正 fingerprint は
+`785c9249653c8dcdf9bea047787995e111d8ad2bf3a3fddc86b203e2446320d4` である。
+この校正では holdout、report、result、failed report または baseline を参照せず、
+既存の候補 request と pointer、production の active profile および標準 command を
+変更していない。
 
 ## 段階の境界
 
