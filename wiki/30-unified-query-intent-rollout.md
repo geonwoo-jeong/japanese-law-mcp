@@ -471,6 +471,19 @@ testability の環境前提と負例固定検証に minor 二件を残した。
 この準備変更では holdout、report、result、baseline および production adoption を生成しない。
 準備 commit の権威 CI が成功した後にだけ、同じ commit の manual workflow を一回起動する。
 
+### `default-7` の report 前失敗と schema version 3 の採用規定
+
+`default-7` の一回評価は候補 worker の終了 code `12`（`evaluate_build`）で停止し、
+report、result および artifact を生成しなかった。同じ evaluation ID、予約 baseline、
+holdout digest および leakage group digest は再利用せず、この run も再実行しない。
+
+候補所有の前処理または profile 回収 error だけを一件の定量的失敗へ写像する
+`legal-query-evaluator-v3` の exact routing は準備済みである。ただし現行候補 source には
+実 marker を接続しておらず、current evaluator と schema version 2 request は変更して
+いない。次の変更は `SOT-ENG-042` に従い、実 marker、schema version 3 の content
+manifest、二件の新規 review、未使用 corpus と baseline を持つ別 request、および pointer
+を一つの準備単位として作る。holdout 評価と production adoption はその後の別単位である。
+
 ## 段階の境界
 
 第二段階と第三段階では、次版の内部実装と development fixture を準備できる。ただし

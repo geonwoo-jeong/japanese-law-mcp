@@ -52,7 +52,7 @@ evaluator は内部の閉じた stage 型と typed marker の両方を要求す�
 
 この準備成果物は、`SOT-ENG-038` が固定した現行 candidate semantic source closure の file を変更してはならない。実際の preprocessor または profile の検出箇所へ typed marker を追加する変更は candidate content の変更であり、準備成果物へ混在させない。後継 handoff 契約の下で、新しい content manifest、内容固定 review、新しい request および未使用 baseline version と同じ変更系列に置く。
 
-新しい request へ使用する前に、`SOT-ENG-038` の schema version 2 の固定 review SOT 集合を変更せず、`SOT-ENG-038` を置き換える後継 handoff SOT と、その後継 SOT が定める新しい request schema version で、本規定を含む exact review SOT 集合を定義する。その後継契約、`SOT-ENG-040` および新しい導入順 SOT に従い、新しい corpus、未使用 baseline version、内容固定 review、別 evaluation ID および pointer を準備する。
+新しい request へ使用する前に、`SOT-ENG-038` の schema version 2 の固定 review SOT 集合を変更せず、その後継となる `SOT-ENG-042` の schema version 3 で、本規定を含む exact review SOT 集合を定義する。schema version 2 の不変成果物と historical replay は `SOT-ENG-038` に保持し、新しい request は `SOT-ENG-039` の段階順および version 3 に対する `SOT-ENG-042` の後継 handoff 境界に従い、新しい corpus、未使用 baseline version、内容固定 review、別 evaluation ID および pointer を準備する。
 
 ## 確認
 
@@ -76,3 +76,4 @@ holdout fixture と外部 network を使わない合成 test で、少なくと�
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)
 - [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)
 - [SOT-ENG-040: 候補 holdout 評価の閉じた失敗段階診断](40-candidate-evaluation-failure-diagnostics.md)
+- [SOT-ENG-042: 候補評価 handoff schema version 3 の世代分離](42-candidate-evaluation-handoff-schema-v3.md)
