@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-09",
+  "leakageGroupId": "lqg-subscription-cadastral-maps-resource",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "有料の地籍資料データベースから旧土地台帳図を横断検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-06",
+  "leakageGroupId": "lqg-municipal-inspection-photos-resource",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "市役所が内部保管している未公開の建築工事検査写真を取得してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

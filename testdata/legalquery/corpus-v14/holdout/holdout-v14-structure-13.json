@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-13",
+  "leakageGroupId": "lqg-sem-urban-renaissance-asof-20190701", "coverageIds": ["structure-complete-date"], "enabledPacks": [],
+  "request": {"query": "2019年7月1日現在の都市再生特別措置法を検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "dated-law-search", "evidenceCodes": ["structured_reference", "explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "都市再生特別措置法", "asOf": "2019-07-01"}}]}], "selectedMeaningIds": ["dated-law-search"]}
+}

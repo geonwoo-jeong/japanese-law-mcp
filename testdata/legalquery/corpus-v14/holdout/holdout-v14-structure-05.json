@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-05",
+  "leakageGroupId": "lqg-sem-barrier-free-asof-20200619", "coverageIds": ["structure-complete-date"], "enabledPacks": [],
+  "request": {"query": "2020年6月19日現在のバリアフリー法を検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "dated-law-search", "evidenceCodes": ["structured_reference", "explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "高齢者、障害者等の移動等の円滑化の促進に関する法律", "asOf": "2020-06-19"}}]}], "selectedMeaningIds": ["dated-law-search"]}
+}

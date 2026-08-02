@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-01",
+  "leakageGroupId": "lqg-sem-space-activities-asof-20210301", "coverageIds": ["structure-complete-date"], "enabledPacks": [],
+  "request": {"query": "2021年3月1日時点の宇宙活動法を法令名で検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "dated-law-search", "evidenceCodes": ["structured_reference", "explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "人工衛星等の打上げ及び人工衛星の管理に関する法律", "asOf": "2021-03-01"}}]}], "selectedMeaningIds": ["dated-law-search"]}
+}

@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-08",
+  "leakageGroupId": "lqg-sem-food-loss-and-vacant-houses-search", "coverageIds": ["structure-multiple-explicit-intents"], "enabledPacks": [],
+  "request": {"query": "食品ロス削減推進法と空家対策特措法を別々に法令検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "two-law-searches", "evidenceCodes": ["explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "食品ロスの削減の推進に関する法律"}}, {"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "空家等対策の推進に関する特別措置法"}}]}], "selectedMeaningIds": ["two-law-searches"]}
+}

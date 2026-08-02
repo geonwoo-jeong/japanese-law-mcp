@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-17",
+  "leakageGroupId": "lqg-sem-unknown-land-asof-20230427", "coverageIds": ["structure-complete-date"], "enabledPacks": [],
+  "request": {"query": "2023年4月27日時点の所有者不明土地法を探してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "dated-law-search", "evidenceCodes": ["structured_reference", "explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "所有者不明土地の利用の円滑化等に関する特別措置法", "asOf": "2023-04-27"}}]}], "selectedMeaningIds": ["dated-law-search"]}
+}

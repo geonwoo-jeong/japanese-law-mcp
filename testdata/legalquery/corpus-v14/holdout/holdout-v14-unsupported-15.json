@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-15",
+  "leakageGroupId": "lqg-fishery-law-indonesian-translation",
+  "coverageIds": [
+    "unsupported-translation"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "漁業法の漁業権に関する条文をインドネシア語に翻訳してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

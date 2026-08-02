@@ -1,0 +1,68 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-20",
+  "leakageGroupId": "lqg-certification-general-term",
+  "coverageIds": [
+    "ambiguity-weak-general-term"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "認定制度について探したいのですが、法令名を検索するのか条文中の認定要件を探すのか決めていません。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "provision-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "認定制度の要件"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "law-name-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "認定制度に関する法律"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "provision-search",
+      "law-name-search"
+    ]
+  }
+}

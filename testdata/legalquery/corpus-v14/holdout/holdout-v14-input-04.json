@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-04",
+  "leakageGroupId": "lqg-control-character-forest-query",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "森林計画に関する法令\u001dを検索してください。"
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}

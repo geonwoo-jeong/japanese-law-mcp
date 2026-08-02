@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-v2-fanout-ordinary",
+  "leakageGroupId": "lqg-five-rural-infrastructure-topics",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "ため池管理、林道占用、土地改良区設立、砂防設備占用、農業倉庫登録をそれぞれ法令本文から探してください。独立資料348。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

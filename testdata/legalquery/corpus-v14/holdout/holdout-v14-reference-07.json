@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-07",
+  "leakageGroupId": "lqg-sem-civil-procedure-revision-id",
+  "coverageIds": ["reference-revision-id"],
+  "enabledPacks": [],
+  "request": {"query": "法令ID 408AC0000000109 の改正版識別子 408AC0000000109_20220401_503AC0000000061 を使って本文を開いてください。"},
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": ["single_clear_candidate"],
+    "meanings": [{
+      "meaningId": "revision-read",
+      "evidenceCodes": ["official_identifier", "explicit_task", "explicit_resource"],
+      "conceptIds": [],
+      "requiredPacks": [],
+      "steps": [{"task": "read", "resource": "law", "inputKind": "law_read", "logicalInput": {"lawId": "408AC0000000109", "revisionId": "408AC0000000109_20220401_503AC0000000061"}}]
+    }],
+    "selectedMeaningIds": ["revision-read"]
+  }
+}

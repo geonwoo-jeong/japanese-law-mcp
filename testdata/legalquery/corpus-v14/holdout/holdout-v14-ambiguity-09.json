@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-09",
+  "leakageGroupId": "lqg-ocean-use-law-set",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "海洋利用関連二法という資料名から読取り対象を特定できません。二つの法令候補を示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "ocean-basic-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "419AC0000000033-curated-ocean-basic"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "offshore-renewable-use-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "430AC0000000089-curated-offshore-renewable"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "ocean-basic-law",
+      "offshore-renewable-use-law"
+    ]
+  }
+}

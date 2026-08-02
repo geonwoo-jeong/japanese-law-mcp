@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-14",
+  "leakageGroupId": "lqg-industrial-competitiveness-rules",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "産業競争力強化法施行規則の同名制定法令が二件示されました。本文を読む対象の候補を確認したいです。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "competitiveness-rule-earlier",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "426M60000400001-curated-competitiveness-a"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "competitiveness-rule-later",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "503M60000400056-curated-competitiveness-b"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "competitiveness-rule-earlier",
+      "competitiveness-rule-later"
+    ]
+  }
+}

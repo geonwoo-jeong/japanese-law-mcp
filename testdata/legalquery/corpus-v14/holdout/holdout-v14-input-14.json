@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-14",
+  "leakageGroupId": "lqg-zero-limit-cultural-landscape",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "文化的景観の保全に関する法令名を検索してください。",
+    "limitPerAttempt": 0
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

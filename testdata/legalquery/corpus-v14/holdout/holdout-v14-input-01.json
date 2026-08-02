@@ -1,0 +1,28 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-01",
+  "leakageGroupId": "lqg-empty-query-with-law-reference",
+  "coverageIds": [
+    "input-query-empty"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "",
+    "ref": {
+      "providerId": "e-gov-law-api-v2",
+      "key": {
+        "sourceId": "e-gov-law-api-v2",
+        "resourceType": "law",
+        "resourceId": "315AC0000000037/curated-empty",
+        "versionId": "315AC0000000037_20240401_506AC0000000012-curated-empty"
+      }
+    },
+    "limitPerAttempt": 19
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}

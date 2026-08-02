@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-06",
+  "leakageGroupId": "lqg-freight-transport-law-set",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "物流関連二法と呼ばれる法律から、本文読取りの対象となる二候補を示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "truck-transport-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "401AC0000000083-curated-truck-transport"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "freight-forwarding-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "401AC0000000082-curated-freight-forwarding"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "truck-transport-law",
+      "freight-forwarding-law"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-03",
+  "leakageGroupId": "lqg-control-character-river-query",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "河川区域の占用に関する法令\u0002を検索してください。"
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "query"
+  }
+}

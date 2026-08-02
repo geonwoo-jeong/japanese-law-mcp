@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-02",
+  "leakageGroupId": "lqg-information-leak-dismissal-legal-advice",
+  "coverageIds": [
+    "unsupported-legal-advice"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "情報漏えいが疑われる従業員を懲戒解雇してよいか、適法かどうか断定してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

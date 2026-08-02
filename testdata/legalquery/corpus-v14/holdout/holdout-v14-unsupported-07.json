@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-07",
+  "leakageGroupId": "lqg-private-arbitration-records-resource",
+  "coverageIds": [
+    "unsupported-resource"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "民間仲裁機関の非公開事件記録から物流契約紛争の判断を検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

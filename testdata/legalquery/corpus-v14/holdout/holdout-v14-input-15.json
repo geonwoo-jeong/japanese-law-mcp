@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-15",
+  "leakageGroupId": "lqg-negative-limit-groundwater",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "地下水保全施策の根拠法令を探してください。",
+    "limitPerAttempt": -9
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-05",
+  "leakageGroupId": "lqg-public-interest-corporation-law-set",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "公益法人制度改革関連二法の本文を確認したいのですが、どちらを開くか候補を出してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "general-corporation-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "418AC0000000048-curated-general-corporation"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "public-interest-certification-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "418AC0000000049-curated-public-interest"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "general-corporation-law",
+      "public-interest-certification-law"
+    ]
+  }
+}

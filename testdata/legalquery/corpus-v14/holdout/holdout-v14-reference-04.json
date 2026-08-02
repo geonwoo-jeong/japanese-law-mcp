@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-04",
+  "leakageGroupId": "lqg-sem-consumer-contract-resource-ref",
+  "coverageIds": ["reference-source-resource-ref"],
+  "enabledPacks": [],
+  "request": {
+    "query": "添付した公式資源参照が示す法令の全文を表示してください。",
+    "ref": {
+      "providerId": "e-gov-law-api-v2",
+      "key": {
+        "sourceId": "e-gov-law-api-v2",
+        "resourceType": "law",
+        "resourceId": "412AC0000000061",
+        "versionId": "412AC0000000061_20230601_504AC0000000059"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": ["single_clear_candidate"],
+    "meanings": [{
+      "meaningId": "referenced-law-read",
+      "evidenceCodes": ["official_identifier", "explicit_task", "explicit_resource"],
+      "conceptIds": [],
+      "requiredPacks": [],
+      "steps": [{
+        "task": "read",
+        "resource": "law",
+        "inputKind": "law_read",
+        "logicalInput": {
+          "ref": {
+            "providerId": "e-gov-law-api-v2",
+            "key": {
+              "sourceId": "e-gov-law-api-v2",
+              "resourceType": "law",
+              "resourceId": "412AC0000000061",
+              "versionId": "412AC0000000061_20230601_504AC0000000059"
+            }
+          }
+        }
+      }]
+    }],
+    "selectedMeaningIds": ["referenced-law-read"]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-12",
+  "leakageGroupId": "lqg-food-safety-law-set",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "食品安全関連二法のどちらの本文を開くべきか、候補を先に確認させてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "food-safety-basic-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "415AC0000000048-curated-food-safety"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "food-sanitation-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "322AC0000000233-curated-food-sanitation"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "food-safety-basic-law",
+      "food-sanitation-law"
+    ]
+  }
+}

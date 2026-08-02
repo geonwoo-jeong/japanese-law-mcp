@@ -1,0 +1,16 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-15",
+  "leakageGroupId": "lqg-sem-case-heisei-thirty-gyotsu-179",
+  "coverageIds": ["reference-case-reference"],
+  "enabledPacks": ["judicial-cases"],
+  "request": {"query": "事件番号平成30年（行ツ）第179号の裁判例を検索してください。"},
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": ["single_clear_candidate"],
+    "meanings": [{"meaningId": "case-reference-search", "evidenceCodes": ["structured_reference", "explicit_task", "explicit_resource"], "conceptIds": [], "requiredPacks": ["judicial-cases"], "steps": [{"task": "search", "resource": "judicial_decision", "inputKind": "judicial_decision_search", "logicalInput": {"query": "平成30年(行ツ)第179号"}}]}],
+    "selectedMeaningIds": ["case-reference-search"]
+  }
+}

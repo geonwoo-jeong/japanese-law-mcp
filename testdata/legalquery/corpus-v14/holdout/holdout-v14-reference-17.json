@@ -1,0 +1,10 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-17",
+  "leakageGroupId": "lqg-sem-missing-persons-revision-id",
+  "coverageIds": ["reference-revision-id"],
+  "enabledPacks": [],
+  "request": {"query": "426AC0000000068 の改正版識別子 426AC0000000068_20230401_504AC0000000068 で法令本文を確認してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "revision-read", "evidenceCodes": ["official_identifier", "explicit_task", "explicit_resource"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "read", "resource": "law", "inputKind": "law_read", "logicalInput": {"lawId": "426AC0000000068", "revisionId": "426AC0000000068_20230401_504AC0000000068"}}]}], "selectedMeaningIds": ["revision-read"]}
+}

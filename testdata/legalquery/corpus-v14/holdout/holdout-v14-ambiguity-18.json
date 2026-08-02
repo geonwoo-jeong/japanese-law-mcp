@@ -1,0 +1,83 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-18",
+  "leakageGroupId": "lqg-disaster-law-amendment-orders",
+  "coverageIds": [
+    "ambiguity-three-or-more-candidates"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "災害対策基本法改正政令という略称に対応する同種の本文が三件あり、一つに決められません。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "disaster-order-first",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "401CO0000000101-curated-disaster-order-a"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "disaster-order-second",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "423CO0000000214-curated-disaster-order-b"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "disaster-order-third",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "503CO0000000297-curated-disaster-order-c"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": []
+  }
+}

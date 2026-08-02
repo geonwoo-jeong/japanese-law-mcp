@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-10",
+  "leakageGroupId": "lqg-vacant-land-policy-law-set",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "空き家・所有者不明土地対策関連二法の本文を読みたいので、対象候補を分けて提示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "vacant-houses-measures-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "426AC1000000127-curated-vacant-houses"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "owner-unknown-land-use-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "430AC0000000049-curated-owner-unknown-land"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "vacant-houses-measures-law",
+      "owner-unknown-land-use-law"
+    ]
+  }
+}

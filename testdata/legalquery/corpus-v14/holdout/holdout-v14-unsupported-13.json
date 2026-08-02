@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-13",
+  "leakageGroupId": "lqg-landscape-law-french-translation",
+  "coverageIds": [
+    "unsupported-translation"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "景観法の全文をフランス語に訳して表示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

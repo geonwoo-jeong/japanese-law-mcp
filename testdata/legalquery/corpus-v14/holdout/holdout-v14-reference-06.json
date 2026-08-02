@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-06",
+  "leakageGroupId": "lqg-sem-labor-contract-law-id",
+  "coverageIds": ["reference-law-id"],
+  "enabledPacks": [],
+  "request": {"query": "419AC0000000128 を公式法令IDとして本文を取得してください。"},
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": ["single_clear_candidate"],
+    "meanings": [{
+      "meaningId": "law-read",
+      "evidenceCodes": ["official_identifier", "explicit_task", "explicit_resource"],
+      "conceptIds": [],
+      "requiredPacks": [],
+      "steps": [{"task": "read", "resource": "law", "inputKind": "law_read", "logicalInput": {"lawId": "419AC0000000128"}}]
+    }],
+    "selectedMeaningIds": ["law-read"]
+  }
+}

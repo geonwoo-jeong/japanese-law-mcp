@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-16",
+  "leakageGroupId": "lqg-fishery-distribution-rules",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "水産流通適正化法施行規則という同名の規則が二件あるため、読むべき本文候補を挙げてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "fishery-distribution-rule-first",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "502M60000200093-curated-fishery-distribution-a"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "fishery-distribution-rule-second",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "506M60000200027-curated-fishery-distribution-b"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "fishery-distribution-rule-first",
+      "fishery-distribution-rule-second"
+    ]
+  }
+}

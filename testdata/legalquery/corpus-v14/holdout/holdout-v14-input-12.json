@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-12",
+  "leakageGroupId": "lqg-invalid-municipal-ordinance-reference",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "付与した自治体例規参照の本文を取得してください。",
+    "ref": {
+      "providerId": "public-legal-archive",
+      "key": {
+        "sourceId": "public-legal-archive",
+        "resourceType": "municipal-ordinance",
+        "resourceId": "ordinance-kawasaki-park-use-curated"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

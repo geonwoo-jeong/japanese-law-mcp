@@ -1,0 +1,32 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-02",
+  "leakageGroupId": "lqg-sem-personal-data-revision-id",
+  "coverageIds": ["reference-revision-id"],
+  "enabledPacks": [],
+  "request": {
+    "query": "法令ID 415AC0000000057 の改正版識別子 415AC0000000057_20240401_505AC0000000079 を指定して全文を確認してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": ["single_clear_candidate"],
+    "meanings": [{
+      "meaningId": "revision-read",
+      "evidenceCodes": ["official_identifier", "explicit_task", "explicit_resource"],
+      "conceptIds": [],
+      "requiredPacks": [],
+      "steps": [{
+        "task": "read",
+        "resource": "law",
+        "inputKind": "law_read",
+        "logicalInput": {
+          "lawId": "415AC0000000057",
+          "revisionId": "415AC0000000057_20240401_505AC0000000079"
+        }
+      }]
+    }],
+    "selectedMeaningIds": ["revision-read"]
+  }
+}

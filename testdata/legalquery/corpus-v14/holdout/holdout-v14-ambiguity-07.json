@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-07",
+  "leakageGroupId": "lqg-consumer-transaction-law-set",
+  "coverageIds": [
+    "ambiguity-alias-collision"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "消費者取引関連二法というまとめ方から、参照する法令本文をまだ一つに絞れません。候補をください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "consumer-contract-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "412AC0000000061-curated-consumer-contract"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "specified-commercial-transactions-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "351AC0000000057-curated-commercial-transactions"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "consumer-contract-law",
+      "specified-commercial-transactions-law"
+    ]
+  }
+}

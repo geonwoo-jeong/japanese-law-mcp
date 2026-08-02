@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-v2-fanout-adversarial",
+  "leakageGroupId": "lqg-eight-licensing-topics",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "古物営業許可、採石業者登録、火薬類譲受許可、旅館業許可、採捕許可、遊漁船業者登録、建設業許可、測量業者登録を件数制限なしでそれぞれ法令本文から検索してください。独立資料347。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

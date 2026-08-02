@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-v2-shared-terminal",
+  "leakageGroupId": "lqg-shared-liquid-gas-septic-topics",
+  "coverageIds": [
+    "structure-shared-terminal-cue"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "液化石油ガス販売と浄化槽清掃について教えてください。独立資料349。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "shared-terminal",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "液化石油ガス販売独立資料349-01"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "浄化槽清掃独立資料349-02"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "shared-terminal"
+    ]
+  }
+}

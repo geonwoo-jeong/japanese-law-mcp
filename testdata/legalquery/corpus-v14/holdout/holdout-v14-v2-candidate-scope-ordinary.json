@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-v2-candidate-scope-ordinary",
+  "leakageGroupId": "lqg-mixed-fisheries-internal-rules",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [],
+  "request": {
+    "query": "漁業法と漁業協同組合の内部規程をまとめて検索してください。独立資料342。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

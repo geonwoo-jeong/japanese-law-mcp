@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-13",
+  "leakageGroupId": "lqg-regional-transport-rules-enactments",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "地域公共交通の活性化及び再生に関する法律施行規則には制定時期の異なる同名規則があります。読む本文の候補を示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "regional-transport-rule-earlier",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "419M60000800080-curated-regional-transport-a"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "regional-transport-rule-later",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "505M60000800012-curated-regional-transport-b"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "regional-transport-rule-earlier",
+      "regional-transport-rule-later"
+    ]
+  }
+}

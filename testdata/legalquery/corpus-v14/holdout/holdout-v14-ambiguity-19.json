@@ -1,0 +1,83 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-19",
+  "leakageGroupId": "lqg-social-security-reform-law-set",
+  "coverageIds": [
+    "ambiguity-three-or-more-candidates"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "社会保障制度改革関連三法の本文を読みたいのですが、三候補のどれを指すかまだ選べません。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "national-health-insurance-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "333AC0000000192-curated-health-insurance"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "long-term-care-insurance-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "409AC0000000123-curated-long-term-care"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "elderly-medical-care-law",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "357AC0000000080-curated-elderly-medical"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": []
+  }
+}

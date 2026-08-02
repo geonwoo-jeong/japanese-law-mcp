@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-15",
+  "leakageGroupId": "lqg-protected-economic-information-rules",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "重要経済安保情報の保護及び活用に関する法律施行規則について、二つの制定候補から参照本文を選べません。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "economic-information-rule-first",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "506M60000100041-curated-economic-info-a"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "economic-information-rule-second",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "507M60000400018-curated-economic-info-b"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "economic-information-rule-first",
+      "economic-information-rule-second"
+    ]
+  }
+}

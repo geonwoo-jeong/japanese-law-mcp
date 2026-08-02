@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-20",
+  "leakageGroupId": "lqg-sem-children-and-child-health-search", "coverageIds": ["structure-multiple-explicit-intents"], "enabledPacks": [],
+  "request": {"query": "こども基本法と成育基本法をそれぞれ法令名で検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "two-law-searches", "evidenceCodes": ["explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "こども基本法"}}, {"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "成育過程にある者及びその保護者並びに妊産婦に対し必要な成育医療等を切れ目なく提供するための施策の総合的な推進に関する法律"}}]}], "selectedMeaningIds": ["two-law-searches"]}
+}

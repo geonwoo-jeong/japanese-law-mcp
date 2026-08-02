@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-16",
+  "leakageGroupId": "lqg-sem-recidivism-and-suicide-prevention-search", "coverageIds": ["structure-multiple-explicit-intents"], "enabledPacks": [],
+  "request": {"query": "再犯防止推進法と自殺対策基本法の二つを法令検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "two-law-searches", "evidenceCodes": ["explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "再犯の防止等の推進に関する法律"}}, {"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "自殺対策基本法"}}]}], "selectedMeaningIds": ["two-law-searches"]}
+}

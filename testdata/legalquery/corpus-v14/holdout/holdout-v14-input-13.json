@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-13",
+  "leakageGroupId": "lqg-invalid-trailing-hyphen-provider-reference",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "付与した裁判記録参照が示す本文を読んでください。",
+    "ref": {
+      "providerId": "court-records-",
+      "key": {
+        "sourceId": "court-records",
+        "resourceType": "judicial-decision",
+        "resourceId": "administrative-case-curated-731"
+      }
+    }
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "ref"
+  }
+}

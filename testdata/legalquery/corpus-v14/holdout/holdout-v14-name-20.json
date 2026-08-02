@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-name-20",
+  "leakageGroupId": "lqg-concept-cooling-off-continuing-service",
+  "coverageIds": [
+    "concept-single"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "語学教室の長期契約を結んだ後にクーリング・オフできることを定めた条文を探してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "concept-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "legal_concept"
+        ],
+        "conceptIds": [
+          "cooling-off"
+        ],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "特定継続的役務提供の契約の解除"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "concept-search"
+    ]
+  }
+}

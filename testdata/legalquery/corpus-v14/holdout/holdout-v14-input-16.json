@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-16",
+  "leakageGroupId": "lqg-above-limit-port-transport",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "港湾運送事業の規制法令を検索してください。",
+    "limitPerAttempt": 21
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}

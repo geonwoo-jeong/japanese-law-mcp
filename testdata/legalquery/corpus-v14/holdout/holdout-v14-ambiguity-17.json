@@ -1,0 +1,66 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-ambiguity-17",
+  "leakageGroupId": "lqg-radiation-protection-personnel-rules",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "人事院規則一〇―五（職員の放射線障害の防止）は同名の制定法令が二つあります。本文候補を示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "radiation-rule-earlier",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "338RJNJ10005000-curated-radiation-a"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "radiation-rule-later",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "503RJNJ10005000-curated-radiation-b"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "radiation-rule-earlier",
+      "radiation-rule-later"
+    ]
+  }
+}

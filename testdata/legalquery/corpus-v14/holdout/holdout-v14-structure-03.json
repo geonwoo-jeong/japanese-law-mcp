@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-03",
+  "leakageGroupId": "lqg-sem-personal-data-article-27-paragraph-2", "coverageIds": ["structure-paragraph"], "enabledPacks": [],
+  "request": {"query": "法令ID 415AC0000000057 の第27条第2項を確認してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "paragraph-read", "evidenceCodes": ["official_identifier", "structured_reference", "explicit_task", "explicit_resource"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "read", "resource": "law_provision", "inputKind": "law_article_read", "logicalInput": {"lawId": "415AC0000000057", "location": {"provision": "main", "articleNumber": "27", "paragraphNumber": 2}}}]}], "selectedMeaningIds": ["paragraph-read"]}
+}

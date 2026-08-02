@@ -1,0 +1,6 @@
+{
+  "artifactKind": "semantic_case", "schemaVersion": 2, "caseId": "holdout-v14-structure-09",
+  "leakageGroupId": "lqg-sem-whistleblower-asof-20220531", "coverageIds": ["structure-complete-date"], "enabledPacks": [],
+  "request": {"query": "2022年5月31日時点の公益通報者保護法を法令検索してください。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "dated-law-search", "evidenceCodes": ["structured_reference", "explicit_task", "explicit_resource", "official_alias"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "search", "resource": "law", "inputKind": "law_search", "logicalInput": {"query": "公益通報者保護法", "asOf": "2022-05-31"}}]}], "selectedMeaningIds": ["dated-law-search"]}
+}

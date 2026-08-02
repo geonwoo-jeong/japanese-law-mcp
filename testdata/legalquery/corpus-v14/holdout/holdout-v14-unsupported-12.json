@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-unsupported-12",
+  "leakageGroupId": "lqg-port-law-arabic-translation",
+  "coverageIds": [
+    "unsupported-translation"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "港湾法の主要条文をアラビア語へ翻訳してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

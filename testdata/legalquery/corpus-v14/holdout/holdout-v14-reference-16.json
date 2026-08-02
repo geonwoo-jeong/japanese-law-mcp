@@ -1,0 +1,10 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-reference-16",
+  "leakageGroupId": "lqg-sem-tsunami-countermeasures-law-id",
+  "coverageIds": ["reference-law-id"],
+  "enabledPacks": [],
+  "request": {"query": "法令ID 423AC0000000077 の本文を読みたいです。"},
+  "expected": {"kind": "plan", "decision": "single", "reasonCodes": ["single_clear_candidate"], "meanings": [{"meaningId": "law-read", "evidenceCodes": ["official_identifier", "explicit_task", "explicit_resource"], "conceptIds": [], "requiredPacks": [], "steps": [{"task": "read", "resource": "law", "inputKind": "law_read", "logicalInput": {"lawId": "423AC0000000077"}}]}], "selectedMeaningIds": ["law-read"]}
+}

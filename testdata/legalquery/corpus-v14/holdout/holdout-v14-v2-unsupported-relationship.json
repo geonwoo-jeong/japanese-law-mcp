@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-v2-unsupported-relationship",
+  "leakageGroupId": "lqg-water-regulation-priority-analysis",
+  "coverageIds": [
+    "unsupported-relationship-analysis"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "河川法の流水占用規定と土地改良法の水利規定の優先関係を分析してください。独立資料350。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "unsupported",
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "meanings": [],
+    "selectedMeaningIds": []
+  }
+}

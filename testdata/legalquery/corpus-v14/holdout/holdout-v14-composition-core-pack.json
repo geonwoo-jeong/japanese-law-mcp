@@ -1,0 +1,62 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-composition-core-pack",
+  "leakageGroupId": "lqg-composed-port-permit-law-judgment-search",
+  "coverageIds": [
+    "pack-judicial-enabled",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "港湾運送事業の許可に関する法令条文を検索し、その許可取消しに関する裁判例も検索してください。独立資料352。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-judicial-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "港湾運送事業の許可独立資料352-01"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "港湾運送事業の許可取消し独立資料352-02"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-judicial-searches"
+    ]
+  }
+}

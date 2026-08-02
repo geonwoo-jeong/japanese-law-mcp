@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-v14-input-17",
+  "leakageGroupId": "lqg-excessive-limit-landscape-planning",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "景観計画区域に関する法令候補を示してください。",
+    "limitPerAttempt": 88
+  },
+  "expected": {
+    "kind": "request_error",
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt"
+  }
+}
