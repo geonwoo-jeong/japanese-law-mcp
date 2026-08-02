@@ -297,7 +297,6 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 再準備 cycle 4.2 | 完了 | `corpus-v12` の独立 holdout、過去の `corpus-v10` と `corpus-v11` からの leakage 分離、再現性および不変 byte の固定 |
 | 再準備 cycle 4.3 | 完了 | `corpus-v12` development 43 件だけによる既存 policy・version の再校正と決定的 fingerprint の固定。候補 request と pointer は不変 |
 | 再準備 cycle 4.4 | 完了 | 失敗診断契約、同期後の SOT byte に結合した二件の review、`corpus-v12` / `default-5` request および未評価 current pointer。holdout は未実行 |
-| 再準備 cycle 4.5 | report 前失敗（同一 ID の再実行禁止） | `default-5` request は二件の remote run がともに終了 code `12` で停止し、report、result および handoff を生成しなかった。三回目は実行せず、`corpus-v13` / `default-6` の新しい準備 cycle へ置き換える |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -364,34 +363,6 @@ report、result、failed report または baseline を実行若しくは生成�
 security review で最初に検出した handoff 読戻しの blocker は、bootstrap の
 標準 library 制約を保ったまま result と report の未知 field、重複 key、後方 token、
 非 canonical byte、depth および value 上限を閉じて検証することで解消した。
-
-### `default-5` の確定的な report 前失敗
-
-`default-5` は準備 commit `fa4b95d4fb74649d68a044a0920f357a4edeeef4` に対する
-外部権威記録の manual workflow
-[`30728860067`](https://github.com/geonwoo-jeong/japanese-law-mcp/actions/runs/30728860067)
-で起動した。同じ操作中に重複 dispatch
-[`30728862530`](https://github.com/geonwoo-jeong/japanese-law-mcp/actions/runs/30728862530)
-も発生した。GitHub Actions の両記録では candidate worker の終了 code `12`
-（`evaluate_build`）で停止し、report、result および artifact を生成しなかった。
-これは有効な holdout 判定または handoff ではない。終了位置が閉じた code で確定した
-ため、同じ evaluation ID の三回目は実行しない。
-
-holdout 本文、query、case ID および期待値を出力しない集計で構造を確認した結果、
-`corpus-v12` の二百五十一件に対する派生観測の対象件数は
-`composition-core-pack=0`、`composition-pack-disabled=10`、
-`composition-ref-read-search=0`、`composition-four-step-budget=5` であった。
-標準 report は四観測をすべて一件以上の分母で生成するため、非零の二観測ではなく
-対象が零件の二観測によって report 構築前に必ず停止する。候補の検索品質、
-`default-5` の予約名または CI infrastructure の障害を原因とは扱わない。
-
-固定済みの `corpus-v12`、request、review および二件の remote run は変更不能な
-診断記録として保持する。`SOT-ENG-038` の新規 request 作成境界では
-`corpus-v1` から `corpus-v12` を replay 専用とし、再利用を禁止する。次の cycle は、
-四観測をそれぞれ一件以上持ち、過去に
-消費または廃棄した holdout と分離した `corpus-v13`、未使用予約名 `default-6`、
-新しい content-bound review 二件および新しい evaluation ID を準備してから、
-一回だけ第 4 段階 5 を実行する。
 
 ## 段階の境界
 
