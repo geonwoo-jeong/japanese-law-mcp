@@ -168,6 +168,24 @@ func TestDecodeのSchemaVersion判別はFailClosedである(t *testing.T) {
 	}
 }
 
+func TestRepositoryArtifactDecodeは処理中のCancelを伝播する(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	_, err := decodeWithContext(
+		ctx,
+		nil,
+		artifactSchemas{},
+		func([]byte, artifactSchemas) (PointerDocument, error) {
+			cancel()
+			return PointerDocument{}, nil
+		},
+	)
+	if err == nil {
+		t.Fatal("candidate-evaluation-schema-v3-context-propagation: decode 中の cancel を受理しました")
+	}
+}
+
 func TestLoadCurrentEvaluationは混在履歴をArtifact宣言版で読む(t *testing.T) {
 	t.Parallel()
 

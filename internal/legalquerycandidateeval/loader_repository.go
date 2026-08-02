@@ -123,6 +123,9 @@ func loadPointer(
 	root *legalqueryartifact.Repository,
 	schemas artifactSchemas,
 ) (PointerDocument, error) {
+	if err := checkContext(ctx); err != nil {
+		return PointerDocument{}, err
+	}
 	raw, err := root.ReadRegular("current.json", maximumPointerBytes)
 	if err != nil {
 		return PointerDocument{}, fmt.Errorf("candidate evaluation pointer を読めません: %w", err)

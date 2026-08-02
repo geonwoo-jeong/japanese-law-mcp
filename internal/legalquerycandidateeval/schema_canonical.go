@@ -1,7 +1,6 @@
 package legalquerycandidateeval
 
 import (
-	"context"
 	"fmt"
 	"sync"
 )
@@ -31,12 +30,12 @@ func loadCanonicalArtifactSchemas() (artifactSchemas, error) {
 	return canonicalSchemas, nil
 }
 
-func (s artifactSchemas) validate(ctx context.Context, schemaVersion int, raw []byte) error {
+func (s artifactSchemas) validate(schemaVersion int, raw []byte) error {
 	switch schemaVersion {
 	case SchemaVersionV2:
-		return s.v2.Validate(ctx, raw)
+		return s.v2.validateRaw(raw)
 	case SchemaVersionV3:
-		return s.v3.Validate(ctx, raw)
+		return s.v3.validateRaw(raw)
 	default:
 		return fmt.Errorf("candidate evaluation schema version が未対応です")
 	}

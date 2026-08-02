@@ -27,7 +27,7 @@ func DecodePointer(raw []byte) (PointerDocument, error) {
 	if err != nil {
 		return PointerDocument{}, err
 	}
-	return decodePointer(context.Background(), raw, schemas)
+	return decodePointerRaw(raw, schemas)
 }
 
 func decodePointer(
@@ -35,9 +35,15 @@ func decodePointer(
 	raw []byte,
 	schemas artifactSchemas,
 ) (PointerDocument, error) {
+	return decodeWithContext(ctx, raw, schemas, decodePointerRaw)
+}
+
+func decodePointerRaw(
+	raw []byte,
+	schemas artifactSchemas,
+) (PointerDocument, error) {
 	var document PointerDocument
 	if err := decodeCanonical(
-		ctx,
 		raw,
 		maximumPointerBytes,
 		maximumSmallValueCount,
@@ -59,7 +65,7 @@ func DecodeCandidateContentManifest(raw []byte) (CandidateContentManifest, error
 	if err != nil {
 		return CandidateContentManifest{}, err
 	}
-	return decodeCandidateContentManifest(context.Background(), raw, schemas)
+	return decodeCandidateContentManifestRaw(raw, schemas)
 }
 
 func decodeCandidateContentManifest(
@@ -67,9 +73,15 @@ func decodeCandidateContentManifest(
 	raw []byte,
 	schemas artifactSchemas,
 ) (CandidateContentManifest, error) {
+	return decodeWithContext(ctx, raw, schemas, decodeCandidateContentManifestRaw)
+}
+
+func decodeCandidateContentManifestRaw(
+	raw []byte,
+	schemas artifactSchemas,
+) (CandidateContentManifest, error) {
 	var document CandidateContentManifest
 	if err := decodeCanonical(
-		ctx,
 		raw,
 		maximumManifestBytes,
 		maximumManifestValueCount,
@@ -91,7 +103,7 @@ func DecodeReviewAttestation(raw []byte) (ReviewAttestation, error) {
 	if err != nil {
 		return ReviewAttestation{}, err
 	}
-	return decodeReviewAttestation(context.Background(), raw, schemas)
+	return decodeReviewAttestationRaw(raw, schemas)
 }
 
 func decodeReviewAttestation(
@@ -99,9 +111,15 @@ func decodeReviewAttestation(
 	raw []byte,
 	schemas artifactSchemas,
 ) (ReviewAttestation, error) {
+	return decodeWithContext(ctx, raw, schemas, decodeReviewAttestationRaw)
+}
+
+func decodeReviewAttestationRaw(
+	raw []byte,
+	schemas artifactSchemas,
+) (ReviewAttestation, error) {
 	var document ReviewAttestation
 	if err := decodeCanonical(
-		ctx,
 		raw,
 		maximumAttestationBytes,
 		maximumSmallValueCount,
@@ -123,7 +141,7 @@ func DecodeEvaluationRequest(raw []byte) (EvaluationRequest, error) {
 	if err != nil {
 		return EvaluationRequest{}, err
 	}
-	return decodeEvaluationRequest(context.Background(), raw, schemas)
+	return decodeEvaluationRequestRaw(raw, schemas)
 }
 
 func decodeEvaluationRequest(
@@ -131,9 +149,15 @@ func decodeEvaluationRequest(
 	raw []byte,
 	schemas artifactSchemas,
 ) (EvaluationRequest, error) {
+	return decodeWithContext(ctx, raw, schemas, decodeEvaluationRequestRaw)
+}
+
+func decodeEvaluationRequestRaw(
+	raw []byte,
+	schemas artifactSchemas,
+) (EvaluationRequest, error) {
 	var document EvaluationRequest
 	if err := decodeCanonical(
-		ctx,
 		raw,
 		maximumRequestBytes,
 		maximumSmallValueCount,
@@ -155,7 +179,7 @@ func DecodeEvaluationResult(raw []byte) (EvaluationResult, error) {
 	if err != nil {
 		return EvaluationResult{}, err
 	}
-	return decodeEvaluationResult(context.Background(), raw, schemas)
+	return decodeEvaluationResultRaw(raw, schemas)
 }
 
 func decodeEvaluationResult(
@@ -163,9 +187,15 @@ func decodeEvaluationResult(
 	raw []byte,
 	schemas artifactSchemas,
 ) (EvaluationResult, error) {
+	return decodeWithContext(ctx, raw, schemas, decodeEvaluationResultRaw)
+}
+
+func decodeEvaluationResultRaw(
+	raw []byte,
+	schemas artifactSchemas,
+) (EvaluationResult, error) {
 	var document EvaluationResult
 	if err := decodeCanonical(
-		ctx,
 		raw,
 		maximumResultBytes,
 		maximumSmallValueCount,
@@ -181,13 +211,32 @@ func decodeEvaluationResult(
 	return document, nil
 }
 
+func decodeWithContext[T any](
+	ctx context.Context,
+	raw []byte,
+	schemas artifactSchemas,
+	decode func([]byte, artifactSchemas) (T, error),
+) (T, error) {
+	var zero T
+	if err := checkContext(ctx); err != nil {
+		return zero, err
+	}
+	document, decodeErr := decode(raw, schemas)
+	if err := checkContext(ctx); err != nil {
+		return zero, err
+	}
+	if decodeErr != nil {
+		return zero, decodeErr
+	}
+	return document, nil
+}
+
 type artifactHeader struct {
 	ArtifactKind  string `json:"artifactKind"`
 	SchemaVersion int    `json:"schemaVersion"`
 }
 
 func decodeCanonical(
-	ctx context.Context,
 	raw []byte,
 	maximumBytes int,
 	maximumValues int,
@@ -195,9 +244,6 @@ func decodeCanonical(
 	schemas artifactSchemas,
 	target any,
 ) error {
-	if err := checkContext(ctx); err != nil {
-		return err
-	}
 	if len(raw) == 0 || len(raw) > maximumBytes {
 		return fmt.Errorf("原 byte の size が上限外です")
 	}
@@ -210,7 +256,7 @@ func decodeCanonical(
 	if err != nil {
 		return err
 	}
-	if err := schemas.validate(ctx, header.SchemaVersion, raw); err != nil {
+	if err := schemas.validate(header.SchemaVersion, raw); err != nil {
 		return err
 	}
 	if err := legalqueryartifact.DecodeClosed(raw, target); err != nil {

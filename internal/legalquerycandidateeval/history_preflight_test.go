@@ -299,7 +299,7 @@ func loadRepositoryEvaluationRequest(t *testing.T, evaluationID string) Evaluati
 		"requests",
 		evaluationID+".json",
 	)
-	//nolint:gosec // 固定した repository 内 request だけを読む。
+	//nolint:gosec // SOT-ENG-042: 固定した repository 内 request だけを読む。
 	raw, err := os.ReadFile(requestPath)
 	if err != nil {
 		t.Fatalf("既存 request を読めません: %v", err)
