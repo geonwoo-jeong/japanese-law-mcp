@@ -30,21 +30,18 @@ func run(
 	ctx context.Context,
 	args []string,
 	stdout io.Writer,
-	stderr io.Writer,
+	_ io.Writer,
 	execute workerExecutor,
 ) int {
 	if len(args) != 2 ||
 		args[0] != "--repository="+fixedRepository ||
 		args[1] != "--output-directory="+fixedOutputDirectory {
-		_, _ = fmt.Fprintln(stderr, "候補評価 worker の固定引数が不正です")
 		return 2
 	}
 	if ctx == nil || ctx.Err() != nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 worker の context が不正です")
 		return 1
 	}
 	if execute == nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 worker の実行境界がありません")
 		return 1
 	}
 	handoff, err := execute(ctx, legalquerycandidateworker.Input{
@@ -52,7 +49,6 @@ func run(
 		OutputRoot:     fixedOutputDirectory,
 	})
 	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 worker を正常に完了できませんでした")
 		return legalquerycandidateworker.FailureExitCode(err)
 	}
 	_, _ = fmt.Fprintf(

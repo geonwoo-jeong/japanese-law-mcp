@@ -1,6 +1,6 @@
 # SOT-ENG-040: 候補 holdout 評価の閉じた失敗段階診断
 
-- 状態: 草案
+- 状態: 有効
 
 ## 規定
 
@@ -108,11 +108,9 @@ manual workflow は失敗 code を理由に自動再試行しない。次の dis
 retry 条件または別 request の準備条件を独立 review し、対象 commit の権威 CI が
 成功した後にだけ一回行う。
 
-## 採用条件
+## 有効化時の整合条件
 
-現行の `SOT-ENG-038` は CI log の許可集合に process の非零終了 status を明記して
-いないため、本規定はそのまま有効化しない。次の一変更で、少なくとも次を全て満たした
-場合にだけ本規定を `有効` とする。
+本規定を有効化する変更は、次を同じ変更単位で全て満たす。
 
 - `SOT-ENG-038` の privacy 節を、command 自身の失敗 stdout/stderr は空のまま、
   process 実行器が機械的に付加する閉じた非零終了 code だけを許す内容へ同期する
@@ -124,8 +122,8 @@ retry 条件または別 request の準備条件を独立 review し、対象 co
   unknown の fail-closed 処理を contract test と独立 review で確認する
 - 上記を含む対象 commit の権威 CI が成功するまで manual candidate workflow を起動しない
 
-本規定が `草案` の間は、`SOT-ENG-038` の現行 privacy と retry 条件だけを実装・評価の
-基準とし、本規定の code を同じ ID の再試行根拠にしない。
+終了 code だけを、同じ ID の再試行可否または holdout の未消費を証明する根拠に
+しない。再試行には前節の独立 review と不変性の証明を常に必要とする。
 
 ## 確認
 

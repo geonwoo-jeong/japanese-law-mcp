@@ -12,7 +12,10 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
 )
 
-const verificationDeterministicReplay = "candidate-evaluation-deterministic-replay"
+const (
+	verificationDeterministicReplay = "candidate-evaluation-deterministic-replay"
+	verificationReportBoundary      = "candidate-evaluation-report-completion-boundary"
+)
 
 func TestRunは同じ入力を同じ二Fileへ再現する(t *testing.T) {
 	t.Parallel()
@@ -136,6 +139,15 @@ func TestRunは失敗時に部分Outputを残さない(t *testing.T) {
 			},
 			wantCode: FailureCodeEvaluateBuild,
 		},
+		"report size": {
+			mutate: func(value Dependencies) Dependencies {
+				value.Evaluate = func(context.Context, PreparedEvaluation) ([]byte, error) {
+					return nil, nil
+				}
+				return value
+			},
+			wantCode: FailureCodeReportBinding,
+		},
 		"accept": {
 			mutate: func(value Dependencies) Dependencies {
 				value.Accept = func([]byte) (bool, error) { return false, errors.New("accept failure") }
@@ -154,7 +166,7 @@ func TestRunは失敗時に部分Outputを残さない(t *testing.T) {
 				t.Fatalf("%s failure を受理しました", name)
 			}
 			if code := FailureExitCode(err); code != mutate.wantCode {
-				t.Fatalf("%s failure code=%d, want %d", name, code, mutate.wantCode)
+				t.Fatalf("%s: %s failure code=%d, want %d", verificationReportBoundary, name, code, mutate.wantCode)
 			}
 			if _, err := os.Lstat(root); !errors.Is(err, os.ErrNotExist) {
 				t.Fatalf("%s failure 後に output が残りました: %v", name, err)
@@ -179,6 +191,20 @@ func TestRunは既存Handoffを上書きしない(t *testing.T) {
 	after := mustReadWorkerFile(t, root, first.EvaluationID, "result.json")
 	if !bytes.Equal(before, after) {
 		t.Fatal("既存 handoff byte が変更されました")
+	}
+}
+
+func TestResult直列化失敗はReport完成後の段階に分類する(t *testing.T) {
+	t.Parallel()
+
+	_, err := encodeEvaluationResult(
+		legalquerycandidateeval.EvaluationResult{},
+		func(any) ([]byte, error) {
+			return nil, errors.New("result encode failure")
+		},
+	)
+	if code := FailureExitCode(err); code != FailureCodeResultEncode {
+		t.Fatalf("%s: result encode code=%d, want %d", verificationReportBoundary, code, FailureCodeResultEncode)
 	}
 }
 

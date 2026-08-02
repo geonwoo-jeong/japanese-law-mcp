@@ -293,9 +293,10 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 次 cycle 4.2 | 完了 | 過去の全評価と leakage group が交差しない `corpus-v11` の独立準備 |
 | 次 cycle 4.3 | 完了 | `corpus-v11` development だけによる `core-38` と固定 profile set の校正 |
 | 次 cycle 4.4 | 不確定終了（再実行禁止） | exact candidate content、二件の review attestation、`default-4` request および pending pointer。専用 CI は artifact なしで非零終了し、report 完成前とは証明できない |
-| 次 cycle 診断契約 | 草案 review 完了 | `SOT-ENG-040` の report 完成境界、閉じた終了 code、privacy、unknown の fail-closed および coordinated adoption 条件 |
+| 次 cycle 診断契約 | 有効化完了 | `SOT-ENG-040` の report 完成境界、閉じた終了 code、privacy、unknown の fail-closed および coordinated adoption 条件 |
 | 再準備 cycle 4.2 | 完了 | `corpus-v12` の独立 holdout、過去の `corpus-v10` と `corpus-v11` からの leakage 分離、再現性および不変 byte の固定 |
 | 再準備 cycle 4.3 | 完了 | `corpus-v12` development 43 件だけによる既存 policy・version の再校正と決定的 fingerprint の固定。候補 request と pointer は不変 |
+| 再準備 cycle 4.4 | 完了 | 失敗診断契約、同期後の SOT byte に結合した二件の review、`corpus-v12` / `default-5` request および未評価 current pointer。holdout は未実行 |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -307,17 +308,15 @@ manual workflow `30688691089` で一回起動した。worker command は generic
 全 leakage group digest を後続 request で再利用しない。
 
 失敗位置を query、fixture、case ID または内部 error 本文なしで判別する設計は、
-`SOT-ENG-040` の草案に分離した。初回レビューは `4.0 / 10`、blocker 一件であり、
+当初 `SOT-ENG-040` の草案に分離した。初回レビューは `4.0 / 10`、blocker 一件であり、
 `SOT-ENG-038` の CI log privacy と不確定 retry 条件の衝突を指摘された。修正後の
 独立レビューは `9.0 / 10` と `9.2 / 10`、いずれも blocker 零、major 零となった。
 
-診断実装の先行 commit `b69da4f`、`cce4d0a`、`c69d0dc` および `60326c2` は、
-この草案の採用完了とは扱わない。現時点では少なくとも、失敗 stdout/stderr の空化、
+診断実装の先行 commit `b69da4f`、`cce4d0a`、`c69d0dc` および `60326c2` だけでは、
+草案の採用完了とは扱わなかった。再準備 cycle 4.4 で、失敗 stdout/stderr の空化、
 child 開始前の `worker_start` と開始後の `unknown` の厳密分離、report と result の
-直列化失敗を完成境界の前後へ正しく分類する検証、および active `SOT-ENG-038` の
-privacy 同期が未完了である。これらを修正する実装や新しい manual dispatch は、
-草案の採用条件、新しい holdout、別 request とその content-bound review を同じ順序で
-準備する後続作業まで行わない。
+直列化失敗を完成境界の前後へ正しく分類する検証、および `SOT-ENG-038` の privacy
+同期を一変更へそろえて `SOT-ENG-040` を有効化した。
 
 再準備 cycle の第 4.2 段階として、`corpus-v12` を独立変更で準備した。
 development 四十三件と execution 八件は `corpus-v11` から byte を変えずに継承し、
@@ -347,6 +346,18 @@ signature 38 / 43、evidence assertion 11 / 38、concept assertion 1 / 1 で従�
 この校正では holdout、report、result、failed report または baseline を参照せず、
 既存の候補 request と pointer、production の active profile および標準 command を
 変更していない。
+
+再準備 cycle の第 4.4 段階では、意味 source が同じため exact candidate content
+`candidate-content-sha256-e8a5633b1acaf75bd9f2851dfe814ec1342178a9c3bf31ff11c03e900fda47d3`
+を再利用し、同期後の `SOT-ENG-038` 原 byte を含む五十二件の固定 SOT 集合へ
+architecture `92 / 100` と testability `80 / 100`、いずれも blocker 0 の独立 review を
+新しく結び付けた。`corpus-v12`、`legal-query-evaluator-v1` および未使用予約名
+`default-5` を持つ request は
+`evaluation-sha256-c53a7d0d28ef35bd2aab081680c1112b6aee9e649f19fb789ec2f0e0e35a4a87`
+であり、`current.json` はこの request だけを指す。置換済みの `default-4` request と
+参照成果物は変更せず、同 request の holdout digest、leakage group digest および
+baseline reservation を再利用していない。この段階では candidate workflow、holdout、
+report、result、failed report または baseline を実行若しくは生成していない。
 
 ## 段階の境界
 

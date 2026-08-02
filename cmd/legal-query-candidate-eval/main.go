@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -98,33 +97,28 @@ func run(
 	ctx context.Context,
 	args []string,
 	environment []string,
-	stdout, stderr io.Writer,
+	stdout io.Writer,
+	_ io.Writer,
 	execute candidateExecutor,
 ) int {
 	if ctx == nil || ctx.Err() != nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 bootstrap の context が不正です")
 		return exitValidation
 	}
 	options, err := parseFixedArguments(args)
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "候補評価 bootstrap の引数が不正です: %v\n", err)
 		return exitUsage
 	}
 	if err := validateBuildEnvironment(environment); err != nil {
-		_, _ = fmt.Fprintf(stderr, "候補評価 bootstrap の build 環境が不正です: %v\n", err)
 		return exitValidation
 	}
 	if execute == nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 bootstrap の実行境界がありません")
 		return exitValidation
 	}
 	handoff, err := execute(ctx, options)
 	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 worker を正常に完了できませんでした")
 		return failureExitCode(err)
 	}
 	if err := validateCandidateHandoff(handoff); err != nil {
-		_, _ = fmt.Fprintln(stderr, "候補評価 worker の handoff が不正です")
 		return exitValidation
 	}
 	_, _ = fmt.Fprintf(
@@ -267,7 +261,7 @@ func closedGoEnvironment(environment []string) (map[string]string, error) {
 	return result, nil
 }
 
-type commandRunner func(context.Context, []string, []string, io.Writer, io.Writer) error
+type commandRunner func(context.Context, []string, []string, io.Writer, io.Writer) (bool, error)
 
 func preparedHandoff(ctx context.Context, _ candidateOptions) (candidateHandoff, error) {
 	return preparedHandoffWithRunner(
@@ -296,7 +290,7 @@ func preparedHandoffWithRunner(
 	}
 	var stderr tailBuffer
 	stderr.max = maximumWorkerStderr
-	err := runner(
+	started, err := runner(
 		ctx,
 		[]string{
 			"./cmd/legal-query-candidate-worker",
@@ -308,7 +302,13 @@ func preparedHandoffWithRunner(
 		&stderr,
 	)
 	if err != nil {
-		return candidateHandoff{}, classifyWorkerFailure(err, stderr.String())
+		return candidateHandoff{}, classifyWorkerFailure(err, stderr.String(), started)
+	}
+	if !started {
+		return candidateHandoff{}, workerFailureError{
+			code: workerFailureSpawn,
+			err:  fmt.Errorf("candidate worker が開始されませんでした"),
+		}
 	}
 	handoff, err := reader(outputDirectory)
 	if err != nil {
@@ -326,7 +326,7 @@ func runCandidateWorker(
 	environment []string,
 	stdout io.Writer,
 	stderr io.Writer,
-) error {
+) (bool, error) {
 	commandArgs := append([]string{"run"}, args...)
 	//nolint:gosec // SOT-ENG-038: 実行対象・引数・環境は固定 command と閉じた build 環境だけを受理する。
 	command := exec.CommandContext(ctx, "go", commandArgs...)
@@ -335,20 +335,26 @@ func runCandidateWorker(
 	command.Stdin = strings.NewReader("")
 	command.Stdout = stdout
 	command.Stderr = stderr
-	return command.Run()
+	if err := command.Start(); err != nil {
+		return false, err
+	}
+	return true, command.Wait()
 }
 
-func classifyWorkerFailure(err error, stderr string) error {
+func classifyWorkerFailure(err error, stderr string, started bool) error {
+	if !started {
+		return workerFailureError{code: workerFailureSpawn, err: err}
+	}
 	if code, ok := parseWorkerExitStatus(stderr); ok {
 		return workerFailureError{code: code, err: err}
 	}
-	return workerFailureError{code: workerFailureSpawn, err: err}
+	return workerFailureError{code: workerFailureUnknown, err: err}
 }
 
 func parseWorkerExitStatus(stderr string) (int, bool) {
 	lines := strings.Split(stderr, "\n")
 	for index := len(lines) - 1; index >= 0; index-- {
-		line := strings.TrimSpace(lines[index])
+		line := lines[index]
 		if line == "" {
 			continue
 		}
@@ -357,16 +363,11 @@ func parseWorkerExitStatus(stderr string) (int, bool) {
 			return 0, false
 		}
 		value := line[len(prefix):]
-		code := 0
-		for _, character := range value {
-			if character < '0' || character > '9' {
-				return workerFailureUnknown, true
-			}
-			code = code*10 + int(character-'0')
+		if len(value) != 2 || value[0] < '0' || value[0] > '9' ||
+			value[1] < '0' || value[1] > '9' {
+			return workerFailureUnknown, true
 		}
-		if code == exitValidation {
-			return workerFailureSpawn, true
-		}
+		code := int(value[0]-'0')*10 + int(value[1]-'0')
 		if isChildWorkerExitCode(code) {
 			return code, true
 		}
@@ -446,14 +447,15 @@ func readCandidateHandoff(outputRoot string) (candidateHandoff, error) {
 	if err != nil {
 		return candidateHandoff{}, err
 	}
-	var result workerResultDocument
-	decoder := json.NewDecoder(strings.NewReader(string(resultRaw)))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&result); err != nil {
-		return candidateHandoff{}, fmt.Errorf("candidate result を decode できません")
+	result, err := decodeCanonicalWorkerResult(resultRaw)
+	if err != nil {
+		return candidateHandoff{}, err
 	}
 	reportRaw, err := readBoundedFile(filepath.Join(evaluationRoot, "report.json"), 4<<20)
 	if err != nil {
+		return candidateHandoff{}, err
+	}
+	if err := validateCanonicalCandidateReport(reportRaw); err != nil {
 		return candidateHandoff{}, err
 	}
 	reportDigest := sha256.Sum256(reportRaw)
@@ -462,9 +464,7 @@ func readCandidateHandoff(outputRoot string) (candidateHandoff, error) {
 		Outcome:      result.Outcome,
 		ReportSHA256: result.ReportSHA256,
 	}
-	if result.ArtifactKind != "legal_query_candidate_evaluation_result" ||
-		result.SchemaVersion != 2 || result.EvaluationID != evaluationID ||
-		len(result.RequestSHA256) != 64 || !lowerHex(result.RequestSHA256) ||
+	if result.EvaluationID != evaluationID ||
 		result.ReportSHA256 != hex.EncodeToString(reportDigest[:]) {
 		return candidateHandoff{}, fmt.Errorf("candidate result binding が不正です")
 	}

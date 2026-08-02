@@ -889,8 +889,12 @@ manifest、attestation、request、result、report、output および log は、
 fixture 本文、辞書 entry、review comment、reviewer 名、外部 response、
 credential、絶対 path、時刻、host、user、commit message または個人情報を
 持たない。manifest の source と lexicon file path は repository-relative path
-だけを許す。CI log は `candidateContentId`、`evaluationId`、artifact digest
-および `outcome` だけを出せる。
+だけを許す。候補 command と worker 自身は失敗時の stdout と stderr を空に保つ。
+CI log は `candidateContentId`、`evaluationId`、artifact digest および `outcome` に
+加えて、process 実行器が機械的に付加する ASCII の `exit status {code}` だけを
+出せる。`code` は候補 command が返せる閉じた非零終了 code に限る。本規定は
+その値と段階の意味を定義せず、段階名、内部原因本文、child の前行または file 内容を
+追加しない。
 
 ## 確認
 
@@ -986,5 +990,6 @@ failed の両方を走査し、一件の digest 衝突でも fail-closed とな�
 - [SOT-ENG-027: 省資源の段階的検証](27-resource-aware-verification-stages.md)
 - [SOT-ENG-033: 統合照会 profile set 採用 manifest](33-unified-query-profile-set-adoption-manifest.md)
 - [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)
+- [SOT-ENG-040: 候補 holdout 評価の閉じた失敗段階診断](40-candidate-evaluation-failure-diagnostics.md)
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)

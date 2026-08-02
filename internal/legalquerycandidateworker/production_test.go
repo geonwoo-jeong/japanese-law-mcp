@@ -2,13 +2,29 @@ package legalquerycandidateworker
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval"
 )
 
+func TestReport直列化失敗はReport完成前の段階に分類する(t *testing.T) {
+	t.Parallel()
+
+	_, err := encodeCandidateReport(
+		legalqueryeval.StandardReport{},
+		func(any) ([]byte, error) {
+			return nil, errors.New("report encode failure")
+		},
+	)
+	if code := FailureExitCode(err); code != FailureCodeReportBinding {
+		t.Fatalf("candidate-evaluation-report-completion-boundary: report encode code=%d, want %d", code, FailureCodeReportBinding)
+	}
+}
+
 func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じる(t *testing.T) {
-	const expectedEvaluationID = "evaluation-sha256-2f8790cd9a969372660571031ed00069565443521ca840cdce9ef86fb1290c42"
+	const expectedEvaluationID = "evaluation-sha256-c53a7d0d28ef35bd2aab081680c1112b6aee9e649f19fb789ec2f0e0e35a4a87"
 	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
 	if err != nil {
 		t.Fatalf("production candidate を準備できません: %v", err)
@@ -19,8 +35,8 @@ func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じ
 		prepared.repository != "../.." {
 		t.Fatal("production preparation payload の identity が不正です")
 	}
-	if prepared.request.CorpusVersion != "corpus-v11" ||
-		prepared.request.BaselineVersion != "default-4" {
+	if prepared.request.CorpusVersion != "corpus-v12" ||
+		prepared.request.BaselineVersion != "default-5" {
 		t.Fatalf("production preparation request が後続予約と一致しません: %#v", prepared.request)
 	}
 	if prepared.tracked != nil || len(prepared.trackedRaw) != 0 ||

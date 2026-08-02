@@ -13,8 +13,6 @@ const (
 	FailureCodeResultDecode   = 17
 	FailureCodeHandoffWrite   = 18
 	FailureCodeTrackedReplay  = 19
-	FailureCodeHandoffRead    = 20
-	FailureCodeWorkerSpawn    = 21
 	FailureCodeUnknown        = 22
 )
 
@@ -61,9 +59,10 @@ func FailureExitCode(err error) int {
 			return code
 		}
 	}
-	return 1
+	return FailureCodeUnknown
 }
 
 func isFailureExitCode(code int) bool {
-	return code >= FailureCodePreparedLoad && code <= FailureCodeUnknown
+	return (code >= FailureCodePreparedLoad && code <= FailureCodeTrackedReplay) ||
+		code == FailureCodeUnknown
 }

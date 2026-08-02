@@ -46,6 +46,8 @@ type Dependencies struct {
 	Accept   func([]byte) (bool, error)
 }
 
+type documentEncoder func(any) ([]byte, error)
+
 // Handoff は log へ出せる artifact identity だけを保持する。
 type Handoff struct {
 	EvaluationID string
@@ -85,7 +87,7 @@ func Run(ctx context.Context, input Input, dependencies Dependencies) (Handoff, 
 	}
 	if len(reportRaw) == 0 || len(reportRaw) > maximumReportBytes {
 		return Handoff{}, wrapFailure(
-			FailureCodeEvaluateBuild,
+			FailureCodeReportBinding,
 			fmt.Errorf("候補評価 report の size が上限外です"),
 		)
 	}
@@ -123,15 +125,12 @@ func Run(ctx context.Context, input Input, dependencies Dependencies) (Handoff, 
 			)
 		}
 	}
-	resultRaw, err := legalquerycandidateeval.MarshalCanonicalJSON(result)
+	resultRaw, err := encodeEvaluationResult(
+		result,
+		legalquerycandidateeval.MarshalCanonicalJSON,
+	)
 	if err != nil {
-		return Handoff{}, wrapFailure(FailureCodeResultEncode, err)
-	}
-	if len(resultRaw) > maximumResultBytes {
-		return Handoff{}, wrapFailure(
-			FailureCodeResultEncode,
-			fmt.Errorf("候補評価 result の size が上限外です"),
-		)
+		return Handoff{}, err
 	}
 	if _, err := legalquerycandidateeval.DecodeEvaluationResult(resultRaw); err != nil {
 		return Handoff{}, wrapFailure(
@@ -151,6 +150,29 @@ func Run(ctx context.Context, input Input, dependencies Dependencies) (Handoff, 
 		ReportSHA256: result.ReportSHA256,
 		ResultSHA256: legalquerycandidateeval.RawSHA256(resultRaw),
 	}, nil
+}
+
+func encodeEvaluationResult(
+	result legalquerycandidateeval.EvaluationResult,
+	encode documentEncoder,
+) ([]byte, error) {
+	if encode == nil {
+		return nil, wrapFailure(
+			FailureCodeResultEncode,
+			fmt.Errorf("候補評価 result encoder がありません"),
+		)
+	}
+	resultRaw, err := encode(result)
+	if err != nil {
+		return nil, wrapFailure(FailureCodeResultEncode, err)
+	}
+	if len(resultRaw) > maximumResultBytes {
+		return nil, wrapFailure(
+			FailureCodeResultEncode,
+			fmt.Errorf("候補評価 result の size が上限外です"),
+		)
+	}
+	return resultRaw, nil
 }
 
 func validateRunBoundary(ctx context.Context, input Input, dependencies Dependencies) error {

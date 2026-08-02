@@ -165,14 +165,30 @@ func evaluatePreparedCandidate(
 			fmt.Errorf("candidate report identity が request と一致しません"),
 		)
 	}
-	raw, err := json.Marshal(report)
+	return encodeCandidateReport(report, json.Marshal)
+}
+
+func encodeCandidateReport(
+	report legalqueryeval.StandardReport,
+	encode documentEncoder,
+) ([]byte, error) {
+	if encode == nil {
+		return nil, wrapFailure(
+			FailureCodeReportBinding,
+			fmt.Errorf("candidate report encoder がありません"),
+		)
+	}
+	raw, err := encode(report)
 	if err != nil {
 		return nil, wrapFailure(
-			FailureCodeResultEncode,
+			FailureCodeReportBinding,
 			fmt.Errorf("candidate report を canonical JSON にできません: %w", err),
 		)
 	}
-	return append(raw, '\n'), nil
+	result := make([]byte, len(raw)+1)
+	copy(result, raw)
+	result[len(raw)] = '\n'
+	return result, nil
 }
 
 func verifyCandidatePlanningIdentity(
