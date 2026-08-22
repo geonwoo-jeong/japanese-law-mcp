@@ -86,7 +86,7 @@ jobs:
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           # 製品モジュールの最小バージョンは上げず、CI の実行環境だけをパッチ版まで固定する。
-          go-version: "1.26.5"
+          go-version: "1.26.7"
           check-latest: false
           cache: true
           cache-dependency-path: |
@@ -98,9 +98,9 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .git/japanese-law-mcp-quality-cache
-          key: ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.5-${{ hashFiles('go.sum', 'tools/go.sum', 'tools/gitleaks/go.sum', '.golangci.yml') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.7-${{ hashFiles('go.sum', 'tools/go.sum', 'tools/gitleaks/go.sum', '.golangci.yml') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.5-
+            ${{ runner.os }}-${{ runner.arch }}-quality-go1.26.7-
 
       - name: pull request のプロバイダー追加適合性を検証する
         if: github.event_name == 'pull_request'

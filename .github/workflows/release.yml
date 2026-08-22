@@ -190,7 +190,7 @@ jobs:
       - name: Go を設定する
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26.5"
+          go-version: "1.26.7"
           check-latest: false
           cache: true
           cache-dependency-path: |
@@ -323,7 +323,7 @@ jobs:
       - name: Go を設定する
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26.5"
+          go-version: "1.26.7"
           check-latest: false
           cache: true
           cache-dependency-path: go.sum
@@ -380,7 +380,7 @@ jobs:
       - name: Go を設定する
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26.5"
+          go-version: "1.26.7"
           check-latest: false
           cache: true
           cache-dependency-path: go.sum

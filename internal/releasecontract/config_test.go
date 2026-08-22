@@ -20,6 +20,7 @@ const (
 	uploadArtifact      = "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
 	downloadAction      = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
 	releasePleaseAction = "googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7"
+	releaseGoVersion    = "1.26.7"
 )
 
 // SOT-DEL-010/SOT-DEL-004: 公式 archive の対象、内容、版および生成元を固定する。
@@ -276,7 +277,7 @@ func assertPackageJob(t *testing.T, job workflowJob) {
 		t.Fatalf("checkout inputs = %#v", checkout.With)
 	}
 	setup := requireActionStep(t, job.Steps, setupGoAction)
-	if setup.With["go-version"] != "1.26.5" {
+	if setup.With["go-version"] != releaseGoVersion {
 		t.Fatalf("Go version = %#v", setup.With["go-version"])
 	}
 	releaser := requireActionStep(t, job.Steps, goReleaser)
@@ -344,7 +345,10 @@ func assertSmokeJob(t *testing.T, job workflowJob) {
 	if checkout.With["ref"] != "${{ needs.package.outputs.sha }}" {
 		t.Fatalf("smoke checkout inputs = %#v", checkout.With)
 	}
-	requireActionStep(t, job.Steps, setupGoAction)
+	setup := requireActionStep(t, job.Steps, setupGoAction)
+	if setup.With["go-version"] != releaseGoVersion {
+		t.Fatalf("smoke の Go version = %#v", setup.With["go-version"])
+	}
 	download := requireActionStep(t, job.Steps, downloadAction)
 	if download.With["name"] != "release-dist-${{ needs.package.outputs.sha }}" {
 		t.Fatalf("smoke が取得する artifact 名 = %#v", download.With["name"])
@@ -383,7 +387,7 @@ func assertPublishJob(t *testing.T, job workflowJob) {
 		t.Fatalf("publish checkout inputs = %#v", checkout.With)
 	}
 	setup := requireActionStep(t, job.Steps, setupGoAction)
-	if setup.With["go-version"] != "1.26.5" {
+	if setup.With["go-version"] != releaseGoVersion {
 		t.Fatalf("publish の Go version = %#v", setup.With["go-version"])
 	}
 	if job.Env["RELEASE_UPLOAD_URL"] != "${{ needs.package.outputs.upload-url }}" {
