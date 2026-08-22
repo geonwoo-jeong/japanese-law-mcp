@@ -57,6 +57,7 @@ func validateExactCandidateDirectory(t *testing.T, environmentName, path string)
 	if !filepath.IsAbs(path) || filepath.Clean(path) != path {
 		t.Fatalf("候補再現用の %s は正規化済み絶対 path でなければなりません", environmentName)
 	}
+	//nolint:gosec // SOT-ENG-020/038: CI が固定した正規化済み絶対 path 自体を検証する。
 	information, err := os.Lstat(path)
 	if err != nil {
 		t.Fatalf("候補再現用の %s を検証できません", environmentName)
@@ -73,6 +74,7 @@ func validateExactCandidateDirectory(t *testing.T, environmentName, path string)
 
 func validateExactCandidateGoBinary(t *testing.T, path string) string {
 	t.Helper()
+	//nolint:gosec // SOT-ENG-020/038: 検証済み GOROOT 配下の固定 executable だけを確認する。
 	information, err := os.Lstat(path)
 	if err != nil {
 		t.Fatal("候補再現用の Go executable を検証できません")

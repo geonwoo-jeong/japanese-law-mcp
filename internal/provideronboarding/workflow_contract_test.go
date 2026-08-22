@@ -113,7 +113,7 @@ func TestQualityWorkflowUsesPatchedGoToolchain(t *testing.T) {
 	candidateIndex := qualityStepIndex(verify.Steps, "candidate-go")
 	recordIndex := qualityStepIndex(verify.Steps, "record-candidate-go")
 	primaryIndex := qualityStepIndex(verify.Steps, "primary-go")
-	if !(candidateIndex < recordIndex && recordIndex < primaryIndex) {
+	if candidateIndex >= recordIndex || recordIndex >= primaryIndex {
 		t.Fatalf(
 			"候補再現用 Go の準備順 = candidate %d, record %d, primary %d",
 			candidateIndex,
@@ -169,7 +169,7 @@ func TestCandidateWorkflowSeparatesBootstrapAndExactToolchains(t *testing.T) {
 	moduleIndex := qualityNamedStepIndex(job.Steps, "固定 module archive を準備する")
 	exactIndex := qualityStepIndex(job.Steps, "candidate-go")
 	commandIndex := qualityNamedStepIndex(job.Steps, "閉じた候補評価 command を実行する")
-	if !(bootstrapIndex < moduleIndex && moduleIndex < exactIndex && exactIndex < commandIndex) {
+	if bootstrapIndex >= moduleIndex || moduleIndex >= exactIndex || exactIndex >= commandIndex {
 		t.Fatalf(
 			"候補評価の toolchain 順序 = bootstrap %d, module %d, exact %d, command %d",
 			bootstrapIndex,
