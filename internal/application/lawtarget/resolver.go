@@ -74,8 +74,8 @@ func (r PreprocessResolver) Resolve(
 	if isNilPreprocessor(r.preprocessor) || r.direct == nil {
 		return ResolvedLawTarget{}, false, fmt.Errorf("法令対象 resolver は初期化されていません")
 	}
-	request, err := legalquery.NewRequest(legalquery.RequestValues{Query: query})
-	if err != nil {
+	request, compatible := preprocessRequest(query)
+	if !compatible {
 		// search_laws と統合照会では空白の扱いが異なる。統合照会用 request に
 		// 変換できない公開検索語も、対象なしとして原検索へ渡す。
 		return ResolvedLawTarget{}, false, nil
@@ -111,6 +111,11 @@ func (r PreprocessResolver) Resolve(
 		return ResolvedLawTarget{}, false, err
 	}
 	return target, true, nil
+}
+
+func preprocessRequest(query string) (legalquery.Request, bool) {
+	request, err := legalquery.NewRequest(legalquery.RequestValues{Query: query})
+	return request, err == nil
 }
 
 // ResolveLogicalInput は、Kagome を再実行せず辞書全体との直接照合だけを行う。
