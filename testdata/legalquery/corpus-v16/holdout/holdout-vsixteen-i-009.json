@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-009",
+  "leakageGroupId": "lqg-consumer-contract-solicitation-paragraph",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "消費者契約法第4条第3項を条文で読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "paragraph-read",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "412AC0000000061",
+              "location": {
+                "provision": "main",
+                "articleNumber": "4",
+                "paragraphNumber": 3
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "paragraph-read"
+    ]
+  }
+}

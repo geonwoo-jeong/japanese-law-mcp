@@ -1,0 +1,74 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-017",
+  "leakageGroupId": "lqg-public-record-disclosure-ref-and-search",
+  "coverageIds": [
+    "intent-judicial-decision-read",
+    "intent-judicial-decision-search"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "参照した裁判例本文を読み、「公文書の非公開処分」を扱う裁判例も探してください。",
+    "ref": {
+      "providerId": "courts-hanrei-html",
+      "key": {
+        "sourceId": "courts-hanrei",
+        "resourceType": "judicial-decision",
+        "resourceId": "90755/detail2"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "ref-read-and-search",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "90755/detail2"
+                }
+              }
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "公文書の非公開処分"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "ref-read-and-search"
+    ]
+  }
+}

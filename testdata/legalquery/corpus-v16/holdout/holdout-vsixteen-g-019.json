@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-g-019",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "employees-pension-insurance-law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "厚生年金保険法"
+            }
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "employees-pension-insurance-law-search"
+    ]
+  },
+  "leakageGroupId": "lqg-law-title-employees-pension-insurance-search",
+  "request": {
+    "query": "一覧の「厚生年金 保険法」に対応する法令を検索してください。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,46 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-023",
+  "coverageIds": [
+    "intent-law-read",
+    "reference-law-id"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "417AC0000000086"
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  },
+  "leakageGroupId": "lqg-companies-act-identifier-read",
+  "request": {
+    "query": "法令ID 417AC0000000086 の法律を読んでください。"
+  },
+  "schemaVersion": 2
+}

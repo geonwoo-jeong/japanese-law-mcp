@@ -1,0 +1,1454 @@
+{
+  "artifactKind": "corpus_manifest",
+  "schemaVersion": 2,
+  "corpusVersion": "corpus-v16",
+  "seed": 20260806,
+  "holdoutDigest": "631be140c72f3837274a0120df5c68c817c826c277d046743e678e74d606d0e2",
+  "holdoutLeakageGroupDigests": [
+    "0104ba8027a6a4b102a1219b8d9098c388249158d332cd1d1d607673f991532a",
+    "0109a1f24b7a1ec8f58696d0998ebd38842a79af1403e85d7c6c2de6056f9178",
+    "01446f26400d9a4428ea32ab94ff3c678c35b8e431e31a8b345a21d0c856f9bb",
+    "0194a0792b7fe710216b0a7b4bb6a76d3bda18fe92f52e5a875a05854143cb44",
+    "02a6a7459f54a3b74d8f17b96ccfbfce5faa9353039094b28357fe3b8cd63729",
+    "0471655531005209b5cab221d9533f5dece2fa4579e0213d62b82c020e23db49",
+    "04da4adf1b8f9ea87002cf09629e55089b606d74d92dbbe744c0a1ed4f9abec3",
+    "04dfeed4d738de4721bc2a21ddd9eaed5237472ce28f0bd3a6c75fbacd321b19",
+    "0522bd11e30d3754b46ed023b93bd303ae8e844a4cea78a4e63f7deb6e32d69f",
+    "05248ebae1529879ad3259e410cfc287c2f1ed065ebbbfb56614ab7a7bd4872a",
+    "06aa613802460181720a544787c7c4c2affc99110a276b45384ed18968aad3e2",
+    "06ab4df8a8dbf189c314fc2cbc1f45af6522830dd0ec49c5b0d47094d440e352",
+    "0849b8f9fea5dbb6ecdab3ef2d08281c1ab0322bf0b573e02800191452ed843b",
+    "086609016a56a42539b00d386b60b39828ee934357a1d67136b76f19a219cf42",
+    "0a42fab5a78aca6d20d9f5e1db79732424c4dacad34a8408c6818cca936c73ac",
+    "0a67748d5c1d963e8855354c5d3db5b2ef6ee31deef3c7ada3285d76839472fc",
+    "0c36186ed48a4d5d210ffae3051fd4341de3b3465b7319196ec5c319bee39768",
+    "0d14130f4718c152022c0c6ad3cad3aeaa933b5c24dedff99f1497145ccbdde5",
+    "0e940295570e26a0a2b795adf4272df01550f88e391410313a3cbcbef9e1ae86",
+    "0e9a79b613ff1b78a1a571af02c8f9e5a6d2ac18291f95439ed83eeee512f46d",
+    "0eb0123f78ee27cd58beba723593cc942754aaa82a3c04b4e93630e55abeedc5",
+    "0efe03029e8444a1facb6825e40938279cbe01b977aadc42596965a02f35b18f",
+    "0f574d58b4512b20023bb07eae5a2b3193ff4bd4621a8e1efcf4cb194b0a11eb",
+    "0fd94125dc4752d92fab7ff4683649ea06d359b000a7d08190edb8feccd06275",
+    "107274a14c4bb28fc25db2924fe07f78513b0b848ebdc887bab74c2beaaf0ccc",
+    "11eec3c3d3a0a35b38d4e4477b4524d5ae357596a7c177a6e4f698de654397ef",
+    "131f3b70cbd7de0def6b5ed39613e5a640aa430062a0008aca70824363015433",
+    "15109e3ae23c38a90a17a038f36e8d993a172d673dd4549c7f5f138e494bcafb",
+    "169cc49f29b23500f7bd652d0ea50e4e2cc66283bbf09e6c911f1450891431fb",
+    "16d803266395f4990659f80264e67567ff9f503d6c3708e1413f9717ccf3186e",
+    "18397434718daf6d763498c0dd928a87dda5f80da7a46333c46218269bbe2a81",
+    "187c1f54e0087a213f3864e3524b2f777e8025ab5f609db194f9d3098c03e7a8",
+    "1934cc4e5dad9e822c16d88dd6da3fcd13d56a1f0dddf04a638be8e47771d201",
+    "1a63254df5e86cc2355d78b0c9c8a74e9ef4d674a07832d532a9a2177d9dfc5b",
+    "1aaaf7043c2b1d2cae2dd6f54006fb02aca2180b9bfe7e16176101ec3e409db2",
+    "1b5d2fa9df93999261f31ef357eedb5d29b8f1b5afcf91bd098df6e63a1441a0",
+    "1befa9761896f51ab52bb8bbbc7d3be7d50d78ddbee8fbff8977042229870dd1",
+    "1f03451bc0330ed54db3d320b139e7e74db4ad36b3b6297ab086d0e4ab67d304",
+    "1f27f9fc83247af7a198ba2a69cd0bb3b2fc1c839ec6c9cf35fb499e2aeba0f2",
+    "1f480c165cf7da5d63036119459d231d487e9c80a8c3da4ff547f7806682c8e3",
+    "1f95d2ee72dd83ecddaffb2d73e293e4f9ebfa454ec5f880dfc6f5d748805760",
+    "2025b300d43674d59cc61639bba2bb51f7228433b9215e7ad5455032b063091b",
+    "2053a4a4bfd54868d15da924f02d2016089bb3d71198cfa9e50b9b05e88d02a0",
+    "2263f5f85e1d11e49946324a79af54b7e648fd2cf5b57d53840678ee89e986e5",
+    "23b601b649f433beef1de478812d738b051e8834c327f848e9de54cb2c989d80",
+    "25bbf4b6f41f7ee42e6587f423a7cfd135415b4ba4d5e2eebaa367bbcd7e3923",
+    "29218d73892cd17083eedb3e9e48f979993ef41211182de388b0ba3a13eabeba",
+    "29f4a0a311862df1748d503c3ebdef7e770fac6b8013440049cdf9c2927f9eb7",
+    "2a87b8404548524d230c8ea66c73d28670e6f83e36c8241a9825cf8a959df80a",
+    "2c03a6d4b33040b429276a02ad7a69c6d9f100021c15241b05eb9c87f8c18a8e",
+    "2c0c5f44f7558099a60441d88bf1959170cf4babe9ad53e4b834685a3e006564",
+    "2c6f517154415fecdf98dac640d314869f5ed60cb6c9d55c9eb7de69b25d22c3",
+    "2cb9aa0a39062c3849cb75067ae3a3f3b7a2311824ec6659386d0aad3a9be547",
+    "2cb9c5b78b11fbd8d521939ef1ab3926e1dbae3ecc649325861d28ad79dadb79",
+    "2d0fc565e05972d53a19fc712d700b3e98d29d885e84f2edb70803f38c5ba79b",
+    "306cdf60c89a6e726bf81d4c2fd3ef52f33abdf55c3b8fd3bd23172c200e2f39",
+    "30ca30d4b74bad6c8136b8dabda621ec78361151feba861bae4cb276fcd420c2",
+    "3170402b907618c7ef8f6348cf0218ae701135cec7f836ab2cb7a93b407badc4",
+    "33071f2faf27849e46941a5b1b439f9dd2fd4b625f7a24993712c221fb05ee61",
+    "3362aa257a219ddaeb8171fe6e3c1fd776124edece7f08aa80c1df5a732f7804",
+    "33f93656f94f6d550437f8046c7ee4ca29a3e80d265821fc2520483455dd9274",
+    "35fe4da6650586433437c050f7c2417e17cc66b9784f5c01b4385dc2f9aa5b0e",
+    "3700089c80f52b72cc93a58056b36e25a2e7c75b79240da0a595822c0677a14d",
+    "37caf61f2654ad69545a4d62397a0e74e674f4cb05752f07bb2452666d6b9ce0",
+    "38beb6f08977758f6ee73ec9964de0ded24f885cfa846576549cf877ea127bec",
+    "398d487776c8ba2eb6099a05785b5df70a971f223919abc105774a64c2db9bb3",
+    "39eedac44b0ab2de93e597cd61e77b088e1c2ef63732805b604283f819487beb",
+    "3a696270a280c97402b87239f0e69ec088c4ac43d90ad82b5f19d9650a7fdcc6",
+    "3afcd2c802f45bc2a8cfdaa567f59c0a2787d02faab48febd1edee45736d242c",
+    "3b0fab9ec7277a366f26ab1d77eb775c32e788d3edda06f0469d77ccf7eb82fb",
+    "3d52a72f92352dec503de7019410d70429cd6d04b2afd115fe896cf84e3bca52",
+    "40d03c6fb217c02aea5ea1e105429e2fb35ba10b588046f928774e4960ae0463",
+    "42d4643c0e519b9a4a8f8cf103afde122268705028e1f4a83e18006e79913cf7",
+    "4441784c8fcb3d9f1dadb501b20df65d8bdf030c74c05f02ae4c39105ba13646",
+    "44a5906323124d01f1b913c2a09e840efb8094d6236bc4ab042657fa27d50d22",
+    "452381b9e79bda3d1e5f897fe7ee6c1a7bfbfbdc7b90ebe13200210848e303ff",
+    "465ff78e6ef1ce2b22fbc0f9308df9c8417f5be44eaa3738cf63e7cb390f764f",
+    "486d781404ce6873edc2b2bd212a33e6e38a6d1f2298d1631fe6738b10253fa6",
+    "489971d0c6e077d2a861fc61c310ed6c94a8cee777d274c1fbaccdafa394a3ad",
+    "499dba5106220e1b34fcc0776be7084910c04be59821334ad3d8a0028c39396e",
+    "49e9b627c99bb1376cf4160717b53629e57644a9e3bb025491a09d34a744ec0d",
+    "4a85ed681059347384ee72c088d32249d922aa651ef8a006bf0513fe3298bcee",
+    "4ad142f2bc8e7763cba6563fc0cb0cbbd1573e6f67b814222419ab8442e8154f",
+    "4c2a36e26bb8b75328c0b4aec79201750cf507926f4c29ff35a5139330794af0",
+    "4dd48cce0bea09ffc9957c33848217d44e9f16a0bc7ad2bd7a98b181091a9a4e",
+    "4e7db616f18ed3a256670cb7367d11f48d74eaa0897249fca8409f4340cc890b",
+    "4ff9d8d260018de02352a32aa4e6d498ebcbee2a736350c91c9623304ca2bb2f",
+    "514cb488406dc3e4cb7d8b9ca1c5fccc9c82ede6b224613cd8ec36543d5d9621",
+    "536d3fe396062f96278f3424b33618c045d0e988f9455492d786d2b160de0694",
+    "5373378501122e5ec37b5c60bb9bba52009c51259cc27a736b59e69bd76c3f99",
+    "55521cc166f400515d65e6733fc734e640a2cd4ce67c69462713c1bbf4a7c876",
+    "5674d369b7ffba6d4e60f8f8960a88aa485fe3ce047dc98f1d646dbff3b0217c",
+    "575d806873a795c58b983491b20a72c224ccc5c5c4caa0d8c7cad8b0a7ef212d",
+    "5773bb60ed5a4dbff55f68df552b2de51eb5a048a326958d828908e1d375d6ae",
+    "579e6a806e184ce1feb14daffd804059b5bf9d6797011eb42bc85bb64bb6ddfd",
+    "585ea85a727256cc79b27243734c01668f29829c88b9b95d26179b4650ff27b5",
+    "58846b6268e09f98df0f372abae85fa36270b876568e91a1b231067051e98eb5",
+    "5a2295e10f6b3a24eabf38bb76498002f119e17bead1e02b54c73fff800c63d3",
+    "5a2cc287bb1c9a5cffe25e360affcfcb6497f97f8dc3b49d3d782a8cc885d10e",
+    "5bccf51083968f8625555b48aad09ddfc354356ff08b1f266e07f50c245dd373",
+    "5bcd12f04dd25b472d53f3c879795ea9313f0a23b09c0085fb7418ff289b763d",
+    "5bdccc6cafeb873859bf3f96b3e42f3884319a9705cb0c4475a426bafc345de0",
+    "5c056eccda9cfd5f479c1089f0ee923e37a0958e1f650b8b52ea2c38af5c679b",
+    "5dc44f135146d17ea63fd3dd0afd57dea85b7408dc1a59bbda163435f16d123f",
+    "5f2e431cae6d42c65b98a6db86c63c8faedb86e110643c93dcd89c0da9c1e13b",
+    "5fd960d05e2fff76383e1e76950ef73cc6869e1bccbaa3f73b4062a922c07dae",
+    "615b385cf813637dc49458366f49abe68f82dce3efc377dc48df577b189d27c5",
+    "6232c1744040d2e1f9d457462250d894ab6d32a4d6f70f77e8e2d67fc509ae91",
+    "630740c1355279dc04a778ab7f8e47643fe74d3d8ecdc194060e108ec67debe5",
+    "63d666cc3bae1019d2e5ee5d1b8d21968c0343dbd78ee523233b7b93bb7b0742",
+    "64341c0c3abe07dddee55cd783617044d0294284e62e39a833fcfe6c9a3f465e",
+    "669e4e7f02083620849facfae6b592a0cbce7f4d57b473042c0d112ea507557f",
+    "6bbf41062e35740d41643bf8e813977228f642569cc4081e5c29dc75bd153b6f",
+    "6f24f1833416221e66d8371bbd8e1fa3cafbb1971b9af7ac15816c99b944c244",
+    "71d851c8d7c84df6e0df52f438ee0d743cf974f70712177aebc24457e0e11272",
+    "71fdc5092e356c4ec61180bed6076ff75ec2728775d3452be57c835ef8395989",
+    "775dd94e6c02f26648c1d32a1fa53ea1bc012e288954e0d6b591bc73db21db6a",
+    "7bd5d9ba23147f0684b01f25e2edd47c1a372f5c1c3dfe4f710cf542f79868d1",
+    "7bfa93a5baffa1a6e33247f4391a433d15e51beffb4d822084fba6a1ed8e5d4a",
+    "7c24a87956bc30a1bdaa2b3fd246324e52a8f9ab0ef05b759cf1cd0761c0d279",
+    "7c7c402ef4755aa3d0f475a29bcbf2b706a288c86434c04d4c73e06d040306cc",
+    "7c901a1373fe2c354d19f3d6df7ddb724bc46907182876e6d92e4503183fd133",
+    "7dfaaa8e613b4dd9027395afd1e1dfb28085bcd6a0cebf54acfc657bc7b4ed74",
+    "7e2625ae620e6e8019efd0a5b20024bd77d1eaec3feec426af8f8d33e12b4992",
+    "7f085e841f33a693880330dc8cc96c91fb31578a994f98680a2f00f0dca4bd1b",
+    "7f2b9e9ef86e467af9bec98e52f9487b8b3f95e23178716d2da97599152ef6b3",
+    "7f2e5816b00c62a4cffcdecbe233acefa32f11e1ad41b6ed7b186aa6803c1edd",
+    "7f42888912c04d0aafb8ef9eb3d461b23e1da909773690e4ea838a97ab1dc61e",
+    "80f582e11254db696e15fee9bd282104e2c377edf813782b224a6ecc799244d4",
+    "831e1aef1f2010ca644bd689480ba005e5834418267b3e5ba8f7417cd7d407b5",
+    "84c719875a8072badc571dc43765ba8a9f0536f110d3a5370123b663596387ca",
+    "85f74a2d3a72fa2e5b35cc884490e3acb4e7ceea9376548a21b77eb799c69675",
+    "89baddbadcff0a8e6b01f9c9ea8c6178237558b06106361780da09e4d13b85c3",
+    "8aa1bff339dd960c559f68ef0a03b9d5c8004226cbc9ed859f6f86125856427c",
+    "8b1e3b358de0066cb1f3ed0abe98491cc49a3355595a2857b0092c6e05cf10b7",
+    "8c407b4ddc07107bbc2ea7f3dcde6be0c5be8dfa531e85e2ebe9c36701a94d44",
+    "8c56e695506706a66e4b5f781de66c337c65aa0c113cdc25628fe8c748e25a09",
+    "8e400a4c486c6e6dc7007153402cb0278ae33de44222a7da58274bd041eb6d0e",
+    "8eb022530c9167537b8e93169f42e18f807b224fabc0a9b4ee17c7a89792185e",
+    "90fa372da4d845d8d76dbdbfed000f0a8b66428f1c4cf9723886b2ab597aa47e",
+    "9155b531e48048c8691acd20faf66781323508856f675ed6041121dcea008a82",
+    "94c713f618335c81b05eba6d3b9ccaa97c4a2288e17f28ae5f2538dff99a891c",
+    "95c7f96f1908e12a7593e185bfeca3f543a9dc04745d1211b24a1f5c4bd8e5ab",
+    "97c9970bfd2801844ffdc6f980108c1f1e70e442c3bf63b65ab05d9f0689e435",
+    "9afb8f8b442d7d50506d94594f17eb2fb1c382af29928becaac6f896bbaf8029",
+    "9b129f243e4b4b65be96211d75d78e3c1930877e571598d55e43e4720afe2e47",
+    "9ce8c56cb97e13387a9b1d8eff7947d39a11310061055a3a974fa08ba87742bb",
+    "9e6d5f1c37a7e48fc19876f20f52ad3a4c56ca3fdcac0953dddc47f44b62156c",
+    "9ea179a3e320fd2d631ff49dfa5ac34a2f4444a5edb279977fbd98511c346ee5",
+    "a02a2b7da46a7ec386039de3b7bc3dd21ee3a6603c644a77358b6d395058670e",
+    "a04ab0d67dbddae1f2249401d8cf690166ce56fbc24e271ada021379aff9da93",
+    "a079a94f6a348a4d6725609b062a92eca3bb072f7e5ac84d38a0e2e119c6cef0",
+    "a0cce1ebec5fe69bd419bf5ca32e06cd6ae59fd9ba0208793b1b88fa467d6407",
+    "a2825593516e8040376767f485533dc4fe2f10b1eac1055e02e82d4bc8afc1cd",
+    "a4b422c497754ad388113830804daacfe3b324c50d98dd03e3cc807682efb558",
+    "a4d0b53fe1167e557504936b6c77d0492ac42a73e257dd640f7524bf7af8dd5e",
+    "a5b4377ef93a3ffff0dc8319357e0642985b90de3d5c4806ca32804dd6b0c0c4",
+    "a5d6c8531831dd6b311bde0d5084ad6b9f36bd093cf546fe13deaf121d6efcb7",
+    "a7a166d607ebaa302bbe61b40d3bd9fec32b670fe3e21849ecd9e5c005c47471",
+    "a87125cd18402d04a3177af115dd5c56fb51c7ed4b2f063fbf46ea4bb309c631",
+    "aa8e71f6e5d26c3e84e2beb8b945d615aa213d6e9bb0919575edfadbf25cb18c",
+    "aad9104a9a22add6bab9d99fa561e5fccc9820151d2e6fe50deb89f08e9d4cd3",
+    "ac44c9aa250b27a9b8d063e692c1da885d0956e5e7acf32a63d2d11ab86c47b3",
+    "ad0d91273cdf24dfc539383c4194ec234b33800eee69219a874ef88dfb2b3067",
+    "aefb2403e84527dd8cb353303655da846a7ac5fa89a3ffb90ff28b2034880266",
+    "af0d16e5a0918b024806faa0e1c925599e8db2790ba5499abfb328e7134760b5",
+    "b11e5ad6e1f10dabe1b91669dca1c00d320062d77ea2f2704174032c5c3fd516",
+    "b1c056a06f5985a47ca7dd425a4caa0904775e2b1106acda4287353091813f26",
+    "b324095d82e0333f6f184d415c642abe1f5763e157602b9e6960fe9a0b548926",
+    "b379376f00fec12a021b2eb954659fbfe06c28437c83254c5073145eaae46ee8",
+    "b44d91b4b5823f5af5690893cb4950c60c34b716eabcb86ad9170cd6df1dbe1d",
+    "b4c819b9c2ace042f17bf46be395d502ed340c080090d447763a9d4406d8bf83",
+    "b4e0e24575386a7ad1f0210b1d7e1f12f3053a81be2176180b58c3b1d1306bae",
+    "b51b1e918abaed8db7b76cfc8ffc2dcada4bbc65f88de8f1a61e7ee3a1142c87",
+    "b76df4b1f8e7d8eb0b0893cd738fcb315fec46b9d8a66631bf237d62ca301559",
+    "b894f7db8f4cfa30c3bfc0a859fee5717102c942032007f55252bf24a7156137",
+    "bb517a95f0aa89029e06f8109a2273ee569b0d07df3b54a941e468eb9186674b",
+    "bfcb287e310552bc107ff18305387e1f94b4ef81ec1d110cf3fef53ceea76f58",
+    "bfef696511b1732d0a0adb19df80699e319610dca2a1cfbe913fb0c7ea087e58",
+    "c35e42185fc737fa7e998506e26ce4fc5bd405d0e020e0f44caaabed70b88c5e",
+    "c42d235cad8e8e34e0507e3835814f13214f3f781aef9ef484c4520b8d69a961",
+    "c4d10aa9a37bc332a4295d4ad504e4d348450a14592a36f1f567d758d21e2a29",
+    "c5d57c6ae1a4c63024012d0a8024782df73e8d45d0ef18d23d3df563906f8f09",
+    "c6e466a8b38c22a4a893eabbfbf7768a5b4291d7eab55cd5dc0d57a18c59eb52",
+    "cc1191b1ba18daa4f3ebbe671ce805649c2676e3d80ddf24df53e8bd056da1b7",
+    "cc3d00b66f1574cb8e7d3a414048957201fa3b79c9045e261b6c908b3b4cda08",
+    "cd6a53bdd7b15719b8921efded7d18a0cdd99000f235c3ef77af9e5a0606a72e",
+    "cd87facf7d11e07b4c8f91e98213e1bdd8cb8b4032c8cc99a6f08f14afa85207",
+    "d08fe1fc04bc0b689c9f571f23cb33400517bc4afcf0f969630de92279b13fe2",
+    "d0e76f7c4f1b5b445ecc3105462e1bad9142a151c64accc251d34e032b46aeea",
+    "d2f71a66a6d44851a667766bf176b311c9e651a78f0aeac52da061cc01bfcbe7",
+    "d42fa31a75b79c02d06b041b71877be96a7b1e9cf5b070ce0f5afa7c90cc66de",
+    "d6378aeb017f5130e43028241afe8407ef37df2700ec1ee486cc1dadffb5746f",
+    "d8b17223a510ae42f78e9534e60c28da245f38586788f56f3c582951e0068f4b",
+    "d8df30c9e538ef1ef776f091871cebe2f284afd79a62291f252cada7a30e3132",
+    "da3e92f7b40caf219d0722b43678b3b916847663a7be3e91c213274443cd9c49",
+    "daf9a3aa5efa31570c718a7e42aa6e798417c945ec0de4886691bc6d1281f6fa",
+    "dc6862f8ec4adc08f0ba6abafff5741c48c290146b24dd0c0f192f4d9ba5082b",
+    "ddaa357b1086055267637b9629720761db19b6644d2d277e75ab49447780070e",
+    "de108c7dd238e6de1a126ca18a6248f96c4eb6f0000bde1d05f14ca3463f99af",
+    "df7a3d92500e4baf932b60f250af15add3dc594fb3d9654648f5c227c4d90360",
+    "e42f54e1f4496eda4241345270a67ce3b29ad364cd28ca5752703106229ce3af",
+    "e4a77d14d8d20c117cd5f7b9df095bb79219235674706f9d0d0c56cf0fee4d04",
+    "e574401729be536d4a6679427f6ca93697d7949de55e8bfaa3a3450e768c22dc",
+    "e5eb03ccfbc01c9c33a2b76873acd07ed16b9e3352c91c704e045271bd18ec99",
+    "e6b8ae4c377a4300fdb39982e6f8c16090113d362dbd6190ace06274efdaecef",
+    "e74f0cd40dcb31acb628697705fe4750f34803eb4efb33c0e14189cf9de9f3b6",
+    "e7a1200e99f2ae54943a39d7ef8005415be787dde3685390d9e2a2fc37f0b855",
+    "e83c39916c179169d73251961c5b930615a563499faf376f732034beff9c495b",
+    "eaac67c4d7c1d228973ade69f19324e70ca09938652eb24cd3c83c6403aa01a6",
+    "eb652f292a85837a77353b1fff49b11e02c2d64a09c3e5336e8e7a531b0a1e92",
+    "eb8f242d53b6589130450bdcd6fd2745329154c44c7455294d820cb5024ead48",
+    "ebe7e59df3898134299a3d990a4503ea3990f89817c96c7a0bdb757e458263d9",
+    "eca8a092e3c91508bb7b445e411b5a156915dcf06d6f0ff249c686c17e48b43a",
+    "ed670f8eedcf8133f8ef60d5321fe9de4e800ceca4c3a4eec67cd9a61cbbb529",
+    "ed9f283b782275bb117d633ddbc06b51e4bd26418e5bf3f67f4ca5c56ed2ecd6",
+    "efddc44cd4d7c9261e1da23d565ae6b8c2a605d0cc2c267222179880b0d60dc1",
+    "f1ce998129d193da14bd6d8ff3a7819d5095ad0ca7a31cf4fa2b3d1995e5b2b4",
+    "f5f28dcd2359c975c07d7345eb9734e6d0a188f69ae1d6370b6c1d7d4ab69cc2",
+    "f7ceabc40aa9333a12ea74f0f0aa1514b1ae2d3dd975d3a0c44fed3e5ae502d0",
+    "f8f099d15f2ebefa2187d2e880589f357a279bd85d174e80ac1d91ddd71586ab",
+    "f9af59fe76f63497be5ad68de8648000e78d453efba489b209fae4f848ec7035",
+    "fab8c1dc0fe5292d0a3e62246138cbb5081f06200ed9645d610f1f051324bf87",
+    "fb1ae6bbd6944e53dd8218eb08c275e35893defeb3ca64489602a3c39bc2670b",
+    "fddde80fecd5d5e3ce092ad769b79d4d19e7fab6abdbe7bac91e9f871aa8d93f",
+    "ff1d7070099e45226fc7d5164e49f1eb3e12d64758452febeda8a400a788ed8e",
+    "ff30fe0743597dc2f303ad8bb46c6773262ea4cf4b768f5d7029494a4d071dda"
+  ],
+  "requiredCategoryIds": [
+    "ambiguity",
+    "budget-boundary",
+    "capability-intent",
+    "input-boundary",
+    "law-name-and-concept",
+    "official-reference",
+    "pack-state",
+    "safety-execution-boundary",
+    "structured-location-and-date",
+    "surface-variation",
+    "typo-variation",
+    "unsupported-scope"
+  ],
+  "requiredExecutionScenarioIds": [
+    "execution-all-failed",
+    "execution-empty",
+    "execution-item-budget",
+    "execution-mixed-composition",
+    "execution-nonempty",
+    "execution-partial-failure",
+    "execution-reversed-completion",
+    "execution-timeout"
+  ],
+  "requiredDevelopmentAssertionIds": [
+    "shared-terminal-five-distinct-meanings",
+    "shared-terminal-five-with-repeated-meaning",
+    "shared-terminal-four-distinct-meanings",
+    "shared-terminal-nonunique-maximal-sequence",
+    "shared-terminal-repeated-meaning-different-span",
+    "shared-terminal-repeated-separator",
+    "shared-terminal-same-span-multiple-meanings",
+    "shared-terminal-tail-connector-chain",
+    "shared-terminal-unknown-separator",
+    "shared-terminal-valid-maximal-no-subsequence",
+    "shared-terminal-valid-separator"
+  ],
+  "sets": {
+    "development": {
+      "caseCount": 43,
+      "cases": [
+        {
+          "caseId": "development-ambiguity-general",
+          "sha256": "56c620661e771ead9a6f722a6810d2ed724f324596998f6714d8ac869c7ea309"
+        },
+        {
+          "caseId": "development-ambiguity-provisional-law",
+          "sha256": "c58ed5b8bc2dad86267ff286035bbe81547820ba14d8529e06b8e82228aa5413"
+        },
+        {
+          "caseId": "development-budget-four-steps",
+          "sha256": "092d416e62eb5925937bf307679572741ccff9935df35739cedbccc03a8a6b04"
+        },
+        {
+          "caseId": "development-budget-limit",
+          "sha256": "f4cd56de4e2fc46d62fb7e9caa787d9867cc060ba1605627e9d22188384488eb"
+        },
+        {
+          "caseId": "development-execution-all-failed",
+          "sha256": "dce0e91c2cfc8dc1f0b41bb46a37867345446debf9f292889d3f0f5a9a77bf4c"
+        },
+        {
+          "caseId": "development-execution-empty",
+          "sha256": "7db66f31a6a679861eb77466cb70273eb1d620e0f0c77adfd11e4df5e1fcc7cf"
+        },
+        {
+          "caseId": "development-execution-item-budget",
+          "sha256": "65daf425b6d5e10747ccd2872668b493c29e51ec58fe3c465e10cc99eb7fdc65"
+        },
+        {
+          "caseId": "development-execution-mixed-composition",
+          "sha256": "84eb53b16dbb77962857b0dea877ecff4df3beb75f8ad195a47a578825af9767"
+        },
+        {
+          "caseId": "development-execution-nonempty",
+          "sha256": "001711b7c1d7d7a765d03a4789a13fad29e9d02fba85dcfc68cc11aefef635d9"
+        },
+        {
+          "caseId": "development-execution-partial",
+          "sha256": "285bea6b2c189fd912c4c50c2bc617ec7c60646c0689251dd5cc8270a721c229"
+        },
+        {
+          "caseId": "development-execution-reversed",
+          "sha256": "24f4aa77ca9f0c7a27d0926058c8c808732882f378767ddd3076c4ef92e2e26b"
+        },
+        {
+          "caseId": "development-execution-timeout-commercial-code",
+          "sha256": "af6c14f2472ea797315ed5763e5b34d55dac91cc5324c30f422a6e57284b6348"
+        },
+        {
+          "caseId": "development-input-empty",
+          "sha256": "b6d7fab9b86a876aba2926911972eee9b2825418b148017dd21b0915e2655463"
+        },
+        {
+          "caseId": "development-input-invalid-ref",
+          "sha256": "7d248c7badd76623c2d414680e77dc57b62ce144cf195779ef08b08e4394ddb2"
+        },
+        {
+          "caseId": "development-intent-content",
+          "sha256": "075f2f94de1f62df073d0ecb4f84ca8275ee97b38e92b83ab72c18c425154c3e"
+        },
+        {
+          "caseId": "development-intent-updates",
+          "sha256": "5474f649db027c1001886a65cc7173411579dba0eb686b9e568e45dbc06c1745"
+        },
+        {
+          "caseId": "development-name-alias",
+          "sha256": "ee42a054aae17bc58f5ce3a7eb365243e1f247c6b74f569acdec80ea7e53b4a1"
+        },
+        {
+          "caseId": "development-name-concept",
+          "sha256": "158a7a8f2f8a20e8564e2854c2c8a3ccb90a7e3ea3727d2e7dd9562f98b178c4"
+        },
+        {
+          "caseId": "development-pack-disabled",
+          "sha256": "ac6776609a27a641069e9323b792b4e983e57521e6e1adae3d3bd48764b01cc5"
+        },
+        {
+          "caseId": "development-pack-enabled",
+          "sha256": "775a26dd1ed9147b5ac686d69390e792e6bd6d243ce9fa737dd05eba639b49b3"
+        },
+        {
+          "caseId": "development-reference-law-id",
+          "sha256": "fd3fca9737afb3af7709b664321206dbffa2bb5e686ac8d911e1052fd85ece4f"
+        },
+        {
+          "caseId": "development-reference-ref",
+          "sha256": "99dd125ae3abb0d4f19ec6bf87674b090ef32369d6e5721c1736b07abfa15f35"
+        },
+        {
+          "caseId": "development-safety-first-read",
+          "sha256": "c5aa14ec93eabda5008da370d9dadd83c3e6ab1880abccb38ee455a5e43c79dc"
+        },
+        {
+          "caseId": "development-safety-non-japanese",
+          "sha256": "3984ab685c573f55f84b187de958ab5ee2151cf4633659220232a0b42353dbda"
+        },
+        {
+          "caseId": "development-shared-terminal-five-distinct-meanings",
+          "sha256": "e58af2af071da2c54059acd44ca19113ba8179d3c8a0838e15995aeb056d26e3"
+        },
+        {
+          "caseId": "development-shared-terminal-five-with-repeated-meaning",
+          "sha256": "549ab23ec6c3dd6dbf96d651a4c12027f07fd429fe27c76def607f4b38294610"
+        },
+        {
+          "caseId": "development-shared-terminal-four-distinct-meanings",
+          "sha256": "b184ae1bf04259bf2ae2842b9d84374d78536391fe74857d36219f528a054de4"
+        },
+        {
+          "caseId": "development-shared-terminal-nonunique-maximal-sequence",
+          "sha256": "ae2e9e035f575f8fc6b42dc2dd9c8be40ad3447e916717f4e2e2a45a651497ed"
+        },
+        {
+          "caseId": "development-shared-terminal-repeated-meaning-different-span",
+          "sha256": "1cc5b4a259b5569405f3c393eb5d13dfd7fd25fdaeafb9d76e50d58cd591c5a9"
+        },
+        {
+          "caseId": "development-shared-terminal-repeated-separator",
+          "sha256": "237e6919c359d5b2b2b40894c3f1365836bc4cc8f3c4f9ec4d4d3a37b93507c8"
+        },
+        {
+          "caseId": "development-shared-terminal-same-span-multiple-meanings",
+          "sha256": "467366e3c5c10b29bb61b0b5654897cee61aa3bd3c0d23cfda325be671c776d9"
+        },
+        {
+          "caseId": "development-shared-terminal-tail-connector-chain",
+          "sha256": "8fe9fc6ca7990907b339ff08e2ae35d86705a01550d7e5a84bf6c267b1c3cad6"
+        },
+        {
+          "caseId": "development-shared-terminal-unknown-separator",
+          "sha256": "a5d7d1da7371fa7b51ad4efe899b0cf43e025b13080699c4edabddccc79592ba"
+        },
+        {
+          "caseId": "development-shared-terminal-valid-maximal-no-subsequence",
+          "sha256": "1cd90a7b7cfa7ce4520bbfcb3e34596b7075a4977e61e36ca20e01096ae99f99"
+        },
+        {
+          "caseId": "development-shared-terminal-valid-separator",
+          "sha256": "c8e8fabb19c8307b5b401f640def1243cd2af4618d9dd8ac8c5fa7b44f459385"
+        },
+        {
+          "caseId": "development-structure-article-grounded",
+          "sha256": "7a67c5b9e9b4d4c5410d544afd13c53c9c64459212c76c6d81dcd60735a3f49c"
+        },
+        {
+          "caseId": "development-structure-date",
+          "sha256": "4c2fbc552201188e73d39556f5af0317b7565fcb5a4197345f5b723378045e65"
+        },
+        {
+          "caseId": "development-surface-space",
+          "sha256": "36fa215534120e0f8d410321c157c840bfa322e1fea5354d2ff72ccbb5c3c73a"
+        },
+        {
+          "caseId": "development-surface-width-jas-law",
+          "sha256": "1452ccffa3f11fa69ed54990a0bb652271d7d42b028150b44ca2e639a057c462"
+        },
+        {
+          "caseId": "development-typo-deletion-grounded",
+          "sha256": "2fbe929c7fd4b5141f423213e192313fe682fd06beae16529fec318f65c0a5b2"
+        },
+        {
+          "caseId": "development-typo-substitution-grounded",
+          "sha256": "4526dbb0fb70be248729c5e62d7e21285a335b2ea68bd04028516cbf48cd1a86"
+        },
+        {
+          "caseId": "development-unsupported-advice",
+          "sha256": "7826bfd05a884b01a9ddefd15bc991f5609f93640e843b4ba7f13ba2515b1931"
+        },
+        {
+          "caseId": "development-unsupported-resource",
+          "sha256": "fc806bd6231a8efadb98c7fb837af061d88d8407029a7b4c8f60d1fe9c98db17"
+        }
+      ]
+    },
+    "holdout": {
+      "caseCount": 240,
+      "cases": [
+        {
+          "caseId": "holdout-vsixteen-a-001",
+          "sha256": "af7fe597021a2998b9bc5b2718e74af8d2516dd893ff4f01b9485491d2ef969a"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-002",
+          "sha256": "bb066f53211b257acdbc76b6af4349a4744290b7a8f8a39304ddd104c96e990f"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-003",
+          "sha256": "5680e0eb4390d2b38099f1cd5bbdd881d5c7b4d10902cda2fc533bfbe3782c69"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-004",
+          "sha256": "d3b55aac5c5370f45d569b402ecfd19b173ef713f9072789682c231e419e4002"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-005",
+          "sha256": "71da2fda4e421fb9a30d566402a4304e907af54dec224c63cd18dcf91b7ce28b"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-006",
+          "sha256": "fff7ff40c2935b811abc8c77dafe073086f0de23c7e5ccb6f8f4ae47bc4fc328"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-007",
+          "sha256": "ec0cde616b71df9fc8b5015c2425281c0215bc484deb473a684054f7b3f8a08a"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-008",
+          "sha256": "699660078f72d0ffb1ca5569520c7d04dce7d288c0bf3a765cc9d593aee248fe"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-009",
+          "sha256": "802b584e2ba5eed2ff69698746a818786971788a0e1278f4174b26bd95405a71"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-010",
+          "sha256": "3173e342743744daa7b7f9fc94bf3f1580356010042bc35d64684165b55463e1"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-011",
+          "sha256": "ae93ae4dabb36b4c2e8f906a73a8f902d0fcafb2d029f9cf6e3f73058b09abc1"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-012",
+          "sha256": "a09bc88a365b13e2dda3403af879801949c9be816325131c4f18c20d28095491"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-013",
+          "sha256": "4f13c7d8ab6b65bc063acbf5243b77062510bbd0d0c436205bb2806ab466b6b3"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-014",
+          "sha256": "5b17d89a8273e29e1c99c6f6602123b07074c92496ff14978e8fb629756cf059"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-015",
+          "sha256": "f6ae957ed580c6b9d7f38cf06d477b49d4690d11d9b131c6dfbbd190822179a0"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-016",
+          "sha256": "15a7b4ffaa6fbb42fca9435cdd4222ef67b8a809eb0ca0033571617eb3c13b98"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-017",
+          "sha256": "e19dc7980fcb5d316b05c13dc4e69ff7b1987de5563b55677d34170672788b2d"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-018",
+          "sha256": "7024a88d3cf43ba43d770de80cc7002251b3a93f27b663ee55ae6cec47ce0ac9"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-019",
+          "sha256": "7f36ee508440c671c58d30bf7eaf7699ca76341db1409878b55335648d960740"
+        },
+        {
+          "caseId": "holdout-vsixteen-a-020",
+          "sha256": "2e1a9d35c1c1e3f3c386b0fdcefb97543a56946307bd2f7e997d8293b58f6cae"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-001",
+          "sha256": "57fb578ed35f5dc3c42d31f4236a906cc1a5ca00bf707b4d10e46f54e003b097"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-002",
+          "sha256": "65837f057d428a0d2d013bd9fea320256cf9decc5532e1d4053c3965fba54164"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-003",
+          "sha256": "20095b5a91a1d57b56d5dc21d01760191739f42f4fdccc075f85ed0b14a89856"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-004",
+          "sha256": "a1e928445c6028bb6ff99bd01e05de063b1d7a218538868187d20451397fa871"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-005",
+          "sha256": "4ce606579af4b9c9a9057caaf4f8deaf0eeb42334a07a87ab44339b974b18020"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-006",
+          "sha256": "3c7d274e72c76ef17f3ac546687ef5e45f4eba198c7edc8d289ada57c0096c95"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-007",
+          "sha256": "bee2ef8d18c0902e7928fb714399c0f8d053e71e904858a5f9b2857a35ee75e6"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-008",
+          "sha256": "2ded4ecda4e962558553cafbade441c50ca0432361e5f423b5794326bcd30230"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-009",
+          "sha256": "3785cf6acbb90d72ac76243bd62bb05f42200ef244b93dda474b4758ca55c7fb"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-010",
+          "sha256": "64d0f8cfdb530541a1a590fcfe17955a74e598a83383f5e316f701b9975567f7"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-011",
+          "sha256": "2958ffcf496e72104de32824da6e3c7808ba17f1bb12dc0655b8971e95703928"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-012",
+          "sha256": "397fd7e8ce43d936a84d9ba37aa6310e9adb006cc3e7ae458e55d75d3865ad31"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-013",
+          "sha256": "d87f523e7b9f2873f58048ae5df5c1a48e37c1d969fa3ecc4b94c15f10d12a1f"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-014",
+          "sha256": "b87bd77d9ad67b3cd4a7dfdd60b3fe1d4f37292e27e23aa0f7864f87a7872f7a"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-015",
+          "sha256": "d5afebfda89b5286e2b6557959e247a20c04fb8d101812c256d4254ceac50c98"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-016",
+          "sha256": "e77f06b338f2c98b375038b59d7b8c309a7db5eeb1c97805caf7aa2c83a01b1c"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-017",
+          "sha256": "2d3db98d0936d4775298a43f254aea181f48688aa7d8837176c6f2c322680b36"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-018",
+          "sha256": "54cdddd3540430f50e19b04519e2e5a38305ae3e0a79f5bbafafd3d29830561b"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-019",
+          "sha256": "976146288b914432133e3802f6ccd8ade55c5a97df5266e3536aca003f9a44fb"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-020",
+          "sha256": "79c61b949dacdb604ff12af1715d7b8671c8c00cd9277ac34c4a30e3b735c788"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-021",
+          "sha256": "fa66dd25fd80a69a3dbeafe595a4ab7373648b0a581ac637eb78d44fba5c5423"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-022",
+          "sha256": "45b93a6048013f1c514b32a670a72a49098ca53b9065612fcdc3aa5c7bedddb5"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-023",
+          "sha256": "17d9d64667b5fe42d1cced44cbef65955befb0439c71311735af770d4dad4c62"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-024",
+          "sha256": "a7edc8ff343e42853feaa8dfcc7749b8a443029210877cc608aef21fd84f0119"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-025",
+          "sha256": "7d4869eb558f6c8cb429b8c2f1109e6b1237cbcf7fc0cc7fab347d4290f970a6"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-026",
+          "sha256": "607d8b58e2eae715fa7d237ac0f6086918b74048cc81f65d9fdf59d0c54c738d"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-027",
+          "sha256": "160bf5ccb80df9f0743f0a69fc80ecb6d5612e65112007f96e96b650d7f4eb97"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-028",
+          "sha256": "1323536c7beb6fa1d3d662bebe0760d2718412071f514911067d0cb048df443c"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-029",
+          "sha256": "e04d7816358a519ebbbdc42d17b6edbaccbb48fc811a5d68b23bb5173ef0c8db"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-030",
+          "sha256": "c2d6fa3d9913c5bd8797bc552a857a278a6c386c2bc060db1f26d19411113872"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-031",
+          "sha256": "f0ce34211995497048991815e445150b6905e759425bb455a2116e3b33bc9626"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-032",
+          "sha256": "4976e653a6fd9540695e4a6fb20e0680739b0f3d4bc183a24413d436a3dd2320"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-033",
+          "sha256": "1cfeeef6fad33087eac9fb67730bb7802d00eb9136f73d5c807cedb874af9c5b"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-034",
+          "sha256": "4a8350a3e05109ce8ed3c9d798de1cc70c46ab4454bfe031a15ad718897e62dc"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-035",
+          "sha256": "62e0722d0ae3dd37f13801a56155a80081194ea373c205d754b74bb658e851b1"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-036",
+          "sha256": "913f82e82a383701570b93a2de62a75b02938000fc47f09acce4712d6759f7ef"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-037",
+          "sha256": "c55fc7ac39ec7aafb35323cf4a173c0e74f0bc8ec172e128a90f4ed3fe6efeaf"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-038",
+          "sha256": "a3ed4254f01563c7410b069e972ba319cf5b542faca5422b469850fbb9329b56"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-039",
+          "sha256": "a745147ad9f3d7ee878efaf253c12eba028905e645478e0c1792e904800ce816"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-040",
+          "sha256": "9a2229f77bbb97f4e415fca666e6d57c56dcafe2ef603a91acfcd9cc52134904"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-041",
+          "sha256": "2917db9944001f05e5cc20427f444aad8976700d073b5d647b3bc3636b0dbd12"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-042",
+          "sha256": "201b4aa35332b2b64aa4742e0103bfc355e3a1c4ceb337af41b08676525ee0b5"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-043",
+          "sha256": "a1cd74df224c916ad459e1c44831213b5f138e4a04fc76edfce05bef45964bd4"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-044",
+          "sha256": "5103294c934a0e2e0f0a82dbad9b63f661a22f38c987fa06e2eb7b9f96a9d998"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-045",
+          "sha256": "22dcfec05b65c3003af2364d13e34d2407d60aa57034aa0a932aa11fbc78655f"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-046",
+          "sha256": "ac19acc2babf5e572ffedb0d6ffd335f8566096659d93ecac6965adb2fb73ad3"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-047",
+          "sha256": "b7bd62a3637a035a9c917a7141af531d9b404b829e5307a9db85c9972178e1b0"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-048",
+          "sha256": "53eb552460674c7f382a4c3ff06d082fe624e8e663cde3bdff65eb503bdea5d9"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-049",
+          "sha256": "ac40f775d3fb02b78890d78f72eecb48e11d03821e48b644d42196ab8e2c5332"
+        },
+        {
+          "caseId": "holdout-vsixteen-b-050",
+          "sha256": "9d1819ee1890019d6148d5745eaf3ed60ae408a836e4177ffe6cfc63e54bec21"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-001",
+          "sha256": "e8d36d39d8804a7551e19f1cf5c846226e376a4b91c4345fdeb8330de1109664"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-002",
+          "sha256": "877a7e0b0972a27592faabd2c0a9274ae9b78431d609dfa2b30191fa10626eec"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-003",
+          "sha256": "14273465d03dcc032f7ec5145ecb5105e049d8765e4ef8a44b903e4ce5d64743"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-004",
+          "sha256": "7589cc440024afba88aae74096116e12e9bf872ec33c7381e181d029a174d7eb"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-005",
+          "sha256": "d11b394c40643d6edefc94ace6454f110752c176c3d9270bd8edfcd1bc394e6f"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-006",
+          "sha256": "3e0691bdd9f31e5ddd65021921046b5e53413df19ca440c55637c83c53628249"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-007",
+          "sha256": "fc714b7220886eb956566a7967e550ed747ba674c66931e590b6cdc261c164d5"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-008",
+          "sha256": "4b12a1103b1661d6d1c2f3b6b179853406e3af92ab1202ff5556c9620e6126c5"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-009",
+          "sha256": "e32879abc79e920e6331f11beb3f6b4d8e612f1998c7c9f4b51b7b4f7c136a15"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-010",
+          "sha256": "d820092e19febf56b230268bb24012739a7943a52cc89d670b9e4d224c0bbc2e"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-011",
+          "sha256": "e1d517540104cc0fc705814b4a2848e01a80732d491d369081bebd77c9adec0d"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-012",
+          "sha256": "79e591e57d4f98f0fc578b28bfca57a333fb47f1ac20df9e92a1d2c701606617"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-013",
+          "sha256": "162a2455eee29d63c8b6af517b5f5f86a813e013a8ea5dd9d5eb9aef5f302673"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-014",
+          "sha256": "1960d31ce7aab9e119b5e63bff86d0fe00683aaeb85db9e443ad9c50367054d1"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-015",
+          "sha256": "4399ac9e88f3728f7eb39e8d7ee69a39236559e2fc77cf3510ba3e226db9ae2d"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-016",
+          "sha256": "6cbcd05af70c17948b8b9dd565fff30e9e22e4e02de49f18d6bb5e5ca1e27ffe"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-017",
+          "sha256": "e523de70f071228470ed0ad6e4c2a6d6bf3d8ab0797d88338dbfbbaceed21ec2"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-018",
+          "sha256": "505090dbf27bcc47e986b142723fbd0fe44185d9849621895e1bfbe568ebee1f"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-019",
+          "sha256": "425896e8f53f2b741de04ab73441954d1747293cb93f49ef6af892228cc418f4"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-020",
+          "sha256": "503d1283a35576e9e46a8c1e4a9bea546f225e65a48a6cbe61e10b5e7ef4be05"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-021",
+          "sha256": "ef56602110e7672506db1f8977eac284b3167650b70432fce04d98bc841ea41c"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-022",
+          "sha256": "fc247cf046c5e51c9a2cc0662409f29cad0b363c71c2b569558831003321d69d"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-023",
+          "sha256": "d6282b7020c44be48e21e61bf6b6ec64433156fc669db9983c2c9b42a90330fd"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-024",
+          "sha256": "056752132faa1da23d284338d45c49664e161a22f39b8c197dade64fb4885272"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-025",
+          "sha256": "d2fee3f15e03ceff39d90b42d431fe2eb3caf0d59a90021d98e3207a8508d73f"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-026",
+          "sha256": "5e06604ba26277214554e31e96b6f043bb0a42b68c9919b5213c246215092b61"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-027",
+          "sha256": "0ad6fe6416b1bad8ae8d4b6e390273fd981279b03a3a47f79cbbade7493473e8"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-028",
+          "sha256": "6a7e3893e207cf28fee87754b58c3ab1c6901bf03c7902983cc8a582aa1a3bbc"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-029",
+          "sha256": "d71dbc37f9abf34f292977f508a26632f343d7cce4a1215a379500d8c7c3cae8"
+        },
+        {
+          "caseId": "holdout-vsixteen-c-030",
+          "sha256": "776440d9a1b471a758ee8ac0e105e72665033553556d8cb2f4d5cb1c3f49a1a9"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-001",
+          "sha256": "869769756e23afa5d91fcaaca5fade11261adc4f5197a7be8566edf33d2ac71c"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-002",
+          "sha256": "65f4037a50f503acdf7338183875c310139acae70fd552cce8bb3df6e164381f"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-003",
+          "sha256": "99d0654185dc133e30eae056f6cdd74bb04201b51f3ce36a776a447112010c65"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-004",
+          "sha256": "b1c838aaa663218dc1da85ca0978cf8d3ea8dc13eacce4426365db5d17a69e83"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-005",
+          "sha256": "a4ac7afae59547facb27962cffa4a31b8eab067c24a7b32abcac872e96eed914"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-006",
+          "sha256": "9bae3c6a175ca082743d677bafd001e9cffbe51617a8fed1844984cfe90187b4"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-007",
+          "sha256": "e90104677106224928d1a17b5c94fe1c6b35a1c174e24937e0f9401d402e6f1e"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-008",
+          "sha256": "fe5b63f91e59e8656a64544a8ca91d20f0e1f6094a6e20fc85d22fad50849242"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-009",
+          "sha256": "064c5ecfce2a30904c5b58088877f3176ca5895b1c6846fa30531f3e2adf1829"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-010",
+          "sha256": "ebef686fdc04ed68bae9aa654f010797e6eebbcc703d85794f0c6b3701486a9f"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-011",
+          "sha256": "0c4902084187f82c1478eeeedb255c0ebc95a74747af9fab804ac786480baded"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-012",
+          "sha256": "629687e62295bf9fbd1d4ecdc60190ae0ce82a0267d1e8415f575424322b156a"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-013",
+          "sha256": "659bf2f41282c1661449ecde40efb13b5c2f94f3586ea6d4c0f4cd114f7373cc"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-014",
+          "sha256": "5467e28eab6477f4c1ef4a903a595411d595902b1d570c347dab44b38cbe20ca"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-015",
+          "sha256": "9da206f6f2554b2e7313886e99f388e6ebf59508777d30f076220ee810cf1c6f"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-016",
+          "sha256": "b52e54a32e0db7646101e0d57c9d966a7f922b0e01f4023e7dfcf05606358f9a"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-017",
+          "sha256": "364b0dc7416fd36e1af2094db6b41ff9d19f74173523852317096b134fbe86f5"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-018",
+          "sha256": "7082ff2afd5a622f5e6096d05d266478b602502fadd3c6065e1f20bb32dee421"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-019",
+          "sha256": "f4c6254f2c6e42f2bddc667739ceaafe93df65a4ae4d7759c2180f8fba84eb01"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-020",
+          "sha256": "e7fb813c24869cabca6ff2afccbd65e130370c83147334a3273bebaf6874e500"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-021",
+          "sha256": "f88a0631914217bceca16e21f06431af29e7cd984db9bb91d841f838973d328f"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-022",
+          "sha256": "58a2e7af248b1c729e10f8b7e7ec6bf896afa952738d54a57f9f6f0f805a0831"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-023",
+          "sha256": "db3bca0fa8316e9e63bd192f58287a5eb112e4b664502f193eba31639f9851c9"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-024",
+          "sha256": "03c7e52ed52c388d1caddb894a34afaa350c14b3857684b43b5c5a30496c8b4d"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-025",
+          "sha256": "ee92d8d0a1508d5ca22f5070ef28075d893fc9ef5b25d296414bb83071a09522"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-026",
+          "sha256": "32e0fe691a3f9679ed1b2509d54dcf331a082b236bf552f80bf811a6f053724e"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-027",
+          "sha256": "b71efcb64bb86fd137129e0291ac637b6e1484e0ec79a4405496f48dd07e276d"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-028",
+          "sha256": "f1a0a0df83c6e5b277d21efe2c6f74e9705641c8cd2f10027d17d29aae0ea5cc"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-029",
+          "sha256": "0b893d01a2b787f481204f34584c92914fed112a4a339291202f1a2ebe2dbc6b"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-030",
+          "sha256": "b5d1bd78aff9503eb2c56d4dd4937d3921e74d71bdbd18b9df5b2fd3f90c0afd"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-031",
+          "sha256": "1ca89eda87818c493ee134c954b0a9508ccf70f5d74230bfa727f397415a421d"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-032",
+          "sha256": "e6f98482cc662934e67460b966983f38a6692b63f7498e9303f62aaa3b17c0d5"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-033",
+          "sha256": "072f612668c95fbcd933297f8e998bf8e629b5876ac39312e086c3fddd0ccb01"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-034",
+          "sha256": "43cb6acaa9be7adbdcbcd0e60fafadd3bd4a1be2d4f978682a2dd10c81a1a37d"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-035",
+          "sha256": "abc95cb58a07783884239d54f2fd74067aa4455e94cf6e8a887a48116f92707b"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-036",
+          "sha256": "5028c1d41ea96317215c8348cd851efa1b445ef357f7d1a84280f185cdb11e87"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-037",
+          "sha256": "a149c1043a675fee31c7317839c564afe2e10ab6a2c17edce3496ada00addf9d"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-038",
+          "sha256": "8ca8d74d80d5028a0e16257682bf4f4943e6de98f76bda03a982962659b4782c"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-039",
+          "sha256": "d9c3ea4a832035fbf7ed1c3589b9b65ae7ec0cecd3a66e7a9a26a99d27a155ca"
+        },
+        {
+          "caseId": "holdout-vsixteen-d-040",
+          "sha256": "ae2a694c1525780724970d38d53be1edaa065e93809d1ddf716c6c7e6ff7e5d9"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-001",
+          "sha256": "3474c1cc54942dc2da9df9aeb5e7cd2534daab36f6e9b2d81c9b28be9ad021f6"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-002",
+          "sha256": "b67f2b248531c5fd37db2a3a199650c9df844ecdc6ce306e736e04ebeea94d7e"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-003",
+          "sha256": "657a47be27bb1df083d7636942853905d4009de0f5af24eef3804f92fb5e009d"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-004",
+          "sha256": "168f138e506c3630465165370f78c509d8a2e87c7d4e7369bbc3c3c3f67400a7"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-005",
+          "sha256": "5bdaed072e89c4890984a0afbe98f117e0bba3cfb982f1a4f445df2c9d3c0a55"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-006",
+          "sha256": "b2e3a57e234c593d0dd9bcf8ca2f3541f3420bb1dad970aa76c5854a3d25d3ab"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-007",
+          "sha256": "9589c4c85e4708c6e1a3a55c7f7bb7edf0da4113414998a360e2fa939b4575f2"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-008",
+          "sha256": "b3e9eaab210ef91bbf17601ad200de1e230b19877ce4bfc37e5027476b216449"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-009",
+          "sha256": "43b46430c8f7668b4c9e82a94e94e7c1c8b7ec46c95807e522eaa2965cb7f698"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-010",
+          "sha256": "542ec2df3c1a226defd1acc219ddc44e757c8dc1768673f9ae3c26ca4e01a463"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-011",
+          "sha256": "5ec5d31043f62d4de6c158d6e115626c830a0ec654ddd4bf5c417509d7e4e103"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-012",
+          "sha256": "cf89cf3730c61dc0beaab4aeb9358c2afd3b92feba0f74f5a1d160932545a5a2"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-013",
+          "sha256": "4f939db8b0b0c88f630c76d937ad08fa0d36348620520fbbd210b74c60c51357"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-014",
+          "sha256": "d5305384613a9df49d0724dd513af203940eb7fa7b18305fdc7a986460027238"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-015",
+          "sha256": "5a271ca38424a20c3e860664af1a0770f399365157373208a88b65849e33227e"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-016",
+          "sha256": "5c74badc45389e586d71bd6d19b4353780bde1379a00e31939f10613b948883d"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-017",
+          "sha256": "666ce1b4a368bfd1d5496b90dd27f82e8fa2492519d1e46137e7aac0924fd28f"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-018",
+          "sha256": "2c99e1e102ce6567192141ba6d2f8c3954f9276ebb78f6a7cd5df521c7a88f3b"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-019",
+          "sha256": "5c08a9668e71933d6512347222932343bfee685226591739d1f167a99c24d409"
+        },
+        {
+          "caseId": "holdout-vsixteen-e-020",
+          "sha256": "a2442995bdef1194eb3ce725268faa24973f7ba150522fa4246ffac5b0b0a535"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-001",
+          "sha256": "fc685a6589955013ad604a7e7ced8a939f7958fdd5f9a14503b4ad9c0e817ba2"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-002",
+          "sha256": "b3934acff25aad8b3bd4efd737bb2a7dc21bdece847c155e420ed87032044113"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-003",
+          "sha256": "abd300ca2127111d8d83619c06e2e9e7e775dc306254c7d6eab879f4d670d36e"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-004",
+          "sha256": "4e39ff111ec874f2271cdcb066c14a67c781d1f49117b390e34bbcb1b64cfb7a"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-005",
+          "sha256": "923dea21ef7e5f2652a58a0e86fb138e3f4cc8ee554b90fbaf807ec99ccd3801"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-006",
+          "sha256": "0c8956a30f847aaefa51a2c9d7d8fd37ae697198f1132256b009e54d5133bec4"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-007",
+          "sha256": "01c04c14249d90ee0d7bf82bfb210a084790b4fe6300f166b0b19b192ab96758"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-008",
+          "sha256": "956d4fde064a9896c9d4ccb5ba8392932291b27508807c06bc1963639c971f12"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-009",
+          "sha256": "28086d5dc76e47ba6de5b69b80c285e194b577d5732585fa9ec9f3673a9a51e0"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-010",
+          "sha256": "23e32fb0bb23a5f84b55069b26cce89f2bc97811dc10dcf3cc0d917e3349c641"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-011",
+          "sha256": "e99fc1e4fc97e32dd6b9741961d4e7b6d8876e4edf97d1b66d60fbb673c598b4"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-012",
+          "sha256": "41363ec8d8c7c1c5516c7943500c603cea0b2d99aa9f4081f6aeda499a0e29da"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-013",
+          "sha256": "64fd3987852179d37fa81150338ddb3dd0d644c59f02c838354a2a366fba54c8"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-014",
+          "sha256": "fe8d43f059c61950994e661ccb99861cdd361112d093f821780a76b5bbd9b33f"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-015",
+          "sha256": "dbb581cbae8ed886d3830eabbb760fa4336845e6f9a6f7cb074cfe72b87b0230"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-016",
+          "sha256": "b60ae40edfda0f36452644e414201a0b4df0fe93311e9455f05893ce01f7d28a"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-017",
+          "sha256": "407a35adb92db9018f8b5d316ab8f19a916a73545391886a86370ffc44ca3512"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-018",
+          "sha256": "4078ace6171b0a626fd95bf9b072d4ee4d3b9d54155868bb33f926055f3497b3"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-019",
+          "sha256": "74cbea1840f56f908ad3cd88d49c98efe6c4728bc427f933f959738675fbcbc0"
+        },
+        {
+          "caseId": "holdout-vsixteen-f-020",
+          "sha256": "2b2fb8c91ff5c8d1c62a69e9a415719396fec8e3105297988cc510742c4f489a"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-001",
+          "sha256": "2220f9039b27940064400f7c6c7fba50e2b3e8e9d2c775dc1d6453a5bd6fed57"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-002",
+          "sha256": "99103516e6e170dca8d5935c25dfc716bae4eee0b22c611a6de23f9fce08c1c8"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-003",
+          "sha256": "4bb4d7c263573e7e8c574d286eda3db2d9e340194f4b3f7510292725b7b21855"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-004",
+          "sha256": "4ddcbef53355d7c3a684fb4eda89a0c180bff0490b77fa54207a1f20642544ab"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-005",
+          "sha256": "12a0b896b036585d8ead9fc80116351ef1edd6f82c5d9cb0151ff4fb6516cbe6"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-006",
+          "sha256": "3f1583f309e0c9f6ee2dc91bb965c3385ac2cce0e7bcaa8be7eb2beb8159db11"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-007",
+          "sha256": "13901725e94a46708d889d173b89ea0ad8695f1f6cb5c5f33bb082f6ec4b9720"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-008",
+          "sha256": "11bc09857f4ba45fc388f87df5408d9e1e174d2fc57084d6544b7b0c03ae138b"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-009",
+          "sha256": "7bf3416b214d21ff5e0e1a7387a135c8e77ff6d42d13163fa533519f9c800467"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-010",
+          "sha256": "4b032d40d29034e39214374b361df3791694d21306368a9988eefcb86f301256"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-011",
+          "sha256": "cb2d61f4bdffa44d42f75ac9d26460a5f5461622ace8f6db2a4d3fc8172709bb"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-012",
+          "sha256": "a1fa14a28bd0edfae8790229ecb3c8ae1c9a6774eb088b35da2c3d8ff308933c"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-013",
+          "sha256": "c5ddcde5eaa3ef7d38566005ae07660b747ccb3af5025c9974cb188ca0398790"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-014",
+          "sha256": "6ebae402d77340e9628a68e215c372eb207d84204920d884419bd1280ed30abb"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-015",
+          "sha256": "bbb48c7f570cc299fbccac831e9c71ef99ea44fa06de0d692e515bffe641bdc1"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-016",
+          "sha256": "8a02e0fad7a991514da3f689dc6bb6f5f7d474108d7ad02e0e43898a4522fb88"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-017",
+          "sha256": "87cc39ff92f44c63969fb4635b8807c868a555e8b8262c3163fcc9a900cf8b40"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-018",
+          "sha256": "993bd8cf10495c658fb3d6a660a4511a4aa0b0b717910c46375f091298b6aba9"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-019",
+          "sha256": "88ec09f225d3ebc646d06f3107645d114c6ecbdea0a51a66f6ddcd1f1c8dc523"
+        },
+        {
+          "caseId": "holdout-vsixteen-g-020",
+          "sha256": "cc001538bdb6d3d97960d4421c86b2b9777d8f69f43a2a4b2a34e8a4e667be34"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-001",
+          "sha256": "a844b89b80072d3bb31fd1b714c0f8e3db144966a1b9a0a8dead46c803f626bd"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-002",
+          "sha256": "c5c7afda34db3ff6252022acd9468b091edc96a3469c4f4070ff6e2ae7737976"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-003",
+          "sha256": "5ef230664e86ab57e1f2f1c9a1e6cd3f4a4639a6483e38bfb63389f7e27cbfa3"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-004",
+          "sha256": "5530a778216b1ccd42eaa913468b43ed0c2eecbb398a864ed3d3e7011a7e8b19"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-005",
+          "sha256": "ca848b10b53aa362ed3eef8214d7cb4b69dbee72593e507e7d2b426f8e54b1ea"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-006",
+          "sha256": "d3665e98905d1072ebde6875a110ca3d9c085978493ccab101dc68f347f5cdc0"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-007",
+          "sha256": "401e2f69425539f886eba2c229604346ce9b1adeb327eabe39cc2d2a315d6ca3"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-008",
+          "sha256": "c3955f38590199d2b4f53e83377b548137e0acf2b7ffc0dfbd48bb7b1e7d1175"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-009",
+          "sha256": "90dff535cf3cc153f49d75fb732468092474e77a7f657a40a0a203aaf6e99858"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-010",
+          "sha256": "668d4a2be9d3739efa2435956db5c76ef059797313160f13dda21549ca8e6e50"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-011",
+          "sha256": "6a5b5032df22d765162e6eade195d094b2cc0f030adcfddbef74985de9fe9e89"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-012",
+          "sha256": "203c44972ba709633f51a4a92866bc00732bfdd1354d5801d4d990253bd30d35"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-013",
+          "sha256": "b783821957e9a03ca0bd0d1265d28c1a9ef76926942f5b3df9add6e6c7b044bf"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-014",
+          "sha256": "06e89b09b3aafdc461722143f8c9ba90e83ea555ea49366bf40f51fb7d3669bd"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-015",
+          "sha256": "5d2366617321b92c1df142ff8980b7ed20f4638ee384bbdd912a9b0c278e2195"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-016",
+          "sha256": "5b5a24deffd49061032f0aef8a7ae6edc0e598a38c13f9b0df4a38340f6a78db"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-017",
+          "sha256": "b5b89c8af792dbec6985c85786b6582b5ecbfc616b8d2eb586f4cd47c2a7e08b"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-018",
+          "sha256": "f9679a926bdae47059e46b79a7500a076a4d5c488322b528103517c82e67523e"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-019",
+          "sha256": "7248b22d550498dce29e64bcd46c9ee309aef8bf5e5ac20a30366f3318171246"
+        },
+        {
+          "caseId": "holdout-vsixteen-h-020",
+          "sha256": "a336836a61f4457327b28149e01202f7275ab528b39532b20ffbaebb604f016e"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-001",
+          "sha256": "462d0a538e451934f2e013e05504ea674230ec67a7e26aa906395a8ce11a40fe"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-002",
+          "sha256": "d0ba8fecb748ed1040ec000938f0bcbd792dbafbda9bf5821293e3619c7853ba"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-003",
+          "sha256": "99ed3040b91044877262e8648fba87594895030063cc8c22404f2ac0e2491a95"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-004",
+          "sha256": "e199bd4577f56ed5962001a3626190d2ce72996f183971c2d0476e808fb41688"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-005",
+          "sha256": "75bed26dcb97a244c86740a6c8ce06baafa93596693958aa7d092a00ef18f1d2"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-006",
+          "sha256": "072188bc7b1697aa9cba6f4e1b6648a04c84188e9297520650590e14e930e6be"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-007",
+          "sha256": "da466d5428561f1fea5c152296bd14b3dc6ffb1b77de36c09fccfa1120fa1750"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-008",
+          "sha256": "56bac410698417dccd050744e7182d54f49992eef8ec341fee09a4aa85bf14fa"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-009",
+          "sha256": "860944ef37091bf6b1c5a29ac28444f2aae30e48f4b33df13eededc63065d527"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-010",
+          "sha256": "abcc946b0d96773861fe4d078fc3194a75b7cfb6d762c78263b35a59edb07dfe"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-011",
+          "sha256": "9c28cbeee74149a4de936f600a2a8ba45eef330e57c7160555063c1980e54af2"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-012",
+          "sha256": "19beeba9647692e41ad3b2f652cd4b7c2d6f731a752f9a7c3cd0e3df9b9326e0"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-013",
+          "sha256": "bdc5d3b23d5002e31678132d9e229cb348810ab2ae1872df2596d278a1d4b977"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-014",
+          "sha256": "3dc58c316b3a9c875a6764e9b224b70621260089bffcf484c2fd6a8a8d806881"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-015",
+          "sha256": "5534d847236bb12a7031de33f90684a62bf5a5153ddd76e2e98cf768995bceaf"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-016",
+          "sha256": "a73c85e0d30425893c0cc3f71b41cdb0218c84184968bb375d2f27c06f6f7713"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-017",
+          "sha256": "04c38c231902f2ac7174da6506849d5385cd1d98425129469c1afcf927556793"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-018",
+          "sha256": "d93fd45c74fc025c4d188eb8d0db158a4c01375aa8feefa9ef228e285573c7d2"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-019",
+          "sha256": "b2ace45baecef130b53da2d4d53186fa049a9a6cc8a0d8fe6cdf1e6ff3a81b7f"
+        },
+        {
+          "caseId": "holdout-vsixteen-i-020",
+          "sha256": "12bd976a9bb596742855ea35fb4385723b4dc0a0818817e54b08d1cb8a67576a"
+        }
+      ]
+    },
+    "execution": {
+      "caseCount": 8,
+      "cases": [
+        {
+          "caseId": "execution-all-failed",
+          "sha256": "10db589a4892299f6e9d1e4819f5f4de661885f223148264da8975011405bf98"
+        },
+        {
+          "caseId": "execution-empty",
+          "sha256": "bd89c61d9ba25e23d2696dd525b38fb5311bebe6e67e514f47d953c8e324e83a"
+        },
+        {
+          "caseId": "execution-item-budget",
+          "sha256": "5dc72215ae9cc2845e63ea5fbe04b83ee90fa924ffadc55e8f5fe672e37ecdcb"
+        },
+        {
+          "caseId": "execution-mixed-composition",
+          "sha256": "49b044d8523a7cf6657f4ce94ea93a2fd0dd2fae04c57ec9650f7690e120a1a6"
+        },
+        {
+          "caseId": "execution-nonempty",
+          "sha256": "5a88662b65b05715543510d485e8933bc56d13e6479fec7ec880127b02b8b4ac"
+        },
+        {
+          "caseId": "execution-partial-failure",
+          "sha256": "ff82776b8d09552d17068e887270c3c9991b8f890913c3ee5049f8b24609f34c"
+        },
+        {
+          "caseId": "execution-reversed-completion",
+          "sha256": "2bd89c356a2abfce4d1fd91ab43de891c5534c6aa1dface412540614979825a5"
+        },
+        {
+          "caseId": "execution-timeout",
+          "sha256": "b206ff1a5e02e25cbcd6ac96bf93e0bca2c3c795f81de5c17028d6441b35d071"
+        }
+      ]
+    }
+  }
+}

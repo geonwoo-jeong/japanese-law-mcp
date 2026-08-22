@@ -1,0 +1,63 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-036",
+  "coverageIds": [
+    "intent-law-read",
+    "reference-source-resource-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "405AC0000000047",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2",
+                  "versionId": "405AC0000000047_20260521_504AC0000000048"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  },
+  "leakageGroupId": "lqg-unfair-competition-resource-ref",
+  "request": {
+    "query": "この法令参照の本文を取得してください。",
+    "ref": {
+      "key": {
+        "resourceId": "405AC0000000047",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2",
+        "versionId": "405AC0000000047_20260521_504AC0000000048"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

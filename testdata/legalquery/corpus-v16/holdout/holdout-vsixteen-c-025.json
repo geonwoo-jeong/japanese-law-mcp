@@ -1,0 +1,69 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-025",
+  "leakageGroupId": "lqg-four-public-statutes-call-limit",
+  "coverageIds": [
+    "budget-capability-call-limit"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "地方自治法と国家公務員法と内閣府設置法と裁判所法を、それぞれ法令名で検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-public-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "地方自治法"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "国家公務員法"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "内閣府設置法"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "裁判所法"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-public-law-searches"
+    ]
+  }
+}

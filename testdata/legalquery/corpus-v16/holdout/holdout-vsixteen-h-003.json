@@ -1,0 +1,64 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-h-003",
+  "leakageGroupId": "lqg-labor-contract-article-dismissal-precedent",
+  "coverageIds": [
+    "pack-judicial-enabled",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "労働契約法第16条に関する法令本文を検索し、解雇権濫用に関する裁判例も検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "law-and-judicial-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "労働契約法第16条"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "解雇権濫用"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "law-and-judicial-search"
+    ]
+  }
+}

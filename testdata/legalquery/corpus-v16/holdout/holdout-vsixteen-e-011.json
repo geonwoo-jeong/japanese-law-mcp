@@ -1,0 +1,26 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-011",
+  "coverageIds": [
+    "input-invalid-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "ref",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-ref-empty-law",
+  "request": {
+    "query": "この不正な法令参照を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "",
+        "resourceType": "law",
+        "sourceId": ""
+      },
+      "providerId": ""
+    }
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-010",
+  "leakageGroupId": "lqg-criminal-procedure-purpose-article-read",
+  "coverageIds": [
+    "intent-law-article-read"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "法令ID 323AC0000000131 の刑事訴訟法第一条を読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "article-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "323AC0000000131",
+              "location": {
+                "provision": "main",
+                "articleNumber": "1"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-002",
+  "leakageGroupId": "lqg-penal-code-homicide-article",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "刑法第199条を条文で読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "article-read",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "140AC0000000045",
+              "location": {
+                "provision": "main",
+                "articleNumber": "199"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-043",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "article-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "417AC0000000086",
+              "location": {
+                "articleNumber": "423",
+                "paragraphNumber": 1,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  },
+  "leakageGroupId": "lqg-companies-act-director-liability-clause",
+  "request": {
+    "query": "会社法第423条第1項の条文を取得してください。"
+  },
+  "schemaVersion": 2
+}

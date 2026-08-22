@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-008",
+  "leakageGroupId": "lqg-companies-board-duty-paragraph",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "会社法第362条第4項の本文を読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "paragraph-read",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "417AC0000000086",
+              "location": {
+                "provision": "main",
+                "articleNumber": "362",
+                "paragraphNumber": 4
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "paragraph-read"
+    ]
+  }
+}

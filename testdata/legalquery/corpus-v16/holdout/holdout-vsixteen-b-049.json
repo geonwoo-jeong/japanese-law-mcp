@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-049",
+  "coverageIds": [
+    "intent-law-search",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "dated-law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2023-10-01",
+              "query": "消費税法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  },
+  "leakageGroupId": "lqg-consumption-tax-october-twenty-three-search",
+  "request": {
+    "query": "消費税法について、2023-10-01時点の法律を検索してください。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,62 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-017",
+  "leakageGroupId": "lqg-labor-leave-dismissal-shared-topics",
+  "coverageIds": [
+    "intent-law-content-search",
+    "structure-multiple-explicit-intents",
+    "structure-shared-terminal-cue"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "年次有給休暇と解雇の予告を教えてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "shared-two-topics",
+        "evidenceCodes": [
+          "explicit_task",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "年次有給休暇"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "解雇の予告"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "shared-two-topics"
+    ]
+  }
+}

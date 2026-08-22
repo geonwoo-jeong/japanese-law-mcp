@@ -1,0 +1,27 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-008",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-limit-negative-law-read",
+  "request": {
+    "limitPerAttempt": -1,
+    "query": "手元の行政手続法参照を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "405AC0000000088",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

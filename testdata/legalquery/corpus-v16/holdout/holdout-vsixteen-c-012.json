@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-012",
+  "leakageGroupId": "lqg-companies-director-liability-article-read",
+  "coverageIds": [
+    "intent-law-article-read"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "会社法の法令ID 417AC0000000086 を使い、第四百二十三条を読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "article-read",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "417AC0000000086",
+              "location": {
+                "provision": "main",
+                "articleNumber": "423"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  }
+}

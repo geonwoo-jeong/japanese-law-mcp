@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-007",
+  "coverageIds": [
+    "input-limit-below-minimum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-limit-zero-law-search",
+  "request": {
+    "limitPerAttempt": 0,
+    "query": "行政手続法の法令名を探してください。"
+  },
+  "schemaVersion": 2
+}

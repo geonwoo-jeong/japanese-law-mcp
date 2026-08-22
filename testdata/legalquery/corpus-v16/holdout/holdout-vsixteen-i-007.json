@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-007",
+  "leakageGroupId": "lqg-labor-standards-hours-paragraph",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "労働基準法第32条第2項を読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "paragraph-read",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "322AC0000000049",
+              "location": {
+                "provision": "main",
+                "articleNumber": "32",
+                "paragraphNumber": 2
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "paragraph-read"
+    ]
+  }
+}

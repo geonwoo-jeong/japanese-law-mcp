@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-047",
+  "coverageIds": [
+    "intent-law-search",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "dated-law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "asOf": "2021-04-01",
+              "query": "会社法"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  },
+  "leakageGroupId": "lqg-companies-act-april-twenty-one-search",
+  "request": {
+    "query": "会社法を2021-04-01現在の法令から検索してください。"
+  },
+  "schemaVersion": 2
+}

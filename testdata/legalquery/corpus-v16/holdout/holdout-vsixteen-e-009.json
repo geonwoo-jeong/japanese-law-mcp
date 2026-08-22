@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-009",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-limit-twentyone-law-search",
+  "request": {
+    "limitPerAttempt": 21,
+    "query": "行政不服審査法を検索してください。"
+  },
+  "schemaVersion": 2
+}

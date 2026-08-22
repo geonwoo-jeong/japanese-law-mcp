@@ -1,0 +1,22 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-d-017",
+  "coverageIds": [
+    "unsupported-relationship-analysis"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "unsupported_task_or_resource"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-statute-ordinance-hierarchy-analysis",
+  "request": {
+    "query": "法律と条例が食い違う場合の優先関係を分析してほしい。"
+  },
+  "schemaVersion": 2
+}

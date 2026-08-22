@@ -1,0 +1,63 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-033",
+  "coverageIds": [
+    "intent-law-read",
+    "reference-source-resource-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "325AC0000000201",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2",
+                  "versionId": "325AC0000000201_20260527_508AC0000000023"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  },
+  "leakageGroupId": "lqg-building-code-resource-ref",
+  "request": {
+    "query": "この参照が指す法令本文を読んでください。",
+    "ref": {
+      "key": {
+        "resourceId": "325AC0000000201",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2",
+        "versionId": "325AC0000000201_20260527_508AC0000000023"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

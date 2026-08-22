@@ -1,0 +1,86 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-026",
+  "leakageGroupId": "lqg-four-purpose-article-call-limit",
+  "coverageIds": [
+    "budget-capability-call-limit"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "法令ID 405AC0000000047、412AC0100000081、419AC0000000088、323AC0000000131 の各第一条を順に読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-purpose-articles",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "405AC0000000047",
+              "location": {
+                "provision": "main",
+                "articleNumber": "1"
+              }
+            }
+          },
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "412AC0100000081",
+              "location": {
+                "provision": "main",
+                "articleNumber": "1"
+              }
+            }
+          },
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "419AC0000000088",
+              "location": {
+                "provision": "main",
+                "articleNumber": "1"
+              }
+            }
+          },
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "323AC0000000131",
+              "location": {
+                "provision": "main",
+                "articleNumber": "1"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-purpose-articles"
+    ]
+  }
+}

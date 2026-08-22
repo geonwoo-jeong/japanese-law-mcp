@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-004",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "query",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-control-del",
+  "request": {
+    "query": "行政手続法を検索してください。"
+  },
+  "schemaVersion": 2
+}

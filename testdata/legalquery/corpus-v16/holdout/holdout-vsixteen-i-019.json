@@ -1,0 +1,65 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-019",
+  "leakageGroupId": "lqg-copyright-private-use-and-updates",
+  "coverageIds": [
+    "intent-law-article-read",
+    "intent-law-updates",
+    "structure-article",
+    "structure-complete-date",
+    "structure-multiple-explicit-intents",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "2025年2月1日時点の著作権法第30条第2項を読んで、2025年2月3日に更新された法令も一覧にしてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "article-and-updates",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "345AC0000000048",
+              "location": {
+                "provision": "main",
+                "articleNumber": "30",
+                "paragraphNumber": 2
+              },
+              "asOf": "2025-02-01"
+            }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-02-03"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "article-and-updates"
+    ]
+  }
+}

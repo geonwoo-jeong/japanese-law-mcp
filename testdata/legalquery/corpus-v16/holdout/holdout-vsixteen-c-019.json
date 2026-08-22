@@ -1,0 +1,60 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-019",
+  "leakageGroupId": "lqg-local-autonomy-resident-lawsuit-search",
+  "coverageIds": [
+    "intent-judicial-decision-search",
+    "intent-law-search"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "地方自治法を探し、同法第二百四十二条の二に基づく住民訴訟の裁判例も検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "core-and-judicial-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "地方自治法"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "地方自治法第二百四十二条の二に基づく住民訴訟"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "core-and-judicial-search"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-d-037",
+  "coverageIds": [
+    "boundary-unsupported-candidate-scope"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "mixed_unsupported_intent"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-search-candidate-plus-contract-review",
+  "request": {
+    "query": "法令検索の候補に加えて、契約書レビューも実行候補として作ってください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

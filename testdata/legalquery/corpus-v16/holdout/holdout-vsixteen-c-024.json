@@ -1,0 +1,79 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-c-024",
+  "leakageGroupId": "lqg-digital-administration-four-step-boundary",
+  "coverageIds": [
+    "boundary-budget-limit",
+    "budget-capability-call-limit",
+    "budget-step-limit"
+  ],
+  "safetyVariant": "adversarial",
+  "enabledPacks": [],
+  "request": {
+    "query": "法令ID 425AC0000000027 の本文を読み、情報通信技術を活用した行政の推進等に関する法律を検索し、「個人番号」を含む条文も探し、二〇二五年五月二十三日の法令更新を一覧にしてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-digital-law-steps",
+        "evidenceCodes": [
+          "official_identifier",
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law",
+            "inputKind": "law_read",
+            "logicalInput": {
+              "lawId": "425AC0000000027"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "情報通信技術を活用した行政の推進等に関する法律"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "個人番号"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-05-23"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-digital-law-steps"
+    ]
+  }
+}

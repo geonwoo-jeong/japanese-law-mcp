@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-d-033",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-five-legal-topics-provision-search",
+  "request": {
+    "query": "個人情報、営業秘密、著作物、児童虐待、危険運転について、それぞれ該当条文を検索してください。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

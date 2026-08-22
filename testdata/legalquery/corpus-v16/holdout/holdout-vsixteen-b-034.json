@@ -1,0 +1,63 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-034",
+  "coverageIds": [
+    "intent-law-read",
+    "reference-source-resource-ref"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "law-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_read",
+            "logicalInput": {
+              "ref": {
+                "key": {
+                  "resourceId": "335AC0000000105",
+                  "resourceType": "law",
+                  "sourceId": "e-gov-law-api-v2",
+                  "versionId": "335AC0000000105_20260721_508AC0000000052"
+                },
+                "providerId": "e-gov-law-api-v2"
+              }
+            },
+            "resource": "law",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "law-read"
+    ]
+  },
+  "leakageGroupId": "lqg-road-traffic-resource-ref",
+  "request": {
+    "query": "渡した参照先の法律を取得してください。",
+    "ref": {
+      "key": {
+        "resourceId": "335AC0000000105",
+        "resourceType": "law",
+        "sourceId": "e-gov-law-api-v2",
+        "versionId": "335AC0000000105_20260721_508AC0000000052"
+      },
+      "providerId": "e-gov-law-api-v2"
+    }
+  },
+  "schemaVersion": 2
+}

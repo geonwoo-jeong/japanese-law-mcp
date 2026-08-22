@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-g-004",
+  "coverageIds": [
+    "surface-orthographic-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "cybersecurity-basic-law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "サイバーセキュリティ基本法"
+            }
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "cybersecurity-basic-law-search"
+    ]
+  },
+  "leakageGroupId": "lqg-law-title-cybersecurity-basic-search",
+  "request": {
+    "query": "「ｻｲﾊﾞｰｾｷｭﾘﾃｨ基本法」という半角表記から法令を探してください。"
+  },
+  "schemaVersion": 2
+}

@@ -1,0 +1,51 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-037",
+  "coverageIds": [
+    "intent-judicial-decision-search",
+    "pack-judicial-enabled",
+    "reference-case-reference"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource"
+        ],
+        "meaningId": "judicial-search",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "令和6(行ヒ)281"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "judicial-search"
+    ]
+  },
+  "leakageGroupId": "lqg-official-case-37-lookup",
+  "request": {
+    "query": "裁判例で令和6(行ヒ)281を検索してください。"
+  },
+  "schemaVersion": 2
+}

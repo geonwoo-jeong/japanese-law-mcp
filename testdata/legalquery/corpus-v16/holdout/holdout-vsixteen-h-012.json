@@ -1,0 +1,95 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-h-012",
+  "leakageGroupId": "lqg-platform-liability-clarification",
+  "coverageIds": [
+    "budget-ranked-candidate-limit",
+    "pack-judicial-enabled"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "インターネット上の取引被害について裁判例を探したいのですが、モール運営者、SNS運営者、検索サービス運営者のどの責任か特定できません。検索候補を示してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "needs_clarification",
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "meanings": [
+      {
+        "meaningId": "marketplace-operator-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "モール運営者 取引被害 責任"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "social-network-operator-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "SNS運営者 取引被害 責任"
+            }
+          }
+        ]
+      },
+      {
+        "meaningId": "search-service-operator-search",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "検索サービス運営者 取引被害 責任"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "marketplace-operator-search",
+      "social-network-operator-search"
+    ]
+  }
+}

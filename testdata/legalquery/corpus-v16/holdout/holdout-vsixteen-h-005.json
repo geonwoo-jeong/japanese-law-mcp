@@ -1,0 +1,100 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-h-005",
+  "leakageGroupId": "lqg-personal-information-four-source-review",
+  "coverageIds": [
+    "boundary-budget-limit",
+    "budget-capability-call-limit",
+    "budget-step-limit",
+    "pack-judicial-enabled",
+    "reference-source-resource-ref",
+    "structure-multiple-explicit-intents"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "個人情報保護法を検索し、保有個人情報の利用目的について法令本文も検索してください。さらに、個人情報漏えいの損害賠償に関する裁判例を検索し、この参照先の判決本文を読んでください。",
+    "ref": {
+      "providerId": "courts-hanrei-html",
+      "key": {
+        "sourceId": "courts-hanrei",
+        "resourceType": "judicial-decision",
+        "resourceId": "90755/detail2"
+      }
+    }
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-step-information-review",
+        "evidenceCodes": [
+          "official_identifier",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "個人情報の保護に関する法律"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "law_provision",
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "保有個人情報の利用目的"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "個人情報漏えい 損害賠償"
+            }
+          },
+          {
+            "task": "read",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_read",
+            "logicalInput": {
+              "ref": {
+                "providerId": "courts-hanrei-html",
+                "key": {
+                  "sourceId": "courts-hanrei",
+                  "resourceType": "judicial-decision",
+                  "resourceId": "90755/detail2"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-step-information-review"
+    ]
+  }
+}

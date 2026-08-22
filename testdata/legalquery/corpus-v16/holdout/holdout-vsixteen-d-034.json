@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-d-034",
+  "coverageIds": [
+    "boundary-no-unbounded-fanout"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "step_limit_exceeded"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-exhaustive-many-topic-fanout",
+  "request": {
+    "query": "景品表示、下請取引、公益通報、労働災害、住民票、戸籍の六テーマを漏れなく別々に条文検索して。"
+  },
+  "safetyVariant": "adversarial",
+  "schemaVersion": 2
+}

@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-010",
+  "leakageGroupId": "lqg-personal-data-third-party-paragraph",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "個人情報の保護に関する法律第27条第1項を読んでください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "paragraph-read",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "415AC0000000057",
+              "location": {
+                "provision": "main",
+                "articleNumber": "27",
+                "paragraphNumber": 1
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "paragraph-read"
+    ]
+  }
+}

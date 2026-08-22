@@ -1,0 +1,77 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-a-009",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "permanent-residence",
+          "permanent-residence-permission"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept"
+        ],
+        "meaningId": "permanent-residence-law-text",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "永住許可"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+          "permanent-residence"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept"
+        ],
+        "meaningId": "permanent-residence-case-law",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "永住許可"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "permanent-residence-law-text",
+      "permanent-residence-case-law"
+    ]
+  },
+  "leakageGroupId": "lqg-permanent-residence-resource-choice",
+  "request": {
+    "query": "永住権に関する法情報を検索してください。"
+  },
+  "schemaVersion": 2
+}

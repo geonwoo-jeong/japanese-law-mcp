@@ -1,0 +1,67 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-a-012",
+  "coverageIds": [
+    "ambiguity-weak-general-term"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "notification-law-title",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "届出"
+            },
+            "resource": "law",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "general_term"
+        ],
+        "meaningId": "notification-provision-text",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "届出"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "below_execution_threshold",
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-notification-general-term",
+  "request": {
+    "query": "届出について法情報を検索したいです。"
+  },
+  "schemaVersion": 2
+}

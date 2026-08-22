@@ -1,0 +1,58 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-020",
+  "leakageGroupId": "lqg-nationality-search-and-updates",
+  "coverageIds": [
+    "intent-law-search",
+    "intent-law-updates",
+    "structure-complete-date",
+    "structure-multiple-explicit-intents"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "2024年12月9日時点の国籍法を法令名で検索し、2024年12月11日に更新された法令の一覧も見せてください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "search-and-updates",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "国籍法",
+              "asOf": "2024-12-09"
+            }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2024-12-11"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "search-and-updates"
+    ]
+  }
+}

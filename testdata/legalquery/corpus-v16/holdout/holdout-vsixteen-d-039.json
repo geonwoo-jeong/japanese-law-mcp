@@ -1,0 +1,50 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-d-039",
+  "coverageIds": [
+    "boundary-unsupported-cue-context"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "meaningId": "quoted-phrase-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "取得して翻訳してください"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "quoted-phrase-search"
+    ]
+  },
+  "leakageGroupId": "lqg-translation-cue-inside-quoted-term",
+  "request": {
+    "query": "「取得して翻訳してください」という文言を含む条文だけ検索して。"
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

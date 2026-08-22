@@ -1,0 +1,53 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-b-045",
+  "coverageIds": [
+    "intent-law-article-read",
+    "structure-article",
+    "structure-paragraph"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "article-read",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_article_read",
+            "logicalInput": {
+              "lawId": "405AC0000000088",
+              "location": {
+                "articleNumber": "5",
+                "paragraphNumber": 1,
+                "provision": "main"
+              }
+            },
+            "resource": "law_provision",
+            "task": "read"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "article-read"
+    ]
+  },
+  "leakageGroupId": "lqg-administrative-procedure-review-standards-clause",
+  "request": {
+    "query": "行政手続法第5条第1項の条文を読んでください。"
+  },
+  "schemaVersion": 2
+}

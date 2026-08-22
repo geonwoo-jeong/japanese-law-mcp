@@ -1,0 +1,48 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-i-013",
+  "leakageGroupId": "lqg-consumer-contract-dated-name-search",
+  "coverageIds": [
+    "intent-law-search",
+    "structure-complete-date"
+  ],
+  "enabledPacks": [],
+  "request": {
+    "query": "2025年3月12日時点の消費者契約法を法令名から検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "dated-law-search",
+        "evidenceCodes": [
+          "structured_reference",
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "消費者契約法",
+              "asOf": "2025-03-12"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "dated-law-search"
+    ]
+  }
+}

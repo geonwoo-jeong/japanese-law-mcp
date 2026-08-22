@@ -1,0 +1,45 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-g-020",
+  "coverageIds": [
+    "surface-whitespace-variation"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "single",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [],
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "official_alias"
+        ],
+        "meaningId": "alternative-dispute-resolution-law-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "law",
+            "inputKind": "law_search",
+            "logicalInput": {
+              "query": "裁判外紛争解決手続の利用の促進に関する法律"
+            }
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "selectedMeaningIds": [
+      "alternative-dispute-resolution-law-search"
+    ]
+  },
+  "leakageGroupId": "lqg-law-title-alternative-dispute-resolution-search",
+  "request": {
+    "query": "資料の「裁判外紛争解決手続の利用の　促進に関する法律」を法令名で検索してください。"
+  },
+  "schemaVersion": 2
+}

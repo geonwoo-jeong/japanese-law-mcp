@@ -1,0 +1,78 @@
+{
+  "artifactKind": "semantic_case",
+  "schemaVersion": 2,
+  "caseId": "holdout-vsixteen-h-018",
+  "leakageGroupId": "lqg-family-law-search-budget-boundary",
+  "coverageIds": [
+    "boundary-budget-limit",
+    "budget-capability-call-limit",
+    "budget-step-limit",
+    "pack-judicial-enabled",
+    "structure-multiple-explicit-intents"
+  ],
+  "safetyVariant": "ordinary",
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "request": {
+    "query": "離婚財産分与、親権者指定、面会交流、婚姻費用分担に関する裁判例をそれぞれ検索してください。"
+  },
+  "expected": {
+    "kind": "plan",
+    "decision": "single",
+    "reasonCodes": [
+      "single_clear_candidate"
+    ],
+    "meanings": [
+      {
+        "meaningId": "four-family-law-searches",
+        "evidenceCodes": [
+          "explicit_task",
+          "explicit_resource",
+          "morphological_context"
+        ],
+        "conceptIds": [],
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "離婚 財産分与"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "親権者指定"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "面会交流"
+            }
+          },
+          {
+            "task": "search",
+            "resource": "judicial_decision",
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "婚姻費用分担"
+            }
+          }
+        ]
+      }
+    ],
+    "selectedMeaningIds": [
+      "four-family-law-searches"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-010",
+  "coverageIds": [
+    "input-limit-above-maximum"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "limitPerAttempt",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-limit-ninetynine-article-read",
+  "request": {
+    "limitPerAttempt": 99,
+    "query": "商法第512条第1項の条文を読んでください。"
+  },
+  "schemaVersion": 2
+}

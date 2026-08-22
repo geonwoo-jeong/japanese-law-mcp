@@ -1,0 +1,18 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-e-003",
+  "coverageIds": [
+    "input-query-ascii-control"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "errorCode": "invalid_argument",
+    "field": "query",
+    "kind": "request_error"
+  },
+  "leakageGroupId": "lqg-queryguard-control-nul",
+  "request": {
+    "query": "行政\u0000手続法を読んでください。"
+  },
+  "schemaVersion": 2
+}

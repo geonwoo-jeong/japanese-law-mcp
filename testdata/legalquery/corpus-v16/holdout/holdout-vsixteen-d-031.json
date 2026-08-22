@@ -1,0 +1,23 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-d-031",
+  "coverageIds": [
+    "boundary-non-japanese"
+  ],
+  "enabledPacks": [],
+  "expected": {
+    "decision": "unsupported",
+    "kind": "plan",
+    "meanings": [],
+    "reasonCodes": [
+      "non_japanese_query"
+    ],
+    "selectedMeaningIds": []
+  },
+  "leakageGroupId": "lqg-korean-precedent-search-request",
+  "request": {
+    "query": "일본의 개인정보 관련 판례를 찾아 주세요."
+  },
+  "safetyVariant": "ordinary",
+  "schemaVersion": 2
+}

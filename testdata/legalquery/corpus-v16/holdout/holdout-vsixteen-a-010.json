@@ -1,0 +1,77 @@
+{
+  "artifactKind": "semantic_case",
+  "caseId": "holdout-vsixteen-a-010",
+  "coverageIds": [
+    "ambiguity-multiple-concepts"
+  ],
+  "enabledPacks": [
+    "judicial-cases"
+  ],
+  "expected": {
+    "decision": "needs_clarification",
+    "kind": "plan",
+    "meanings": [
+      {
+        "conceptIds": [
+          "permanent-residence",
+          "permanent-residence-permission"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept"
+        ],
+        "meaningId": "permission-provision-search",
+        "requiredPacks": [],
+        "steps": [
+          {
+            "inputKind": "law_content_search",
+            "logicalInput": {
+              "allTerms": [
+                "永住許可"
+              ],
+              "anyTerms": [],
+              "excludeTerms": []
+            },
+            "resource": "law_provision",
+            "task": "search"
+          }
+        ]
+      },
+      {
+        "conceptIds": [
+          "permanent-residence"
+        ],
+        "evidenceCodes": [
+          "explicit_task",
+          "legal_concept"
+        ],
+        "meaningId": "permission-decision-search",
+        "requiredPacks": [
+          "judicial-cases"
+        ],
+        "steps": [
+          {
+            "inputKind": "judicial_decision_search",
+            "logicalInput": {
+              "query": "永住許可"
+            },
+            "resource": "judicial_decision",
+            "task": "search"
+          }
+        ]
+      }
+    ],
+    "reasonCodes": [
+      "ambiguous_candidates"
+    ],
+    "selectedMeaningIds": [
+      "permission-provision-search",
+      "permission-decision-search"
+    ]
+  },
+  "leakageGroupId": "lqg-permanent-residence-resource-choice",
+  "request": {
+    "query": "『永住権』の法的な根拠を調べたいです。"
+  },
+  "schemaVersion": 2
+}
