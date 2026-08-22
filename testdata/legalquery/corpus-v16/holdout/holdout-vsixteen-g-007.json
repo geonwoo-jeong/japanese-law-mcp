@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "trademark-law-search",
+        "meaningId": "trademark-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "商標法"
+              "lawId": "334AC0000000127",
+              "location": {
+                "articleNumber": "4",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "trademark-law-search"
+      "trademark-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-trademark-search",
+  "leakageGroupId": "lqg-law-title-trademark-article-read",
   "request": {
-    "query": "商標ほうと入力したのですが、該当する法令を検索してください。"
+    "query": "出願手続のメモに商標ほう第4条とあります。表記を直したいので、該当条文を読んでください。"
   },
   "schemaVersion": 2
 }

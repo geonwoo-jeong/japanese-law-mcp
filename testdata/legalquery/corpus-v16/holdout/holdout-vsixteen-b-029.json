@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-nationality-official-number",
+  "leakageGroupId": "lqg-nationality-law-number-body",
   "request": {
-    "query": "昭和二十五年法律第百四十七号の法令本文を読んでください。"
+    "query": "昭和二十五年法律第百四十七号の条文を最初から読みたいです。"
   },
   "schemaVersion": 2
 }

@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "railway-operation-law-search",
+        "meaningId": "railway-operation-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "鉄道営業法"
+              "lawId": "133AC0000000065",
+              "location": {
+                "articleNumber": "1",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "railway-operation-law-search"
+      "railway-operation-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-railway-operation-search",
+  "leakageGroupId": "lqg-law-title-railway-operation-article-read",
   "request": {
-    "query": "「鐵道營業法」と記載された法令を法令名で検索してください。"
+    "query": "明治期の資料には「鐵道營業法」第1条とあります。引用を校正するので、その条文を読んでください。"
   },
   "schemaVersion": 2
 }

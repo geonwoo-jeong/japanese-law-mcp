@@ -24,8 +24,8 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "asOf": "2022-04-01",
-              "query": "道路交通法"
+              "asOf": "2020-04-01",
+              "query": "民法"
             },
             "resource": "law",
             "task": "search"
@@ -40,9 +40,9 @@
       "dated-law-search"
     ]
   },
-  "leakageGroupId": "lqg-road-traffic-april-twenty-two-search",
+  "leakageGroupId": "lqg-civil-code-20200401-law-search",
   "request": {
-    "query": "2022年4月1日の道路交通法を法令名で検索してください。"
+    "query": "2020年4月1日時点で有効だった民法を法令検索して。"
   },
   "schemaVersion": 2
 }

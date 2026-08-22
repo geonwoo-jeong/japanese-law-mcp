@@ -10,10 +10,10 @@
     "field": "limitPerAttempt",
     "kind": "request_error"
   },
-  "leakageGroupId": "lqg-queryguard-limit-negative-law-read",
+  "leakageGroupId": "lqg-queryguard-limit-minimum-law-reference-read",
   "request": {
     "limitPerAttempt": -1,
-    "query": "手元の行政手続法参照を読んでください。",
+    "query": "研修資料の確認に使うため、添付済みの参照から行政手続法の本文を読んでください。",
     "ref": {
       "key": {
         "resourceId": "405AC0000000088",

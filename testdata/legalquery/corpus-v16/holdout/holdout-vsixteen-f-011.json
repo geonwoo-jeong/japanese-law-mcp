@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-sourced-alias-011",
+  "leakageGroupId": "lqg-personal-information-law-name-search",
   "request": {
-    "query": "個情法の正式タイトルを検索してください。"
+    "query": "社内の略称表にある「個情法」から、対応する正式な法令を検索したいです。"
   },
   "schemaVersion": 2
 }

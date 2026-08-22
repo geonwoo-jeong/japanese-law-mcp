@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-local-autonomy-law-adjacent-swap",
   "request": {
-    "query": "該当する法令として地自方治法を検索してください。"
+    "query": "自治体の資料用。地自方治法を法律として検索して。"
   },
   "schemaVersion": 2
 }

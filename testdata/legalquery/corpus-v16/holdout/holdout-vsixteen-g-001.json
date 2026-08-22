@@ -39,7 +39,7 @@
   },
   "leakageGroupId": "lqg-law-title-utility-model-search",
   "request": {
-    "query": "旧字体で「實用新案法」と入力しました。この法令を検索してください。"
+    "query": "技術部の旧い管理票に「實用新案法」とあります。現在の正式な法令名を確認したいので、該当法令を探してください。"
   },
   "schemaVersion": 2
 }

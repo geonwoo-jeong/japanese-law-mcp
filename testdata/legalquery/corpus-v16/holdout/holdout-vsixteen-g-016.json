@@ -39,7 +39,7 @@
   },
   "leakageGroupId": "lqg-law-title-consumer-safety-search",
   "request": {
-    "query": "文中の「消費者　安全法」に当たる法令を探してください。"
+    "query": "相談記録の「消費者　安全法」という空白入り表記を、現在の正式名称と照合したいです。法令を探してもらえますか。"
   },
   "schemaVersion": 2
 }

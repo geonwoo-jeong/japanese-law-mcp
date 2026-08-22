@@ -10,10 +10,10 @@
     "field": "limitPerAttempt",
     "kind": "request_error"
   },
-  "leakageGroupId": "lqg-queryguard-limit-twentyone-law-search",
+  "leakageGroupId": "lqg-queryguard-limit-maximum-law-search",
   "request": {
     "limitPerAttempt": 21,
-    "query": "行政不服審査法を検索してください。"
+    "query": "審査担当者向けの資料を整えるため、行政不服審査法という法令を検索してください。"
   },
   "schemaVersion": 2
 }

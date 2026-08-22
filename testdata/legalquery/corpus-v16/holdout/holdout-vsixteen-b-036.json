@@ -25,10 +25,10 @@
             "logicalInput": {
               "ref": {
                 "key": {
-                  "resourceId": "405AC0000000047",
+                  "resourceId": "325AC0000000201",
                   "resourceType": "law",
                   "sourceId": "e-gov-law-api-v2",
-                  "versionId": "405AC0000000047_20260521_504AC0000000048"
+                  "versionId": "325AC0000000201_20260527_508AC0000000023"
                 },
                 "providerId": "e-gov-law-api-v2"
               }
@@ -46,15 +46,15 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-unfair-competition-resource-ref",
+  "leakageGroupId": "lqg-building-standards-20260527-ref-body",
   "request": {
-    "query": "この法令参照の本文を取得してください。",
+    "query": "渡した参照が指す版の法律本文を取得して。",
     "ref": {
       "key": {
-        "resourceId": "405AC0000000047",
+        "resourceId": "325AC0000000201",
         "resourceType": "law",
         "sourceId": "e-gov-law-api-v2",
-        "versionId": "405AC0000000047_20260521_504AC0000000048"
+        "versionId": "325AC0000000201_20260527_508AC0000000023"
       },
       "providerId": "e-gov-law-api-v2"
     }

@@ -24,8 +24,8 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "asOf": "2021-04-01",
-              "query": "会社法"
+              "asOf": "2020-04-01",
+              "query": "民法"
             },
             "resource": "law",
             "task": "search"
@@ -40,9 +40,9 @@
       "dated-law-search"
     ]
   },
-  "leakageGroupId": "lqg-companies-act-april-twenty-one-search",
+  "leakageGroupId": "lqg-civil-code-20200401-law-search",
   "request": {
-    "query": "会社法を2021-04-01現在の法令から検索してください。"
+    "query": "民法を法令検索。基準日は2020-04-01です。"
   },
   "schemaVersion": 2
 }

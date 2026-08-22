@@ -12,7 +12,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "労働者派遣契約の中途解除に関する裁判例を検索し、併せてこの参照先の判決本文を読んでください。",
+    "query": "派遣先による労働者派遣契約の中途解除と損害賠償を扱う裁判例を検索し、併せて指定した参照先の判決本文も読んでください。",
     "ref": {
       "providerId": "courts-hanrei-html",
       "key": {
@@ -47,7 +47,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "労働者派遣契約の中途解除"
+              "query": "派遣先による労働者派遣契約の中途解除と損害賠償"
             }
           },
           {

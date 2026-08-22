@@ -8,7 +8,7 @@
   ],
   "enabledPacks": [],
   "request": {
-    "query": "この公式参照が指す不正競争防止法の本文を直接表示してください。",
+    "query": "この公式参照に対応する版の法律本文を、そのまま表示してください。",
     "ref": {
       "providerId": "e-gov-law-api-v2",
       "key": {

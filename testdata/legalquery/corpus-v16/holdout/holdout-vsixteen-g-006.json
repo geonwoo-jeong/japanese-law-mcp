@@ -39,7 +39,7 @@
   },
   "leakageGroupId": "lqg-law-title-alcohol-health-basic-search",
   "request": {
-    "query": "「ｱﾙｺｰﾙ健康障害対策基本法」の正式な法令を探してください。"
+    "query": "健康施策の引継資料に「ｱﾙｺｰﾙ健康障害対策基本法」とあります。公用の名称に対応する法令を探していただけますか。"
   },
   "schemaVersion": 2
 }

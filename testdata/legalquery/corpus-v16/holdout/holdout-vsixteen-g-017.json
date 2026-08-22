@@ -12,19 +12,21 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "administrative-execution-law-search",
+        "meaningId": "administrative-execution-law-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
+            "task": "read",
             "resource": "law",
-            "inputKind": "law_search",
+            "inputKind": "law_read",
             "logicalInput": {
-              "query": "行政代執行法"
+              "lawId": "323AC0000000043",
+              "asOf": "2025-04-01"
             }
           }
         ]
@@ -34,12 +36,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "administrative-execution-law-search"
+      "administrative-execution-law-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-administrative-execution-search",
+  "leakageGroupId": "lqg-law-title-administrative-execution-read",
   "request": {
-    "query": "「行政 代執行法」という記載から法令を検索してください。"
+    "query": "執行手続の旧台帳にある「行政 代執行法」の2025年4月1日時点の登録本文を読んでください。"
   },
   "schemaVersion": 2
 }

@@ -28,7 +28,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "平成1(オ)239"
+              "query": "令和6(行ヒ)281"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -43,9 +43,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "lqg-official-case-40-lookup",
+  "leakageGroupId": "lqg-case-r6-gyohi-281-search",
   "request": {
-    "query": "平成1(オ)239 という事件番号の裁判例を検索してください。"
+    "query": "裁判例検索：対象事件 令和6(行ヒ)281"
   },
   "schemaVersion": 2
 }

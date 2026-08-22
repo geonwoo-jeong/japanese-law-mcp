@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-001",
+  "leakageGroupId": "lqg-law-title-land-building-lease",
   "request": {
-    "query": "借地借家法の法令本文を探してください。"
+    "query": "借地借家法を法令名から引いて、検索結果を確認したいです。"
   },
   "schemaVersion": 2
 }

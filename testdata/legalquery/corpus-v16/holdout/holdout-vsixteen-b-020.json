@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-national-public-service-law-adjacent-swap",
   "request": {
-    "query": "国家務公員法という法令を検索してください。"
+    "query": "国家務公員法を探しています。該当法令の検索を。"
   },
   "schemaVersion": 2
 }

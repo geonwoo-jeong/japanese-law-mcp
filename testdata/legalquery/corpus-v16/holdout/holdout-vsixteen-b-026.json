@@ -23,8 +23,8 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "340AC0000000033",
-              "revisionId": "340AC0000000033_20260401_507AC0000000013"
+              "lawId": "322AC0000000049",
+              "revisionId": "322AC0000000049_20250601_504AC0000000068"
             },
             "resource": "law",
             "task": "read"
@@ -39,9 +39,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-income-tax-revision-read",
+  "leakageGroupId": "lqg-labor-standards-20250601-revision-body",
   "request": {
-    "query": "法令履歴ID 340AC0000000033_20260401_507AC0000000013 で指定される法律を取得してください。"
+    "query": "改正履歴のこの版を控えたいです。322AC0000000049_20250601_504AC0000000068 の法律全文を取得して。"
   },
   "schemaVersion": 2
 }

@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-state-redress-law-missing-character",
   "request": {
-    "query": "国家賠法を法令名で検索してください。"
+    "query": "国家賠法の掲載先が必要です。法令を検索してください。"
   },
   "schemaVersion": 2
 }

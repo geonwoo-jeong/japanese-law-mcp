@@ -25,10 +25,10 @@
             "logicalInput": {
               "ref": {
                 "key": {
-                  "resourceId": "335AC0000000105",
+                  "resourceId": "325AC0000000201",
                   "resourceType": "law",
                   "sourceId": "e-gov-law-api-v2",
-                  "versionId": "335AC0000000105_20260721_508AC0000000052"
+                  "versionId": "325AC0000000201_20260527_508AC0000000023"
                 },
                 "providerId": "e-gov-law-api-v2"
               }
@@ -46,15 +46,15 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-road-traffic-resource-ref",
+  "leakageGroupId": "lqg-building-standards-20260527-ref-body",
   "request": {
-    "query": "渡した参照先の法律を取得してください。",
+    "query": "添付の参照が指す版を、そのまま取得したいです。法律全文をお願いします。",
     "ref": {
       "key": {
-        "resourceId": "335AC0000000105",
+        "resourceId": "325AC0000000201",
         "resourceType": "law",
         "sourceId": "e-gov-law-api-v2",
-        "versionId": "335AC0000000105_20260721_508AC0000000052"
+        "versionId": "325AC0000000201_20260527_508AC0000000023"
       },
       "providerId": "e-gov-law-api-v2"
     }

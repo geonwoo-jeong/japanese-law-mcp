@@ -37,10 +37,10 @@
       "law-search-minimum"
     ]
   },
-  "leakageGroupId": "lqg-queryguard-limit-zero-law-search",
+  "leakageGroupId": "lqg-queryguard-limit-minimum-law-search",
   "request": {
     "limitPerAttempt": 1,
-    "query": "行政手続法の法令名を探してください。"
+    "query": "研修準備のため、行政手続法という法令を名称で検索してください。"
   },
   "schemaVersion": 2
 }

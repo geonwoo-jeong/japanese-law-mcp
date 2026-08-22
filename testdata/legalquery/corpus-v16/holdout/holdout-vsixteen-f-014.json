@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-sourced-alias-014",
+  "leakageGroupId": "lqg-law-title-my-number",
   "request": {
-    "query": "マイナ法と略される法律名を確認してください。"
+    "query": "資料で見かけたマイナ法が何を指すのか、対応する法令を検索できますか。"
   },
   "schemaVersion": 2
 }

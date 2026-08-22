@@ -8,7 +8,7 @@
   ],
   "enabledPacks": [],
   "request": {
-    "query": "公益通報者保護法で「不利益な取扱い」と記された条文を検索してください。"
+    "query": "通報後の扱いを確認したいので、公益通報者保護法の中から「不利益な取扱い」と書かれた条文を探してください。"
   },
   "expected": {
     "kind": "plan",
@@ -22,6 +22,7 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
+          "official_alias",
           "morphological_context"
         ],
         "conceptIds": [],
@@ -33,6 +34,7 @@
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
+                "公益通報者保護法",
                 "不利益な取扱い"
               ],
               "anyTerms": [],

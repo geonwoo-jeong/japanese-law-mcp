@@ -28,7 +28,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "令和4(行ヒ)352"
+              "query": "令和6(行ヒ)281"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -43,9 +43,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "lqg-official-case-39-lookup",
+  "leakageGroupId": "lqg-case-r6-gyohi-281-search",
   "request": {
-    "query": "裁判例の事件番号 令和4(行ヒ)352 を検索してください。"
+    "query": "令和6(行ヒ)281の判決が必要です。裁判例検索をお願いします。"
   },
   "schemaVersion": 2
 }

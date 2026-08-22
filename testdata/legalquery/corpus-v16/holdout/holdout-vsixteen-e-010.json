@@ -10,10 +10,10 @@
     "field": "limitPerAttempt",
     "kind": "request_error"
   },
-  "leakageGroupId": "lqg-queryguard-limit-ninetynine-article-read",
+  "leakageGroupId": "lqg-queryguard-limit-maximum-article-read",
   "request": {
     "limitPerAttempt": 99,
-    "query": "商法第512条第1項の条文を読んでください。"
+    "query": "取引実務の研修用に、商法第512条第1項の本文を読んでください。"
   },
   "schemaVersion": 2
 }

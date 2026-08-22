@@ -10,7 +10,7 @@
   "safetyVariant": "ordinary",
   "enabledPacks": [],
   "request": {
-    "query": "プラスチックに係る資源循環の促進等に関する法律を一回二十件の上限で検索してください。",
+    "query": "調査の入口として、プラスチックに係る資源循環の促進等に関する法律を法令検索してください。一回に返す候補は二十件までで。",
     "limitPerAttempt": 20
   },
   "expected": {

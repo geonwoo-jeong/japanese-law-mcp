@@ -15,7 +15,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "離婚財産分与、親権者指定、面会交流、婚姻費用分担に関する裁判例をそれぞれ検索してください。"
+    "query": "家事事件の調査メモ用に、離婚時の財産分与額、親権者指定の判断基準、子の利益を考慮した面会交流の制限、婚姻費用分担額の算定を扱う裁判例をそれぞれ検索してください。"
   },
   "expected": {
     "kind": "plan",
@@ -41,7 +41,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "離婚 財産分与"
+              "query": "離婚時の財産分与額の算定"
             }
           },
           {
@@ -49,7 +49,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "親権者指定"
+              "query": "離婚時における親権者指定の判断基準"
             }
           },
           {
@@ -57,7 +57,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "面会交流"
+              "query": "子の利益を考慮した面会交流の制限"
             }
           },
           {
@@ -65,7 +65,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "婚姻費用分担"
+              "query": "婚姻費用分担額の算定基準と考慮要素"
             }
           }
         ]

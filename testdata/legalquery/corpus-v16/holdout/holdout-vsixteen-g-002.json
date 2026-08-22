@@ -12,19 +12,21 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "meteorological-service-law-search",
+        "meaningId": "meteorological-service-law-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
+            "task": "read",
             "resource": "law",
-            "inputKind": "law_search",
+            "inputKind": "law_read",
             "logicalInput": {
-              "query": "気象業務法"
+              "lawId": "327AC0000000165",
+              "asOf": "2025-01-15"
             }
           }
         ]
@@ -34,12 +36,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "meteorological-service-law-search"
+      "meteorological-service-law-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-meteorological-service-search",
+  "leakageGroupId": "lqg-law-title-meteorological-service-read",
   "request": {
-    "query": "資料にある「氣象業務法」の現行表記の法令を探してください。"
+    "query": "保管台帳の「氣象業務法」を現行資料と照合するため、2025年1月15日時点の法令本文を読んでください。"
   },
   "schemaVersion": 2
 }

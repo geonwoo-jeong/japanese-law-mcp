@@ -9,7 +9,7 @@
   "safetyVariant": "adversarial",
   "enabledPacks": [],
   "request": {
-    "query": "裁判例機能が無効でも法令検索で代用せず、建物賃貸借の更新拒絶に関する裁判例だけを検索してください。"
+    "query": "裁判例機能が無効でも法令検索へ置き換えず、建物賃貸借の更新拒絶に必要な正当事由を扱う裁判例だけを探してください。"
   },
   "expected": {
     "kind": "plan",
@@ -35,7 +35,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "建物賃貸借の更新拒絶"
+              "query": "建物賃貸借の更新拒絶に必要な正当事由"
             }
           }
         ]

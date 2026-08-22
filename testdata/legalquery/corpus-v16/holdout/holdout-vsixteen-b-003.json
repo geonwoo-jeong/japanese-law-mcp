@@ -39,9 +39,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-consumer-contract-law-extra-character",
+  "leakageGroupId": "lqg-law-title-consumer-contract",
   "request": {
-    "query": "消費者者契約法を法令として検索してください。"
+    "query": "消費者者契約法、法令一覧から検索できますか。"
   },
   "schemaVersion": 2
 }

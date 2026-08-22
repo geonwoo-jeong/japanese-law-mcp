@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "sports-basic-law-search",
+        "meaningId": "sports-basic-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "スポーツ基本法"
+              "lawId": "423AC1000000078",
+              "location": {
+                "articleNumber": "2",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "sports-basic-law-search"
+      "sports-basic-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-sports-basic-search",
+  "leakageGroupId": "lqg-law-title-sports-basic-article-read",
   "request": {
-    "query": "メモの「ｽﾎﾟｰﾂ基本法」に対応する法令を検索してください。"
+    "query": "広報原稿の「ｽﾎﾟｰﾂ基本法」第2条を照らし合わせたいので、本文を表示してください。"
   },
   "schemaVersion": 2
 }

@@ -25,9 +25,9 @@
           {
             "inputKind": "law_article_read",
             "logicalInput": {
-              "lawId": "417AC0000000086",
+              "lawId": "129AC0000000089",
               "location": {
-                "articleNumber": "423",
+                "articleNumber": "415",
                 "paragraphNumber": 1,
                 "provision": "main"
               }
@@ -45,9 +45,9 @@
       "article-read"
     ]
   },
-  "leakageGroupId": "lqg-companies-act-director-liability-clause",
+  "leakageGroupId": "lqg-civil-code-415-1-provision",
   "request": {
-    "query": "会社法第423条第1項の条文を取得してください。"
+    "query": "民法第415条第1項を確認中。該当条文を読みたいです。"
   },
   "schemaVersion": 2
 }

@@ -39,7 +39,7 @@
   },
   "leakageGroupId": "lqg-law-title-nature-conservation-search",
   "request": {
-    "query": "「自然 環境保全法」と空白を含む表記で法令を検索してください。"
+    "query": "法務部から「自然 環境保全法」という表記が届きました。正式名称と照合したいので、該当法令を検索してください。"
   },
   "schemaVersion": 2
 }

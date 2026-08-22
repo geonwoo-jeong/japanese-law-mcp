@@ -8,7 +8,7 @@
   ],
   "enabledPacks": [],
   "request": {
-    "query": "フリーランス法の条文から「就業環境の整備」を含む箇所を探してください。"
+    "query": "フリーランス・事業者間取引適正化等法を確認中です。「就業環境の整備」を含む条文を探して。"
   },
   "expected": {
     "kind": "plan",
@@ -22,6 +22,7 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
+          "official_alias",
           "morphological_context"
         ],
         "conceptIds": [],
@@ -33,6 +34,7 @@
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
+                "特定受託事業者に係る取引の適正化等に関する法律",
                 "就業環境の整備"
               ],
               "anyTerms": [],

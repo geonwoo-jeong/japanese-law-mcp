@@ -25,9 +25,9 @@
           {
             "inputKind": "law_article_read",
             "logicalInput": {
-              "lawId": "321CONSTITUTION",
+              "lawId": "129AC0000000089",
               "location": {
-                "articleNumber": "14",
+                "articleNumber": "415",
                 "paragraphNumber": 1,
                 "provision": "main"
               }
@@ -45,9 +45,9 @@
       "article-read"
     ]
   },
-  "leakageGroupId": "lqg-constitution-equality-clause",
+  "leakageGroupId": "lqg-civil-code-415-1-provision",
   "request": {
-    "query": "日本国憲法第14条第1項を条文として読んでください。"
+    "query": "資料の引用箇所を確かめたいです。民法415条1項の条文を読んでください。"
   },
   "schemaVersion": 2
 }

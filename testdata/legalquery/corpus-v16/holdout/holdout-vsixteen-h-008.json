@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "労働紛争の裁判例を探したいのですが、解雇、雇止め、賃金、残業代、配転、出向、休職、懲戒、ハラスメント、安全配慮、労災、競業避止、秘密保持、退職金、採用内定、労働者性のどれに当たるか未確定です。検索候補を示してください。"
+    "query": "労働紛争の相談記録には、未払賃金、時間外労働の割増賃金、配転命令、出向命令、休職と復職、懲戒処分、職場のハラスメント、安全配慮義務、労災、退職後の競業避止・秘密保持、退職金、採用内定、業務委託者の労働者性も候補として残っています。ただ、事実関係の記載は普通解雇の有効性が最も具体的で、有期労働契約の雇止めが次に詳しいです。裁判例の検索候補をこの優先順で示してください。"
   },
   "expected": {
     "kind": "plan",
@@ -37,7 +37,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "解雇"
+              "query": "普通解雇における解雇権濫用法理"
             }
           }
         ]
@@ -59,7 +59,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "雇止め"
+              "query": "有期労働契約の雇止めの有効性"
             }
           }
         ]
@@ -81,7 +81,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "賃金"
+            "query": "未払賃金に関する使用者の支払義務"
             }
           }
         ]
@@ -103,7 +103,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "残業代"
+              "query": "時間外労働の割増賃金請求"
             }
           }
         ]
@@ -125,7 +125,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "配転"
+              "query": "配転命令の有効性をめぐる労働紛争"
             }
           }
         ]
@@ -147,7 +147,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "出向"
+              "query": "出向命令の有効性をめぐる労働紛争"
             }
           }
         ]
@@ -169,7 +169,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "休職"
+            "query": "休職命令の有効性と復職拒否の可否"
             }
           }
         ]
@@ -191,7 +191,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "懲戒"
+              "query": "懲戒処分の相当性と有効性"
             }
           }
         ]
@@ -213,7 +213,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "ハラスメント"
+              "query": "職場のハラスメントによる損害賠償"
             }
           }
         ]
@@ -235,7 +235,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "安全配慮義務"
+              "query": "使用者の安全配慮義務違反"
             }
           }
         ]
@@ -257,7 +257,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "労災"
+              "query": "業務上災害に関する労災認定"
             }
           }
         ]
@@ -279,7 +279,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "競業避止"
+              "query": "退職後の競業避止義務の有効性"
             }
           }
         ]
@@ -301,7 +301,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "秘密保持"
+              "query": "退職後の秘密保持義務違反"
             }
           }
         ]
@@ -323,7 +323,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "退職金"
+            "query": "退職金の不支給又は減額の有効性"
             }
           }
         ]
@@ -345,7 +345,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "採用内定"
+            "query": "採用内定取消しの有効性判断"
             }
           }
         ]
@@ -367,7 +367,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "労働者性"
+              "query": "業務委託契約における就業者の労働者性"
             }
           }
         ]

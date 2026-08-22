@@ -45,9 +45,9 @@
       "article-read"
     ]
   },
-  "leakageGroupId": "lqg-civil-code-nonperformance-clause",
+  "leakageGroupId": "lqg-civil-code-415-1-provision",
   "request": {
-    "query": "民法の第415条第1項を読んでください。"
+    "query": "民法第415条第1項、条文だけ取得して。"
   },
   "schemaVersion": 2
 }

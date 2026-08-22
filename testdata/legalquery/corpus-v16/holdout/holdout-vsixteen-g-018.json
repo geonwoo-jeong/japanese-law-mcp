@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "domestic-relations-procedure-law-search",
+        "meaningId": "domestic-relations-procedure-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "家事事件手続法"
+              "lawId": "423AC0000000052",
+              "location": {
+                "articleNumber": "2",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "domestic-relations-procedure-law-search"
+      "domestic-relations-procedure-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-domestic-relations-procedure-search",
+  "leakageGroupId": "lqg-law-title-domestic-relations-procedure-article-read",
   "request": {
-    "query": "「家事事件手続 法」と書かれた法令名を確認してください。"
+    "query": "案内文に「家事事件手続 法」第2条とあります。呼称と引用を確認するので、条文本文を見せてください。"
   },
   "schemaVersion": 2
 }

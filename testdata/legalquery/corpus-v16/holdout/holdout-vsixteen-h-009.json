@@ -13,7 +13,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "定年後再雇用の賃金格差、同一労働同一賃金、就業規則の不利益変更、退職金減額に関する裁判例をそれぞれ検索してください。"
+    "query": "人事制度の検討資料として、定年後再雇用の賃金格差が不合理な待遇に当たるか、有期雇用の同一労働同一賃金、就業規則を不利益に変更する合理性、退職金減額の有効性を扱う裁判例をそれぞれ検索してください。"
   },
   "expected": {
     "kind": "plan",
@@ -39,7 +39,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "定年後再雇用の賃金格差"
+              "query": "定年後再雇用の賃金格差と不合理な待遇"
             }
           },
           {
@@ -47,7 +47,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "同一労働同一賃金"
+              "query": "有期雇用の同一労働同一賃金"
             }
           },
           {
@@ -55,7 +55,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "就業規則の不利益変更"
+              "query": "就業規則の不利益変更の合理性"
             }
           },
           {
@@ -63,7 +63,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "退職金減額"
+              "query": "退職金制度の変更による退職金減額の有効性"
             }
           }
         ]

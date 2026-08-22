@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-005",
+  "leakageGroupId": "lqg-specified-commercial-transactions-name-search",
   "request": {
-    "query": "特定商取引に関する法律の条文検索に進む前に法令名を確認したいです。"
+    "query": "特定商取引に関する法律を法令名で探したいのですが、検索できますか。"
   },
   "schemaVersion": 2
 }

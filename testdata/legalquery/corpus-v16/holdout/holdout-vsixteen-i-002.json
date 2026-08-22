@@ -9,7 +9,7 @@
   ],
   "enabledPacks": [],
   "request": {
-    "query": "刑法第199条を条文で読んでください。"
+    "query": "解説資料の脚注で参照するので、刑法199条の条文をそのまま読みたいです。"
   },
   "expected": {
     "kind": "plan",

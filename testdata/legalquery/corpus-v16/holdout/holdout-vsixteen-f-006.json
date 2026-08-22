@@ -25,7 +25,7 @@
             "resource": "law",
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "私的独占の禁止及び公正取引の確保に関する法律"
+              "query": "労働基準法"
             }
           }
         ]
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-abbreviation-006",
+  "leakageGroupId": "lqg-law-title-labor-standards",
   "request": {
-    "query": "独禁法の正式な法令名を検索してください。"
+    "query": "就業規則を確認する入口として、労基法の正式な法令を探したいです。"
   },
   "schemaVersion": 2
 }

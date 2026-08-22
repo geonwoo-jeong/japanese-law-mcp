@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-resident-register-law-adjacent-swap",
   "request": {
-    "query": "住民本基台帳法を法令名から検索してください。"
+    "query": "住民本基台帳法の法令情報を検索願います。"
   },
   "schemaVersion": 2
 }

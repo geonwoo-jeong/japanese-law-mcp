@@ -10,9 +10,9 @@
     "field": "ref",
     "kind": "request_error"
   },
-  "leakageGroupId": "lqg-queryguard-ref-bad-resource-type",
+  "leakageGroupId": "lqg-queryguard-ref-administrative-procedure-read",
   "request": {
-    "query": "この参照を確認してください。",
+    "query": "受け取った参照から行政手続法の法令本文を読んでください。",
     "ref": {
       "key": {
         "resourceId": "405AC0000000088",

@@ -25,7 +25,7 @@
             "resource": "law",
             "inputKind": "law_search",
             "logicalInput": {
-              "query": "日本農林規格等に関する法律"
+              "query": "宅地建物取引業法"
             }
           }
         ]
@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-abbreviation-008",
+  "leakageGroupId": "lqg-law-title-real-estate-brokerage",
   "request": {
-    "query": "JAS法で通る法令を検索したいです。"
+    "query": "不動産取引の調査を始めるので、宅建業法に当たる法令を検索してください。"
   },
   "schemaVersion": 2
 }

@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-004",
+  "leakageGroupId": "lqg-law-title-premiums-representations",
   "request": {
-    "query": "不当景品類及び不当表示防止法をそのまま法令検索してください。"
+    "query": "広告表示の社内確認に使うため、不当景品類及び不当表示防止法を法令検索したいです。"
   },
   "schemaVersion": 2
 }

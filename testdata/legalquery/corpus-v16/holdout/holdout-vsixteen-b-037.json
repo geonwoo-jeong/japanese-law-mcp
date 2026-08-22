@@ -43,9 +43,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "lqg-official-case-37-lookup",
+  "leakageGroupId": "lqg-case-r6-gyohi-281-search",
   "request": {
-    "query": "裁判例で令和6(行ヒ)281を検索してください。"
+    "query": "行政事件の判決を確認中です。令和6(行ヒ)281の裁判例を検索してください。"
   },
   "schemaVersion": 2
 }

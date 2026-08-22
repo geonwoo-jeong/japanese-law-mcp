@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "医療過誤の説明義務違反に関する裁判例を、続きのページは取得せず最初のページだけ検索してください。",
+    "query": "治療方法の説明が不十分で患者の自己決定権を侵害したとされる裁判例を、続きは取得せず最初のページだけ検索してください。",
     "limitPerAttempt": 20
   },
   "expected": {
@@ -38,7 +38,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "医療過誤 説明義務違反"
+              "query": "医師の説明義務違反による自己決定権侵害"
             }
           }
         ]

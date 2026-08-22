@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "知的財産の使用許諾をめぐる裁判例を探したいのですが、特許、著作権、商標、営業秘密のどれに関する紛争か未確定です。検索候補を示してください。"
+    "query": "知的財産の使用許諾紛争について、商標ライセンスの解除、営業秘密の使用許諾違反、特許ライセンスの実施料不払い、著作権利用許諾の利用範囲が候補です。契約書と請求書には特許実施料の不払いが最も具体的に記載され、著作物の利用範囲が次に詳しく、商標と営業秘密は可能性の記載だけです。裁判例は特許を主候補、著作権を次点として、検索候補を示してください。"
   },
   "expected": {
     "kind": "plan",
@@ -37,7 +37,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "特許 使用許諾"
+              "query": "特許ライセンス契約の実施料不払い"
             }
           }
         ]
@@ -59,7 +59,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "著作権 使用許諾"
+              "query": "著作権利用許諾契約の利用範囲"
             }
           }
         ]
@@ -81,7 +81,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "商標 使用許諾"
+              "query": "商標ライセンス契約の解除"
             }
           }
         ]
@@ -103,7 +103,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "営業秘密 使用許諾"
+              "query": "営業秘密の使用許諾契約違反"
             }
           }
         ]

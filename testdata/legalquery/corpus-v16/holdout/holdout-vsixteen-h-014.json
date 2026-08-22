@@ -14,7 +14,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "不法行為の相当因果関係、過失相殺、損益相殺に関する裁判例をそれぞれ検索し、この参照先の判決本文も読んでください。",
+    "query": "損害賠償額の算定を比較するため、不法行為による損害との相当因果関係、被害者側の過失相殺、受領した給付の損益相殺を扱う裁判例をそれぞれ検索し、指定した参照先の判決本文も読んでください。",
     "ref": {
       "providerId": "courts-hanrei-html",
       "key": {
@@ -49,7 +49,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "不法行為 相当因果関係"
+              "query": "不法行為による損害と相当因果関係"
             }
           },
           {
@@ -57,7 +57,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "過失相殺"
+              "query": "損害賠償額の算定における過失相殺"
             }
           },
           {
@@ -65,7 +65,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "損益相殺"
+              "query": "損害賠償額の算定における損益相殺"
             }
           },
           {

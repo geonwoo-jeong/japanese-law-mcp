@@ -25,9 +25,9 @@
           {
             "inputKind": "law_article_read",
             "logicalInput": {
-              "lawId": "322AC0000000049",
+              "lawId": "129AC0000000089",
               "location": {
-                "articleNumber": "36",
+                "articleNumber": "415",
                 "paragraphNumber": 1,
                 "provision": "main"
               }
@@ -45,9 +45,9 @@
       "article-read"
     ]
   },
-  "leakageGroupId": "lqg-labor-standards-overtime-clause",
+  "leakageGroupId": "lqg-civil-code-415-1-provision",
   "request": {
-    "query": "労働基準法の第36条第1項を条文で読んでください。"
+    "query": "条文を読みたい。場所は民法第415条第1項です。"
   },
   "schemaVersion": 2
 }

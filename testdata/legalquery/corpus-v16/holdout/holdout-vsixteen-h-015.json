@@ -13,7 +13,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "この参照先の判決本文を読み、債務不履行による損害賠償と契約解除に関する裁判例もそれぞれ検索してください。",
+    "query": "指定した参照先の判決本文を読み、債務不履行による損害賠償の範囲と、債務不履行を理由とする契約解除の要件を扱う裁判例もそれぞれ検索してください。",
     "ref": {
       "providerId": "courts-hanrei-html",
       "key": {
@@ -64,7 +64,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "債務不履行 損害賠償"
+              "query": "債務不履行による損害賠償の範囲"
             }
           },
           {
@@ -72,7 +72,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "契約解除"
+              "query": "債務不履行を理由とする契約解除の要件"
             }
           }
         ]

@@ -9,7 +9,7 @@
   "safetyVariant": "ordinary",
   "enabledPacks": [],
   "request": {
-    "query": "建物賃貸借の更新拒絶に関する裁判例を検索してください。"
+    "query": "賃貸人による建物賃貸借の更新拒絶について、正当事由の有無を争った裁判例を検索してください。"
   },
   "expected": {
     "kind": "plan",
@@ -35,7 +35,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "建物賃貸借の更新拒絶"
+              "query": "建物賃貸借の更新拒絶に必要な正当事由"
             }
           }
         ]

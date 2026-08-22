@@ -12,11 +12,12 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "cybersecurity-basic-law-search",
+        "meaningId": "cybersecurity-basic-search-updates",
         "requiredPacks": [],
         "steps": [
           {
@@ -26,6 +27,14 @@
             "logicalInput": {
               "query": "サイバーセキュリティ基本法"
             }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-05-01"
+            }
           }
         ]
       }
@@ -34,12 +43,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "cybersecurity-basic-law-search"
+      "cybersecurity-basic-search-updates"
     ]
   },
-  "leakageGroupId": "lqg-law-title-cybersecurity-basic-search",
+  "leakageGroupId": "lqg-law-title-cybersecurity-basic-search-updates",
   "request": {
-    "query": "「ｻｲﾊﾞｰｾｷｭﾘﾃｨ基本法」という半角表記から法令を探してください。"
+    "query": "台帳の「ｻｲﾊﾞｰｾｷｭﾘﾃｨ基本法」を現行の法令名で検索し、2025年5月1日に更新された法令の一覧も確認してください。"
   },
   "schemaVersion": 2
 }

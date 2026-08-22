@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-administrative-procedure-law-missing-character",
   "request": {
-    "query": "行政手法の法令情報を検索してください。"
+    "query": "行政手法――この名前の法律を検索して。"
   },
   "schemaVersion": 2
 }

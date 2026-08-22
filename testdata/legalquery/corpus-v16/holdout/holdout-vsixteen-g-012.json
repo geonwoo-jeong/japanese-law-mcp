@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "noise-regulation-law-search",
+        "meaningId": "noise-regulation-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "騒音規制法"
+              "lawId": "343AC0000000098",
+              "location": {
+                "articleNumber": "1",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "noise-regulation-law-search"
+      "noise-regulation-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-noise-regulation-search",
+  "leakageGroupId": "lqg-law-title-noise-regulation-article-read",
   "request": {
-    "query": "文書から貼り付けた「騒音　規制法」を法令名で探してください。"
+    "query": "議事録には「騒音　規制法」第1条とあります。引用元を確かめるため、その条文を表示してください。"
   },
   "schemaVersion": 2
 }

@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "seafarers-law-search",
+        "meaningId": "seafarers-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "船員法"
+              "lawId": "322AC0000000100",
+              "location": {
+                "articleNumber": "74",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "seafarers-law-search"
+      "seafarers-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-seafarers-search",
+  "leakageGroupId": "lqg-law-title-seafarers-article-read",
   "request": {
-    "query": "船員ほうという名称から法令を検索してください。"
+    "query": "船員ほう第74条を引用した資料を校正中です。該当する本文を読んでください。"
   },
   "schemaVersion": 2
 }

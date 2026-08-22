@@ -12,19 +12,21 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "plant-variety-law-search",
+        "meaningId": "plant-variety-law-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
+            "task": "read",
             "resource": "law",
-            "inputKind": "law_search",
+            "inputKind": "law_read",
             "logicalInput": {
-              "query": "種苗法"
+              "lawId": "410AC0000000083",
+              "asOf": "2025-02-01"
             }
           }
         ]
@@ -34,12 +36,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "plant-variety-law-search"
+      "plant-variety-law-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-plant-variety-search",
+  "leakageGroupId": "lqg-law-title-plant-variety-read",
   "request": {
-    "query": "種苗ほうという表記で法令を探してください。"
+    "query": "品種登録の古い手引にある「種苗ほう」について、2025年2月1日時点の法令本文を確認してください。"
   },
   "schemaVersion": 2
 }

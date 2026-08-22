@@ -23,8 +23,8 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "334AC0000000121",
-              "revisionId": "334AC0000000121_20260624_508AC0000000046"
+              "lawId": "322AC0000000049",
+              "revisionId": "322AC0000000049_20250601_504AC0000000068"
             },
             "resource": "law",
             "task": "read"
@@ -39,9 +39,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-patent-revision-read",
+  "leakageGroupId": "lqg-labor-standards-20250601-revision-body",
   "request": {
-    "query": "法令履歴ID 334AC0000000121_20260624_508AC0000000046 に一致する法律を読んでください。"
+    "query": "資料作成用。リビジョンID 322AC0000000049_20250601_504AC0000000068 の法律本文を取得してください。"
   },
   "schemaVersion": 2
 }

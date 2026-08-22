@@ -28,7 +28,7 @@
           {
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "令和5(行ツ)261"
+              "query": "令和6(行ヒ)281"
             },
             "resource": "judicial_decision",
             "task": "search"
@@ -43,9 +43,9 @@
       "judicial-search"
     ]
   },
-  "leakageGroupId": "lqg-official-case-38-lookup",
+  "leakageGroupId": "lqg-case-r6-gyohi-281-search",
   "request": {
-    "query": "令和5(行ツ)261 に該当する裁判例を検索してください。"
+    "query": "事件番号は令和6(行ヒ)281。該当する裁判例を検索して。"
   },
   "schemaVersion": 2
 }

@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-criminal-procedure-law-replaced-character",
   "request": {
-    "query": "法令名が刑事訴詔法のものを検索してください。"
+    "query": "刑事訴詔法を探しています。法令検索をお願いできますか。"
   },
   "schemaVersion": 2
 }

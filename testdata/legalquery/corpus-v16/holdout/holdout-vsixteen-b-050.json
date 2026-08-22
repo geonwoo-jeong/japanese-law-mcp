@@ -24,8 +24,8 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "asOf": "2024-04-01",
-              "query": "労働基準法"
+              "asOf": "2020-04-01",
+              "query": "民法"
             },
             "resource": "law",
             "task": "search"
@@ -40,9 +40,9 @@
       "dated-law-search"
     ]
   },
-  "leakageGroupId": "lqg-labor-standards-april-twenty-four-search",
+  "leakageGroupId": "lqg-civil-code-20200401-law-search",
   "request": {
-    "query": "2024年4月1日現在の労働基準法を法令検索してください。"
+    "query": "法令検索をお願いします。対象は民法、2020-04-01現在。"
   },
   "schemaVersion": 2
 }

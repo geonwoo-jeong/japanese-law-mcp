@@ -23,7 +23,7 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "140AC0000000045"
+              "lawId": "129AC0000000089"
             },
             "resource": "law",
             "task": "read"
@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-penal-code-identifier-read",
+  "leakageGroupId": "lqg-civil-code-official-id-body",
   "request": {
-    "query": "140AC0000000045 で指定した法律の本文を取得してください。"
+    "query": "識別子 129AC0000000089。対応する法令全文を取得したい。"
   },
   "schemaVersion": 2
 }

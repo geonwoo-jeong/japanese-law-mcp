@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-abbreviation-009",
+  "leakageGroupId": "lqg-law-title-electronic-signature",
   "request": {
-    "query": "電子署名法として知られる法令を検索してください。"
+    "query": "電子契約の調査用に、電子署名法という略称の法令を検索してください。"
   },
   "schemaVersion": 2
 }

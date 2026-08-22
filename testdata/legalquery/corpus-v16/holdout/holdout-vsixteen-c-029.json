@@ -10,7 +10,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "生活保護基準引下げ処分の裁判例を二十件以内で検索してください。",
+    "query": "生活保護基準引下げ処分について、まず裁判例を二十件以内で探して。",
     "limitPerAttempt": 20
   },
   "expected": {

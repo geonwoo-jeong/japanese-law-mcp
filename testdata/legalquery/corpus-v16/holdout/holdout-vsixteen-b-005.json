@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-road-traffic-law-extra-character",
   "request": {
-    "query": "該当法令として道路路交通法を検索してください。"
+    "query": "道路路交通法を調べています。該当する法令を検索してほしい。"
   },
   "schemaVersion": 2
 }

@@ -12,11 +12,12 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "vibration-regulation-law-search",
+        "meaningId": "vibration-regulation-search-updates",
         "requiredPacks": [],
         "steps": [
           {
@@ -26,6 +27,14 @@
             "logicalInput": {
               "query": "振動規制法"
             }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-07-01"
+            }
           }
         ]
       }
@@ -34,12 +43,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "vibration-regulation-law-search"
+      "vibration-regulation-search-updates"
     ]
   },
-  "leakageGroupId": "lqg-law-title-vibration-regulation-search",
+  "leakageGroupId": "lqg-law-title-vibration-regulation-search-updates",
   "request": {
-    "query": "「振動 規制法」という表記に対応する法令を検索してください。"
+    "query": "設備台帳の「振動 規制法」を正式な法令名で検索し、2025年7月1日に更新された法令も一覧で確認したいです。"
   },
   "schemaVersion": 2
 }

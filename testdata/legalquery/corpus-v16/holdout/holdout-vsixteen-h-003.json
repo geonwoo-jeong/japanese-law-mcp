@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "労働契約法第16条に関する法令本文を検索し、解雇権濫用に関する裁判例も検索してください。"
+    "query": "普通解雇の有効性を検討するため、労働契約法第16条の解雇権濫用に関する条文を検索し、同じ法理を適用した裁判例も探してください。"
   },
   "expected": {
     "kind": "plan",
@@ -40,7 +40,8 @@
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
-                "労働契約法第16条"
+                "労働契約法第16条",
+                "解雇権濫用"
               ],
               "anyTerms": [],
               "excludeTerms": []
@@ -51,7 +52,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "解雇権濫用"
+              "query": "普通解雇における解雇権濫用法理"
             }
           }
         ]

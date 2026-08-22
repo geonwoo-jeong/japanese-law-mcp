@@ -8,7 +8,7 @@
   ],
   "enabledPacks": [],
   "request": {
-    "query": "令和八年一月一日分の法令更新一覧を確認したいです。"
+    "query": "法令の更新一覧、令和八年一月一日分をお願いします。"
   },
   "expected": {
     "kind": "plan",

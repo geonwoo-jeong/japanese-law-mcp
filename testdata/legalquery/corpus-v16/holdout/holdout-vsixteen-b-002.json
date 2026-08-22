@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-building-standards-law-extra-character",
   "request": {
-    "query": "法令名「建築基準準法」を検索してください。"
+    "query": "資料に載っていた「建築基準準法」を、法律として検索してもらえますか。"
   },
   "schemaVersion": 2
 }

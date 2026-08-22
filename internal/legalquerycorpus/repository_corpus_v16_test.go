@@ -15,10 +15,10 @@ const (
 	repositoryCorpusV16Holdout     = 240
 	repositoryCorpusV16Execution   = 8
 
-	repositoryCorpusV16FixedLeakageDigests = 227
-	repositoryCorpusV16FixedHoldoutDigest  = "631be140c72f3837274a0120df5c68c817c826c277d046743e678e74d606d0e2"
-	repositoryCorpusV16FixedManifestSHA256 = "450126892e6b638a4da107db29bdd40e4044e293670296cda19aba0dde647fdf"
-	repositoryCorpusV16FixedTreeSHA256     = "4dd7c91d47c3516b15cf09b2582017aa766d9e2ec7b0c0c7f5f15a930122844a"
+	repositoryCorpusV16FixedLeakageDigests = 187
+	repositoryCorpusV16FixedHoldoutDigest  = "e96059d035b7b4d6848b1d007db236f534016f66d2a0b3ae0d558d2a307c0884"
+	repositoryCorpusV16FixedManifestSHA256 = "19dac2ac7f9bd474bf1a22fb5f7ff5dcdb36b547d924993bebfad16daeb4bf65"
+	repositoryCorpusV16FixedTreeSHA256     = "8db963e0a3e789ea1517ea2cd2e2827bf2b7ecc75fd70f70c80d5b94cb0a3593"
 )
 
 func TestRepositoryCorpusV16Manifestを読み込める(t *testing.T) {

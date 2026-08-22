@@ -39,9 +39,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-personal-information-law-missing-character",
+  "leakageGroupId": "lqg-personal-information-law-name-search",
   "request": {
-    "query": "個人情報の保護に関す法律を法令一覧から検索してください。"
+    "query": "個人情報の保護に関す法律を確認したいので、法令検索をお願いします。"
   },
   "schemaVersion": 2
 }

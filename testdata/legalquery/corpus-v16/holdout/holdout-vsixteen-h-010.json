@@ -12,7 +12,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "土地収用の補償額と都市計画事業の認可取消しに関する裁判例を、それぞれ検索してください。",
+    "query": "収用された土地の補償金を増額できるか争った裁判例と、都市計画事業の認可取消訴訟の裁判例を、それぞれ検索してください。",
     "limitPerAttempt": 20
   },
   "expected": {
@@ -39,7 +39,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "土地収用 補償額"
+              "query": "土地収用に伴う補償金の増額請求"
             }
           },
           {
@@ -47,7 +47,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "都市計画事業 認可取消し"
+              "query": "都市計画事業の認可取消訴訟"
             }
           }
         ]

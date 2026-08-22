@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-civil-procedure-law-replaced-character",
   "request": {
-    "query": "民事訴松法に該当する法令を検索してください。"
+    "query": "訴訟手続を調べるので、民事訴松法を法令検索してください。"
   },
   "schemaVersion": 2
 }

@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-abbreviation-010",
+  "leakageGroupId": "lqg-specified-commercial-transactions-name-search",
   "request": {
-    "query": "特定商取引法という略称の法令を確認したいです。"
+    "query": "資料の引用元をそろえたいので、特定商取引法の正式な法令名を探してください。"
   },
   "schemaVersion": 2
 }

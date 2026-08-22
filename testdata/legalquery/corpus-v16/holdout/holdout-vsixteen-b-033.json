@@ -46,9 +46,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-building-code-resource-ref",
+  "leakageGroupId": "lqg-building-standards-20260527-ref-body",
   "request": {
-    "query": "この参照が指す法令本文を読んでください。",
+    "query": "保存したこの参照から、法令本文を読んでください。",
     "ref": {
       "key": {
         "resourceId": "325AC0000000201",

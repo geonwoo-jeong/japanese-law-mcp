@@ -39,7 +39,7 @@
   },
   "leakageGroupId": "lqg-law-title-alternative-dispute-resolution-search",
   "request": {
-    "query": "資料の「裁判外紛争解決手続の利用の　促進に関する法律」を法令名で検索してください。"
+    "query": "調停案内の見出しが「裁判外紛争解決手続の利用の　促進に関する法律」になっています。空白を除いた正式な法令名で探してください。"
   },
   "schemaVersion": 2
 }

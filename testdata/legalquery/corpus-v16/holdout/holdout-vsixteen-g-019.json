@@ -12,11 +12,12 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "employees-pension-insurance-law-search",
+        "meaningId": "employees-pension-insurance-search-updates",
         "requiredPacks": [],
         "steps": [
           {
@@ -26,6 +27,14 @@
             "logicalInput": {
               "query": "厚生年金保険法"
             }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-10-01"
+            }
           }
         ]
       }
@@ -34,12 +43,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "employees-pension-insurance-law-search"
+      "employees-pension-insurance-search-updates"
     ]
   },
-  "leakageGroupId": "lqg-law-title-employees-pension-insurance-search",
+  "leakageGroupId": "lqg-law-title-employees-pension-insurance-search-updates",
   "request": {
-    "query": "一覧の「厚生年金 保険法」に対応する法令を検索してください。"
+    "query": "給与担当の表では「厚生年金 保険法」と記載されています。該当法令を検索し、2025年10月1日の法令更新一覧も確認してください。"
   },
   "schemaVersion": 2
 }

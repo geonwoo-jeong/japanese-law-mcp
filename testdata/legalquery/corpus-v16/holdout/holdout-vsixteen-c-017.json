@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "参照した裁判例本文を読み、「公文書の非公開処分」を扱う裁判例も探してください。",
+    "query": "この参照先の判決本文を開いてください。それから、「公文書の非公開処分」を扱う裁判例も探したいです。",
     "ref": {
       "providerId": "courts-hanrei-html",
       "key": {

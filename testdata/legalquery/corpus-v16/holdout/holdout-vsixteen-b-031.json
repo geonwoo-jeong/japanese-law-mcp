@@ -23,7 +23,7 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "405AC0000000091"
+              "lawId": "325AC0000000147"
             },
             "resource": "law",
             "task": "read"
@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-basic-environment-official-number",
+  "leakageGroupId": "lqg-nationality-law-number-body",
   "request": {
-    "query": "法令番号「平成五年法律第九十一号」の本文を読んでください。"
+    "query": "古い資料で見つけた昭和二十五年法律第百四十七号、法律全文を読んでください。"
   },
   "schemaVersion": 2
 }

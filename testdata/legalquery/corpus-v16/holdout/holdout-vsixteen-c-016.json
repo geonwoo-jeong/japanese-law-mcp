@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "この裁判例参照を読み、「児童虐待の量刑」に関する裁判例も検索してください。",
+    "query": "先にこの裁判例の本文を読みたいです。あわせて「児童虐待の量刑」で裁判例を検索してください。",
     "ref": {
       "providerId": "courts-hanrei-html",
       "key": {

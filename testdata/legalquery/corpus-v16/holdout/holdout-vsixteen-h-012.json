@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "インターネット上の取引被害について裁判例を探したいのですが、モール運営者、SNS運営者、検索サービス運営者のどの責任か特定できません。検索候補を示してください。"
+    "query": "ネット通販の取引被害について、検索サービス運営者、SNS運営者、オンラインモール運営者の責任が候補です。事実関係では取引と決済がモール上で完結し、SNSの広告から誘導され、検索結果は入口に使われただけでした。裁判例はモール運営者の責任を主候補、SNS運営者の広告掲載責任を次点として、検索候補を示してください。"
   },
   "expected": {
     "kind": "plan",
@@ -37,7 +37,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "モール運営者 取引被害 責任"
+              "query": "オンラインモール運営者の取引被害に対する損害賠償責任"
             }
           }
         ]
@@ -59,7 +59,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "SNS運営者 取引被害 責任"
+              "query": "SNS運営者の広告掲載に関する損害賠償責任"
             }
           }
         ]
@@ -81,7 +81,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "検索サービス運営者 取引被害 責任"
+              "query": "検索サービス運営者の検索結果に関する損害賠償責任"
             }
           }
         ]

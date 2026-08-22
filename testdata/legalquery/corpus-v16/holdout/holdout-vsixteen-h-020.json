@@ -13,7 +13,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "消費者信用取引の期限の利益喪失と保証債務に関する裁判例を、それぞれ最初のページだけ検索してください。",
+    "query": "消費者信用契約について、期限の利益喪失条項の有効性と、保証人が負う保証債務の範囲を判断した裁判例を、それぞれ最初のページだけ検索してください。",
     "limitPerAttempt": 20
   },
   "expected": {
@@ -40,7 +40,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "消費者信用取引 期限の利益喪失"
+              "query": "消費者信用契約の期限の利益喪失条項の有効性"
             }
           },
           {
@@ -48,7 +48,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "消費者信用取引 保証債務"
+              "query": "消費者信用契約における保証債務の範囲"
             }
           }
         ]

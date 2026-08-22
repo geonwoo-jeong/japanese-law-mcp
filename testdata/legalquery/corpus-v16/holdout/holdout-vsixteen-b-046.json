@@ -40,9 +40,9 @@
       "dated-law-search"
     ]
   },
-  "leakageGroupId": "lqg-civil-code-april-twenty-twenty-search",
+  "leakageGroupId": "lqg-civil-code-20200401-law-search",
   "request": {
-    "query": "2020年4月1日時点の民法を法令として検索してください。"
+    "query": "基準日をそろえて調べたいです。2020年4月1日現在の民法を検索してください。"
   },
   "schemaVersion": 2
 }

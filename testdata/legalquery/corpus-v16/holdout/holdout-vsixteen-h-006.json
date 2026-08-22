@@ -12,7 +12,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "配転命令権の濫用と出向命令の有効性に関する裁判例を、それぞれ検索してください。",
+    "query": "配転命令権の濫用を理由に配転を無効とした裁判例と、労働者の同意を欠く出向命令の有効性を判断した裁判例を、それぞれ検索してください。",
     "limitPerAttempt": 20
   },
   "expected": {
@@ -39,7 +39,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "配転命令権の濫用"
+              "query": "配転命令権の濫用による配転の無効"
             }
           },
           {
@@ -47,7 +47,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "出向命令の有効性"
+              "query": "労働者の同意を欠く出向命令の有効性"
             }
           }
         ]

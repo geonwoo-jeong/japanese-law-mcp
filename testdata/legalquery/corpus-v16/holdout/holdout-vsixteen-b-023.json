@@ -23,7 +23,7 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "417AC0000000086"
+              "lawId": "129AC0000000089"
             },
             "resource": "law",
             "task": "read"
@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-companies-act-identifier-read",
+  "leakageGroupId": "lqg-civil-code-official-id-body",
   "request": {
-    "query": "法令ID 417AC0000000086 の法律を読んでください。"
+    "query": "調査メモ用です。129AC0000000089 で指定される法律を読みたい。"
   },
   "schemaVersion": 2
 }

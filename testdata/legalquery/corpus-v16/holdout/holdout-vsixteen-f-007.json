@@ -38,9 +38,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-name-official-abbreviation-007",
+  "leakageGroupId": "lqg-law-title-premiums-representations",
   "request": {
-    "query": "景表法に当たる法令を探してください。"
+    "query": "広告案のレビュー前に、景表法に対応する法令を検索してもらえますか。"
   },
   "schemaVersion": 2
 }

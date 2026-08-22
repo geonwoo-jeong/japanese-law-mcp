@@ -12,11 +12,12 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "agricultural-land-law-search",
+        "meaningId": "agricultural-land-search-updates",
         "requiredPacks": [],
         "steps": [
           {
@@ -26,6 +27,14 @@
             "logicalInput": {
               "query": "農地法"
             }
+          },
+          {
+            "task": "list_updates",
+            "resource": "law",
+            "inputKind": "law_updates",
+            "logicalInput": {
+              "date": "2025-06-01"
+            }
           }
         ]
       }
@@ -34,12 +43,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "agricultural-land-law-search"
+      "agricultural-land-search-updates"
     ]
   },
-  "leakageGroupId": "lqg-law-title-agricultural-land-search",
+  "leakageGroupId": "lqg-law-title-agricultural-land-search-updates",
   "request": {
-    "query": "農地ほうに該当する法令を法令検索してください。"
+    "query": "農政資料の「農地ほう」に対応する法令を探して、2025年6月1日の法令更新一覧も出してください。"
   },
   "schemaVersion": 2
 }

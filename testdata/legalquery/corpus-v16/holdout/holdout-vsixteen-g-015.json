@@ -12,19 +12,24 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "electronic-recorded-claim-law-search",
+        "meaningId": "electronic-recorded-claim-article-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
-            "resource": "law",
-            "inputKind": "law_search",
+            "task": "read",
+            "resource": "law_provision",
+            "inputKind": "law_article_read",
             "logicalInput": {
-              "query": "電子記録債権法"
+              "lawId": "419AC0000000102",
+              "location": {
+                "articleNumber": "5",
+                "provision": "main"
+              }
             }
           }
         ]
@@ -34,12 +39,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "electronic-recorded-claim-law-search"
+      "electronic-recorded-claim-article-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-electronic-recorded-claim-search",
+  "leakageGroupId": "lqg-law-title-electronic-recorded-claim-article-read",
   "request": {
-    "query": "「電子記録 債権法」と区切られた法令名を検索してください。"
+    "query": "契約書の脚注が「電子記録 債権法」第5条を参照しています。原文確認のため、該当条文を取得してください。"
   },
   "schemaVersion": 2
 }

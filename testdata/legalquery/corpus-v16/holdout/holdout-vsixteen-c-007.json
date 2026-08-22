@@ -8,7 +8,7 @@
   ],
   "enabledPacks": [],
   "request": {
-    "query": "法令ID 415AC0000000057 の個人情報の保護に関する法律を読んでください。"
+    "query": "手元の法令ID 415AC0000000057 で、法律の本文を取得してください。"
   },
   "expected": {
     "kind": "plan",

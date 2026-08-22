@@ -23,7 +23,7 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "405AC0000000088"
+              "lawId": "325AC0000000147"
             },
             "resource": "law",
             "task": "read"
@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-administrative-procedure-official-number",
+  "leakageGroupId": "lqg-nationality-law-number-body",
   "request": {
-    "query": "平成五年法律第八十八号に該当する法律を取得してください。"
+    "query": "法令番号は昭和二十五年法律第百四十七号。本文を取得してください。"
   },
   "schemaVersion": 2
 }

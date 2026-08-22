@@ -25,9 +25,9 @@
           {
             "inputKind": "law_article_read",
             "logicalInput": {
-              "lawId": "405AC0000000088",
+              "lawId": "129AC0000000089",
               "location": {
-                "articleNumber": "5",
+                "articleNumber": "415",
                 "paragraphNumber": 1,
                 "provision": "main"
               }
@@ -45,9 +45,9 @@
       "article-read"
     ]
   },
-  "leakageGroupId": "lqg-administrative-procedure-review-standards-clause",
+  "leakageGroupId": "lqg-civil-code-415-1-provision",
   "request": {
-    "query": "行政手続法第5条第1項の条文を読んでください。"
+    "query": "手元のメモに必要なので、民法の第415条第1項を取得してください。"
   },
   "schemaVersion": 2
 }

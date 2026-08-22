@@ -12,19 +12,21 @@
       {
         "conceptIds": [],
         "evidenceCodes": [
+          "structured_reference",
           "explicit_task",
           "explicit_resource",
           "official_alias"
         ],
-        "meaningId": "financial-instruments-law-search",
+        "meaningId": "financial-instruments-law-read",
         "requiredPacks": [],
         "steps": [
           {
-            "task": "search",
+            "task": "read",
             "resource": "law",
-            "inputKind": "law_search",
+            "inputKind": "law_read",
             "logicalInput": {
-              "query": "金融商品取引法"
+              "lawId": "323AC0000000025",
+              "asOf": "2025-03-01"
             }
           }
         ]
@@ -34,12 +36,12 @@
       "single_clear_candidate"
     ],
     "selectedMeaningIds": [
-      "financial-instruments-law-search"
+      "financial-instruments-law-read"
     ]
   },
-  "leakageGroupId": "lqg-law-title-financial-instruments-search",
+  "leakageGroupId": "lqg-law-title-financial-instruments-read",
   "request": {
-    "query": "一覧で「金融商品 取引法」と区切られた法令を検索してください。"
+    "query": "旧システムの「金融商品 取引法」について、2025年3月1日時点の法令全文を表示してください。"
   },
   "schemaVersion": 2
 }

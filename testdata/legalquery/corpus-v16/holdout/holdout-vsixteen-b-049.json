@@ -24,8 +24,8 @@
           {
             "inputKind": "law_search",
             "logicalInput": {
-              "asOf": "2023-10-01",
-              "query": "消費税法"
+              "asOf": "2020-04-01",
+              "query": "民法"
             },
             "resource": "law",
             "task": "search"
@@ -40,9 +40,9 @@
       "dated-law-search"
     ]
   },
-  "leakageGroupId": "lqg-consumption-tax-october-twenty-three-search",
+  "leakageGroupId": "lqg-civil-code-20200401-law-search",
   "request": {
-    "query": "消費税法について、2023-10-01時点の法律を検索してください。"
+    "query": "資料用に民法を検索したい。日付は2020年4月1日で。"
   },
   "schemaVersion": 2
 }

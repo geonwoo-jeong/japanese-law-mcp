@@ -17,7 +17,9 @@
         "evidenceCodes": [
           "explicit_task",
           "explicit_resource",
-          "legal_concept"
+          "official_alias",
+          "legal_concept",
+          "morphological_context"
         ],
         "meaningId": "concept-search",
         "requiredPacks": [],
@@ -28,6 +30,8 @@
             "inputKind": "law_content_search",
             "logicalInput": {
               "allTerms": [
+                "特定商取引に関する法律",
+                "訪問販売",
                 "申込みの撤回"
               ],
               "anyTerms": [],
@@ -44,9 +48,9 @@
       "concept-search"
     ]
   },
-  "leakageGroupId": "lqg-concept-cooling-off-020",
+  "leakageGroupId": "lqg-law-provision-door-to-door-cooling-off",
   "request": {
-    "query": "特商法でクーリングオフに対応する条文を検索してください。"
+    "query": "特定商取引法の訪問販売で使うクーリングオフを調べています。「申込みの撤回」を含む条文を検索してください。"
   },
   "schemaVersion": 2
 }

@@ -12,7 +12,7 @@
   },
   "leakageGroupId": "lqg-queryguard-ref-empty-law",
   "request": {
-    "query": "この不正な法令参照を読んでください。",
+    "query": "担当部署から届いた法令参照の本文を読んでください。",
     "ref": {
       "key": {
         "resourceId": "",

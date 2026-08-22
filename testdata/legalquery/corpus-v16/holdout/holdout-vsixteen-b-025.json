@@ -24,7 +24,7 @@
             "inputKind": "law_read",
             "logicalInput": {
               "lawId": "322AC0000000049",
-              "revisionId": "322AC0000000049_20260717_508AC0000000060"
+              "revisionId": "322AC0000000049_20250601_504AC0000000068"
             },
             "resource": "law",
             "task": "read"
@@ -39,9 +39,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-labor-standards-revision-read",
+  "leakageGroupId": "lqg-labor-standards-20250601-revision-body",
   "request": {
-    "query": "法令履歴ID 322AC0000000049_20260717_508AC0000000060 の法令本文を読んでください。"
+    "query": "法令履歴ID 322AC0000000049_20250601_504AC0000000068 の本文を読んでください。"
   },
   "schemaVersion": 2
 }

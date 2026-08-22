@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-labor-contract-law-extra-character",
   "request": {
-    "query": "労働契契約法という法令を検索してください。"
+    "query": "雇用関係の資料を探しています。労働契契約法を法令検索してもらえますか。"
   },
   "schemaVersion": 2
 }

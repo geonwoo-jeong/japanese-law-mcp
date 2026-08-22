@@ -39,9 +39,9 @@
       "law-search"
     ]
   },
-  "leakageGroupId": "lqg-electronic-signature-law-missing-character",
+  "leakageGroupId": "lqg-law-title-electronic-signature",
   "request": {
-    "query": "電子署名及び認証業務に関す法律について、該当する法令を検索してください。"
+    "query": "電子署名及び認証業務に関す法律。該当法令の検索を。"
   },
   "schemaVersion": 2
 }

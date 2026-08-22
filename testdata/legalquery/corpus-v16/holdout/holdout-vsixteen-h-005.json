@@ -16,7 +16,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "個人情報保護法を検索し、保有個人情報の利用目的について法令本文も検索してください。さらに、個人情報漏えいの損害賠償に関する裁判例を検索し、この参照先の判決本文を読んでください。",
+    "query": "個人情報保護法を法令名で検索し、保有個人情報の利用目的を定める条文も探してください。さらに、漏えいによるプライバシー侵害の損害賠償を扱う裁判例を検索し、指定した参照先の判決本文も読んでください。",
     "ref": {
       "providerId": "courts-hanrei-html",
       "key": {
@@ -72,7 +72,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "個人情報漏えい 損害賠償"
+              "query": "個人情報漏えいによるプライバシー侵害の損害賠償"
             }
           },
           {

@@ -12,7 +12,7 @@
   },
   "leakageGroupId": "lqg-queryguard-ref-empty-judicial-id",
   "request": {
-    "query": "この裁判例参照を読んでください。",
+    "query": "担当部署から届いた裁判例参照の判決本文を読んでください。",
     "ref": {
       "key": {
         "resourceId": "",

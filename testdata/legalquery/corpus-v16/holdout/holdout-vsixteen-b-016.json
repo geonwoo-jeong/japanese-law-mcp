@@ -41,7 +41,7 @@
   },
   "leakageGroupId": "lqg-nationality-law-adjacent-swap",
   "request": {
-    "query": "籍国法という法律を検索してください。"
+    "query": "「籍国法」という表記で、法律を検索してください。"
   },
   "schemaVersion": 2
 }

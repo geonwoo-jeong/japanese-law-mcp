@@ -23,7 +23,7 @@
           {
             "inputKind": "law_read",
             "logicalInput": {
-              "lawId": "412AC0000000061"
+              "lawId": "325AC0000000147"
             },
             "resource": "law",
             "task": "read"
@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-consumer-contract-official-number",
+  "leakageGroupId": "lqg-nationality-law-number-body",
   "request": {
-    "query": "平成十二年法律第六十一号という法令を読んでください。"
+    "query": "昭和二十五年法律第百四十七号に対応する法令を取得して。"
   },
   "schemaVersion": 2
 }

@@ -10,7 +10,7 @@
   "safetyVariant": "ordinary",
   "enabledPacks": [],
   "request": {
-    "query": "「クレジットカード番号等」を含む条文を検索し、最初の一ページだけ取得してください。"
+    "query": "条文に「クレジットカード番号等」とある箇所を検索してください。継続取得はせず、初回の一ページだけで止めてください。"
   },
   "expected": {
     "kind": "plan",

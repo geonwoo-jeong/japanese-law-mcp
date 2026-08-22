@@ -11,7 +11,8 @@
   "safetyVariant": "adversarial",
   "enabledPacks": [],
   "request": {
-    "query": "民法、会社法、民事訴訟法、民事執行法をこの順で法令名検索してください。"
+    "query": "民事分野の確認です。民法、会社法、民事訴訟法、民事執行法を、この順に一つずつ法令検索してください。各検索の候補は二十件まででお願いします。",
+    "limitPerAttempt": 20
   },
   "expected": {
     "kind": "plan",

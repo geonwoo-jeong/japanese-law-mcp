@@ -38,9 +38,9 @@
       "law-read"
     ]
   },
-  "leakageGroupId": "lqg-civil-code-identifier-read",
+  "leakageGroupId": "lqg-civil-code-official-id-body",
   "request": {
-    "query": "法令ID 129AC0000000089 の法令本文を読んでください。"
+    "query": "控えにある法令ID 129AC0000000089 の本文を読んでください。"
   },
   "schemaVersion": 2
 }

@@ -11,7 +11,7 @@
     "judicial-cases"
   ],
   "request": {
-    "query": "営業秘密の持出しに関する裁判例を、最初のページだけ検索してください。",
+    "query": "退職者による営業秘密の持出しが不正競争防止法上の侵害に当たるかを判断した裁判例を、最初のページだけ検索してください。",
     "limitPerAttempt": 20
   },
   "expected": {
@@ -38,7 +38,7 @@
             "resource": "judicial_decision",
             "inputKind": "judicial_decision_search",
             "logicalInput": {
-              "query": "営業秘密 持出し"
+              "query": "退職者による営業秘密の持出しと不正競争防止法違反"
             }
           }
         ]
