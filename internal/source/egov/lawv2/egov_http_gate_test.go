@@ -10,6 +10,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/requestpacing"
 )
 
 func TestProductionEGovBindingsShareHTTPConcurrencyGroup(t *testing.T) {
@@ -147,10 +148,11 @@ func TestEGovHTTPConcurrencyGroupRejectsCrossOperation(t *testing.T) {
 		}),
 	)
 	searchRequest := mustSearchRequest(t, lawsearch.RequestValues{Query: "民法"})
+	requestContext := requestpacing.WithScope(context.Background())
 	searchDone := make(chan error, 1)
 	go func() {
 		_, err := search.Search(
-			context.Background(),
+			requestContext,
 			searchRequest,
 		)
 		searchDone <- err
@@ -164,7 +166,7 @@ func TestEGovHTTPConcurrencyGroupRejectsCrossOperation(t *testing.T) {
 	})
 	content := newTestLawContentAdapter(t, time.Now(), gate, unexpectedDoer)
 	_, contentErr := content.Search(
-		context.Background(),
+		requestContext,
 		mustLawContentSearchRequest(t, lawcontentsearch.RequestValues{
 			AllTerms: []string{"民法"},
 		}),
@@ -173,14 +175,14 @@ func TestEGovHTTPConcurrencyGroupRejectsCrossOperation(t *testing.T) {
 
 	document := newTestLawDocumentAdapter(t, time.Now(), gate, unexpectedDoer)
 	_, documentErr := document.Read(
-		context.Background(),
+		requestContext,
 		newLawDocumentReadRequest(t, "322CO0000000016", "", nil),
 	)
 	assertLawDocumentSourceError(t, documentErr, model.SourceErrorCodeSourceBusy)
 
 	article := newTestLawArticleAdapter(t, time.Now(), gate, unexpectedDoer)
 	_, articleErr := article.Read(
-		context.Background(),
+		requestContext,
 		newLawArticleReadRequest(
 			t,
 			providerID,

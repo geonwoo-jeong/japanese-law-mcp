@@ -17,6 +17,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/requestpacing"
 )
 
 const (
@@ -28,6 +29,7 @@ const (
 	lawDocumentDecompressedBytes = 32 * 1024 * 1024
 	maximumRetries               = 3
 	minimumRequestStartInterval  = time.Second
+	eGovHTTPPacingGroup          = "egov-http"
 )
 
 var retryBackoffs = [...]time.Duration{
@@ -232,8 +234,24 @@ func (c lawClient) do(
 	if err != nil {
 		return nil, err
 	}
-	response, err := c.dependencies.doer.Do(httpRequest)
-	if err == nil {
+	var response *http.Response
+	var requestErr error
+	if pacingErr := requestpacing.RunAtStart(
+		ctx,
+		eGovHTTPPacingGroup,
+		minimumRequestStartInterval,
+		c.dependencies.now,
+		c.dependencies.sleep,
+		func() {
+			response, requestErr = c.dependencies.doer.Do(httpRequest)
+		},
+	); pacingErr != nil {
+		return nil, normalizeContextErrorWithFactory(
+			pacingErr,
+			spec.sourceError,
+		)
+	}
+	if requestErr == nil {
 		if response == nil || response.Body == nil {
 			return nil, spec.sourceError(
 				model.SourceErrorCodeInvalidSourceResponse,
@@ -249,7 +267,7 @@ func (c lawClient) do(
 		)
 	}
 	var networkError net.Error
-	if errors.As(err, &networkError) && networkError.Timeout() {
+	if errors.As(requestErr, &networkError) && networkError.Timeout() {
 		return nil, spec.sourceError(
 			model.SourceErrorCodeSourceTimeout,
 			"",

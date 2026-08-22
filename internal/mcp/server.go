@@ -61,6 +61,7 @@ func newServer(
 			GetSessionID: getSessionID,
 		},
 	)
+	server.AddReceivingMiddleware(requestPacingMiddleware)
 	if dependencies.SearchLaws != nil {
 		addSearchLawsTool(server, dependencies.SearchLaws)
 	}
