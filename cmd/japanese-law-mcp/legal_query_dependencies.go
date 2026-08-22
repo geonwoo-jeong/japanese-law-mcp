@@ -38,9 +38,14 @@ func newLegalQueryService(
 	if err != nil {
 		return nil, err
 	}
+	targets, err := newLawNameQueryResolver()
+	if err != nil {
+		return nil, fmt.Errorf("統合照会の法令対象 resolver を初期化できません: %w", err)
+	}
 	coreFacade, err := application.NewCoreLegalQueryFacade(
 		routes,
 		legalquery.NewCoreMaterializer(),
+		targets,
 	)
 	if err != nil {
 		return nil, fmt.Errorf(

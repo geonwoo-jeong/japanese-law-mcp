@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -40,7 +41,7 @@ func NewService(
 	}, nil
 }
 
-// Search は、原検索を優先し、正常な空結果だけを一意な正式名称で再検索する。
+// Search は、原検索を優先し、解決済み法令を page 内で安定的に優先する。
 func (s *Service) Search(
 	ctx context.Context,
 	request Request,
@@ -54,6 +55,19 @@ func (s *Service) Search(
 	requestContext, cancel := context.WithTimeout(ctx, s.requestTimeout)
 	defer cancel()
 
+	resolvedTarget, resolved, err := s.queryResolver.Resolve(
+		requestContext,
+		request.Query(),
+	)
+	if err != nil {
+		return model.LawSearchResult{}, err
+	}
+	if resolved {
+		if err := resolvedTarget.Validate(); err != nil {
+			return model.LawSearchResult{}, err
+		}
+	}
+
 	original, err := s.provider.Search(requestContext, request)
 	if err != nil {
 		return model.LawSearchResult{}, err
@@ -65,20 +79,12 @@ func (s *Service) Search(
 		)
 	}
 	if original.TotalCount() > 0 {
+		return prioritizeResolvedLawTarget(original, resolvedTarget, resolved)
+	}
+	if !resolved {
 		return original, nil
 	}
-
-	resolvedQuery, resolved, err := s.queryResolver.Resolve(
-		requestContext,
-		request.Query(),
-	)
-	if err != nil {
-		return model.LawSearchResult{}, err
-	}
-	if !resolved || resolvedQuery == request.Query() {
-		return original, nil
-	}
-	resolvedRequest, err := request.WithQuery(resolvedQuery)
+	resolvedRequest, err := request.WithQuery(resolvedTarget.OfficialTitle())
 	if err != nil {
 		return model.LawSearchResult{}, fmt.Errorf(
 			"解決した search_laws query が有効ではありません: %w",
@@ -95,7 +101,7 @@ func (s *Service) Search(
 			err,
 		)
 	}
-	return result, nil
+	return prioritizeResolvedLawTarget(result, resolvedTarget, true)
 }
 
 func isNilDependency(value any) bool {
@@ -114,4 +120,44 @@ func isNilDependency(value any) bool {
 	default:
 		return false
 	}
+}
+
+func prioritizeResolvedLawTarget(
+	result model.LawSearchResult,
+	target lawtarget.ResolvedLawTarget,
+	resolved bool,
+) (model.LawSearchResult, error) {
+	if !resolved {
+		return result, nil
+	}
+	prioritized, changed, err := lawtarget.Prioritize(
+		result.Items(),
+		target,
+		func(item model.LawSummary) string { return item.LawID() },
+	)
+	if err != nil {
+		return model.LawSearchResult{}, fmt.Errorf(
+			"search_laws の解決済み法令を優先できません: %w",
+			err,
+		)
+	}
+	if !changed {
+		return result, nil
+	}
+	nextOffset, hasNextOffset := result.NextOffset()
+	values := model.LawSearchResultValues{
+		TotalCount: result.TotalCount(),
+		Items:      prioritized,
+	}
+	if hasNextOffset {
+		values.NextOffset = &nextOffset
+	}
+	reordered, err := model.NewLawSearchResult(values)
+	if err != nil {
+		return model.LawSearchResult{}, fmt.Errorf(
+			"優先順位付き search_laws result を構築できません: %w",
+			err,
+		)
+	}
+	return reordered, nil
 }

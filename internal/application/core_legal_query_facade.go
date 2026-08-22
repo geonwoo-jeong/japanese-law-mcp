@@ -8,6 +8,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
@@ -17,6 +18,7 @@ import (
 type CoreLegalQueryFacade struct {
 	routes       ProviderRoutes
 	materializer legalquery.CoreRequestMaterializer
+	targets      lawtarget.LogicalInputResolver
 	initialized  bool
 }
 
@@ -26,10 +28,12 @@ var _ legalquery.CoreCapabilityFacade = CoreLegalQueryFacade{}
 func NewCoreLegalQueryFacade(
 	routes ProviderRoutes,
 	materializer legalquery.CoreRequestMaterializer,
+	targets lawtarget.LogicalInputResolver,
 ) (CoreLegalQueryFacade, error) {
 	result := CoreLegalQueryFacade{
 		routes:       routes,
 		materializer: materializer,
+		targets:      targets,
 		initialized:  true,
 	}
 	if err := result.Validate(); err != nil {
@@ -47,6 +51,9 @@ func (f CoreLegalQueryFacade) Validate() error {
 	}
 	if isNilTypedPort(f.materializer) {
 		return fmt.Errorf("法令コア request materializer は必須です")
+	}
+	if isNilTypedPort(f.targets) {
+		return fmt.Errorf("法令コア law-target resolver は必須です")
 	}
 	if err := f.materializer.Validate(); err != nil {
 		return fmt.Errorf(

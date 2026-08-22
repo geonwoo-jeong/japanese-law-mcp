@@ -1,8 +1,6 @@
 package searchlaws
 
-import "context"
+import "github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 
-// QueryResolver は、検証済み原文から一意な正式検索語を解決する。
-type QueryResolver interface {
-	Resolve(context.Context, string) (string, bool, error)
-}
+// QueryResolver は、共通のプロバイダー非依存 law-target resolver である。
+type QueryResolver = lawtarget.QueryResolver

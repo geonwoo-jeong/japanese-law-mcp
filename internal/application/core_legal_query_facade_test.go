@@ -8,10 +8,77 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 )
 
 var _ legalquery.CoreCapabilityFacade = application.CoreLegalQueryFacade{}
+
+func TestCoreLegalQueryFacadeは分離済み法令検索語の対象だけを安定優先する(
+	t *testing.T,
+) {
+	asOf := mustCoreFacadeDate(t, "2026-07-27")
+	location := mustCoreFacadeLocation(t)
+	ports := newCoreFacadePorts(t, "core-provider", "core-source", asOf, location)
+	ports.lawSearch.result = coreFacadeLawSearchPage(
+		t,
+		[]coreFacadeLawResourceValues{
+			{lawID: "law-1", revisionID: "revision-1"},
+			{lawID: "law-target", revisionID: "revision-target-1"},
+			{lawID: "law-2", revisionID: "revision-2"},
+			{lawID: "law-target", revisionID: "revision-target-2"},
+		},
+		"core-provider",
+		"core-source",
+	)
+	routes := newCoreFacadeRoutes(
+		t,
+		[]application.ProviderBindings{
+			newCoreFacadeBindings(t, "core-provider", "core-source", ports),
+		},
+		completeProviderRouteValues("core-provider"),
+	)
+	target, err := lawtarget.NewResolvedLawTarget(
+		"law-target",
+		"対象法",
+		lawtarget.MatchKindUniqueTypoCorrection,
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-030: target を構築できません: %v", err)
+	}
+	resolver := &coreFacadeLawTargetResolver{target: target, resolved: true}
+	facade, err := application.NewCoreLegalQueryFacade(
+		routes,
+		legalquery.NewCoreMaterializer(),
+		resolver,
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-030: facade を構築できません: %v", err)
+	}
+	input := mustCoreFacadeLawSearchInput(t, "著権作法", nil)
+	got, err := facade.SearchLaws(
+		context.Background(),
+		input,
+		coreFacadeBudgetForInput(t, "step-search", input, 4),
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-030: law.search の実行エラー = %v", err)
+	}
+	items := got.Items()
+	if len(items) != 4 ||
+		items[0].Data().RevisionID() != "revision-target-1" ||
+		items[1].Data().RevisionID() != "revision-target-2" ||
+		items[2].Data().LawID() != "law-1" ||
+		items[3].Data().LawID() != "law-2" {
+		t.Fatalf("SOT-ARCH-030: stable partition = %#v", items)
+	}
+	if len(resolver.queries) != 1 || resolver.queries[0] != input.Query() ||
+		ports.lawSearch.calls != 1 ||
+		ports.lawSearch.requests[0].Query() != input.Query() ||
+		got.Page() != ports.lawSearch.result.Page() {
+		t.Fatal("SOT-ARCH-030: logical input、call count または page metadata を変更しました")
+	}
+}
 
 func TestCoreLegalQueryFacadeCallsFiveCapabilitiesLosslessly(t *testing.T) {
 	asOf := mustCoreFacadeDate(t, "2026-07-27")
@@ -669,7 +736,11 @@ func TestCoreLegalQueryFacadeFailsClosedForInvalidConstructionAndContext(t *test
 	t.Run("nil materializer", func(t *testing.T) {
 		routes := coreFacadeRoutesFromReadyFacade(t, asOf, location)
 		var materializer legalquery.CoreRequestMaterializer
-		if _, err := application.NewCoreLegalQueryFacade(routes, materializer); err == nil {
+		if _, err := application.NewCoreLegalQueryFacade(
+			routes,
+			materializer,
+			&coreFacadeLawTargetResolver{},
+		); err == nil {
 			t.Fatal("SOT-ARCH-026: nil materializer を受理しました")
 		}
 	})
@@ -677,7 +748,11 @@ func TestCoreLegalQueryFacadeFailsClosedForInvalidConstructionAndContext(t *test
 	t.Run("typed nil materializer", func(t *testing.T) {
 		routes := coreFacadeRoutesFromReadyFacade(t, asOf, location)
 		var materializer *coreFacadeMaterializerStub
-		if _, err := application.NewCoreLegalQueryFacade(routes, materializer); err == nil {
+		if _, err := application.NewCoreLegalQueryFacade(
+			routes,
+			materializer,
+			&coreFacadeLawTargetResolver{},
+		); err == nil {
 			t.Fatal("SOT-ARCH-026: typed nil materializer を受理しました")
 		}
 	})
@@ -687,6 +762,7 @@ func TestCoreLegalQueryFacadeFailsClosedForInvalidConstructionAndContext(t *test
 		if _, err := application.NewCoreLegalQueryFacade(
 			routes,
 			legalquery.CoreMaterializer{},
+			&coreFacadeLawTargetResolver{},
 		); err == nil {
 			t.Fatal("SOT-ARCH-026: zero-value materializer を受理しました")
 		}
@@ -698,6 +774,7 @@ func TestCoreLegalQueryFacadeFailsClosedForInvalidConstructionAndContext(t *test
 		_, err := application.NewCoreLegalQueryFacade(
 			routes,
 			&coreFacadeMaterializerStub{validateErr: cause},
+			&coreFacadeLawTargetResolver{},
 		)
 		if err == nil || !errors.Is(err, cause) {
 			t.Fatalf(
@@ -711,8 +788,33 @@ func TestCoreLegalQueryFacadeFailsClosedForInvalidConstructionAndContext(t *test
 		if _, err := application.NewCoreLegalQueryFacade(
 			application.ProviderRoutes{},
 			legalquery.NewCoreMaterializer(),
+			&coreFacadeLawTargetResolver{},
 		); err == nil {
 			t.Fatal("SOT-ARCH-023/026: 未初期化 routes を受理しました")
+		}
+	})
+
+	t.Run("nil law-target resolver", func(t *testing.T) {
+		routes := coreFacadeRoutesFromReadyFacade(t, asOf, location)
+		var targets lawtarget.LogicalInputResolver
+		if _, err := application.NewCoreLegalQueryFacade(
+			routes,
+			legalquery.NewCoreMaterializer(),
+			targets,
+		); err == nil {
+			t.Fatal("SOT-ARCH-030: nil law-target resolver を受理しました")
+		}
+	})
+
+	t.Run("typed nil law-target resolver", func(t *testing.T) {
+		routes := coreFacadeRoutesFromReadyFacade(t, asOf, location)
+		var targets *coreFacadeLawTargetResolver
+		if _, err := application.NewCoreLegalQueryFacade(
+			routes,
+			legalquery.NewCoreMaterializer(),
+			targets,
+		); err == nil {
+			t.Fatal("SOT-ARCH-030: typed nil law-target resolver を受理しました")
 		}
 	})
 
@@ -757,6 +859,7 @@ func TestCoreLegalQueryFacadeDoesNotRequireJudicialDependencies(t *testing.T) {
 	facade, err := application.NewCoreLegalQueryFacade(
 		routes,
 		legalquery.NewCoreMaterializer(),
+		&coreFacadeLawTargetResolver{},
 	)
 	if err != nil {
 		t.Fatalf("SOT-ARCH-026/SOT-ENG-025: core-only facade を構成できません: %v", err)

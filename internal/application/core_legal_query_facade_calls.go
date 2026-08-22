@@ -8,6 +8,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
@@ -30,6 +31,21 @@ func (f CoreLegalQueryFacade) SearchLaws(
 	}
 	if err := validateLegalQueryFacadeCollectionBudget(budget); err != nil {
 		return lawsearch.Page{}, err
+	}
+	target, resolved, err := f.targets.ResolveLogicalInput(ctx, input.Query())
+	if err != nil {
+		return lawsearch.Page{}, fmt.Errorf(
+			"law.search@1 の法令対象を解決できません: %w",
+			err,
+		)
+	}
+	if resolved {
+		if err := target.Validate(); err != nil {
+			return lawsearch.Page{}, fmt.Errorf(
+				"law.search@1 の解決済み法令対象が有効ではありません: %w",
+				err,
+			)
+		}
 	}
 	binding, err := f.primaryBinding(
 		lawsearch.CapabilityID,
@@ -62,7 +78,44 @@ func (f CoreLegalQueryFacade) SearchLaws(
 	if err := validateLawSearchFacadeResult(result, request, binding); err != nil {
 		return lawsearch.Page{}, err
 	}
-	return result, nil
+	return prioritizeLawSearchPage(result, target, resolved)
+}
+
+func prioritizeLawSearchPage(
+	page lawsearch.Page,
+	target lawtarget.ResolvedLawTarget,
+	resolved bool,
+) (lawsearch.Page, error) {
+	if !resolved {
+		return page, nil
+	}
+	items, changed, err := lawtarget.Prioritize(
+		page.Items(),
+		target,
+		func(item model.SourcedResource[model.LawSummary]) string {
+			return item.Data().LawID()
+		},
+	)
+	if err != nil {
+		return lawsearch.Page{}, fmt.Errorf(
+			"law.search@1 の解決済み法令を優先できません: %w",
+			err,
+		)
+	}
+	if !changed {
+		return page, nil
+	}
+	prioritized, err := lawsearch.NewPage(lawsearch.PageValues{
+		Items: items,
+		Page:  page.Page(),
+	})
+	if err != nil {
+		return lawsearch.Page{}, fmt.Errorf(
+			"law.search@1 の優先結果を構築できません: %w",
+			err,
+		)
+	}
+	return prioritized, nil
 }
 
 // SearchLawContent は、実効 primary の law.content.search@1 を一度だけ呼び出す。

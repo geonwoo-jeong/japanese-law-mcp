@@ -149,7 +149,11 @@ func mustCoreLegalQueryFacade(
 ) application.CoreLegalQueryFacade {
 	t.Helper()
 
-	facade, err := application.NewCoreLegalQueryFacade(routes, materializer)
+	facade, err := application.NewCoreLegalQueryFacade(
+		routes,
+		materializer,
+		&coreFacadeLawTargetResolver{},
+	)
 	if err != nil {
 		t.Fatalf("試験用 CoreLegalQueryFacade を作成できません: %v", err)
 	}

@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"testing"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 )
 
 func TestDefaultLawNameQueryResolverCombinesEmbeddedLexiconAndKagome(
@@ -15,20 +17,24 @@ func TestDefaultLawNameQueryResolverCombinesEmbeddedLexiconAndKagome(
 		t.Fatalf("SOT-ARCH-021: resolver の初期化エラー = %v", err)
 	}
 	for _, testCase := range []struct {
-		query string
-		want  string
+		query     string
+		wantTitle string
+		wantKind  lawtarget.MatchKind
 	}{
 		{
-			query: "個情法",
-			want:  "個人情報の保護に関する法律",
+			query:     "個情法",
+			wantTitle: "個人情報の保護に関する法律",
+			wantKind:  lawtarget.MatchKindExact,
 		},
 		{
-			query: "個情法について教えてください",
-			want:  "個人情報の保護に関する法律",
+			query:     "個情法について教えてください",
+			wantTitle: "個人情報の保護に関する法律",
+			wantKind:  lawtarget.MatchKindRegisteredTerm,
 		},
 		{
-			query: "道路交法通",
-			want:  "道路交通法",
+			query:     "著権作法",
+			wantTitle: "著作権法",
+			wantKind:  lawtarget.MatchKindUniqueTypoCorrection,
 		},
 	} {
 		got, resolved, resolveErr := resolver.Resolve(
@@ -37,16 +43,19 @@ func TestDefaultLawNameQueryResolverCombinesEmbeddedLexiconAndKagome(
 		)
 		if resolveErr != nil {
 			t.Fatalf(
-				"SOT-IF-049: Resolve(%q) のエラー = %v",
+				"SOT-ARCH-030/SOT-IF-053: Resolve(%q) のエラー = %v",
 				testCase.query,
 				resolveErr,
 			)
 		}
-		if !resolved || got != testCase.want {
+		if !resolved ||
+			got.OfficialTitle() != testCase.wantTitle ||
+			got.MatchKind() != testCase.wantKind {
 			t.Fatalf(
-				"SOT-IF-049: Resolve(%q) = %q, %t",
+				"SOT-ARCH-030/SOT-IF-053: Resolve(%q) = title:%q kind:%q resolved:%t",
 				testCase.query,
-				got,
+				got.OfficialTitle(),
+				got.MatchKind(),
 				resolved,
 			)
 		}

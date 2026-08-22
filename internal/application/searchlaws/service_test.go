@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -21,13 +22,13 @@ func (p fakeSearchPort) Search(
 }
 
 type fakeQueryResolver struct {
-	resolve func(context.Context, string) (string, bool, error)
+	resolve func(context.Context, string) (lawtarget.ResolvedLawTarget, bool, error)
 }
 
 func (r fakeQueryResolver) Resolve(
 	ctx context.Context,
 	query string,
-) (string, bool, error) {
+) (lawtarget.ResolvedLawTarget, bool, error) {
 	return r.resolve(ctx, query)
 }
 
@@ -45,8 +46,8 @@ type pointerQueryResolver struct{}
 func (*pointerQueryResolver) Resolve(
 	context.Context,
 	string,
-) (string, bool, error) {
-	return "", false, nil
+) (lawtarget.ResolvedLawTarget, bool, error) {
+	return lawtarget.ResolvedLawTarget{}, false, nil
 }
 
 func TestServiceAppliesRequestTimeoutAndReturnsProviderResult(t *testing.T) {
@@ -66,7 +67,7 @@ func TestServiceAppliesRequestTimeoutAndReturnsProviderResult(t *testing.T) {
 			t.Fatalf("SOT-IF-029: deadline までの時間 = %s", remaining)
 		}
 		if request.Query() != "民法" {
-			t.Fatalf("SOT-IF-049: query = %q", request.Query())
+			t.Fatalf("SOT-IF-053: query = %q", request.Query())
 		}
 		return want, nil
 	}}
@@ -158,7 +159,7 @@ func TestServiceRejectsInvalidDependenciesAndInputs(t *testing.T) {
 	}
 }
 
-func TestServiceKeepsOriginalNonEmptyPageWithoutResolving(t *testing.T) {
+func TestServiceKeepsOriginalNonEmptyPageWhenResolvedTargetIsAbsentFromPage(t *testing.T) {
 	t.Parallel()
 
 	original := mustLawSearchResultWithTotalCount(t, 4)
@@ -174,9 +175,14 @@ func TestServiceKeepsOriginalNonEmptyPageWithoutResolving(t *testing.T) {
 	resolver := fakeQueryResolver{resolve: func(
 		context.Context,
 		string,
-	) (string, bool, error) {
+	) (lawtarget.ResolvedLawTarget, bool, error) {
 		resolverCalls++
-		return "道路交通法", true, nil
+		return mustResolvedLawTarget(
+			t,
+			"325AC0000000105",
+			"道路交通法",
+			lawtarget.MatchKindRegisteredTerm,
+		), true, nil
 	}}
 	service, err := NewService(port, resolver, time.Second)
 	if err != nil {
@@ -193,11 +199,11 @@ func TestServiceKeepsOriginalNonEmptyPageWithoutResolving(t *testing.T) {
 
 	got, err := service.Search(context.Background(), request)
 	if err != nil {
-		t.Fatalf("SOT-IF-049: Search() のエラー = %v", err)
+		t.Fatalf("SOT-IF-053: Search() のエラー = %v", err)
 	}
-	if got.TotalCount() != 4 || providerCalls != 1 || resolverCalls != 0 {
+	if got.TotalCount() != 4 || providerCalls != 1 || resolverCalls != 1 {
 		t.Fatalf(
-			"SOT-IF-049: total=%d, provider=%d, resolver=%d",
+			"SOT-IF-053: total=%d, provider=%d, resolver=%d",
 			got.TotalCount(),
 			providerCalls,
 			resolverCalls,
@@ -232,7 +238,7 @@ func TestServiceFallsBackOnceAndPreservesRequestControls(t *testing.T) {
 		gotAsOf, exists := gotRequest.AsOf()
 		if !exists || gotAsOf.String() != "2026-07-27" ||
 			gotRequest.Limit() != 7 || gotRequest.Offset() != 41 {
-			t.Fatalf("SOT-IF-049: request = %#v", gotRequest)
+			t.Fatalf("SOT-IF-053: request = %#v", gotRequest)
 		}
 		if gotRequest.Query() == "個情法" {
 			return empty, nil
@@ -242,14 +248,19 @@ func TestServiceFallsBackOnceAndPreservesRequestControls(t *testing.T) {
 	resolver := fakeQueryResolver{resolve: func(
 		ctx context.Context,
 		query string,
-	) (string, bool, error) {
+	) (lawtarget.ResolvedLawTarget, bool, error) {
 		if err := ctx.Err(); err != nil {
-			return "", false, err
+			return lawtarget.ResolvedLawTarget{}, false, err
 		}
 		if query != "個情法" {
-			t.Fatalf("SOT-IF-049: resolver query = %q", query)
+			t.Fatalf("SOT-IF-053: resolver query = %q", query)
 		}
-		return "個人情報の保護に関する法律", true, nil
+		return mustResolvedLawTarget(
+			t,
+			"425AC0000000057",
+			"個人情報の保護に関する法律",
+			lawtarget.MatchKindRegisteredTerm,
+		), true, nil
 	}}
 	service, err := NewService(port, resolver, time.Second)
 	if err != nil {
@@ -258,14 +269,14 @@ func TestServiceFallsBackOnceAndPreservesRequestControls(t *testing.T) {
 
 	got, err := service.Search(context.Background(), request)
 	if err != nil {
-		t.Fatalf("SOT-IF-049: Search() のエラー = %v", err)
+		t.Fatalf("SOT-IF-053: Search() のエラー = %v", err)
 	}
 	if got.TotalCount() != 2 ||
 		len(queries) != 2 ||
 		queries[0] != "個情法" ||
 		queries[1] != "個人情報の保護に関する法律" {
 		t.Fatalf(
-			"SOT-IF-049: total=%d, queries=%#v",
+			"SOT-IF-053: total=%d, queries=%#v",
 			got.TotalCount(),
 			queries,
 		)
@@ -284,9 +295,9 @@ func TestServiceDoesNotHideProviderOrResolverErrors(t *testing.T) {
 	resolver := fakeQueryResolver{resolve: func(
 		context.Context,
 		string,
-	) (string, bool, error) {
+	) (lawtarget.ResolvedLawTarget, bool, error) {
 		resolverCalls++
-		return "", false, nil
+		return lawtarget.ResolvedLawTarget{}, false, nil
 	}}
 	service, err := NewService(
 		fakeSearchPort{search: func(
@@ -305,10 +316,10 @@ func TestServiceDoesNotHideProviderOrResolverErrors(t *testing.T) {
 		err,
 		providerErr,
 	) {
-		t.Fatalf("SOT-IF-049: provider error = %v", err)
+		t.Fatalf("SOT-IF-053: provider error = %v", err)
 	}
-	if resolverCalls != 0 {
-		t.Fatalf("SOT-IF-049: resolver calls = %d", resolverCalls)
+	if resolverCalls != 1 {
+		t.Fatalf("SOT-IF-053: resolver calls = %d", resolverCalls)
 	}
 
 	resolverErr := errors.New("検索語解決エラー")
@@ -322,8 +333,8 @@ func TestServiceDoesNotHideProviderOrResolverErrors(t *testing.T) {
 		fakeQueryResolver{resolve: func(
 			context.Context,
 			string,
-		) (string, bool, error) {
-			return "", false, resolverErr
+		) (lawtarget.ResolvedLawTarget, bool, error) {
+			return lawtarget.ResolvedLawTarget{}, false, resolverErr
 		}},
 		time.Second,
 	)
@@ -334,7 +345,7 @@ func TestServiceDoesNotHideProviderOrResolverErrors(t *testing.T) {
 		err,
 		resolverErr,
 	) {
-		t.Fatalf("SOT-IF-049: resolver error = %v", err)
+		t.Fatalf("SOT-IF-053: resolver error = %v", err)
 	}
 
 	fallbackErr := errors.New("候補検索の情報源エラー")
@@ -353,8 +364,13 @@ func TestServiceDoesNotHideProviderOrResolverErrors(t *testing.T) {
 		fakeQueryResolver{resolve: func(
 			context.Context,
 			string,
-		) (string, bool, error) {
-			return "個人情報の保護に関する法律", true, nil
+		) (lawtarget.ResolvedLawTarget, bool, error) {
+			return mustResolvedLawTarget(
+				t,
+				"425AC0000000057",
+				"個人情報の保護に関する法律",
+				lawtarget.MatchKindRegisteredTerm,
+			), true, nil
 		}},
 		time.Second,
 	)
@@ -365,7 +381,7 @@ func TestServiceDoesNotHideProviderOrResolverErrors(t *testing.T) {
 		err,
 		fallbackErr,
 	) {
-		t.Fatalf("SOT-IF-049: fallback provider error = %v", err)
+		t.Fatalf("SOT-IF-053: fallback provider error = %v", err)
 	}
 }
 
@@ -383,9 +399,14 @@ func TestServiceRejectsInvalidProviderResultBeforeFallback(t *testing.T) {
 		fakeQueryResolver{resolve: func(
 			context.Context,
 			string,
-		) (string, bool, error) {
+		) (lawtarget.ResolvedLawTarget, bool, error) {
 			resolverCalls++
-			return "道路交通法", true, nil
+			return mustResolvedLawTarget(
+				t,
+				"325AC0000000105",
+				"道路交通法",
+				lawtarget.MatchKindRegisteredTerm,
+			), true, nil
 		}},
 		time.Second,
 	)
@@ -397,10 +418,76 @@ func TestServiceRejectsInvalidProviderResultBeforeFallback(t *testing.T) {
 		t.Fatalf("NewRequest() のエラー = %v", err)
 	}
 	if _, err := service.Search(context.Background(), request); err == nil {
-		t.Fatal("SOT-IF-049: 不正な provider result を受理しました")
+		t.Fatal("SOT-IF-053: 不正な provider result を受理しました")
 	}
-	if resolverCalls != 0 {
-		t.Fatalf("SOT-IF-049: resolver calls = %d", resolverCalls)
+	if resolverCalls != 1 {
+		t.Fatalf("SOT-IF-053: resolver calls = %d", resolverCalls)
+	}
+}
+
+func TestServicePrioritizesResolvedTargetWithinCurrentPage(t *testing.T) {
+	t.Parallel()
+
+	original := mustLawSearchResult(
+		t,
+		100,
+		[]model.LawSummary{
+			mustLawSummary(t, "law-1", "第一法"),
+			mustLawSummary(t, "law-traffic", "道路交通法・現行"),
+			mustLawSummary(t, "law-2", "第二法"),
+			mustLawSummary(t, "law-traffic", "道路交通法・旧版"),
+			mustLawSummary(t, "law-3", "第三法"),
+		},
+		intPtr(40),
+	)
+	providerCalls := 0
+	service, err := NewService(
+		fakeSearchPort{search: func(
+			context.Context,
+			Request,
+		) (model.LawSearchResult, error) {
+			providerCalls++
+			return original, nil
+		}},
+		fakeQueryResolver{resolve: func(
+			context.Context,
+			string,
+		) (lawtarget.ResolvedLawTarget, bool, error) {
+			return mustResolvedLawTarget(
+				t,
+				"law-traffic",
+				"道路交通法",
+				lawtarget.MatchKindRegisteredTerm,
+			), true, nil
+		}},
+		time.Second,
+	)
+	if err != nil {
+		t.Fatalf("NewService() のエラー = %v", err)
+	}
+	request, err := NewRequest(RequestValues{Query: "道交法"})
+	if err != nil {
+		t.Fatalf("NewRequest() のエラー = %v", err)
+	}
+
+	got, err := service.Search(context.Background(), request)
+	if err != nil {
+		t.Fatalf("SOT-IF-053: Search() のエラー = %v", err)
+	}
+	items := got.Items()
+	if len(items) != 5 ||
+		items[0].LawID() != "law-traffic" ||
+		items[0].Title() != "道路交通法・現行" ||
+		items[1].LawID() != "law-traffic" ||
+		items[1].Title() != "道路交通法・旧版" ||
+		items[2].LawID() != "law-1" ||
+		items[3].LawID() != "law-2" ||
+		items[4].LawID() != "law-3" {
+		t.Fatalf("SOT-ARCH-030: prioritized items = %#v", items)
+	}
+	if nextOffset, exists := got.NextOffset(); !exists || nextOffset != 40 ||
+		got.TotalCount() != 100 || providerCalls != 1 {
+		t.Fatalf("SOT-ARCH-030: nextOffset = (%d, %t)", nextOffset, exists)
 	}
 }
 
@@ -418,9 +505,20 @@ func mustLawSearchResultWithTotalCount(
 	totalCount int,
 ) model.LawSearchResult {
 	t.Helper()
+	return mustLawSearchResult(t, totalCount, []model.LawSummary{}, nil)
+}
+
+func mustLawSearchResult(
+	t *testing.T,
+	totalCount int,
+	items []model.LawSummary,
+	nextOffset *int,
+) model.LawSearchResult {
+	t.Helper()
 	result, err := model.NewLawSearchResult(model.LawSearchResultValues{
 		TotalCount: totalCount,
-		Items:      []model.LawSummary{},
+		Items:      items,
+		NextOffset: nextOffset,
 	})
 	if err != nil {
 		t.Fatalf("LawSearchResult の作成エラー = %v", err)
@@ -432,7 +530,57 @@ func noMatchQueryResolver() fakeQueryResolver {
 	return fakeQueryResolver{resolve: func(
 		context.Context,
 		string,
-	) (string, bool, error) {
-		return "", false, nil
+	) (lawtarget.ResolvedLawTarget, bool, error) {
+		return lawtarget.ResolvedLawTarget{}, false, nil
 	}}
+}
+
+func mustResolvedLawTarget(
+	t *testing.T,
+	lawID string,
+	officialTitle string,
+	matchKind lawtarget.MatchKind,
+) lawtarget.ResolvedLawTarget {
+	t.Helper()
+	target, err := lawtarget.NewResolvedLawTarget(lawID, officialTitle, matchKind)
+	if err != nil {
+		t.Fatalf("ResolvedLawTarget の作成エラー = %v", err)
+	}
+	return target
+}
+
+func mustLawSummary(
+	t *testing.T,
+	lawID string,
+	title string,
+) model.LawSummary {
+	t.Helper()
+	informationSource, err := model.NewInformationSource(model.InformationSourceValues{
+		ID:         "e-gov-law-api-v2",
+		Name:       "e-Gov法令検索",
+		Publisher:  "デジタル庁",
+		Authority:  model.AuthorityOfficial,
+		ServiceURL: "https://laws.e-gov.go.jp",
+	})
+	if err != nil {
+		t.Fatalf("InformationSource の作成エラー = %v", err)
+	}
+	source, err := model.NewLegalSource(informationSource)
+	if err != nil {
+		t.Fatalf("LegalSource の作成エラー = %v", err)
+	}
+	summary, err := model.NewLawSummary(model.LawSummaryValues{
+		LawID:      lawID,
+		RevisionID: lawID + "-rev",
+		Title:      title,
+		Source:     source,
+	})
+	if err != nil {
+		t.Fatalf("LawSummary の作成エラー = %v", err)
+	}
+	return summary
+}
+
+func intPtr(value int) *int {
+	return &value
 }

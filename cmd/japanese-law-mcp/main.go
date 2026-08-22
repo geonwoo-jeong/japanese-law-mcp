@@ -21,16 +21,15 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
-	kagomeanalyzer "github.com/geonwoo-jeong/japanese-law-mcp/internal/nlp/kagome"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2"
@@ -241,33 +240,23 @@ func newPublicDependencies(
 }
 
 var loadLawNameQueryResolver = sync.OnceValues(
-	func() (searchlaws.QueryResolver, error) {
+	func() (lawtarget.Resolver, error) {
+		planning, err := loadLegalQueryPlanningDependencies()
+		if err != nil {
+			return nil, err
+		}
 		lexicon, err := lawnamelexicon.LoadEmbedded()
 		if err != nil {
 			return nil, err
 		}
-		analyzer, err := kagomeanalyzer.NewAnalyzer(lexicon.Terms())
-		if err != nil {
-			return nil, err
-		}
-		lexiconEntries := lexicon.Entries()
-		entries := make([]searchquery.EntryValues, len(lexiconEntries))
-		for index, entry := range lexiconEntries {
-			entries[index] = searchquery.EntryValues{
-				ResourceID: entry.ResourceID,
-				Canonical:  entry.Canonical,
-				Terms:      append([]string(nil), entry.Terms...),
-			}
-		}
-		resolver, err := searchquery.NewResolver(entries, analyzer)
-		if err != nil {
-			return nil, err
-		}
-		return resolver, nil
+		return lawtarget.NewPreprocessResolver(
+			planning.preprocessor,
+			lexicon.Entries(),
+		)
 	},
 )
 
-func newLawNameQueryResolver() (searchlaws.QueryResolver, error) {
+func newLawNameQueryResolver() (lawtarget.Resolver, error) {
 	return loadLawNameQueryResolver()
 }
 

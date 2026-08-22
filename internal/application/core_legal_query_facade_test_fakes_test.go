@@ -7,6 +7,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
@@ -18,6 +19,21 @@ type coreFacadeLawSearchPort struct {
 	requests []lawsearch.Request
 	result   lawsearch.Page
 	err      error
+}
+
+type coreFacadeLawTargetResolver struct {
+	queries  []string
+	target   lawtarget.ResolvedLawTarget
+	resolved bool
+	err      error
+}
+
+func (r *coreFacadeLawTargetResolver) ResolveLogicalInput(
+	_ context.Context,
+	query string,
+) (lawtarget.ResolvedLawTarget, bool, error) {
+	r.queries = append(r.queries, query)
+	return r.target, r.resolved, r.err
 }
 
 func (p *coreFacadeLawSearchPort) Search(
