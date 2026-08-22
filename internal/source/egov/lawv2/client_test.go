@@ -199,6 +199,81 @@ func TestLawClientUsesValidRetryAfter(t *testing.T) {
 	}
 }
 
+func TestLawClientRaisesRetryAfterToMinimumInterval(t *testing.T) {
+	t.Parallel()
+
+	attempts := 0
+	var delay time.Duration
+	client := mustTestClient(t, clientDependencies{
+		doer: doerFunc(func(*http.Request) (*http.Response, error) {
+			attempts++
+			if attempts == 1 {
+				return response(
+					http.StatusTooManyRequests,
+					"rate limited",
+					map[string]string{"Retry-After": "0"},
+				), nil
+			}
+			return response(
+				http.StatusOK,
+				`{"total_count":0,"count":0,"laws":[]}`,
+				map[string]string{"Content-Type": "application/json"},
+			), nil
+		}),
+		now: time.Now,
+		sleep: func(_ context.Context, value time.Duration) error {
+			delay = value
+			return nil
+		},
+	})
+
+	_, err := client.fetch(context.Background(), lawSearchRequest{
+		query: "民法", asOf: mustDate("2026-07-26"), limit: 20,
+	})
+	if err != nil {
+		t.Fatalf("fetch() error = %v", err)
+	}
+	if delay != time.Second {
+		t.Fatalf("Retry-After の実効 delay = %v、期待値 = %v", delay, time.Second)
+	}
+}
+
+func TestLawClientDoesNotWaitPastDeadlineAfterMinimumInterval(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now().Round(0)
+	ctx, cancel := context.WithDeadline(
+		context.Background(),
+		now.Add(500*time.Millisecond),
+	)
+	defer cancel()
+	attempts := 0
+	sleeps := 0
+	client := mustTestClient(t, clientDependencies{
+		doer: doerFunc(func(*http.Request) (*http.Response, error) {
+			attempts++
+			return response(
+				http.StatusTooManyRequests,
+				"rate limited",
+				map[string]string{"Retry-After": "0"},
+			), nil
+		}),
+		now: func() time.Time { return now },
+		sleep: func(context.Context, time.Duration) error {
+			sleeps++
+			return nil
+		},
+	})
+
+	_, err := client.fetch(ctx, lawSearchRequest{
+		query: "民法", asOf: mustDate("2026-07-26"), limit: 20,
+	})
+	assertSourceErrorCode(t, err, model.SourceErrorCodeRateLimited)
+	if attempts != 1 || sleeps != 0 {
+		t.Fatalf("attempts = %d、sleeps = %d", attempts, sleeps)
+	}
+}
+
 func TestLawClientDoesNotRetryOther4xx(t *testing.T) {
 	t.Parallel()
 
@@ -310,6 +385,12 @@ func TestRetryAfterAndContextSleepEdges(t *testing.T) {
 	}
 	if _, _, valid := parseRetryAfter("invalid", now); valid {
 		t.Fatal("invalid Retry-After was accepted")
+	}
+	subsecondNow := now.Add(500 * time.Millisecond)
+	subsecondDate := subsecondNow.Add(500 * time.Millisecond).Format(http.TimeFormat)
+	raw, delay, valid = parseRetryAfter(subsecondDate, subsecondNow)
+	if !valid || raw != subsecondDate || delay != time.Second {
+		t.Fatalf("一秒未満の HTTP-date = %q, %v, %t", raw, delay, valid)
 	}
 	if err := sleepWithContext(context.Background(), 0); err != nil {
 		t.Fatalf("sleepWithContext(0) error = %v", err)

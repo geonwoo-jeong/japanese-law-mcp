@@ -27,6 +27,7 @@ const (
 	lawDocumentResponseBytes     = 16 * 1024 * 1024
 	lawDocumentDecompressedBytes = 32 * 1024 * 1024
 	maximumRetries               = 3
+	minimumRequestStartInterval  = time.Second
 )
 
 var retryBackoffs = [...]time.Duration{
@@ -401,13 +402,22 @@ func parseRetryAfter(
 		return "", 0, false
 	}
 	if seconds, err := strconv.ParseUint(value, 10, 31); err == nil {
-		return value, time.Duration(seconds) * time.Second, true
+		return value, effectiveRetryAfterDelay(
+			time.Duration(seconds) * time.Second,
+		), true
 	}
 	date, err := http.ParseTime(value)
 	if err != nil || !date.After(now) {
 		return "", 0, false
 	}
-	return value, date.Sub(now), true
+	return value, effectiveRetryAfterDelay(date.Sub(now)), true
+}
+
+func effectiveRetryAfterDelay(delay time.Duration) time.Duration {
+	if delay < minimumRequestStartInterval {
+		return minimumRequestStartInterval
+	}
+	return delay
 }
 
 func canWait(ctx context.Context, now time.Time, delay time.Duration) bool {
