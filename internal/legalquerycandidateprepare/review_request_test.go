@@ -25,7 +25,7 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	references, err := BuildRequiredSOTReferences(
 		t.Context(),
 		repository,
-		legalquerycandidateeval.SchemaVersionV2,
+		manifest.SchemaVersion,
 	)
 	if err != nil {
 		t.Fatalf("review SOT 集合を解決できません: %v", err)
@@ -63,9 +63,9 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	}
 
 	request, err := BuildEvaluationRequest(
-		t.Context(), repository, "corpus-v13", manifest, manifestRaw,
+		t.Context(), repository, "corpus-v16", manifest, manifestRaw,
 		architecture, architectureRaw, testability, testabilityRaw,
-		"default-2",
+		"default-8",
 	)
 	if err != nil {
 		t.Fatalf("candidate-evaluation-request-identity: request を構成できません: %v", err)
@@ -79,11 +79,14 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	}
 	if request.CandidateContentManifestSHA256 !=
 		legalquerycandidateeval.RawSHA256(manifestRaw) ||
+		request.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
 		request.RequiredReviewSOTSetSHA256 !=
 			legalquerycandidateeval.SOTSetSHA256(references) ||
-		request.EvaluatorVersion != "legal-query-evaluator-v2" ||
-		request.CorpusVersion != "corpus-v13" ||
-		request.BaselineVersion != "default-2" {
+		request.EvaluatorVersion != "legal-query-evaluator-v3" ||
+		request.CorpusVersion != "corpus-v16" ||
+		request.BaselineVersion != "default-8" ||
+		architecture.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		testability.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 {
 		t.Fatalf("candidate-evaluation-review-content-binding: request binding = %#v", request)
 	}
 }

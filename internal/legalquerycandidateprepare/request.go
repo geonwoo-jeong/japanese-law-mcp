@@ -92,7 +92,7 @@ func newEvaluationRequest(
 	corpusManifest := corpus.Manifest()
 	return legalquerycandidateeval.EvaluationRequest{
 		ArtifactKind:                   legalquerycandidateeval.ArtifactKindEvaluationRequest,
-		SchemaVersion:                  legalquerycandidateeval.SchemaVersionV2,
+		SchemaVersion:                  manifest.SchemaVersion,
 		EvaluatorVersion:               evaluators.CurrentVersion,
 		CorpusVersion:                  corpusManifest.CorpusVersion(),
 		CorpusManifestSHA256:           corpus.SHA256(),

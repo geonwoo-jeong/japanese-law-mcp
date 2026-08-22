@@ -13,7 +13,7 @@ import (
 const (
 	profileSetID                     = "default"
 	compositionDescriptorSchemaV2    = 2
-	queryPreprocessorSemanticVersion = "query-preprocessor-v1"
+	queryPreprocessorSemanticVersion = "query-preprocessor-v2"
 	selectorSemanticVersion          = "legal-query-selector-v1"
 )
 
@@ -78,7 +78,7 @@ func BuildContentManifest(
 	}
 	manifest := legalquerycandidateeval.CandidateContentManifest{
 		ArtifactKind:      legalquerycandidateeval.ArtifactKindCandidateContent,
-		SchemaVersion:     legalquerycandidateeval.SchemaVersionV2,
+		SchemaVersion:     legalquerycandidateeval.SchemaVersionV3,
 		ProfileSet:        profileSet,
 		ProfileArtifacts:  profiles,
 		LexiconArtifacts:  lexicons,

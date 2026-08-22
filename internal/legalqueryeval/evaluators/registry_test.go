@@ -30,11 +30,11 @@ func TestNewはExactEvaluatorVersionだけを受理する(t *testing.T) {
 	}
 }
 
-func TestCurrentVersionはVersion2を指す(t *testing.T) {
+func TestCurrentVersionはVersion3を指す(t *testing.T) {
 	t.Parallel()
 
-	if CurrentVersion != Version2 {
-		t.Fatalf("profile-set-evaluator-version-identity: current=%q version2=%q", CurrentVersion, Version2)
+	if CurrentVersion != Version3 {
+		t.Fatalf("candidate-evaluation-schema-v3-exact-evaluator-binding: current=%q version3=%q", CurrentVersion, Version3)
 	}
 }
 

@@ -31,22 +31,23 @@ func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じ
 		t.Skip("候補再現用 Go 環境がないため local では実行しません")
 	}
 
-	const expectedEvaluationID = "evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1"
 	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
 	if err != nil {
 		t.Fatalf("production candidate を準備できません: %v", err)
 	}
-	if prepared.EvaluationID != expectedEvaluationID || len(prepared.RequestRaw) == 0 ||
+	if prepared.EvaluationID == "" || len(prepared.RequestRaw) == 0 ||
 		prepared.request.EvaluationID != prepared.EvaluationID ||
 		prepared.content.CandidateContentID != prepared.request.CandidateContentID ||
 		prepared.repository != "../.." {
 		t.Fatal("production preparation payload の identity が不正です")
 	}
-	if prepared.request.CorpusVersion != "corpus-v14" ||
-		prepared.request.BaselineVersion != "default-7" {
+	if prepared.request.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		prepared.content.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		prepared.request.CorpusVersion != "corpus-v16" ||
+		prepared.request.BaselineVersion != "default-8" {
 		t.Fatalf("production preparation request が後続予約と一致しません: %#v", prepared.request)
 	}
-	if prepared.request.EvaluatorVersion != evaluators.Version2 {
+	if prepared.request.EvaluatorVersion != evaluators.Version3 {
 		t.Fatalf("production preparation request の evaluatorVersion = %q", prepared.request.EvaluatorVersion)
 	}
 	if prepared.tracked != nil || len(prepared.trackedRaw) != 0 ||

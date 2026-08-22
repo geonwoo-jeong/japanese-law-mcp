@@ -27,7 +27,7 @@ func BuildReviewAttestation(
 	}
 	review := legalquerycandidateeval.ReviewAttestation{
 		ArtifactKind:                   legalquerycandidateeval.ArtifactKindReviewAttestation,
-		SchemaVersion:                  legalquerycandidateeval.SchemaVersionV2,
+		SchemaVersion:                  manifest.SchemaVersion,
 		CandidateContentID:             manifest.CandidateContentID,
 		CandidateContentManifestSHA256: legalquerycandidateeval.RawSHA256(manifestRaw),
 		ReviewScope:                    scope,

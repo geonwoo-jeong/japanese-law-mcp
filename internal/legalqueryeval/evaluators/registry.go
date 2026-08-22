@@ -15,7 +15,7 @@ const (
 	// Version3 は、候補 planning failure を評価失敗へ変換する次期意味版である。
 	Version3 = "legal-query-evaluator-v3"
 	// CurrentVersion は、新しい request が予約する evaluator version である。
-	CurrentVersion = Version2
+	CurrentVersion = Version3
 )
 
 // New は exact version に対応する標準 evaluator だけを構築する。

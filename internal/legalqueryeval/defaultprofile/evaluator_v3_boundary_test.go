@@ -3,13 +3,79 @@ package defaultprofile
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryplanning"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querypreprocess"
 )
+
+func TestEvaluatorV3は実前処理の誤記候補予算超過を評価失敗にする(
+	t *testing.T,
+) {
+	const verificationID = "candidate-evaluator-v3-real-marker-wiring"
+
+	base, err := legalqueryplanning.LoadEmbedded()
+	if err != nil {
+		t.Fatalf("%s: planning を構築できません: %v", verificationID, err)
+	}
+	preprocessor, err := querypreprocess.NewEmbedded(nil)
+	if err != nil {
+		t.Fatalf("%s: 実前処理器を構築できません: %v", verificationID, err)
+	}
+	planning := actualPreprocessorPlanning{
+		Planning:     base,
+		preprocessor: preprocessor,
+	}
+	semanticCase := syntheticBoundaryPlanCase(t, strings.Repeat("東京", 100))
+
+	for _, previous := range []struct {
+		name string
+		new  func(Planning) (*Evaluator, error)
+	}{
+		{name: "v1", new: NewWithPlanning},
+		{name: "v2", new: NewWithPlanningV2},
+	} {
+		evaluator, evaluatorErr := previous.new(planning)
+		if evaluatorErr != nil {
+			t.Fatalf(
+				"%s: %s evaluator を構築できません: %v",
+				verificationID,
+				previous.name,
+				evaluatorErr,
+			)
+		}
+		if _, _, _, evaluatorErr = evaluator.EvaluateWithPlan(
+			context.Background(),
+			semanticCase,
+		); evaluatorErr == nil {
+			t.Fatalf(
+				"SOT-ENG-041: %s が実前処理の入力別失敗を評価失敗へ変換しました",
+				previous.name,
+			)
+		}
+	}
+
+	v3, err := NewWithPlanningV3(planning)
+	if err != nil {
+		t.Fatalf("%s: v3 evaluator を構築できません: %v", verificationID, err)
+	}
+	evaluation, _, hasPlan, err := v3.EvaluateWithPlan(
+		context.Background(),
+		semanticCase,
+	)
+	if err != nil {
+		t.Fatalf("SOT-ENG-041: v3 が実前処理の入力別失敗を返しました: %v", err)
+	}
+	if hasPlan || evaluation.PlanOutcomeMatched() ||
+		len(evaluation.Meanings()) != 1 ||
+		evaluation.Meanings()[0].SignatureMatched() {
+		t.Fatalf("SOT-ENG-041: v3 の実配線評価 = %#v", evaluation)
+	}
+}
 
 func TestEvaluatorV3はPlan生成Errorを評価失敗にする(
 	t *testing.T,
@@ -333,6 +399,15 @@ func (p unadoptedPackProfile) Generate(
 
 type markedFailingPreprocessPlanning struct {
 	Planning
+}
+
+type actualPreprocessorPlanning struct {
+	Planning
+	preprocessor legalquery.QueryPreprocessor
+}
+
+func (p actualPreprocessorPlanning) Preprocessor() legalquery.QueryPreprocessor {
+	return p.preprocessor
 }
 
 func (markedFailingPreprocessPlanning) Preprocessor() legalquery.QueryPreprocessor {

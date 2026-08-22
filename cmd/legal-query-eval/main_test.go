@@ -8,6 +8,9 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryadoption"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/evaluators"
 )
 
 func TestRunParsesAdoptionOptionsAndWritesJSON(t *testing.T) {
@@ -188,6 +191,32 @@ func TestExecuteはCurrentAdoptionとReview済みBaselineを完全一致で評�
 		if !strings.Contains(string(result), marker) {
 			t.Fatalf("採用済み report marker がありません: %s", marker)
 		}
+	}
+}
+
+func TestCandidateCurrentEvaluator切替はProductionAdoptionを変更しない(
+	t *testing.T,
+) {
+	t.Chdir("../..")
+
+	adoption, err := legalqueryadoption.LoadCurrent(context.Background())
+	if err != nil {
+		t.Fatalf("candidate-evaluation-schema-v3-current-switch-production-neutral: current adoption を読めません: %v", err)
+	}
+	if evaluators.CurrentVersion != evaluators.Version3 ||
+		adoption.EvaluatorVersion() != evaluators.Version1 {
+		t.Fatalf(
+			"candidate-evaluation-schema-v3-current-switch-production-neutral: candidate=%q production=%q",
+			evaluators.CurrentVersion,
+			adoption.EvaluatorVersion(),
+		)
+	}
+	evaluator, err := evaluators.New(adoption.EvaluatorVersion())
+	if err != nil {
+		t.Fatalf("candidate-evaluation-schema-v3-current-switch-production-neutral: production evaluator を構築できません: %v", err)
+	}
+	if evaluator.ScoresCandidatePlanningFailure() {
+		t.Fatal("candidate-evaluation-schema-v3-current-switch-production-neutral: production evaluator が候補 failure policy を使用しました")
 	}
 }
 

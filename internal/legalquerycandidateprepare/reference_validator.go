@@ -88,6 +88,10 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			fmt.Errorf("新しい evaluation request は current evaluatorVersion を必要とします")
 	}
+	if document.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 {
+		return legalquerycandidateeval.RequestReferenceValidation{},
+			fmt.Errorf("新しい evaluation request は schema version 3 を必要とします")
+	}
 	adoption, err := legalqueryadoption.LoadCurrentFromRoot(ctx, v.repositoryRoot)
 	if err != nil {
 		return legalquerycandidateeval.RequestReferenceValidation{}, err

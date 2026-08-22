@@ -1,10 +1,43 @@
 package legalquerycandidateprepare
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerysourceclosure"
 )
+
+func TestBuildSemanticSourceSetは実MarkerSourceを固定する(t *testing.T) {
+	if !useExactCandidateToolchain(t) {
+		t.Skip("候補再現用 Go 環境がないため local では実行しません")
+	}
+	t.Setenv("GOOS", "linux")
+	t.Setenv("GOARCH", "amd64")
+	t.Setenv("GOAMD64", "v1")
+	t.Setenv("CGO_ENABLED", "0")
+	repository, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("candidate-evaluation-schema-v3-marker-content-binding: repository を解決できません: %v", err)
+	}
+	source, err := BuildSemanticSourceSet(t.Context(), repository)
+	if err != nil {
+		t.Fatalf("candidate-evaluation-schema-v3-marker-content-binding: source set を構築できません: %v", err)
+	}
+	want := map[string]bool{
+		"internal/querypreprocess/candidate_case_failure.go": false,
+		"internal/querypreprocess/preprocess.go":             false,
+	}
+	for _, file := range source.Files {
+		if _, exists := want[file.Path]; exists {
+			want[file.Path] = true
+		}
+	}
+	for path, found := range want {
+		if !found {
+			t.Fatalf("candidate-evaluation-schema-v3-marker-content-binding: %s が source set にありません", path)
+		}
+	}
+}
 
 func TestProjectSemanticSourceSetはClosureの全Identityを保持する(t *testing.T) {
 	t.Parallel()

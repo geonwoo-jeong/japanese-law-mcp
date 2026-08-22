@@ -20,7 +20,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		t.Fatalf("candidate-evaluation-referenced-file-bounds: validator を作成できません: %v", err)
 	}
 	corpus, err := legalquerycorpus.LoadManifest(
-		context.Background(), root, "testdata/legalquery/corpus-v10",
+		context.Background(), root, "testdata/legalquery/corpus-v16",
 	)
 	if err != nil {
 		t.Fatalf("candidate-evaluation-request-identity: corpus manifest を読めません: %v", err)
@@ -28,14 +28,14 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	references, err := BuildRequiredSOTReferences(
 		context.Background(),
 		root,
-		legalquerycandidateeval.SchemaVersionV2,
+		legalquerycandidateeval.SchemaVersionV3,
 	)
 	if err != nil {
 		t.Fatalf("candidate-evaluation-review-content-binding: SOT 参照を作れません: %v", err)
 	}
 	manifest := corpus.Manifest()
 	request := legalquerycandidateeval.EvaluationRequest{
-		SchemaVersion:              legalquerycandidateeval.SchemaVersionV2,
+		SchemaVersion:              legalquerycandidateeval.SchemaVersionV3,
 		EvaluatorVersion:           evaluators.CurrentVersion,
 		CorpusVersion:              manifest.CorpusVersion(),
 		CorpusManifestSHA256:       corpus.SHA256(),
@@ -43,7 +43,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		HoldoutLeakageGroupDigests: manifest.HoldoutLeakageGroupDigests(),
 		RequiredReviewSOTs:         references,
 		RequiredReviewSOTSetSHA256: legalquerycandidateeval.SOTSetSHA256(references),
-		BaselineVersion:            "default-3",
+		BaselineVersion:            "default-8",
 	}
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
@@ -51,17 +51,11 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		t.Fatalf("candidate-evaluation-request-identity: 外部参照を検証できません: %v", err)
 	}
 
-	request.EvaluatorVersion = evaluators.Version1
+	request.EvaluatorVersion = evaluators.Version2
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
 	); err == nil {
-		t.Fatal("candidate-evaluation-evaluator-version-match: current ではない v1 を新規準備として受理しました")
-	}
-	request.EvaluatorVersion = evaluators.Version3
-	if _, err := validator.ValidateEvaluationRequest(
-		context.Background(), []byte("canonical request placeholder\n"), request,
-	); err == nil {
-		t.Fatal("candidate-evaluator-v3-exact-version-routing: schema v2 の新規準備が v3 を受理しました")
+		t.Fatal("candidate-evaluation-evaluator-version-match: current ではない v2 を新規準備として受理しました")
 	}
 
 	request.EvaluatorVersion = evaluators.CurrentVersion
@@ -72,7 +66,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		t.Fatal("candidate-evaluation-request-identity: active baseline 版を候補予約として受理しました")
 	}
 
-	request.BaselineVersion = "default-3"
+	request.BaselineVersion = "default-8"
 	request.EvaluatorVersion = "legal-query-evaluator-v999"
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
@@ -81,12 +75,12 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	}
 }
 
-func TestReferenceValidatorはCurrent切替前のSchemaV3Requestを拒否する(t *testing.T) {
+func TestReferenceValidatorはSchemaV2を新しいCurrentとして拒否する(t *testing.T) {
 	t.Parallel()
 
 	validator := ReferenceValidator{repositoryRoot: candidateRepositoryRoot(t)}
 	request := legalquerycandidateeval.EvaluationRequest{
-		SchemaVersion:    legalquerycandidateeval.SchemaVersionV3,
+		SchemaVersion:    legalquerycandidateeval.SchemaVersionV2,
 		EvaluatorVersion: evaluators.Version3,
 	}
 	if _, err := validator.ValidateEvaluationRequest(
@@ -94,7 +88,7 @@ func TestReferenceValidatorはCurrent切替前のSchemaV3Requestを拒否する(
 		nil,
 		request,
 	); err == nil {
-		t.Fatal("candidate-evaluation-schema-v3-production-unreachable: current 切替前に schema v3 request を受理しました")
+		t.Fatal("candidate-evaluation-schema-v3-exact-evaluator-binding: schema v2 を新しい current request として受理しました")
 	}
 }
 
@@ -103,10 +97,7 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 		t.Skip("候補再現用 Go 環境がないため local では実行しません")
 	}
 
-	const (
-		expectedEvaluationID = "evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1"
-		historyEvaluationID  = "evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c"
-	)
+	const historyEvaluationID = "evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c"
 
 	root := candidateRepositoryRoot(t)
 	validator, err := NewReferenceValidator(root)
@@ -133,8 +124,11 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 	if len(prepared.ReviewAttestations) != 2 {
 		t.Fatalf("candidate-evaluation-current-single-target: review 数 = %d", len(prepared.ReviewAttestations))
 	}
-	if prepared.Pointer.EvaluationID != expectedEvaluationID {
-		t.Fatalf("candidate-evaluation-current-single-target: evaluationId = %q", prepared.Pointer.EvaluationID)
+	if prepared.Pointer.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		prepared.Request.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		prepared.CandidateContent.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		prepared.Request.EvaluatorVersion != evaluators.Version3 {
+		t.Fatalf("candidate-evaluation-current-single-target: current schema binding = %#v", prepared)
 	}
 	if len(current.History) != 1 {
 		t.Fatalf("candidate-evaluation-single-holdout-use: 消費済み履歴数 = %d", len(current.History))
@@ -149,8 +143,8 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 		history.Result.Outcome != legalquerycandidateeval.EvaluationOutcomeFailed {
 		t.Fatalf("candidate-evaluation-failure-history: 消費済み履歴 = %#v", history)
 	}
-	if prepared.Request.CorpusVersion != "corpus-v14" ||
-		prepared.Request.BaselineVersion != "default-7" {
+	if prepared.Request.CorpusVersion != "corpus-v16" ||
+		prepared.Request.BaselineVersion != "default-8" {
 		t.Fatalf("candidate-evaluation-request-identity: current request = %#v", prepared.Request)
 	}
 	if len(current.RequestRaw) == 0 ||
@@ -191,7 +185,7 @@ func Test不確定終了Requestを再利用せず新しいCurrentへ進める(t 
 	request := current.Prepared.Request
 	if current.Prepared.Pointer.EvaluationID == indeterminateEvaluationID ||
 		oldRequest.BaselineVersion != "default-4" ||
-		request.BaselineVersion != "default-7" ||
+		request.BaselineVersion != "default-8" ||
 		oldRequest.HoldoutDigest == request.HoldoutDigest {
 		t.Fatal("candidate-evaluation-indeterminate-reviewed-retry-gate: 不確定終了の identity を再利用しました")
 	}

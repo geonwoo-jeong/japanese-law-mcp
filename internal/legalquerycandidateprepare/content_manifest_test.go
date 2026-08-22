@@ -28,10 +28,20 @@ func TestBuildContentManifestは校正済み候補と許可辞書だけを固定
 		t.Fatalf("candidate-evaluation-candidate-content-identity: manifest を構成できません: %v", err)
 	}
 	if manifest.CandidateContentID == "" ||
+		manifest.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
 		manifest.ProfileSet.ProfileSetID != "default" ||
 		manifest.ProfileSet.ProfileSetVersion != "profile-set-sha256-c6499c5843e993d749550a1ec71ca217234f807057b8ed8dc4cc4a75af282dc6" ||
 		manifest.ProfileSet.RankingVersion != "legal-query-ranking-2026-07-31-2" {
 		t.Fatalf("candidate-evaluation-candidate-content-identity: profileSet = %#v", manifest.ProfileSet)
+	}
+	if len(manifest.Composition.Components) == 0 ||
+		manifest.Composition.Components[0].Role != "preprocessor" ||
+		manifest.Composition.Components[0].ComponentID != "query-preprocessor" ||
+		manifest.Composition.Components[0].SemanticVersion != "query-preprocessor-v2" {
+		t.Fatalf(
+			"candidate-evaluation-schema-v3-marker-content-binding: composition = %#v",
+			manifest.Composition,
+		)
 	}
 	if len(manifest.ProfileArtifacts) != 2 ||
 		manifest.ProfileArtifacts[0].ProfileID != "core" ||
