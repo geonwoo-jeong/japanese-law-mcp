@@ -79,10 +79,11 @@ func TestParseLawContentAcceptsEmptyResult(t *testing.T) {
 	}
 }
 
-func TestParseLawContentRejectsPageInvariantViolations(t *testing.T) {
+func TestEGovKeywordPageInvariants(t *testing.T) {
 	t.Parallel()
+	t.Run("egov-keyword-page-invariants", func(t *testing.T) {
 
-	const item = `{
+		const item = `{
 		"law_info":{"law_id":"322CO0000000016"},
 		"revision_info":{
 			"law_revision_id":"322CO0000000016_20240401_506CO0000000161",
@@ -90,52 +91,53 @@ func TestParseLawContentRejectsPageInvariantViolations(t *testing.T) {
 		},
 		"sentences":[{"position":"MainProvision/Article[1]","text":"本文"}]
 	}`
-	tests := []struct {
-		name   string
-		body   string
-		limit  int
-		offset int
-	}{
-		{
-			name:  "sentence_count と展開件数が異なる",
-			body:  fmt.Sprintf(`{"total_count":2,"sentence_count":2,"next_offset":null,"items":[%s]}`, item),
-			limit: 2,
-		},
-		{
-			name:  "next_offset が offset と count の和ではない",
-			body:  fmt.Sprintf(`{"total_count":3,"sentence_count":1,"next_offset":2,"items":[%s]}`, item),
-			limit: 1,
-		},
-		{
-			name:  "残件があるのに next_offset が null",
-			body:  fmt.Sprintf(`{"total_count":2,"sentence_count":1,"next_offset":null,"items":[%s]}`, item),
-			limit: 1,
-		},
-		{
-			name:   "next_offset が int32 上限を超える",
-			body:   fmt.Sprintf(`{"total_count":2147483648,"sentence_count":1,"next_offset":2147483648,"items":[%s]}`, item),
-			limit:  1,
-			offset: 2147483647,
-		},
-	}
-	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+		tests := []struct {
+			name   string
+			body   string
+			limit  int
+			offset int
+		}{
+			{
+				name:  "sentence_count と展開件数が異なる",
+				body:  fmt.Sprintf(`{"total_count":2,"sentence_count":2,"next_offset":null,"items":[%s]}`, item),
+				limit: 2,
+			},
+			{
+				name:  "next_offset が offset と count の和ではない",
+				body:  fmt.Sprintf(`{"total_count":3,"sentence_count":1,"next_offset":2,"items":[%s]}`, item),
+				limit: 1,
+			},
+			{
+				name:  "残件があるのに next_offset が null",
+				body:  fmt.Sprintf(`{"total_count":2,"sentence_count":1,"next_offset":null,"items":[%s]}`, item),
+				limit: 1,
+			},
+			{
+				name:   "next_offset が int32 上限を超える",
+				body:   fmt.Sprintf(`{"total_count":2147483648,"sentence_count":1,"next_offset":2147483648,"items":[%s]}`, item),
+				limit:  1,
+				offset: 2147483647,
+			},
+		}
+		for _, test := range tests {
+			test := test
+			t.Run(test.name, func(t *testing.T) {
+				t.Parallel()
 
-			_, _, err := parseLawContentSearchResponse(
-				context.Background(),
-				[]byte(test.body),
-				test.limit,
-				test.offset,
-			)
-			assertLawContentSourceError(
-				t,
-				err,
-				model.SourceErrorCodeInvalidSourceResponse,
-			)
-		})
-	}
+				_, _, err := parseLawContentSearchResponse(
+					context.Background(),
+					[]byte(test.body),
+					test.limit,
+					test.offset,
+				)
+				assertLawContentSourceError(
+					t,
+					err,
+					model.SourceErrorCodeInvalidSourceResponse,
+				)
+			})
+		}
+	})
 }
 
 func TestParseLawContentUsesContentCapabilityForStructuralError(t *testing.T) {
@@ -151,7 +153,7 @@ func TestParseLawContentUsesContentCapabilityForStructuralError(t *testing.T) {
 	if !errors.As(err, &sourceError) {
 		t.Fatalf("SOT-IF-017/028: error = %T %v", err, err)
 	}
-	if sourceError.Code() != model.SourceErrorCodeSourceContractChanged ||
+	if sourceError.Code() != model.SourceErrorCodeInvalidSourceResponse ||
 		sourceError.ProviderID() != providerID ||
 		sourceError.SourceID() != providerID ||
 		sourceError.CapabilityID() != "law.content.search" ||

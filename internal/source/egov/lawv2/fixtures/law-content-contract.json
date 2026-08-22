@@ -1,0 +1,21 @@
+{
+  "checkedOn": "2026-07-30",
+  "operation": "GET /keyword",
+  "successMediaType": "application/json",
+  "responseType": "object",
+  "totalCount": {"required": true, "type": "integer", "nullable": false},
+  "sentenceCount": {"required": true, "type": "integer", "nullable": false},
+  "nextOffset": {"required": false, "type": "integer", "nullable": true},
+  "items": {"required": true, "type": "array", "nullable": false, "minimumItems": 0},
+  "lawInfo": {"required": true, "type": "object", "nullable": false},
+  "revisionInfo": {"required": true, "type": "object", "nullable": false},
+  "sentences": {"required": true, "type": "array", "nullable": false, "minimumItems": 1},
+  "lawId": {"required": true, "type": "string", "nullable": false},
+  "revisionId": {"required": true, "type": "string", "nullable": false},
+  "title": {"required": true, "type": "string", "nullable": false},
+  "position": {"required": true, "type": "string", "nullable": false},
+  "text": {"required": true, "type": "string", "nullable": false},
+  "lawNumber": {"required": false, "type": "string", "nullable": true},
+  "promulgationDate": {"required": false, "type": "string", "nullable": true},
+  "revisionEffectiveDate": {"required": false, "type": "string", "nullable": true}
+}

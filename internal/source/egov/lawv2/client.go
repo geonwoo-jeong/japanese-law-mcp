@@ -131,6 +131,7 @@ func (c lawClient) fetchLawContent(
 		responseBytes:     lawContentResponseBytes,
 		decompressedBytes: lawContentDecompressedBytes,
 		mediaType:         "application/json",
+		mediaTypeError:    model.SourceErrorCodeInvalidSourceResponse,
 		sourceError:       newLawContentSourceError,
 	})
 }

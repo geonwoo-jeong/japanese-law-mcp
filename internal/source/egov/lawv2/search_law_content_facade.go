@@ -32,6 +32,9 @@ func NewSearchLawContentFacade() (*SearchLawContentFacade, error) {
 func newSearchLawContentFacade(
 	dependencies searchLawContentFacadeDependencies,
 ) (*SearchLawContentFacade, error) {
+	if err := verifyEmbeddedLawContentContract(); err != nil {
+		return nil, err
+	}
 	if dependencies.gate == nil ||
 		dependencies.client.dependencies.doer == nil ||
 		dependencies.client.dependencies.now == nil ||
@@ -76,6 +79,7 @@ func (f *SearchLawContentFacade) Search(
 		responseBytes:     lawContentResponseBytes,
 		decompressedBytes: lawContentDecompressedBytes,
 		mediaType:         "application/json",
+		mediaTypeError:    model.SourceErrorCodeInvalidSourceResponse,
 		sourceError:       newLawContentSourceError,
 	})
 	if err != nil {

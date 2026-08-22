@@ -77,11 +77,11 @@ func parseLawContentSearchResponse(
 func decodeLawContentSearchResponse(
 	raw rawLawContentSearchResponse,
 ) (lawContentSearchResponse, responseNextOffset, error) {
-	totalCount, err := decodeLawContentInteger(raw.TotalCount, true)
+	totalCount, err := decodeLawContentInteger(raw.TotalCount)
 	if err != nil {
 		return lawContentSearchResponse{}, responseNextOffset{}, err
 	}
-	sentenceCount, err := decodeLawContentInteger(raw.SentenceCount, true)
+	sentenceCount, err := decodeLawContentInteger(raw.SentenceCount)
 	if err != nil {
 		return lawContentSearchResponse{}, responseNextOffset{}, err
 	}
@@ -109,14 +109,14 @@ func decodeLawContentSearchItems(raw json.RawMessage) ([]lawContentSearchLaw, er
 	}
 	if isJSONNull(raw) {
 		return nil, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
 	var values []rawLawContentSearchLaw
 	if err := json.Unmarshal(raw, &values); err != nil {
 		return nil, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
@@ -161,14 +161,14 @@ func decodeLawContentSentences(raw json.RawMessage) ([]lawContentSentence, error
 	}
 	if isJSONNull(raw) {
 		return nil, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
 	var values []rawLawContentSentence
 	if err := json.Unmarshal(raw, &values); err != nil {
 		return nil, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
@@ -190,27 +190,23 @@ func decodeLawContentSentences(raw json.RawMessage) ([]lawContentSentence, error
 	return sentences, nil
 }
 
-func decodeLawContentInteger(
-	raw json.RawMessage,
-	officialRequired bool,
-) (int, error) {
+func decodeLawContentInteger(raw json.RawMessage) (int, error) {
 	if len(raw) == 0 {
-		code := model.SourceErrorCodeInvalidSourceResponse
-		if officialRequired {
-			code = model.SourceErrorCodeSourceContractChanged
-		}
-		return 0, newLawContentSourceError(code, "")
+		return 0, newLawContentSourceError(
+			model.SourceErrorCodeInvalidSourceResponse,
+			"",
+		)
 	}
 	if isJSONNull(raw) {
 		return 0, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
 	var value int64
 	if err := json.Unmarshal(raw, &value); err != nil {
 		return 0, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
@@ -232,7 +228,7 @@ func decodeLawContentNextOffset(
 	if isJSONNull(raw) {
 		return responseNextOffset{present: true, isNull: true}, nil
 	}
-	value, err := decodeLawContentInteger(raw, false)
+	value, err := decodeLawContentInteger(raw)
 	if err != nil {
 		return responseNextOffset{}, err
 	}
@@ -255,14 +251,14 @@ func decodeLawContentLaw(
 	var lawInfo rawLawInfo
 	if err := json.Unmarshal(rawLaw, &lawInfo); err != nil {
 		return lawSearchLaw{}, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
 	var revisionInfo rawRevisionInfo
 	if err := json.Unmarshal(rawRevision, &revisionInfo); err != nil {
 		return lawSearchLaw{}, newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
@@ -279,17 +275,17 @@ func decodeLawContentLaw(
 	if err != nil {
 		return lawSearchLaw{}, err
 	}
-	lawNumber, err := decodeLawContentOptionalString(lawInfo.LawNumber)
+	lawNumber, err := decodeLawContentOptionalNonEmptyString(lawInfo.LawNumber)
 	if err != nil {
 		return lawSearchLaw{}, err
 	}
-	promulgationDate, err := decodeLawContentOptionalString(
+	promulgationDate, err := decodeLawContentOptionalNonEmptyString(
 		lawInfo.PromulgationDate,
 	)
 	if err != nil {
 		return lawSearchLaw{}, err
 	}
-	revisionEffectiveDate, err := decodeLawContentOptionalString(
+	revisionEffectiveDate, err := decodeLawContentOptionalNonEmptyString(
 		revisionInfo.RevisionEffectiveDate,
 	)
 	if err != nil {
@@ -325,24 +321,31 @@ func decodeLawContentRequiredString(raw json.RawMessage) (string, error) {
 	return value, nil
 }
 
-func decodeLawContentOptionalString(raw json.RawMessage) (string, error) {
+func decodeLawContentOptionalNonEmptyString(raw json.RawMessage) (string, error) {
 	if len(raw) == 0 {
 		return "", nil
 	}
 	if isJSONNull(raw) {
+		return "", nil
+	}
+	value, err := decodeLawContentString(raw)
+	if err != nil {
+		return "", err
+	}
+	if value == "" {
 		return "", newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
-	return decodeLawContentString(raw)
+	return value, nil
 }
 
 func decodeLawContentString(raw json.RawMessage) (string, error) {
 	var value string
 	if err := json.Unmarshal(raw, &value); err != nil {
 		return "", newLawContentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
@@ -475,7 +478,7 @@ func classifyLawContentDecodeError(
 		)
 	}
 	return newLawContentSourceError(
-		model.SourceErrorCodeSourceContractChanged,
+		model.SourceErrorCodeInvalidSourceResponse,
 		"",
 	)
 }
