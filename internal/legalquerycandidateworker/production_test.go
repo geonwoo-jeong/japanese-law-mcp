@@ -27,6 +27,10 @@ func TestReport直列化失敗はReport完成前の段階に分類する(t *test
 }
 
 func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じる(t *testing.T) {
+	if !useExactCandidateToolchain(t) {
+		t.Skip("候補再現用 Go 環境がないため local では実行しません")
+	}
+
 	const expectedEvaluationID = "evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1"
 	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
 	if err != nil {
@@ -54,6 +58,10 @@ func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じ
 func TestCurrentCandidateはDevelopment全件でReport構成前提を満たす(
 	t *testing.T,
 ) {
+	if !useExactCandidateToolchain(t) {
+		t.Skip("候補再現用 Go 環境がないため local では実行しません")
+	}
+
 	const verificationID = "candidate-evaluation-development-structural-preflight"
 
 	prepared, err := loadPreparedEvaluation(context.Background(), "../..")

@@ -82,7 +82,58 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: 候補再現用 Go を設定する
+        id: candidate-go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.26.5"
+          check-latest: false
+          cache: false
+
+      - name: 候補再現用 Go infrastructure を固定する
+        id: record-candidate-go
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXACT_GOROOT="$(env -i PATH="$PATH" HOME="$HOME" GOENV=off GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off go env GOROOT)"
+          EXACT_GOMODCACHE="$(env -i PATH="$PATH" HOME="$HOME" GOENV=off GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off go env GOMODCACHE)"
+          EXACT_GOCACHE="$RUNNER_TEMP/exact-candidate-go-build-cache"
+          EXACT_TMPDIR="$RUNNER_TEMP/exact-candidate-go-tmp"
+          for INFRASTRUCTURE_PATH in "$EXACT_GOROOT" "$EXACT_GOMODCACHE" "$EXACT_GOCACHE" "$EXACT_TMPDIR"; do
+            if [[ "$INFRASTRUCTURE_PATH" != /* ||
+                  "$INFRASTRUCTURE_PATH" == *$'\n'* ||
+                  "$INFRASTRUCTURE_PATH" == *$'\r'* ]]; then
+              echo "候補再現用 Go infrastructure path が不正です。" >&2
+              exit 1
+            fi
+          done
+          install -d -m 0700 "$EXACT_GOMODCACHE" "$EXACT_GOCACHE" "$EXACT_TMPDIR"
+          if [[ ! -d "$EXACT_GOROOT" || -L "$EXACT_GOROOT" ||
+                ! -f "$EXACT_GOROOT/bin/go" || -L "$EXACT_GOROOT/bin/go" ||
+                ! -x "$EXACT_GOROOT/bin/go" ]]; then
+            echo "候補再現用 Go toolchain が通常の実行可能 file ではありません。" >&2
+            exit 1
+          fi
+          for INFRASTRUCTURE_PATH in "$EXACT_GOMODCACHE" "$EXACT_GOCACHE" "$EXACT_TMPDIR"; do
+            if [[ ! -d "$INFRASTRUCTURE_PATH" || -L "$INFRASTRUCTURE_PATH" ]]; then
+              echo "候補再現用 Go infrastructure が通常 directory ではありません。" >&2
+              exit 1
+            fi
+          done
+          EXACT_VERSION="$(env -i PATH="$EXACT_GOROOT/bin" GOROOT="$EXACT_GOROOT" GOENV=off GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off go version)"
+          if [[ "$EXACT_VERSION" != "go version go1.26.5 linux/amd64" ]]; then
+            echo "候補 content manifest と Go toolchain が一致しません。" >&2
+            exit 1
+          fi
+          {
+            printf '%s=%s\n' JAPANESE_LAW_MCP_EXACT_CANDIDATE_GOROOT "$EXACT_GOROOT"
+            printf '%s=%s\n' JAPANESE_LAW_MCP_EXACT_CANDIDATE_GOMODCACHE "$EXACT_GOMODCACHE"
+            printf '%s=%s\n' JAPANESE_LAW_MCP_EXACT_CANDIDATE_GOCACHE "$EXACT_GOCACHE"
+            printf '%s=%s\n' JAPANESE_LAW_MCP_EXACT_CANDIDATE_TMPDIR "$EXACT_TMPDIR"
+          } >>"$GITHUB_ENV"
+
       - name: Go を設定する
+        id: primary-go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           # 製品モジュールの最小バージョンは上げず、CI の実行環境だけをパッチ版まで固定する。

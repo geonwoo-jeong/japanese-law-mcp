@@ -99,7 +99,10 @@ func TestReferenceValidatorはCurrent切替前のSchemaV3Requestを拒否する(
 }
 
 func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで再読込できる(t *testing.T) {
-	t.Parallel()
+	if !useExactCandidateToolchain(t) {
+		t.Skip("候補再現用 Go 環境がないため local では実行しません")
+	}
+
 	const (
 		expectedEvaluationID = "evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1"
 		historyEvaluationID  = "evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c"
@@ -158,7 +161,9 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 }
 
 func Test不確定終了Requestを再利用せず新しいCurrentへ進める(t *testing.T) {
-	t.Parallel()
+	if !useExactCandidateToolchain(t) {
+		t.Skip("候補再現用 Go 環境がないため local では実行しません")
+	}
 
 	const indeterminateEvaluationID = "evaluation-sha256-2f8790cd9a969372660571031ed00069565443521ca840cdce9ef86fb1290c42"
 	root := candidateRepositoryRoot(t)

@@ -66,10 +66,11 @@ jobs:
             exit 1
           fi
 
-      - name: 固定 Go toolchain を設定する
+      - name: module archive 準備用 Go toolchain を設定する
+        id: bootstrap-go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.26.5"
+          go-version: "1.26.7"
           check-latest: false
           cache: false
 
@@ -120,6 +121,14 @@ jobs:
             fi
           done < <(jq -er '.semanticSourceSet.moduleDependencies[] | [.modulePath,.version,.moduleZipRawSha256,(.moduleZipByteLength|tostring),.moduleGoModRawSha256] | @tsv' "$MANIFEST_PATH")
           chmod -R a-w "$CANDIDATE_GOMODCACHE"
+
+      - name: 固定 Go toolchain を設定する
+        id: candidate-go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.26.5"
+          check-latest: false
+          cache: false
 
       - name: 閉じた候補評価 command を実行する
         shell: bash
