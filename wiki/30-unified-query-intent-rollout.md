@@ -198,7 +198,7 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 | 3 | 完了 | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
 | 4 | 完了（判定は `failed`） | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-3` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定と tracked byte replay を完了した | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
 | 5 | 保留（`default-3` は不合格） | passed の候補が得られた場合だけ、全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
-| 6 | 一部完了 | 6.1 の `GET /laws` と 6.2 の `GET /keyword` は完了し、各 public facade と capability の共有 parser、runtime 応答と保存済み契約の分類分離、および page invariant を実装した。共通 `lawtarget` resolver と `search_laws`／統合照会 law search facade の page 内安定優先も実装済みで、残りは 6.3 `GET /law_data` の段階移行である | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
+| 6 | 完了 | 6.1 `GET /laws`、6.2 `GET /keyword` および 6.3 `GET /law_data` は、public facade と capability が共有する provider parser、runtime 応答と保存済み契約の分類分離、入力と応答の同一性および安全境界を実装した。6.4 の共通 `lawtarget` resolver と `search_laws`／統合照会 law search facade の page 内安定優先も実装済みである | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
 | 7 | 未着手 | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを現行標準へ同期する | `SOT-SCN-010`、`SOT-ENG-039` |
 
 ## 段階 review 記録

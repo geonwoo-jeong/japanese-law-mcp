@@ -115,6 +115,7 @@ func (c lawClient) fetchLawDocument(
 		responseBytes:     lawDocumentResponseBytes,
 		decompressedBytes: lawDocumentDecompressedBytes,
 		mediaType:         "application/xml",
+		mediaTypeError:    model.SourceErrorCodeInvalidSourceResponse,
 		sourceError:       newLawDocumentSourceError,
 		notFound:          lawdocumentread.ErrNotFound,
 	})
@@ -147,6 +148,7 @@ func (c lawClient) fetchLawArticle(
 		responseBytes:     lawDocumentResponseBytes,
 		decompressedBytes: lawDocumentDecompressedBytes,
 		mediaType:         "application/xml",
+		mediaTypeError:    model.SourceErrorCodeInvalidSourceResponse,
 		sourceError:       newLawArticleSourceError,
 		notFound:          lawarticleread.ErrNotFound,
 	})

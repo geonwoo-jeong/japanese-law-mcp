@@ -1,0 +1,16 @@
+{
+  "checkedOn": "2026-07-30",
+  "operation": "GET /law_data/{law_id_or_num_or_revision_id}",
+  "successMediaType": "application/xml",
+  "rootElement": "law_data_response",
+  "lawInfo": {"required": true, "type": "element"},
+  "revisionInfo": {"required": true, "type": "element"},
+  "lawFullText": {"required": true, "type": "element"},
+  "law": {"required": true, "type": "element"},
+  "lawId": {"required": true, "type": "string"},
+  "revisionId": {"required": true, "type": "string"},
+  "title": {"required": true, "type": "string"},
+  "lawNumber": {"required": false, "type": "string"},
+  "promulgationDate": {"required": false, "type": "string"},
+  "revisionEffectiveDate": {"required": false, "type": "string"}
+}

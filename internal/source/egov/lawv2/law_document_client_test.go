@@ -111,7 +111,7 @@ func TestLawClientRejectsUnexpectedLawDocumentMediaType(t *testing.T) {
 	assertLawDocumentSourceError(
 		t,
 		err,
-		model.SourceErrorCodeSourceContractChanged,
+		model.SourceErrorCodeInvalidSourceResponse,
 	)
 }
 

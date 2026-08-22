@@ -13,9 +13,7 @@ type lawDocumentAdapterDependencies struct {
 	gate   chan struct{}
 }
 
-// LawDocumentAdapter は、e-Gov API Version 2 の law.document.read@1 planned binding である。
-//
-// runtime registry と MCP route への登録は、四能力を揃える後続変更まで行わない。
+// LawDocumentAdapter は、e-Gov API Version 2 の law.document.read@1 binding である。
 type LawDocumentAdapter struct {
 	dependencies lawDocumentAdapterDependencies
 }
@@ -33,6 +31,9 @@ func NewLawDocumentAdapter() (*LawDocumentAdapter, error) {
 func newLawDocumentAdapter(
 	dependencies lawDocumentAdapterDependencies,
 ) (*LawDocumentAdapter, error) {
+	if err := verifyEmbeddedLawDataContract(newLawDocumentSourceError); err != nil {
+		return nil, err
+	}
 	if dependencies.gate == nil ||
 		dependencies.client.dependencies.doer == nil ||
 		dependencies.client.dependencies.now == nil ||

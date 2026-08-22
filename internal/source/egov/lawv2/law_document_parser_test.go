@@ -97,7 +97,13 @@ func TestParseLawDocumentResponseRejectsStructuralViolations(t *testing.T) {
 			name: "law_info 欠落",
 			body: `<law_data_response>` + validRevision +
 				`<law_full_text><Law/></law_full_text></law_data_response>`,
-			code: model.SourceErrorCodeSourceContractChanged,
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "law_id 欠落",
+			body: `<law_data_response><law_info/>` + validRevision +
+				`<law_full_text><Law/></law_full_text></law_data_response>`,
+			code: model.SourceErrorCodeInvalidSourceResponse,
 		},
 		{
 			name: "Law が二件",

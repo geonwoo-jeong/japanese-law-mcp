@@ -34,7 +34,7 @@ func TestLawClientFetchesLawArticleWithArticleErrorContext(t *testing.T) {
 	assertLawArticleSourceError(
 		t,
 		err,
-		model.SourceErrorCodeSourceContractChanged,
+		model.SourceErrorCodeInvalidSourceResponse,
 	)
 }
 

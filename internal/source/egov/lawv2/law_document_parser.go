@@ -248,7 +248,7 @@ func (s lawDocumentXMLState) response(
 		s.revisionInfoCount == 0 ||
 		s.fullTextCount == 0 {
 		return lawDocumentResponse{}, newLawDocumentSourceError(
-			model.SourceErrorCodeSourceContractChanged,
+			model.SourceErrorCodeInvalidSourceResponse,
 			"",
 		)
 	}
@@ -271,7 +271,7 @@ func (s lawDocumentXMLState) response(
 	} {
 		if _, exists := s.fieldSeen[required]; !exists {
 			return lawDocumentResponse{}, newLawDocumentSourceError(
-				model.SourceErrorCodeSourceContractChanged,
+				model.SourceErrorCodeInvalidSourceResponse,
 				"",
 			)
 		}
