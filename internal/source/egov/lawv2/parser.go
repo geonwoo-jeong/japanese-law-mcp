@@ -238,20 +238,16 @@ func decodeLawSearchResponse(
 	}, nextOffset, nil
 }
 
-func decodeLawSearchInteger(raw json.RawMessage, officialRequired bool) (int, error) {
+func decodeLawSearchInteger(raw json.RawMessage, _ bool) (int, error) {
 	if len(raw) == 0 {
-		code := model.SourceErrorCodeInvalidSourceResponse
-		if officialRequired {
-			code = model.SourceErrorCodeSourceContractChanged
-		}
-		return 0, newSourceError(code, "")
+		return 0, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	if isJSONNull(raw) {
-		return 0, newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return 0, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	var value int64
 	if err := json.Unmarshal(raw, &value); err != nil {
-		return 0, newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return 0, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	if value > int64(maxInt()) || value < int64(minInt()) {
 		return 0, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
@@ -278,11 +274,11 @@ func decodeLawSearchLaws(raw json.RawMessage) ([]lawSearchLaw, error) {
 		return nil, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	if isJSONNull(raw) {
-		return nil, newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return nil, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	var values []rawLawSearchLaw
 	if err := json.Unmarshal(raw, &values); err != nil {
-		return nil, newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return nil, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	laws := make([]lawSearchLaw, len(values))
 	for index, value := range values {
@@ -305,11 +301,11 @@ func decodeLawSearchLaw(raw rawLawSearchLaw) (lawSearchLaw, error) {
 	}
 	var lawInfo rawLawInfo
 	if err := json.Unmarshal(raw.LawInfo, &lawInfo); err != nil {
-		return lawSearchLaw{}, newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return lawSearchLaw{}, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	var revisionInfo rawRevisionInfo
 	if err := json.Unmarshal(raw.RevisionInfo, &revisionInfo); err != nil {
-		return lawSearchLaw{}, newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return lawSearchLaw{}, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 
 	lawID, err := decodeLawSearchRequiredString(lawInfo.LawID)
@@ -367,7 +363,7 @@ func decodeLawSearchOptionalString(raw json.RawMessage) (string, error) {
 		return "", nil
 	}
 	if isJSONNull(raw) {
-		return "", newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return "", nil
 	}
 	return decodeLawSearchString(raw)
 }
@@ -375,7 +371,7 @@ func decodeLawSearchOptionalString(raw json.RawMessage) (string, error) {
 func decodeLawSearchString(raw json.RawMessage) (string, error) {
 	var value string
 	if err := json.Unmarshal(raw, &value); err != nil {
-		return "", newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+		return "", newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
 	return value, nil
 }
@@ -412,7 +408,7 @@ func classifyLawSearchDecodeError(
 	if errors.Is(parseContext.Err(), context.DeadlineExceeded) {
 		return newSourceError(model.SourceErrorCodeSourceProcessingLimit, "")
 	}
-	return newSourceError(model.SourceErrorCodeSourceContractChanged, "")
+	return newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 }
 
 func isJSONNull(raw json.RawMessage) bool {
