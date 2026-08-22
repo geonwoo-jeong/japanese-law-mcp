@@ -81,68 +81,70 @@ func TestParseLawSearchResponseDerivesMissingNextOffset(t *testing.T) {
 	}
 }
 
-func TestParseLawSearchResponseRejectsPageInvariantViolations(t *testing.T) {
+func TestEGovLawsPageInvariants(t *testing.T) {
 	t.Parallel()
+	t.Run("egov-laws-page-invariants", func(t *testing.T) {
 
-	validLaw := `{
+		validLaw := `{
 		"law_info":{"law_id":"322CO0000000016"},
 		"revision_info":{
 			"law_revision_id":"322CO0000000016_20240401_506CO0000000161",
 			"law_title":"地方自治法施行令"
 		}
 	}`
-	tests := []struct {
-		name   string
-		body   string
-		limit  int
-		offset int
-	}{
-		{
-			name:  "明示 null なのに残件がある",
-			body:  fmt.Sprintf(`{"total_count":2,"count":1,"next_offset":null,"laws":[%s]}`, validLaw),
-			limit: 1,
-		},
-		{
-			name:  "count と配列長が異なる",
-			body:  `{"total_count":1,"count":1,"next_offset":null,"laws":[]}`,
-			limit: 1,
-		},
-		{
-			name:  "count が limit を超える",
-			body:  fmt.Sprintf(`{"total_count":1,"count":1,"next_offset":null,"laws":[%s]}`, validLaw),
-			limit: 0,
-		},
-		{
-			name:  "next_offset が offset+count と異なる",
-			body:  fmt.Sprintf(`{"total_count":3,"count":1,"next_offset":2,"laws":[%s]}`, validLaw),
-			limit: 1,
-		},
-		{
-			name:  "残件があるのに前進しない",
-			body:  `{"total_count":1,"count":0,"laws":[]}`,
-			limit: 1,
-		},
-		{
-			name:   "next_offset が int32 上限を超える",
-			body:   fmt.Sprintf(`{"total_count":2147483648,"count":1,"next_offset":2147483648,"laws":[%s]}`, validLaw),
-			limit:  1,
-			offset: 2147483647,
-		},
-	}
-	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
+		tests := []struct {
+			name   string
+			body   string
+			limit  int
+			offset int
+		}{
+			{
+				name:  "明示 null なのに残件がある",
+				body:  fmt.Sprintf(`{"total_count":2,"count":1,"next_offset":null,"laws":[%s]}`, validLaw),
+				limit: 1,
+			},
+			{
+				name:  "count と配列長が異なる",
+				body:  `{"total_count":1,"count":1,"next_offset":null,"laws":[]}`,
+				limit: 1,
+			},
+			{
+				name:  "count が limit を超える",
+				body:  fmt.Sprintf(`{"total_count":1,"count":1,"next_offset":null,"laws":[%s]}`, validLaw),
+				limit: 0,
+			},
+			{
+				name:  "next_offset が offset+count と異なる",
+				body:  fmt.Sprintf(`{"total_count":3,"count":1,"next_offset":2,"laws":[%s]}`, validLaw),
+				limit: 1,
+			},
+			{
+				name:  "残件があるのに前進しない",
+				body:  `{"total_count":1,"count":0,"laws":[]}`,
+				limit: 1,
+			},
+			{
+				name:   "next_offset が int32 上限を超える",
+				body:   fmt.Sprintf(`{"total_count":2147483648,"count":1,"next_offset":2147483648,"laws":[%s]}`, validLaw),
+				limit:  1,
+				offset: 2147483647,
+			},
+		}
+		for _, test := range tests {
+			test := test
+			t.Run(test.name, func(t *testing.T) {
+				t.Parallel()
 
-			_, _, err := parseLawSearchResponse(
-				context.Background(),
-				[]byte(test.body),
-				test.limit,
-				test.offset,
-			)
-			assertLawSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
-		})
-	}
+				_, _, err := parseLawSearchResponse(
+					context.Background(),
+					[]byte(test.body),
+					test.limit,
+					test.offset,
+				)
+				assertLawSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
+			})
+		}
+	})
 }
 
 func TestParseLawSearchResponseClassifiesStructuralError(t *testing.T) {
@@ -202,6 +204,16 @@ func TestParseLawSearchResponseClassifiesStructuralError(t *testing.T) {
 		{
 			name: "optional date type changed",
 			body: `{"total_count":1,"count":1,"laws":[{"law_info":{"law_id":"322CO0000000016","promulgation_date":123},"revision_info":{"law_revision_id":"322CO0000000016_20240401_506CO0000000161","law_title":"地方自治法施行令"}}]}`,
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "present law_num is empty",
+			body: `{"total_count":1,"count":1,"laws":[{"law_info":{"law_id":"322CO0000000016","law_num":""},"revision_info":{"law_revision_id":"322CO0000000016_20240401_506CO0000000161","law_title":"地方自治法施行令"}}]}`,
+			code: model.SourceErrorCodeInvalidSourceResponse,
+		},
+		{
+			name: "present date is empty",
+			body: `{"total_count":1,"count":1,"laws":[{"law_info":{"law_id":"322CO0000000016","promulgation_date":""},"revision_info":{"law_revision_id":"322CO0000000016_20240401_506CO0000000161","law_title":"地方自治法施行令"}}]}`,
 			code: model.SourceErrorCodeInvalidSourceResponse,
 		},
 		{

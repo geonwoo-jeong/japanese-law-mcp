@@ -47,6 +47,9 @@ func newLawSearchAdapter(
 	manager *continuation.Manager,
 	dependencies adapterDependencies,
 ) (*LawSearchAdapter, error) {
+	if err := verifyEmbeddedLawSearchContract(); err != nil {
+		return nil, err
+	}
 	if manager == nil ||
 		dependencies.now == nil ||
 		dependencies.gate == nil ||

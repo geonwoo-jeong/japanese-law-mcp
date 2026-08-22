@@ -63,6 +63,7 @@ type fetchSpec struct {
 	responseBytes     int64
 	decompressedBytes int64
 	mediaType         string
+	mediaTypeError    model.SourceErrorCode
 	sourceError       sourceErrorFactory
 	notFound          error
 }
@@ -98,6 +99,7 @@ func (c lawClient) fetch(
 		responseBytes:     maximumResponseBytes,
 		decompressedBytes: maximumDecompressedBytes,
 		mediaType:         "application/json",
+		mediaTypeError:    model.SourceErrorCodeInvalidSourceResponse,
 		sourceError:       newSourceError,
 	})
 }
@@ -176,8 +178,12 @@ func (c lawClient) fetchWith(
 				response.Header.Get("Content-Type"),
 				spec.mediaType,
 			) {
+				code := spec.mediaTypeError
+				if code == "" {
+					code = model.SourceErrorCodeSourceContractChanged
+				}
 				return fetchedResponse{}, spec.sourceError(
-					model.SourceErrorCodeSourceContractChanged,
+					code,
 					"",
 				)
 			}

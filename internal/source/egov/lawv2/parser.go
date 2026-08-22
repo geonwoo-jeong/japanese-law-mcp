@@ -215,11 +215,11 @@ func decodeLawSearchJSON(ctx context.Context, body []byte, target any) error {
 func decodeLawSearchResponse(
 	raw rawLawSearchResponse,
 ) (lawSearchResponse, responseNextOffset, error) {
-	totalCount, err := decodeLawSearchInteger(raw.TotalCount, true)
+	totalCount, err := decodeLawSearchInteger(raw.TotalCount)
 	if err != nil {
 		return lawSearchResponse{}, responseNextOffset{}, err
 	}
-	count, err := decodeLawSearchInteger(raw.Count, true)
+	count, err := decodeLawSearchInteger(raw.Count)
 	if err != nil {
 		return lawSearchResponse{}, responseNextOffset{}, err
 	}
@@ -238,7 +238,7 @@ func decodeLawSearchResponse(
 	}, nextOffset, nil
 }
 
-func decodeLawSearchInteger(raw json.RawMessage, _ bool) (int, error) {
+func decodeLawSearchInteger(raw json.RawMessage) (int, error) {
 	if len(raw) == 0 {
 		return 0, newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
 	}
@@ -262,7 +262,7 @@ func decodeLawSearchNextOffset(raw json.RawMessage) (responseNextOffset, error) 
 	if isJSONNull(raw) {
 		return responseNextOffset{present: true, isNull: true}, nil
 	}
-	value, err := decodeLawSearchInteger(raw, false)
+	value, err := decodeLawSearchInteger(raw)
 	if err != nil {
 		return responseNextOffset{}, err
 	}
@@ -320,15 +320,17 @@ func decodeLawSearchLaw(raw rawLawSearchLaw) (lawSearchLaw, error) {
 	if err != nil {
 		return lawSearchLaw{}, err
 	}
-	lawNumber, err := decodeLawSearchOptionalString(lawInfo.LawNumber)
+	lawNumber, err := decodeLawSearchOptionalNonEmptyString(lawInfo.LawNumber)
 	if err != nil {
 		return lawSearchLaw{}, err
 	}
-	promulgationDate, err := decodeLawSearchOptionalString(lawInfo.PromulgationDate)
+	promulgationDate, err := decodeLawSearchOptionalNonEmptyString(
+		lawInfo.PromulgationDate,
+	)
 	if err != nil {
 		return lawSearchLaw{}, err
 	}
-	revisionEffectiveDate, err := decodeLawSearchOptionalString(
+	revisionEffectiveDate, err := decodeLawSearchOptionalNonEmptyString(
 		revisionInfo.RevisionEffectiveDate,
 	)
 	if err != nil {
@@ -358,14 +360,21 @@ func decodeLawSearchRequiredString(raw json.RawMessage) (string, error) {
 	return value, nil
 }
 
-func decodeLawSearchOptionalString(raw json.RawMessage) (string, error) {
+func decodeLawSearchOptionalNonEmptyString(raw json.RawMessage) (string, error) {
 	if len(raw) == 0 {
 		return "", nil
 	}
 	if isJSONNull(raw) {
 		return "", nil
 	}
-	return decodeLawSearchString(raw)
+	value, err := decodeLawSearchString(raw)
+	if err != nil {
+		return "", err
+	}
+	if value == "" {
+		return "", newSourceError(model.SourceErrorCodeInvalidSourceResponse, "")
+	}
+	return value, nil
 }
 
 func decodeLawSearchString(raw json.RawMessage) (string, error) {
