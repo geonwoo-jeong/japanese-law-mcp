@@ -487,7 +487,66 @@ func TestServicePrioritizesResolvedTargetWithinCurrentPage(t *testing.T) {
 	}
 	if nextOffset, exists := got.NextOffset(); !exists || nextOffset != 40 ||
 		got.TotalCount() != 100 || providerCalls != 1 {
-		t.Fatalf("SOT-ARCH-030: nextOffset = (%d, %t)", nextOffset, exists)
+		t.Fatalf(
+			"law-target-page-stable-partition/law-target-no-extra-fetch: "+
+				"nextOffset = (%d, %t), providerCalls = %d",
+			nextOffset,
+			exists,
+			providerCalls,
+		)
+	}
+}
+
+func TestServiceReturnsOriginalWhenConfirmationIsAlsoEmpty(t *testing.T) {
+	t.Parallel()
+
+	original := mustEmptyLawSearchResult(t)
+	zero := 0
+	confirmation := mustLawSearchResult(t, 0, []model.LawSummary{}, &zero)
+	providerCalls := 0
+	service, err := NewService(
+		fakeSearchPort{search: func(
+			context.Context,
+			Request,
+		) (model.LawSearchResult, error) {
+			providerCalls++
+			if providerCalls == 1 {
+				return original, nil
+			}
+			return confirmation, nil
+		}},
+		fakeQueryResolver{resolve: func(
+			context.Context,
+			string,
+		) (lawtarget.ResolvedLawTarget, bool, error) {
+			return mustResolvedLawTarget(
+				t,
+				"425AC0000000057",
+				"個人情報の保護に関する法律",
+				lawtarget.MatchKindRegisteredTerm,
+			), true, nil
+		}},
+		time.Second,
+	)
+	if err != nil {
+		t.Fatalf("NewService() のエラー = %v", err)
+	}
+	request, err := NewRequest(RequestValues{Query: "個情法"})
+	if err != nil {
+		t.Fatalf("NewRequest() のエラー = %v", err)
+	}
+
+	got, err := service.Search(context.Background(), request)
+	if err != nil {
+		t.Fatalf("SOT-IF-053: Search() のエラー = %v", err)
+	}
+	if _, exists := got.NextOffset(); exists || providerCalls != 2 {
+		t.Fatalf(
+			"law-target-no-extra-fetch: 原検索を保持しませんでした: "+
+				"nextOffset=%t, providerCalls=%d",
+			exists,
+			providerCalls,
+		)
 	}
 }
 

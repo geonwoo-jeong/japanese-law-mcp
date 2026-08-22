@@ -76,7 +76,9 @@ func (r PreprocessResolver) Resolve(
 	}
 	request, err := legalquery.NewRequest(legalquery.RequestValues{Query: query})
 	if err != nil {
-		return ResolvedLawTarget{}, false, err
+		// search_laws と統合照会では空白の扱いが異なる。統合照会用 request に
+		// 変換できない公開検索語も、対象なしとして原検索へ渡す。
+		return ResolvedLawTarget{}, false, nil
 	}
 	result, err := r.preprocessor.Preprocess(ctx, request)
 	if err != nil {
@@ -97,7 +99,7 @@ func (r PreprocessResolver) Resolve(
 		return ResolvedLawTarget{}, false, nil
 	}
 	if len(mentions) == 0 {
-		return r.ResolveLogicalInput(ctx, query)
+		return ResolvedLawTarget{}, false, nil
 	}
 	mention := mentions[0]
 	target, err := NewResolvedLawTarget(

@@ -101,6 +101,9 @@ func (s *Service) Search(
 			err,
 		)
 	}
+	if result.TotalCount() == 0 {
+		return original, nil
+	}
 	return prioritizeResolvedLawTarget(result, resolvedTarget, true)
 }
 

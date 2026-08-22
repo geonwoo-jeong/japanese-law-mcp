@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/querypreprocess"
 )
@@ -108,8 +109,10 @@ func TestPreprocessResolverは複数Spanと曖昧な候補を解決しない(t *
 	for _, query := range []string{
 		"民法と民法",
 		"民法と商法",
+		"供託を",
 		"開示法",
 		"法",
+		"\u3000",
 	} {
 		query := query
 		t.Run(query, func(t *testing.T) {
@@ -127,6 +130,83 @@ func TestPreprocessResolverは複数Spanと曖昧な候補を解決しない(t *
 			}
 		})
 	}
+}
+
+func TestLawTarget固定検証ID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("law-target-resolution-parity", func(t *testing.T) {
+		t.Parallel()
+
+		resolver := newEmbeddedResolver(t)
+		for _, query := range []string{"民法", "個情法", "著作券法"} {
+			query := query
+			t.Run(query, func(t *testing.T) {
+				t.Parallel()
+
+				fromSearchLaws, resolved, err := resolver.Resolve(
+					context.Background(),
+					query,
+				)
+				if err != nil || !resolved {
+					t.Fatalf("専門検索の解決結果 = (%t, %v)", resolved, err)
+				}
+				fromUnified, resolved, err := resolver.ResolveLogicalInput(
+					context.Background(),
+					query,
+				)
+				if err != nil || !resolved ||
+					fromUnified.LawID() != fromSearchLaws.LawID() ||
+					fromUnified.OfficialTitle() != fromSearchLaws.OfficialTitle() {
+					t.Fatalf(
+						"統合照会の解決結果 = (%#v, %t, %v)",
+						fromUnified,
+						resolved,
+						err,
+					)
+				}
+			})
+		}
+	})
+
+	t.Run("law-target-ambiguous-no-reorder", func(t *testing.T) {
+		t.Parallel()
+
+		resolver := newEmbeddedResolver(t)
+		target, resolved, err := resolver.Resolve(
+			context.Background(),
+			"民法と商法",
+		)
+		if err != nil || resolved || target != (lawtarget.ResolvedLawTarget{}) {
+			t.Fatalf("複数 span の解決結果 = (%#v, %t, %v)", target, resolved, err)
+		}
+	})
+
+	t.Run("law-target-unified-no-reparse", func(t *testing.T) {
+		t.Parallel()
+
+		preprocessor := &countingPreprocessor{}
+		resolver, err := lawtarget.NewPreprocessResolver(
+			preprocessor,
+			[]lawnamelexicon.Entry{{
+				ResourceID: "129AC0000000089",
+				Canonical:  "民法",
+			}},
+		)
+		if err != nil {
+			t.Fatalf("resolver を構築できません: %v", err)
+		}
+		target, resolved, err := resolver.ResolveLogicalInput(
+			context.Background(),
+			"民法",
+		)
+		if err != nil || !resolved || target.LawID() != "129AC0000000089" {
+			t.Fatalf("分離済み入力の解決結果 = (%#v, %t, %v)", target, resolved, err)
+		}
+		if preprocessor.calls != 0 {
+			t.Fatalf("共通前処理を %d 回再実行しました", preprocessor.calls)
+		}
+	})
 }
 
 func TestPreprocessResolverは不正依存と取消を拒否する(t *testing.T) {
@@ -167,11 +247,27 @@ func TestPrioritizeは対象内外の順序と入力を保持する(t *testing.T
 	}
 	want := []string{"law-target", "law-target", "other-1", "other-2", "other-3"}
 	if !changed || !reflect.DeepEqual(got, want) {
-		t.Fatalf("SOT-ARCH-030: prioritized = %#v, changed=%t", got, changed)
+		t.Fatalf(
+			"law-target-page-stable-partition: prioritized = %#v, changed=%t",
+			got,
+			changed,
+		)
 	}
 	if !reflect.DeepEqual(input, original) {
 		t.Fatalf("SOT-ARCH-030: 入力 slice を変更しました: %#v", input)
 	}
+}
+
+type countingPreprocessor struct {
+	calls int
+}
+
+func (p *countingPreprocessor) Preprocess(
+	context.Context,
+	legalquery.Request,
+) (legalquery.PreprocessResult, error) {
+	p.calls++
+	return legalquery.PreprocessResult{}, errors.New("再解析してはなりません")
 }
 
 func newEmbeddedResolver(t *testing.T) lawtarget.PreprocessResolver {
