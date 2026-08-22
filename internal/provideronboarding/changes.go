@@ -67,7 +67,11 @@ func evaluateNormalChanges(
 	matrixTargets := make(map[string]struct{})
 	sourceTargets := make(map[string]struct{})
 	unknownSourcePaths := make([]string, 0)
+	infrastructureChanged := false
 	for _, changedPath := range paths {
+		if providerConformanceInfrastructurePath(changedPath) {
+			infrastructureChanged = true
+		}
 		if providerID, ok := matrixProviderID(changedPath); ok {
 			matrixTargets[providerID] = struct{}{}
 		}
@@ -81,6 +85,13 @@ func evaluateNormalChanges(
 		}
 		sourceTargets[owner.providerID] = struct{}{}
 	}
+	if len(unknownSourcePaths) != 0 {
+		sort.Strings(unknownSourcePaths)
+		return false, fmt.Errorf(
+			"provider-neutral または未登録の source package を同時に変更できません: %s",
+			unknownSourcePaths[0],
+		)
+	}
 	targets := matrixTargets
 	if len(targets) == 0 {
 		targets = sourceTargets
@@ -93,6 +104,15 @@ func evaluateNormalChanges(
 					changedPath,
 				)
 			}
+			if infrastructureChanged && commonContractPath(changedPath) {
+				return false, fmt.Errorf(
+					"共通 model または capability の変更を分離してください: %s",
+					changedPath,
+				)
+			}
+		}
+		if infrastructureChanged {
+			return true, nil
 		}
 		return false, nil
 	}
@@ -109,14 +129,6 @@ func evaluateNormalChanges(
 			target,
 		)
 	}
-	if len(unknownSourcePaths) != 0 {
-		sort.Strings(unknownSourcePaths)
-		return false, fmt.Errorf(
-			"provider-neutral または未登録の source package を同時に変更できません: %s",
-			unknownSourcePaths[0],
-		)
-	}
-
 	for _, changedPath := range paths {
 		if commonContractPath(changedPath) {
 			return false, fmt.Errorf(
@@ -133,6 +145,20 @@ func evaluateNormalChanges(
 		}
 	}
 	return true, nil
+}
+
+func providerConformanceInfrastructurePath(changedPath string) bool {
+	for _, prefix := range []string{
+		"conformance",
+		"internal/providerconformance",
+		"internal/provideronboarding",
+		"cmd/provider-onboarding-fit",
+	} {
+		if hasPathPrefix(changedPath, prefix) {
+			return true
+		}
+	}
+	return changedPath == ".github/workflows/quality.yml"
 }
 
 func matrixProviderID(changedPath string) (string, bool) {
@@ -155,6 +181,13 @@ func commonContractPath(changedPath string) bool {
 		"internal/capability",
 		"internal/application/capability",
 		"internal/application/ports",
+		"internal/application/judicialdecisionread",
+		"internal/application/judicialdecisionsearch",
+		"internal/application/lawarticleread",
+		"internal/application/lawcontentsearch",
+		"internal/application/lawdocumentread",
+		"internal/application/lawsearch",
+		"internal/application/lawupdatelist",
 		"sot/20-model",
 	} {
 		if hasPathPrefix(changedPath, prefix) {

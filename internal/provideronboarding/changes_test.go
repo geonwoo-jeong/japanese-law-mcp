@@ -79,6 +79,13 @@ func TestValidateNormalChangesRejectsCommonContractChanges(t *testing.T) {
 	for _, forbidden := range []string{
 		"internal/model/provider_descriptor.go",
 		"internal/capability/lawsearch/port.go",
+		"internal/application/judicialdecisionread/port.go",
+		"internal/application/judicialdecisionsearch/port.go",
+		"internal/application/lawarticleread/port.go",
+		"internal/application/lawcontentsearch/port.go",
+		"internal/application/lawdocumentread/port.go",
+		"internal/application/lawsearch/port.go",
+		"internal/application/lawupdatelist/port.go",
 		"sot/20-model/13-provider-capability.md",
 		"sot/40-interfaces/22-law-search-capability.md",
 	} {
@@ -258,5 +265,49 @@ func TestValidateNormalChangesRejectsProviderControlWithoutMatrixTarget(t *testi
 		rows,
 	); err != nil {
 		t.Fatalf("provider と無関係な候補合成が provider 制御変更になりました: %v", err)
+	}
+}
+
+func TestValidateNormalChangesRejectsInfrastructureScopeBypass(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{{
+		providerID:    "provider-a",
+		implementedBy: "internal/source/a/v1",
+	}}
+	tests := []struct {
+		name string
+		path string
+	}{
+		{
+			name: "unregistered provider source",
+			path: "internal/source/new-provider/adapter.go",
+		},
+		{
+			name: "provider control without matrix",
+			path: "internal/application/provider_routes.go",
+		},
+		{
+			name: "common capability contract",
+			path: "internal/application/lawsearch/port.go",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			paths := []string{
+				"internal/provideronboarding/conformance.go",
+				test.path,
+			}
+			err := validateNormalChanges(paths, rows)
+			if err == nil {
+				t.Fatalf("conformance 基盤との混在変更が許可されました: %q", paths)
+			}
+			if !strings.Contains(err.Error(), test.path) {
+				t.Fatalf("拒否した path を特定できないエラーです: %v", err)
+			}
+		})
 	}
 }

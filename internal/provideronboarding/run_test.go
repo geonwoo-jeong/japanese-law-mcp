@@ -203,6 +203,51 @@ func TestRunNormalChangeSkipsConformanceTestOutsideProviderScope(t *testing.T) {
 	}
 }
 
+func TestRunNormalProviderInfrastructureChangeRunsConformanceTest(t *testing.T) {
+	t.Parallel()
+
+	repository := newTestGitRepository(t, map[string]string{
+		"go.mod":             "module github.com/example/project\n\ngo 1.25.0\n",
+		canonicalSchemaPath:  "{}\n",
+		canonicalLoaderPath:  "package providerconformance\n",
+		canonicalCommandPath: "package main\n",
+		"internal/provideronboarding/conformance.go": "package provideronboarding\n",
+		"internal/source/a/a.go":                     "package a\n",
+	})
+	base := gitOutput(t, repository, "rev-parse", "HEAD")
+	writeTestFile(
+		t,
+		repository,
+		"internal/provideronboarding/conformance.go",
+		"package provideronboarding\n\nconst changed = true\n",
+	)
+
+	testCalled := false
+	err := runWithDependencies(
+		context.Background(),
+		testOptions(repository, base),
+		dependencies{
+			load: func(string) ([]matrixRow, error) {
+				return []matrixRow{{
+					providerID:    "provider-a",
+					implementedBy: "internal/source/a",
+					status:        "implemented",
+				}}, nil
+			},
+			test: func(context.Context, string, io.Writer, io.Writer) error {
+				testCalled = true
+				return nil
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("provider conformance 基盤変更が失敗しました: %v", err)
+	}
+	if !testCalled {
+		t.Fatal("provider conformance 基盤変更で conformance test が実行されませんでした")
+	}
+}
+
 func TestRunNormalProviderChangeRunsConformanceTest(t *testing.T) {
 	t.Parallel()
 

@@ -14,7 +14,7 @@
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
 - [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
 - [SOT-ENG-027](../sot/50-engineering/27-resource-aware-verification-stages.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲に限定した省資源の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除
-- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) に従う、プロバイダー適合性 matrix の schema・共通 loader、`provider-onboarding-fit`、ならびに GitHub Actions への先行 gate 接続
+- [SOT-ENG-017](../sot/50-engineering/17-provider-conformance-matrix.md) と [SOT-ENG-018](../sot/50-engineering/18-provider-onboarding-fitness-gate.md) に従う、プロバイダー適合性 matrix の schema・共通 loader、`provider-onboarding-fit`、GitHub Actions への先行 gate 接続、ならびに全 `implemented` row の `conformanceTarget` を重複なく通常のプロバイダーテストとして実行する検証
 - [SOT-MODEL-009](../sot/20-model/09-json-serialization.md)、[SOT-MODEL-010](../sot/20-model/10-information-source.md)、[SOT-MODEL-013](../sot/20-model/13-provider-capability.md) および [SOT-IF-014](../sot/40-interfaces/14-provider-descriptor.md) に従う、不変なプロバイダーメタデータ型、検証および JSON 表現
 - [SOT-MODEL-001](../sot/20-model/01-law-summary.md) と [SOT-MODEL-003](../sot/20-model/03-legal-source.md) に従う、`InformationSource` から決定的に投影する `LegalSource` と、不変な `LawSummary`
 - [SOT-MODEL-011](../sot/20-model/11-source-resource-key.md) および [SOT-MODEL-016](../sot/20-model/16-source-resource-ref.md) に従う、不変な情報源資源キーとプロバイダー参照の構造検証および JSON 表現
@@ -42,6 +42,7 @@
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.document.read@1` binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.article.read@1` binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md)、[SOT-IF-010](../sot/40-interfaces/10-egov-content-search-mapping.md)、[SOT-IF-028](../sot/40-interfaces/28-egov-structured-content-search-mapping.md) および [SOT-IF-052](../sot/40-interfaces/52-egov-keyword-response-contract.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.content.search@1` binding と公開 `search_law_content` facade、構造化条件からの決定的な検索式生成、共有 parser、runtime 応答と保存済み契約の分類分離、page invariant、一致位置単位の共通モデル mapping、fixture および continuation
+- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) に従う、有効な `Retry-After` の一秒下限、request deadline を越える待機の禁止、四 operation が共有する最大三回の再試行、ならびに `egov-http` 同時実行枠と交差 operation の `source_busy` 検証を前記 `conformanceTarget` から実行する接続
 - [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md)、[SOT-SCN-011](../sot/10-scenarios/11-prioritize-resolved-law-search-result.md)、[SOT-ARCH-030](../sot/30-architecture/30-canonical-law-target-priority.md) および [SOT-ENG-022](../sot/50-engineering/22-law-name-search-lexicon.md) に従う、e-Gov 全 9,536 法令と 3,363 略称の組込みスナップショット、出典付き補足略称、Kagome user dictionary、比較用 Unicode 正規化、一意な誤記候補、共通 `lawtarget` resolver、`search_laws` の原検索優先・正常空結果時だけの正式名称確認検索、および `search_laws` と統合照会の法令検索 facade が共有する page 内安定優先
 - [SOT-MODEL-025](../sot/20-model/25-legal-query-preprocess-result.md)、[SOT-MODEL-027](../sot/20-model/27-judicial-case-number-mention.md) および [SOT-ARCH-021](../sot/30-architecture/21-provider-independent-query-preprocessing.md) に従う、統合法情報照会の原文 byte span、法令名・法概念・profile cue・公式識別子・日付・条・項・完全な裁判事件番号・明示引用句・文法的に接続した最大名詞句の出現、事件番号から決定的に導出する検索語、四種類の照合根拠、一回の Kagome 解析結果の再利用、能力別に差し替えられる任意の語彙、曖昧な辞書対応の保持、および provider や実行能力を選択しない共通前処理
 - [SOT-ENG-023](../sot/50-engineering/23-unified-query-concept-lexicon.md) に従う、育休の制度・給付、永住権の一般・条文意図およびネット中傷を含む十一概念について、公式語、出典付き同義表記、衝突群、検索対象 resource、pack および確認日を不変に保持する辞書スナップショット
@@ -86,7 +87,6 @@
 
 ## 未実装
 
-- [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) の、有効な `Retry-After` が一秒未満の場合も呼出し開始間隔を一秒以上にする下限、および三 operation 共通の再試行・資源予算・`egov-http` 同時実行枠を conformance case へ接続する検証
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる

@@ -1,11 +1,13 @@
 package provideronboarding
 
 import (
-	"bytes"
 	"context"
+	"io"
 	"path/filepath"
-	"strings"
+	"slices"
 	"testing"
+
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/providerconformance"
 )
 
 // SOT-ENG-017/018: command は通常テストと同じ canonical loader を再利用する。
@@ -55,23 +57,59 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 	}
 }
 
-// SOT-ENG-018: 再帰を避け、providerconformance package の通常テストだけを実行する。
-func TestRunProviderConformanceTests(t *testing.T) {
+// SOT-ENG-017/018: matrix の implemented target を通常テストとして実行する。
+func TestRunProviderConformanceTestsUsesImplementedMatrixTargets(t *testing.T) {
 	t.Parallel()
 
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	err := runProviderConformanceTests(
+	var arguments []string
+	err := runProviderConformanceTestsWith(
 		context.Background(),
 		testRepositoryRoot(t),
-		&stdout,
-		&stderr,
+		io.Discard,
+		io.Discard,
+		func(
+			_ context.Context,
+			_ string,
+			got []string,
+			_, _ io.Writer,
+		) error {
+			arguments = append([]string(nil), got...)
+			return nil
+		},
 	)
 	if err != nil {
-		t.Fatalf("providerconformance test が失敗しました: %v\n%s", err, stderr.String())
+		t.Fatalf("provider conformance test の実行準備が失敗しました: %v", err)
 	}
-	if !strings.Contains(stdout.String(), "/internal/providerconformance") {
-		t.Fatalf("実行した package を確認できません: %q", stdout.String())
+	want := []string{
+		"test",
+		"-count=1",
+		"./internal/providerconformance",
+		"./internal/source/courts/hanrei",
+		"./internal/source/egov/lawv1",
+		"./internal/source/egov/lawv2",
+	}
+	if !slices.Equal(arguments, want) {
+		t.Fatalf("go arguments = %q, want %q", arguments, want)
+	}
+}
+
+func TestProviderConformanceTestTargetsUseImplementedRowsOnce(t *testing.T) {
+	t.Parallel()
+
+	rows := []providerconformance.Row{
+		{Status: "implemented", ConformanceTarget: "./internal/source/provider-b"},
+		{Status: "implemented", ConformanceTarget: "./internal/source/provider-b"},
+		{Status: "planned", ConformanceTarget: "./internal/source/provider-c"},
+		{Status: "retired", ConformanceTarget: "./internal/source/provider-d"},
+		{Status: "implemented", ConformanceTarget: "./internal/source/provider-a"},
+	}
+	want := []string{
+		"./internal/providerconformance",
+		"./internal/source/provider-a",
+		"./internal/source/provider-b",
+	}
+	if got := providerConformanceTestTargets(rows); !slices.Equal(got, want) {
+		t.Fatalf("conformance targets = %q, want %q", got, want)
 	}
 }
 
