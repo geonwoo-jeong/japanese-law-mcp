@@ -312,7 +312,7 @@ func speechSearchProcessingError(
 	processing context.Context,
 ) error {
 	if err := parent.Err(); err != nil {
-		return err
+		return normalizeSpeechSearchContextError(err)
 	}
 	if err := processing.Err(); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {

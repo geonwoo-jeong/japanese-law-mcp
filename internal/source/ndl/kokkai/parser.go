@@ -89,10 +89,30 @@ func parseSpeechSearchResponse(
 	body []byte,
 	limit int,
 ) (speechSearchResponse, error) {
-	if err := parseContext.Err(); err != nil {
+	return parseSpeechSearchResponseWithBudget(
+		parent,
+		parseContext,
+		body,
+		limit,
+		speechSearchParserInputBytes,
+		speechSearchJSONValues,
+		speechSearchJSONDepth,
+	)
+}
+
+func parseSpeechSearchResponseWithBudget(
+	parent context.Context,
+	parseContext context.Context,
+	body []byte,
+	limit int,
+	maximumInputBytes int,
+	maximumValues int,
+	maximumDepth int,
+) (speechSearchResponse, error) {
+	if err := speechSearchProcessingError(parent, parseContext); err != nil {
 		return speechSearchResponse{}, err
 	}
-	if len(body) > speechSearchParserInputBytes {
+	if len(body) > maximumInputBytes {
 		return speechSearchResponse{}, newSpeechSearchSourceError(
 			model.SourceErrorCodeSourceResponseTooLarge,
 			"",
@@ -104,7 +124,12 @@ func parseSpeechSearchResponse(
 			"",
 		)
 	}
-	if err := validateSpeechSearchJSON(parseContext, body); err != nil {
+	if err := validateSpeechSearchJSON(
+		parseContext,
+		body,
+		maximumValues,
+		maximumDepth,
+	); err != nil {
 		return speechSearchResponse{}, classifySpeechSearchParseError(
 			parent,
 			parseContext,
@@ -133,7 +158,12 @@ func parseSpeechSearchResponse(
 	return response, nil
 }
 
-func validateSpeechSearchJSON(ctx context.Context, body []byte) error {
+func validateSpeechSearchJSON(
+	ctx context.Context,
+	body []byte,
+	maximumValues int,
+	maximumDepth int,
+) error {
 	decoder := json.NewDecoder(&speechSearchContextReader{
 		ctx:    ctx,
 		reader: bytes.NewReader(body),
@@ -145,9 +175,8 @@ func validateSpeechSearchJSON(ctx context.Context, body []byte) error {
 		ctx,
 		decoder,
 		&valueCount,
-		speechSearchJSONValues,
-		speechSearchJSONDepth,
-		nil,
+		maximumValues,
+		maximumDepth,
 	); err != nil {
 		return err
 	}
@@ -166,7 +195,6 @@ func scanSpeechSearchJSONRootObject(
 	valueCount *int,
 	maximumValues int,
 	maximumDepth int,
-	allowedKeys map[string]struct{},
 ) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -193,7 +221,6 @@ func scanSpeechSearchJSONRootObject(
 		valueCount,
 		maximumValues,
 		maximumDepth,
-		allowedKeys,
 	)
 }
 
@@ -204,7 +231,6 @@ func scanSpeechSearchJSONObjectContents(
 	valueCount *int,
 	maximumValues int,
 	maximumDepth int,
-	allowedKeys map[string]struct{},
 ) error {
 	seen := make(map[string]struct{})
 	for decoder.More() {
@@ -223,11 +249,6 @@ func scanSpeechSearchJSONObjectContents(
 			return speechSearchJSONErrorDuplicate
 		}
 		seen[key] = struct{}{}
-		if allowedKeys != nil {
-			if _, allowed := allowedKeys[key]; !allowed {
-				return speechSearchJSONErrorShape
-			}
-		}
 		if err := scanSpeechSearchJSONValue(
 			ctx,
 			decoder,
@@ -235,7 +256,6 @@ func scanSpeechSearchJSONObjectContents(
 			valueCount,
 			maximumValues,
 			maximumDepth,
-			nil,
 		); err != nil {
 			return err
 		}
@@ -251,7 +271,6 @@ func scanSpeechSearchJSONValue(
 	valueCount *int,
 	maximumValues int,
 	maximumDepth int,
-	objectKeys map[string]struct{},
 ) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -282,7 +301,6 @@ func scanSpeechSearchJSONValue(
 			valueCount,
 			maximumValues,
 			maximumDepth,
-			objectKeys,
 		)
 	case '[':
 		for decoder.More() {
@@ -293,7 +311,6 @@ func scanSpeechSearchJSONValue(
 				valueCount,
 				maximumValues,
 				maximumDepth,
-				objectKeys,
 			); err != nil {
 				return err
 			}
@@ -675,7 +692,7 @@ func classifySpeechSearchParseError(
 	err error,
 ) error {
 	if parentErr := parent.Err(); parentErr != nil {
-		return parentErr
+		return normalizeSpeechSearchContextError(parentErr)
 	}
 	if errors.Is(err, context.DeadlineExceeded) ||
 		errors.Is(parseContext.Err(), context.DeadlineExceeded) {
@@ -696,7 +713,7 @@ func classifySpeechSearchDecodeError(
 	parseContext context.Context,
 ) error {
 	if err := parent.Err(); err != nil {
-		return err
+		return normalizeSpeechSearchContextError(err)
 	}
 	if errors.Is(parseContext.Err(), context.DeadlineExceeded) {
 		return newSpeechSearchSourceError(model.SourceErrorCodeSourceProcessingLimit, "")
@@ -710,41 +727,6 @@ func invalidSpeechSearchResponse() error {
 
 func isSpeechSearchJSONNull(raw json.RawMessage) bool {
 	return strings.EqualFold(string(bytes.TrimSpace(raw)), "null")
-}
-
-func speechSearchTopLevelKeys() map[string]struct{} {
-	return map[string]struct{}{
-		"numberOfRecords":    {},
-		"numberOfReturn":     {},
-		"startRecord":        {},
-		"nextRecordPosition": {},
-		"speechRecord":       {},
-	}
-}
-
-func speechSearchRecordKeys() map[string]struct{} {
-	return map[string]struct{}{
-		"speechID":        {},
-		"speechOrder":     {},
-		"speaker":         {},
-		"speakerYomi":     {},
-		"speakerGroup":    {},
-		"speakerPosition": {},
-		"speakerRole":     {},
-		"speech":          {},
-		"startPage":       {},
-		"speechURL":       {},
-		"issueID":         {},
-		"imageKind":       {},
-		"session":         {},
-		"nameOfHouse":     {},
-		"nameOfMeeting":   {},
-		"issue":           {},
-		"date":            {},
-		"closing":         {},
-		"meetingURL":      {},
-		"pdfURL":          {},
-	}
 }
 
 func maxInt() int {

@@ -135,7 +135,7 @@ func TestSpeechSearchHTTPClientPreservesEncodedBodyForGzip(t *testing.T) {
 		!bytes.Equal(fetched.encodedBody, encoded.Bytes()) ||
 		fetched.fetchedURL == "" ||
 		!fetched.retrievedAt.Equal(fixedNow) {
-		t.Fatalf("fetched = %#v", fetched)
+		t.Fatal("取得済み response の metadata が一致しません")
 	}
 }
 
@@ -163,6 +163,6 @@ func TestDecodeSpeechSearchResponseBodyInflatesGzip(t *testing.T) {
 		t.Fatalf("decodeSpeechSearchResponseBody() のエラー = %v", err)
 	}
 	if string(body) != `{"numberOfRecords":0,"numberOfReturn":0,"startRecord":1}` {
-		t.Fatalf("decoded body = %s", body)
+		t.Fatal("gzip 復号後の response が一致しません")
 	}
 }

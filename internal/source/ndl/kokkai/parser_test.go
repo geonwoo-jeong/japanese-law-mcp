@@ -1,7 +1,6 @@
 package kokkai
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"strings"
@@ -50,7 +49,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 		t.Fatalf("SOT-IF-064: parseSpeechSearchResponse() のエラー = %v", err)
 	}
 	if response.totalCount != 2 || response.returnedCount != 1 || len(response.records) != 1 {
-		t.Fatalf("SOT-IF-064: response = %#v", response)
+		t.Fatal("SOT-IF-064: response 件数が一致しません")
 	}
 	if response.nextRecordPosition == nil || *response.nextRecordPosition != 2 {
 		t.Fatalf("SOT-IF-064: nextRecordPosition = %v", response.nextRecordPosition)
@@ -75,7 +74,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 		item.Ref().Key().SourceID() != sourceID ||
 		item.Ref().Key().ResourceType() != "parliament-speech" ||
 		item.Ref().Key().ResourceID() != "0001" {
-		t.Fatalf("ref = %#v", item.Ref())
+		t.Fatal("ref の固定値が一致しません")
 	}
 	provenance := item.Provenance()
 	location, exists := provenance[0].Location()
@@ -87,7 +86,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 		provenance[0].MediaType() != "application/json" ||
 		provenance[0].Transformation() != model.ProvenanceTransformationNormalized ||
 		!provenance[0].RetrievedAt().Equal(retrievedAt) {
-		t.Fatalf("provenance = %#v", provenance)
+		t.Fatal("provenance の固定値が一致しません")
 	}
 
 	data := item.Data()
@@ -117,7 +116,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 		!hasClosing || closing ||
 		data.Meeting().MeetingURL() != "https://kokkai.ndl.go.jp/txt/kaigiroku/100" ||
 		!hasPDFURL || pdfURL != "https://kokkai.ndl.go.jp/pdf/100.pdf" {
-		t.Fatalf("data = %#v", data)
+		t.Fatal("ParliamentSpeech の項目対応が一致しません")
 	}
 
 	totalCount, totalExists := page.Page().TotalCount()
@@ -125,7 +124,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 	if page.Page().ReturnedCount() != 1 ||
 		!totalExists || totalCount != 2 ||
 		!relationExists || totalRelation != model.TotalRelationExact {
-		t.Fatalf("page = %#v", page.Page())
+		t.Fatal("SourcePage の件数が一致しません")
 	}
 }
 
@@ -189,7 +188,7 @@ func TestParseSpeechSearchResponseAcceptsUnknownFields(t *testing.T) {
 		t.Fatalf("未知 field を含む response を拒否しました: %v", err)
 	}
 	if response.totalCount != 1 || response.returnedCount != 1 || len(response.records) != 1 {
-		t.Fatalf("response = %#v", response)
+		t.Fatal("未知 field を無視した後の件数が一致しません")
 	}
 }
 
@@ -254,7 +253,7 @@ func TestParseSpeechSearchResponseAcceptsEmptyResult(t *testing.T) {
 		t.Fatalf("空結果のエラー = %v", err)
 	}
 	if response.totalCount != 0 || response.returnedCount != 0 || len(response.records) != 0 {
-		t.Fatalf("空結果 = %#v", response)
+		t.Fatal("空結果の件数が一致しません")
 	}
 }
 
@@ -279,17 +278,69 @@ func TestParseSpeechSearchResponseRejectsStructuralErrors(t *testing.T) {
 	}
 }
 
-func TestParseSpeechSearchResponseRejectsUnsafeAndOversizedInput(t *testing.T) {
+func TestParseSpeechSearchResponseRejectsResourceBudgetOverruns(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name              string
+		body              string
+		maximumInputBytes int
+		maximumValues     int
+		maximumDepth      int
+		want              model.SourceErrorCode
+	}{
+		{
+			name:              "byte 上限",
+			body:              "12345",
+			maximumInputBytes: 4,
+			maximumValues:     10,
+			maximumDepth:      10,
+			want:              model.SourceErrorCodeSourceResponseTooLarge,
+		},
+		{
+			name:              "JSON value 上限",
+			body:              `{"unknown":1}`,
+			maximumInputBytes: 64,
+			maximumValues:     1,
+			maximumDepth:      10,
+			want:              model.SourceErrorCodeSourceResponseTooLarge,
+		},
+		{
+			name:              "JSON depth 上限",
+			body:              `{"unknown":[]}`,
+			maximumInputBytes: 64,
+			maximumValues:     10,
+			maximumDepth:      1,
+			want:              model.SourceErrorCodeUnsafeSourceContent,
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			parseContext, cancel := context.WithTimeout(
+				context.Background(),
+				speechSearchParseTimeout,
+			)
+			defer cancel()
+			_, err := parseSpeechSearchResponseWithBudget(
+				context.Background(),
+				parseContext,
+				[]byte(test.body),
+				20,
+				test.maximumInputBytes,
+				test.maximumValues,
+				test.maximumDepth,
+			)
+			assertSpeechSearchSourceError(t, err, test.want)
+		})
+	}
+}
+
+func TestParseSpeechSearchResponseRejectsUnsafeInput(t *testing.T) {
 	t.Parallel()
 
 	_, err := parseSpeechSearchResponseForTest(
-		context.Background(),
-		append(bytes.Repeat([]byte{' '}, speechSearchParserInputBytes), ' '),
-		20,
-	)
-	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceResponseTooLarge)
-
-	_, err = parseSpeechSearchResponseForTest(
 		context.Background(),
 		[]byte{0xff, 0xfe, 0xfd},
 		20,

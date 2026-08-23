@@ -32,8 +32,8 @@ func TestSpeechSearchAdapterSearchMapsResponseAndHoldsGate(t *testing.T) {
 	adapter, err := newSpeechSearchAdapter(speechSearchAdapterDependencies{
 		client: client,
 		now:    func() time.Time { return now },
-		sleep: func(context.Context, time.Duration) error {
-			delays = append(delays, speechSearchGateHold)
+		sleep: func(_ context.Context, delay time.Duration) error {
+			delays = append(delays, delay)
 			now = now.Add(speechSearchGateHold)
 			return nil
 		},
@@ -52,7 +52,7 @@ func TestSpeechSearchAdapterSearchMapsResponseAndHoldsGate(t *testing.T) {
 		t.Fatalf("gate hold delays = %v", delays)
 	}
 	if len(page.Items()) != 1 || page.Page().ReturnedCount() != 1 {
-		t.Fatalf("page = %#v", page)
+		t.Fatal("検索結果の件数が一致しません")
 	}
 }
 
