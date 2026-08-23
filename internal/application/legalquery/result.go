@@ -44,7 +44,7 @@ const (
 	legalQueryNonJapaneseNotice          = "日本語の法情報取得要求を入力してください。"
 	legalQueryStandaloneStructuredNotice = "事件番号、識別子または日付だけを指定する場合は、対応する専門ツールを使用してください。"
 	legalQueryMixedUnsupportedNotice     = "法情報の取得要求と法的助言、翻訳または対象外の要求を分けて入力してください。"
-	legalQueryUnsupportedScopeNotice     = "指定した task または resource は統合照会の採用範囲外です。対応する専門ツールを確認してください。"
+	legalQueryUnsupportedScopeNotice     = "指定した法的助言、翻訳、task または resource は統合照会の採用範囲外です。採用済みの法情報取得要求だけを入力してください。"
 )
 
 // 公開 JSON Schema と result assembler が同じ固定注意を参照するための別名である。

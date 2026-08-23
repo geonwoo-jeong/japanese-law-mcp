@@ -225,7 +225,7 @@ func TestLegalQueryResultDerivesStatusAndFixedNotices(t *testing.T) {
 	if !reflect.DeepEqual(unsupported.Notices(), []string{
 		"日本語の法情報取得要求を入力してください。",
 		"法情報の取得要求と法的助言、翻訳または対象外の要求を分けて入力してください。",
-		"指定した task または resource は統合照会の採用範囲外です。対応する専門ツールを確認してください。",
+		"指定した法的助言、翻訳、task または resource は統合照会の採用範囲外です。採用済みの法情報取得要求だけを入力してください。",
 	}) {
 		t.Fatalf("SOT-MODEL-024: unsupported notices = %#v", unsupported.Notices())
 	}

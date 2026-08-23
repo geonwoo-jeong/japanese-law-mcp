@@ -84,6 +84,7 @@
 - [SOT-MODEL-023](../sot/20-model/23-legal-query-plan.md)、[SOT-MODEL-024](../sot/20-model/24-legal-query-result.md)、[SOT-ARCH-022](../sot/30-architecture/22-unified-query-planning-pipeline.md)、[SOT-ARCH-024](../sot/30-architecture/24-unified-query-internal-public-boundary.md)、[SOT-IF-051](../sot/40-interfaces/51-mcp-query-legal-information.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、実行 plan と非実行 plan の境界、execution と plan の logical input を含む再照合、`completed`・`empty`・`partial` の決定、三種類の非実行結果、事件番号・識別子・日付だけの入力には専門ツールを案内する注意を含む固定 notice、および選択候補または上位候補から固定順・二問以下で導出する明確化質問を扱う lossless な result assembler
 - [SOT-SCN-009](../sot/10-scenarios/09-query-legal-information.md)、[SOT-ARCH-022](../sot/30-architecture/22-unified-query-planning-pipeline.md)、[SOT-ARCH-023](../sot/30-architecture/23-unified-query-selection-and-hedging.md)、[SOT-ARCH-024](../sot/30-architecture/24-unified-query-internal-public-boundary.md)、[SOT-MODEL-023](../sot/20-model/23-legal-query-plan.md)、[SOT-MODEL-024](../sot/20-model/24-legal-query-result.md)、[SOT-IF-051](../sot/40-interfaces/51-mcp-query-legal-information.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、検証済み request、共通前処理、固定 profile set、selector、executor および result assembler を一つの request deadline で接続し、三種類の非実行を外部呼出しなしの成功結果へ変換する統合照会 application service、ならびに request と前処理結果の照合、profile metadata の固定、context error の優先および並行照会の fail-closed 検証
 - [SOT-IF-007](../sot/40-interfaces/07-mcp-tool-result.md)、[SOT-IF-027](../sot/40-interfaces/27-public-source-error-contract.md)、[SOT-IF-040](../sot/40-interfaces/40-judicial-cases-pack-activation.md)、[SOT-IF-051](../sot/40-interfaces/51-mcp-query-legal-information.md)、[SOT-ARCH-019](../sot/30-architecture/19-extension-pack-activation-boundary.md)、[SOT-ARCH-024](../sot/30-architecture/24-unified-query-internal-public-boundary.md) および [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) に従う、16384 byte の全体上限、重複 key・未知項目・不正 UTF-8・不正 surrogate・非整数・不正 `ref` を外部呼出し前に拒否する厳格な MCP 入力変換、統合照会 application port の一回呼出し、六つの成功結果を変更しない JSON 直列化、全 step 失敗の公開エラー保持、未分類失敗と nil の fail-closed、入力・内部原因を公開しない `query_legal_information` handler、法令コアと裁判例の意味認識 profile・共通前処理・core facade・executor・application service の起動時組立て、pack 無効時の裁判例照会を外部呼出しなしの `capability_unavailable` とする経路、pack 有効時だけの裁判例 facade と route の実行、ならびに stdio と Streamable HTTP へ同じ schema で登録する八ツール・十ツールの公開構成
+- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) と [SOT-MODEL-024](../sot/20-model/24-legal-query-result.md) に従う、曖昧な要求、五件以上の主題、無効な拡張パック、比較・影響分析との混在、法的助言だけの要求および翻訳だけの要求を外部呼出しなしで区別し、状態ごとの固定 notice、明確化質問および必要 pack を公開する非実行案内
 - e-Gov 法令 API Version 2 を使用する MCP `search_laws`、`get_law`、`get_article`、`search_law_content`、`list_law_revisions` および `compare_law_versions` と、[SOT-IF-038](../sot/40-interfaces/38-mcp-list-law-updates.md) に従い e-Gov 法令 API Version 1 の一日分の完全な更新一覧を返す MCP `list_law_updates` の公開 facade と stdio 経由の提供
 - [SOT-DEL-004](../sot/60-delivery/04-release-consistency.md)、[SOT-DEL-007](../sot/60-delivery/07-interface-change-disclosure.md)、[SOT-DEL-010](../sot/60-delivery/10-desktop-binaries.md)、[SOT-DEL-011](../sot/60-delivery/11-local-distributions.md)、[SOT-DEL-012](../sot/60-delivery/12-local-execution-paths.md) および [SOT-DEL-014](../sot/60-delivery/14-release-please-automation.md) に従う、`main` の Conventional Commits から Release PR、tag および draft release を管理する Release Please、macOS・Windows の amd64・arm64 向け四 archive、SHA-256 checksum、版・生成元 metadata、必須リリース情報、公開前の配布物検査および各対象環境での実行確認を備えた公式ローカル配布処理
 
@@ -96,12 +97,6 @@
   原子的切替、next profile set の production 採用、および後続の provider 契約更新。
   現在地と着手順は
   [統合照会の意図判定導入順](30-unified-query-intent-rollout.md) で追跡する
-- [SOT-SCN-010](../sot/10-scenarios/10-use-non-execution-guidance.md) の
-  状態別再照会シナリオは既存の `SOT-MODEL-024` と `SOT-IF-051` の公開値で
-  表現できるが、法的助言・翻訳だけの要求へ対応する
-  `SOT-MODEL-024` の八番目の固定 notice、および五つ以上の主題、無効 pack、
-  比較・影響分析との混在、法的助言・翻訳をまとめて確認するシナリオ契約 test は
-  未実装
 
 ## 現在の起動面
 
