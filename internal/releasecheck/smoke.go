@@ -33,6 +33,12 @@ var officialToolNames = []string{
 	"search_laws",
 }
 
+type smokeScenario struct {
+	name       string
+	configYAML string
+	toolNames  []string
+}
+
 func smokeTarget(
 	ctx context.Context,
 	archivePath string,
@@ -83,7 +89,31 @@ func smokeTarget(
 	if err := verifyBinaryVersion(smokeCtx, binaryPath, version, environment); err != nil {
 		return err
 	}
-	return verifyMCPServer(smokeCtx, binaryPath, version, environment)
+	for _, scenario := range smokeScenarios() {
+		configPath, err := writeSmokeConfig(
+			configDirectory,
+			scenario.name,
+			scenario.configYAML,
+		)
+		if err != nil {
+			return fmt.Errorf(
+				"smoke scenario %q の設定を作成できません: %w",
+				scenario.name,
+				err,
+			)
+		}
+		if err := verifyMCPServer(
+			smokeCtx,
+			binaryPath,
+			version,
+			environment,
+			scenario,
+			configPath,
+		); err != nil {
+			return fmt.Errorf("smoke scenario %q: %w", scenario.name, err)
+		}
+	}
+	return nil
 }
 
 func verifyBinaryVersion(
@@ -120,9 +150,14 @@ func verifyMCPServer(
 	ctx context.Context,
 	binaryPath, version string,
 	environment []string,
+	scenario smokeScenario,
+	configPath string,
 ) (returnErr error) {
 	var stderr bytes.Buffer
 	command := exec.CommandContext(ctx, binaryPath)
+	if configPath != "" {
+		command.Args = append(command.Args, "--config="+configPath)
+	}
 	command.Env = append([]string(nil), environment...)
 	command.Stderr = &stderr
 	transport := &sdk.CommandTransport{
@@ -162,10 +197,94 @@ func verifyMCPServer(
 		names = append(names, tool.Name)
 	}
 	sort.Strings(names)
-	if !equalStrings(names, officialToolNames) {
-		return fmt.Errorf("MCP tool 一覧 = %v, want %v", names, officialToolNames)
+	if !equalStrings(names, scenario.toolNames) {
+		return fmt.Errorf("MCP tool 一覧 = %v, want %v", names, scenario.toolNames)
 	}
 	return validateMissingInputError(ctx, session)
+}
+
+func smokeScenarios() []smokeScenario {
+	return []smokeScenario{
+		{
+			name:      "default",
+			toolNames: append([]string(nil), officialToolNames...),
+		},
+		{
+			name: "judicial-cases",
+			configYAML: "extensionPacks:\n" +
+				"  judicial-cases:\n" +
+				"    enabled: true\n",
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+			},
+		},
+		{
+			name: "legislative-history",
+			configYAML: "extensionPacks:\n" +
+				"  legislative-history:\n" +
+				"    enabled: true\n",
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_diet_speeches",
+				"search_law_content",
+				"search_laws",
+			},
+		},
+		{
+			name: "all-extension-packs",
+			configYAML: "extensionPacks:\n" +
+				"  judicial-cases:\n" +
+				"    enabled: true\n" +
+				"  legislative-history:\n" +
+				"    enabled: true\n",
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_diet_speeches",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+			},
+		},
+	}
+}
+
+func writeSmokeConfig(
+	configDirectory, scenarioName, configYAML string,
+) (string, error) {
+	if strings.TrimSpace(configYAML) == "" {
+		return "", nil
+	}
+	if err := os.MkdirAll(configDirectory, 0o700); err != nil {
+		return "", err
+	}
+	configPath := filepath.Join(
+		configDirectory,
+		"config-"+scenarioName+".yaml",
+	)
+	if err := os.WriteFile(configPath, []byte(configYAML), 0o600); err != nil {
+		return "", err
+	}
+	return configPath, nil
 }
 
 func validateInitializeResult(result *sdk.InitializeResult, version string) error {

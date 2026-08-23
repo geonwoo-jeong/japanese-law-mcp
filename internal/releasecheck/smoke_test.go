@@ -1,6 +1,7 @@
 package releasecheck
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -99,5 +100,82 @@ func TestIsolatedEnvironment(t *testing.T) {
 		if !strings.Contains(joined, required) {
 			t.Fatalf("隔離後の環境に %q がありません: %s", required, joined)
 		}
+	}
+}
+
+func TestSmokeScenariosCoverOptionalExtensionPacks(t *testing.T) {
+	t.Parallel()
+
+	scenarios := smokeScenarios()
+	if len(scenarios) != 4 {
+		t.Fatalf("smoke scenario 数 = %d, want 4", len(scenarios))
+	}
+
+	expected := map[string][]string{
+		"default": {
+			"compare_law_versions",
+			"get_article",
+			"get_law",
+			"list_law_revisions",
+			"list_law_updates",
+			"query_legal_information",
+			"search_law_content",
+			"search_laws",
+		},
+		"judicial-cases": {
+			"compare_law_versions",
+			"get_article",
+			"get_judicial_case",
+			"get_law",
+			"list_law_revisions",
+			"list_law_updates",
+			"query_legal_information",
+			"search_judicial_cases",
+			"search_law_content",
+			"search_laws",
+		},
+		"legislative-history": {
+			"compare_law_versions",
+			"get_article",
+			"get_law",
+			"list_law_revisions",
+			"list_law_updates",
+			"query_legal_information",
+			"search_diet_speeches",
+			"search_law_content",
+			"search_laws",
+		},
+		"all-extension-packs": {
+			"compare_law_versions",
+			"get_article",
+			"get_judicial_case",
+			"get_law",
+			"list_law_revisions",
+			"list_law_updates",
+			"query_legal_information",
+			"search_diet_speeches",
+			"search_judicial_cases",
+			"search_law_content",
+			"search_laws",
+		},
+	}
+
+	for _, scenario := range scenarios {
+		want, exists := expected[scenario.name]
+		if !exists {
+			t.Fatalf("未知の scenario が含まれています: %q", scenario.name)
+		}
+		if !slices.Equal(scenario.toolNames, want) {
+			t.Fatalf(
+				"scenario %q の tool 一覧 = %v, want %v",
+				scenario.name,
+				scenario.toolNames,
+				want,
+			)
+		}
+		delete(expected, scenario.name)
+	}
+	if len(expected) != 0 {
+		t.Fatalf("不足 scenario = %v", expected)
 	}
 }
