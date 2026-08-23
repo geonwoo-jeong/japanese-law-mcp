@@ -117,16 +117,13 @@ func (c speechSearchHTTPClient) fetchSpeechSearch(
 		return fetchedSpeechSearchResponse{}, err
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		switch response.StatusCode {
-		case http.StatusTooManyRequests:
+		switch {
+		case response.StatusCode == http.StatusTooManyRequests:
 			return fetchedSpeechSearchResponse{}, newSpeechSearchSourceError(
 				model.SourceErrorCodeRateLimited,
 				"",
 			)
-		case http.StatusInternalServerError,
-			http.StatusBadGateway,
-			http.StatusServiceUnavailable,
-			http.StatusGatewayTimeout:
+		case response.StatusCode >= http.StatusInternalServerError:
 			return fetchedSpeechSearchResponse{}, newSpeechSearchSourceError(
 				model.SourceErrorCodeSourceUnavailable,
 				"",

@@ -220,13 +220,26 @@ func TestMapSpeechSearchPageRejectsNonOfficialRequestURL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("検証用 response を作成できません: %v", err)
 	}
-	_, err = mapSpeechSearchPage(
-		context.Background(),
-		response,
-		"https://example.invalid/api/speech",
-		time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC),
-	)
-	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
+	for name, requestURL := range map[string]string{
+		"別 origin": "https://example.invalid/api/speech",
+		"別 path":   "https://kokkai.ndl.go.jp/api/meeting",
+	} {
+		name, requestURL := name, requestURL
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			_, mapErr := mapSpeechSearchPage(
+				context.Background(),
+				response,
+				requestURL,
+				time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC),
+			)
+			assertSpeechSearchSourceError(
+				t,
+				mapErr,
+				model.SourceErrorCodeInvalidSourceResponse,
+			)
+		})
+	}
 }
 
 func TestParseSpeechSearchResponseAcceptsEmptyResult(t *testing.T) {

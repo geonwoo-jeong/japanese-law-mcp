@@ -41,6 +41,31 @@ func TestSpeechSearchHTTPClientReturnsRateLimitedBeforeBodyBudget(t *testing.T) 
 	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeRateLimited)
 }
 
+func TestSpeechSearchHTTPClientMapsEveryServerErrorToUnavailable(t *testing.T) {
+	t.Parallel()
+
+	client, err := newSpeechSearchHTTPClient(
+		doerFunc(func(request *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusNotImplemented,
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader("")),
+				Request:    request,
+			}, nil
+		}),
+		time.Now,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = client.fetchSpeechSearch(
+		context.Background(),
+		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "民法"}),
+	)
+	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceUnavailable)
+}
+
 func TestSpeechSearchHTTPClientRejectsUnsafeFinalURL(t *testing.T) {
 	t.Parallel()
 
