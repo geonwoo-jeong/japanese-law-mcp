@@ -94,6 +94,10 @@ func TestServiceRejectsInvalidDependenciesContextAndRequest(t *testing.T) {
 	if _, err := NewService(nil, time.Second); err == nil {
 		t.Fatal("nil lister を受理しました")
 	}
+	var typedNilLister *recordingLawRevisionLister
+	if _, err := NewService(typedNilLister, time.Second); err == nil {
+		t.Fatal("typed nil lister を受理しました")
+	}
 	lister := &recordingLawRevisionLister{}
 	if _, err := NewService(lister, 0); err == nil {
 		t.Fatal("0 の requestTimeout を受理しました")

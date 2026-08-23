@@ -3,6 +3,7 @@ package listlawrevisions
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
@@ -18,13 +19,27 @@ type Service struct {
 var _ Port = (*Service)(nil)
 
 func NewService(lister lawrevisionlist.Port, requestTimeout time.Duration) (*Service, error) {
-	if lister == nil {
+	if isNilLawRevisionListPort(lister) {
 		return nil, fmt.Errorf("law.revision.list provider は必須です")
 	}
 	if requestTimeout <= 0 {
 		return nil, fmt.Errorf("requestTimeout は 0 秒より長くなければなりません")
 	}
 	return &Service{lister: lister, requestTimeout: requestTimeout}, nil
+}
+
+func isNilLawRevisionListPort(lister lawrevisionlist.Port) bool {
+	if lister == nil {
+		return true
+	}
+	value := reflect.ValueOf(lister)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	default:
+		return false
+	}
 }
 
 func (s *Service) List(ctx context.Context, request Request) (Result, error) {
