@@ -87,7 +87,7 @@
 
 ## 未実装
 
-- [SOT-SCN-012](../sot/10-scenarios/12-list-law-revisions.md)、[SOT-MODEL-032](../sot/20-model/32-law-revision.md)、[SOT-IF-055](../sot/40-interfaces/55-law-revision-list-capability.md) および [SOT-IF-057](../sot/40-interfaces/57-mcp-list-law-revisions.md) で採用した法令改正履歴一覧は、共通モデル、能力別ポート、公開 facade および MCP handler を先に実装し、e-Gov Version 2 binding、組込み route および公開登録を後続の独立した provider 変更で有効化する
+- [SOT-SCN-012](../sot/10-scenarios/12-list-law-revisions.md)、[SOT-MODEL-032](../sot/20-model/32-law-revision.md)、[SOT-IF-055](../sot/40-interfaces/55-law-revision-list-capability.md) および [SOT-IF-056](../sot/40-interfaces/56-mcp-list-law-revisions.md) の法令改正履歴一覧は、共通モデル、能力別ポート、公開 facade および未登録の MCP handler までを準備済みとする。e-Gov Version 2 mapping、binding、組込み route、製品範囲への採用および公開登録は、後続の独立した provider 変更で行う
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる

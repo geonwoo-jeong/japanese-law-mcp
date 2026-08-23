@@ -46,7 +46,6 @@ type listLawRevisionsOutputItem struct {
 	RepealRecordedDate        string                         `json:"repealRecordedDate,omitempty"`
 	RemainInForce             *bool                          `json:"remainInForce,omitempty"`
 	CurrentStatus             model.LawRevisionCurrentStatus `json:"currentStatus,omitempty"`
-	DocumentURL               string                         `json:"documentUrl,omitempty"`
 	Source                    listLawRevisionsOutputSource   `json:"source"`
 }
 
@@ -152,7 +151,6 @@ func mapListLawRevisionOutputItem(revision model.LawRevision) listLawRevisionsOu
 	item.RevisionKind, _ = revision.RevisionKind()
 	item.RepealStatus, _ = revision.RepealStatus()
 	item.CurrentStatus, _ = revision.CurrentStatus()
-	item.DocumentURL, _ = revision.DocumentURL()
 	if value, exists := revision.PromulgationDate(); exists {
 		item.PromulgationDate = value.String()
 	}

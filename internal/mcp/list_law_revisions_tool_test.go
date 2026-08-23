@@ -89,7 +89,6 @@ func TestListLawRevisionsToolProjectsLawRevisionJSONWithoutLoss(t *testing.T) {
 		RepealRecordedDate:        mustMCPDatePointer(t, "2026-01-01"),
 		RemainInForce:             &remainInForce,
 		CurrentStatus:             model.LawRevisionCurrentStatusPrevious,
-		DocumentURL:               "https://example.test/law/law-1/revision-2",
 	})
 
 	expectedPayload, err := json.Marshal(revision)

@@ -33,4 +33,4 @@
 
 - [SOT-MODEL-032: LawRevision](../20-model/32-law-revision.md)
 - [SOT-IF-055: `law.revision.list` capability v1](../40-interfaces/55-law-revision-list-capability.md)
-- [SOT-IF-057: MCP `list_law_revisions`](../40-interfaces/57-mcp-list-law-revisions.md)
+- [SOT-IF-056: MCP `list_law_revisions`](../40-interfaces/56-mcp-list-law-revisions.md)

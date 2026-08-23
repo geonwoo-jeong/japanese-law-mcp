@@ -31,7 +31,6 @@ type LawRevisionValues struct {
 	RepealRecordedDate        *Date
 	RemainInForce             *bool
 	CurrentStatus             LawRevisionCurrentStatus
-	DocumentURL               string
 	Source                    LegalSource
 }
 
@@ -60,7 +59,6 @@ type LawRevision struct {
 	repealRecordedDate        *Date
 	remainInForce             *bool
 	currentStatus             LawRevisionCurrentStatus
-	documentURL               string
 	source                    LegalSource
 }
 
@@ -90,7 +88,6 @@ func NewLawRevision(values LawRevisionValues) (LawRevision, error) {
 		repealRecordedDate:        cloneOptionalDate(values.RepealRecordedDate),
 		remainInForce:             cloneOptionalBool(values.RemainInForce),
 		currentStatus:             values.CurrentStatus,
-		documentURL:               values.DocumentURL,
 		source:                    values.Source,
 	}
 	if err := revision.Validate(); err != nil {
@@ -115,7 +112,6 @@ func (r LawRevision) AmendmentLawTitleKana() (string, bool) {
 	return optionalText(r.amendmentLawTitleKana)
 }
 func (r LawRevision) AmendmentLawNumber() (string, bool) { return optionalText(r.amendmentLawNumber) }
-func (r LawRevision) DocumentURL() (string, bool)        { return optionalText(r.documentURL) }
 func (r LawRevision) Source() LegalSource                { return r.source }
 
 func (r LawRevision) RevisionKind() (LawRevisionKind, bool) {
@@ -194,9 +190,6 @@ func (r LawRevision) Validate() error {
 	if err := validateLawRevisionCurrentStatus(r.currentStatus); err != nil {
 		return err
 	}
-	if r.documentURL != "" && !isHTTPSURL(r.documentURL) {
-		return fmt.Errorf("documentUrl は認証情報を含まない HTTPS URL でなければなりません")
-	}
 	if err := r.source.Validate(); err != nil {
 		return fmt.Errorf("source が有効ではありません: %w", err)
 	}
@@ -232,7 +225,6 @@ func (r LawRevision) MarshalJSON() ([]byte, error) {
 		RepealRecordedDate        *Date                    `json:"repealRecordedDate,omitempty"`
 		RemainInForce             *bool                    `json:"remainInForce,omitempty"`
 		CurrentStatus             LawRevisionCurrentStatus `json:"currentStatus,omitempty"`
-		DocumentURL               string                   `json:"documentUrl,omitempty"`
 		Source                    LegalSource              `json:"source"`
 	}{
 		LawID: r.lawID, RevisionID: r.revisionID, Title: r.title,
@@ -247,7 +239,7 @@ func (r LawRevision) MarshalJSON() ([]byte, error) {
 		RevisionKind: r.revisionKind, RepealStatus: r.repealStatus,
 		RepealRecordedDate: cloneOptionalDate(r.repealRecordedDate),
 		RemainInForce:      cloneOptionalBool(r.remainInForce), CurrentStatus: r.currentStatus,
-		DocumentURL: r.documentURL, Source: r.source,
+		Source: r.source,
 	})
 }
 

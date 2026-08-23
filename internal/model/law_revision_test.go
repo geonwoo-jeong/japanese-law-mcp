@@ -39,7 +39,6 @@ func TestLawRevisionPreservesNormalizedFieldsAndOptionalFalse(t *testing.T) {
 		RepealRecordedDate:        &repealRecordedDate,
 		RemainInForce:             &remainInForce,
 		CurrentStatus:             LawRevisionCurrentStatusPrevious,
-		DocumentURL:               "https://laws.e-gov.go.jp/law/503AC0000000036/20241201_506AC0000000046",
 		Source:                    mustLawRevisionSource(t),
 	})
 	if err != nil {
@@ -81,7 +80,6 @@ func TestLawRevisionPreservesNormalizedFieldsAndOptionalFalse(t *testing.T) {
 		"repealRecordedDate":        "2026-01-01",
 		"remainInForce":             false,
 		"currentStatus":             "previous",
-		"documentUrl":               "https://laws.e-gov.go.jp/law/503AC0000000036/20241201_506AC0000000046",
 		"source": map[string]any{
 			"id":         "e-gov-law-api-v2",
 			"name":       "e-Gov 法令 API Version 2",
@@ -111,10 +109,6 @@ func TestLawRevisionRejectsInvalidRequiredAndNormalizedValues(t *testing.T) {
 		"repealStatus 不正":    func(value LawRevisionValues) LawRevisionValues { value.RepealStatus = "Raw"; return value },
 		"currentStatus 不正":   func(value LawRevisionValues) LawRevisionValues { value.CurrentStatus = "Raw"; return value },
 		"sourceUpdatedAt 不正": func(value LawRevisionValues) LawRevisionValues { value.SourceUpdatedAt = "2024/06/07"; return value },
-		"documentUrl 不正": func(value LawRevisionValues) LawRevisionValues {
-			value.DocumentURL = "http://example.test/law"
-			return value
-		},
 	}
 	for name, mutate := range tests {
 		name, mutate := name, mutate
@@ -172,7 +166,6 @@ func TestLawRevisionOmitsAbsentOptionalFields(t *testing.T) {
 		"repealRecordedDate",
 		"remainInForce",
 		"currentStatus",
-		"documentUrl",
 	} {
 		if _, exists := got[field]; exists {
 			t.Fatalf("省略可能項目 %q が公開されました: %#v", field, got)

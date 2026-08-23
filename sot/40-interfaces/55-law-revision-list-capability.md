@@ -25,6 +25,8 @@
 
 `lawIdOrNumber` は端の U+0020 を除いた後に、一文字以上、UTF-8 で 256 byte 以下、有効な UTF-8、ASCII 制御文字なしとする。共通入力では法令 ID と法令番号の種別判定、補完又は推測を行わない。情報源固有の検索フィルター、改正種別コードおよび状態コードは共通入力へ公開しない。
 
+端の U+0020 を除いた検証済みの値を capability 入力として保持し、provider へ渡す前に元の未処理文字列へ戻さない。
+
 ## 型付き出力
 
 `LawRevisionListPageV1` は次の構造とする。
@@ -59,6 +61,10 @@
 ## 到達し得る失敗
 
 共通入力の形式不正は `invalid_argument` とする。プロバイダー境界からは `not_found`、`unsupported_capability`、`unsupported_query`、`configuration_required`、`source_auth_failed`、`rate_limited`、`source_timeout`、`source_unavailable`、`source_busy`、`source_contract_changed`、`invalid_source_response`、`source_response_too_large`、`source_processing_limit` および `unsafe_source_content` が到達し得る。
+
+## 採用境界
+
+この共通契約だけから、既存 provider の descriptor、binding、route 又は組込み公開面へ能力を追加しない。各 provider の mapping と組込み採用は、後続の provider 固有 SOT と実装変更で決定する。
 
 ## 確認
 

@@ -1,4 +1,4 @@
-# SOT-IF-057: MCP `list_law_revisions`
+# SOT-IF-056: MCP `list_law_revisions`
 
 - 状態: 有効
 
@@ -50,6 +50,10 @@
 - 上記へ分類できない内部処理の失敗は `internal_error` を返す。
 
 情報源エラーの公開値は `SOT-IF-027` に従い、別のコードへ縮約しない。
+
+## 採用境界
+
+この規定は MCP の transport 契約を定めるだけであり、組込みツール集合への登録、provider binding、primary route 又は無設定時の公開を決定しない。それらは provider mapping と組込み採用を定める後続 SOT で一つの変更として採用する。
 
 ## 確認
 
