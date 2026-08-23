@@ -1,7 +1,10 @@
 package kokkai
 
 import (
+	"context"
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
@@ -15,12 +18,22 @@ const (
 )
 
 func mapSpeechSearchPage(
+	ctx context.Context,
 	response speechSearchResponse,
 	requestURL string,
 	retrievedAt time.Time,
 ) (parliamentspeechsearch.Page, error) {
+	if err := ctx.Err(); err != nil {
+		return parliamentspeechsearch.Page{}, err
+	}
+	if !isSpeechSearchRequestURL(requestURL) {
+		return parliamentspeechsearch.Page{}, invalidSpeechSearchResponse()
+	}
 	items := make([]model.SourcedResource[model.ParliamentSpeech], len(response.records))
 	for index, record := range response.records {
+		if err := ctx.Err(); err != nil {
+			return parliamentspeechsearch.Page{}, err
+		}
 		item, err := mapSpeechSearchItem(record, requestURL, retrievedAt, index)
 		if err != nil {
 			return parliamentspeechsearch.Page{}, invalidSpeechSearchResponse()
@@ -128,4 +141,19 @@ func mapSpeechSearchItem(
 		Provenance: []model.Provenance{provenance},
 		Data:       data,
 	})
+}
+
+func isSpeechSearchRequestURL(value string) bool {
+	parsed, err := url.Parse(value)
+	if err != nil {
+		return false
+	}
+	return parsed != nil &&
+		strings.EqualFold(parsed.Scheme, "https") &&
+		strings.EqualFold(parsed.Hostname(), "kokkai.ndl.go.jp") &&
+		parsed.Path == "/api/speech" &&
+		parsed.Port() == "" &&
+		parsed.User == nil &&
+		parsed.Fragment == "" &&
+		parsed.Opaque == ""
 }

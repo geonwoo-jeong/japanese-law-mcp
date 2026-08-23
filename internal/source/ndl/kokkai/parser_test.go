@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -44,7 +45,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 		]
 	}`)
 
-	response, err := parseSpeechSearchResponse(context.Background(), body, 30)
+	response, err := parseSpeechSearchResponseForTest(context.Background(), body, 30)
 	if err != nil {
 		t.Fatalf("SOT-IF-064: parseSpeechSearchResponse() のエラー = %v", err)
 	}
@@ -57,6 +58,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 
 	retrievedAt := time.Date(2026, 8, 23, 12, 0, 0, 0, time.FixedZone("JST", 9*60*60))
 	page, err := mapSpeechSearchPage(
+		context.Background(),
 		response,
 		"https://kokkai.ndl.go.jp/api/speech?any=%E6%B0%91%E6%B3%95&startRecord=1&maximumRecords=1&recordPacking=json",
 		retrievedAt,
@@ -92,6 +94,8 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 	startPage, hasStartPage := data.StartPage()
 	reading, hasReading := data.Speaker().Reading()
 	group, hasGroup := data.Speaker().Group()
+	_, hasPosition := data.Speaker().Position()
+	_, hasRole := data.Speaker().Role()
 	pdfURL, hasPDFURL := data.Meeting().PDFURL()
 	closing, hasClosing := data.Meeting().Closing()
 	if data.SpeechID() != "0001" ||
@@ -99,6 +103,7 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 		data.Speaker().Name() != "山田 太郎" ||
 		!hasReading || reading != "やまだ たろう" ||
 		!hasGroup || group != "自由民主党" ||
+		hasPosition || hasRole ||
 		!hasStartPage || startPage != 0 ||
 		data.SpeechText() != "第一行\n第二行" ||
 		data.SpeechURL() != "https://kokkai.ndl.go.jp/txt/0001" ||
@@ -124,10 +129,110 @@ func TestParseSpeechSearchResponseAndMapPage(t *testing.T) {
 	}
 }
 
+func TestParseSpeechSearchResponseRejectsNonContractJSONShapes(t *testing.T) {
+	t.Parallel()
+
+	record := `{"speechID":"1","speechOrder":0,"speaker":"a","speech":"x",` +
+		`"speechURL":"https://kokkai.ndl.go.jp/txt/1","issueID":"100",` +
+		`"imageKind":"会議録","session":1,"nameOfHouse":"衆議院",` +
+		`"nameOfMeeting":"本会議","issue":"1","date":"2024-01-01",` +
+		`"meetingURL":"https://kokkai.ndl.go.jp/txt/100"}`
+	tests := map[string]string{
+		"speechRecord null": `{"numberOfRecords":0,"numberOfReturn":0,` +
+			`"startRecord":1,"speechRecord":null}`,
+		"top-level key の大文字小文字違い": `{"NumberOfRecords":0,` +
+			`"numberOfReturn":0,"startRecord":1}`,
+		"record key の大文字小文字違い": `{"numberOfRecords":1,` +
+			`"numberOfReturn":1,"startRecord":1,"speechRecord":[` +
+			strings.Replace(record, `"speechID"`, `"SpeechID"`, 1) + `]}`,
+	}
+	for name, body := range tests {
+		name, body := name, body
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			_, err := parseSpeechSearchResponseForTest(context.Background(), []byte(body), 20)
+			assertSpeechSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
+		})
+	}
+}
+
+func TestParseSpeechSearchResponseAcceptsUnknownFields(t *testing.T) {
+	t.Parallel()
+
+	body := []byte(`{
+		"numberOfRecords": 1,
+		"numberOfReturn": 1,
+		"startRecord": 1,
+		"unknownTopLevel": "ignored",
+		"speechRecord": [
+			{
+				"speechID": "1",
+				"speechOrder": 0,
+				"speaker": "a",
+				"speech": "x",
+				"speechURL": "https://kokkai.ndl.go.jp/txt/1",
+				"issueID": "100",
+				"imageKind": "会議録",
+				"session": 1,
+				"nameOfHouse": "衆議院",
+				"nameOfMeeting": "本会議",
+				"issue": "1",
+				"date": "2024-01-01",
+				"meetingURL": "https://kokkai.ndl.go.jp/txt/100",
+				"unknownField": {"nested":"kept in budget only"}
+			}
+		]
+	}`)
+
+	response, err := parseSpeechSearchResponseForTest(context.Background(), body, 20)
+	if err != nil {
+		t.Fatalf("未知 field を含む response を拒否しました: %v", err)
+	}
+	if response.totalCount != 1 || response.returnedCount != 1 || len(response.records) != 1 {
+		t.Fatalf("response = %#v", response)
+	}
+}
+
+func TestParseSpeechSearchResponseClassifiesBusyAPIError(t *testing.T) {
+	t.Parallel()
+
+	_, err := parseSpeechSearchResponseForTest(
+		context.Background(),
+		[]byte(`{"message":"現在、混み合っております。もうしばらくしてから再度アクセスしてください。","details":[]}`),
+		20,
+	)
+	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceUnavailable)
+}
+
+func TestMapSpeechSearchPageRejectsNonOfficialRequestURL(t *testing.T) {
+	t.Parallel()
+
+	response, err := parseSpeechSearchResponseForTest(
+		context.Background(),
+		[]byte(`{"numberOfRecords":1,"numberOfReturn":1,"startRecord":1,`+
+			`"speechRecord":[{"speechID":"1","speechOrder":0,"speaker":"a",`+
+			`"speech":"x","speechURL":"https://kokkai.ndl.go.jp/txt/1",`+
+			`"issueID":"100","imageKind":"会議録","session":1,`+
+			`"nameOfHouse":"衆議院","nameOfMeeting":"本会議","issue":"1",`+
+			`"date":"2024-01-01","meetingURL":"https://kokkai.ndl.go.jp/txt/100"}]}`),
+		20,
+	)
+	if err != nil {
+		t.Fatalf("検証用 response を作成できません: %v", err)
+	}
+	_, err = mapSpeechSearchPage(
+		context.Background(),
+		response,
+		"https://example.invalid/api/speech",
+		time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC),
+	)
+	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
+}
+
 func TestParseSpeechSearchResponseAcceptsEmptyResult(t *testing.T) {
 	t.Parallel()
 
-	response, err := parseSpeechSearchResponse(
+	response, err := parseSpeechSearchResponseForTest(
 		context.Background(),
 		[]byte(`{"numberOfRecords":0,"numberOfReturn":0,"startRecord":1}`),
 		20,
@@ -155,7 +260,7 @@ func TestParseSpeechSearchResponseRejectsStructuralErrors(t *testing.T) {
 		name, body := name, body
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			_, err := parseSpeechSearchResponse(context.Background(), []byte(body), 20)
+			_, err := parseSpeechSearchResponseForTest(context.Background(), []byte(body), 20)
 			assertSpeechSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
 		})
 	}
@@ -164,14 +269,14 @@ func TestParseSpeechSearchResponseRejectsStructuralErrors(t *testing.T) {
 func TestParseSpeechSearchResponseRejectsUnsafeAndOversizedInput(t *testing.T) {
 	t.Parallel()
 
-	_, err := parseSpeechSearchResponse(
+	_, err := parseSpeechSearchResponseForTest(
 		context.Background(),
 		append(bytes.Repeat([]byte{' '}, speechSearchParserInputBytes), ' '),
 		20,
 	)
 	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceResponseTooLarge)
 
-	_, err = parseSpeechSearchResponse(
+	_, err = parseSpeechSearchResponseForTest(
 		context.Background(),
 		[]byte{0xff, 0xfe, 0xfd},
 		20,
@@ -184,7 +289,7 @@ func TestParseSpeechSearchResponsePropagatesCancellation(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	_, err := parseSpeechSearchResponse(ctx, []byte(`{}`), 20)
+	_, err := parseSpeechSearchResponseForTest(ctx, []byte(`{}`), 20)
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancel の伝播 = %v", err)
 	}
@@ -203,4 +308,14 @@ func assertSpeechSearchSourceError(
 	if sourceError.Code() != want {
 		t.Fatalf("SourceError.Code() = %q, want %q", sourceError.Code(), want)
 	}
+}
+
+func parseSpeechSearchResponseForTest(
+	parent context.Context,
+	body []byte,
+	limit int,
+) (speechSearchResponse, error) {
+	parseContext, cancel := context.WithTimeout(parent, speechSearchParseTimeout)
+	defer cancel()
+	return parseSpeechSearchResponse(parent, parseContext, body, limit)
 }

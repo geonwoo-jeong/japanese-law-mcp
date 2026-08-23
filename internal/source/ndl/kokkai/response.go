@@ -2,6 +2,8 @@ package kokkai
 
 import "encoding/json"
 
+const speechSearchBusyMessage = "現在、混み合っております。もうしばらくしてから再度アクセスしてください。"
+
 type speechSearchResponse struct {
 	totalCount         int
 	returnedCount      int
@@ -38,6 +40,8 @@ type rawSpeechSearchResponse struct {
 	StartRecord        json.RawMessage `json:"startRecord"`
 	NextRecordPosition json.RawMessage `json:"nextRecordPosition"`
 	SpeechRecord       json.RawMessage `json:"speechRecord"`
+	Message            json.RawMessage `json:"message"`
+	Details            json.RawMessage `json:"details"`
 }
 
 type rawSpeechRecord struct {

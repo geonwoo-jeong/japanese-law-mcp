@@ -12,6 +12,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -28,18 +29,67 @@ const (
 	speechSearchJSONErrorValues    speechSearchJSONError = "JSON value 数が上限を超えました"
 	speechSearchJSONErrorDepth     speechSearchJSONError = "JSON depth が上限を超えました"
 	speechSearchJSONErrorDuplicate speechSearchJSONError = "JSON object に重複 key があります"
+	speechSearchJSONErrorShape     speechSearchJSONError = "JSON shape が契約と一致しません"
 )
 
 func (e speechSearchJSONError) Error() string {
 	return string(e)
 }
 
+func parseAndMapSpeechSearchPage(
+	parent context.Context,
+	fetched fetchedSpeechSearchResponse,
+	limit int,
+) (parliamentspeechsearch.Page, error) {
+	if err := parent.Err(); err != nil {
+		return parliamentspeechsearch.Page{}, normalizeSpeechSearchContextError(err)
+	}
+	parseContext, cancel := context.WithTimeout(parent, speechSearchParseTimeout)
+	defer cancel()
+
+	body, err := decodeSpeechSearchResponseBody(parent, parseContext, fetched)
+	if err != nil {
+		if parentErr := parent.Err(); parentErr != nil {
+			return parliamentspeechsearch.Page{}, normalizeSpeechSearchContextError(parentErr)
+		}
+		return parliamentspeechsearch.Page{}, err
+	}
+	response, err := parseSpeechSearchResponse(parent, parseContext, body, limit)
+	if err != nil {
+		return parliamentspeechsearch.Page{}, err
+	}
+	page, err := mapSpeechSearchPage(parseContext, response, fetched.fetchedURL, fetched.retrievedAt)
+	if err != nil {
+		if parentErr := parent.Err(); parentErr != nil {
+			return parliamentspeechsearch.Page{}, normalizeSpeechSearchContextError(parentErr)
+		}
+		if errors.Is(parseContext.Err(), context.DeadlineExceeded) {
+			return parliamentspeechsearch.Page{}, newSpeechSearchSourceError(
+				model.SourceErrorCodeSourceProcessingLimit,
+				"",
+			)
+		}
+		return parliamentspeechsearch.Page{}, err
+	}
+	if parentErr := parent.Err(); parentErr != nil {
+		return parliamentspeechsearch.Page{}, normalizeSpeechSearchContextError(parentErr)
+	}
+	if errors.Is(parseContext.Err(), context.DeadlineExceeded) {
+		return parliamentspeechsearch.Page{}, newSpeechSearchSourceError(
+			model.SourceErrorCodeSourceProcessingLimit,
+			"",
+		)
+	}
+	return page, nil
+}
+
 func parseSpeechSearchResponse(
-	ctx context.Context,
+	parent context.Context,
+	parseContext context.Context,
 	body []byte,
 	limit int,
 ) (speechSearchResponse, error) {
-	if err := ctx.Err(); err != nil {
+	if err := parseContext.Err(); err != nil {
 		return speechSearchResponse{}, err
 	}
 	if len(body) > speechSearchParserInputBytes {
@@ -54,24 +104,23 @@ func parseSpeechSearchResponse(
 			"",
 		)
 	}
-
-	parseContext, cancel := context.WithTimeout(ctx, speechSearchParseTimeout)
-	defer cancel()
-
 	if err := validateSpeechSearchJSON(parseContext, body); err != nil {
 		return speechSearchResponse{}, classifySpeechSearchParseError(
-			ctx,
+			parent,
 			parseContext,
 			err,
 		)
 	}
 
-	var raw rawSpeechSearchResponse
-	if err := decodeSpeechSearchJSON(parseContext, body, &raw); err != nil {
+	raw, err := decodeSpeechSearchRawResponse(parseContext, body)
+	if err != nil {
 		return speechSearchResponse{}, classifySpeechSearchDecodeError(
-			ctx,
+			parent,
 			parseContext,
 		)
+	}
+	if err := classifySpeechSearchAPIError(raw); err != nil {
+		return speechSearchResponse{}, err
 	}
 
 	response, err := decodeSpeechSearchResponse(raw)
@@ -92,13 +141,13 @@ func validateSpeechSearchJSON(ctx context.Context, body []byte) error {
 	decoder.UseNumber()
 
 	valueCount := 0
-	if err := scanSpeechSearchJSONValue(
+	if err := scanSpeechSearchJSONRootObject(
 		ctx,
 		decoder,
-		1,
 		&valueCount,
 		speechSearchJSONValues,
 		speechSearchJSONDepth,
+		nil,
 	); err != nil {
 		return err
 	}
@@ -111,6 +160,90 @@ func validateSpeechSearchJSON(ctx context.Context, body []byte) error {
 	return nil
 }
 
+func scanSpeechSearchJSONRootObject(
+	ctx context.Context,
+	decoder *json.Decoder,
+	valueCount *int,
+	maximumValues int,
+	maximumDepth int,
+	allowedKeys map[string]struct{},
+) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if 1 > maximumDepth {
+		return speechSearchJSONErrorDepth
+	}
+	*valueCount += 1
+	if *valueCount > maximumValues {
+		return speechSearchJSONErrorValues
+	}
+	token, err := decoder.Token()
+	if err != nil {
+		return err
+	}
+	delimiter, isDelimiter := token.(json.Delim)
+	if !isDelimiter || delimiter != '{' {
+		return speechSearchJSONErrorShape
+	}
+	return scanSpeechSearchJSONObjectContents(
+		ctx,
+		decoder,
+		1,
+		valueCount,
+		maximumValues,
+		maximumDepth,
+		allowedKeys,
+	)
+}
+
+func scanSpeechSearchJSONObjectContents(
+	ctx context.Context,
+	decoder *json.Decoder,
+	depth int,
+	valueCount *int,
+	maximumValues int,
+	maximumDepth int,
+	allowedKeys map[string]struct{},
+) error {
+	seen := make(map[string]struct{})
+	for decoder.More() {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		keyToken, keyErr := decoder.Token()
+		if keyErr != nil {
+			return keyErr
+		}
+		key, ok := keyToken.(string)
+		if !ok {
+			return speechSearchJSONErrorShape
+		}
+		if _, exists := seen[key]; exists {
+			return speechSearchJSONErrorDuplicate
+		}
+		seen[key] = struct{}{}
+		if allowedKeys != nil {
+			if _, allowed := allowedKeys[key]; !allowed {
+				return speechSearchJSONErrorShape
+			}
+		}
+		if err := scanSpeechSearchJSONValue(
+			ctx,
+			decoder,
+			depth+1,
+			valueCount,
+			maximumValues,
+			maximumDepth,
+			nil,
+		); err != nil {
+			return err
+		}
+	}
+	_, err := decoder.Token()
+	return err
+}
+
 func scanSpeechSearchJSONValue(
 	ctx context.Context,
 	decoder *json.Decoder,
@@ -118,6 +251,7 @@ func scanSpeechSearchJSONValue(
 	valueCount *int,
 	maximumValues int,
 	maximumDepth int,
+	objectKeys map[string]struct{},
 ) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -141,36 +275,15 @@ func scanSpeechSearchJSONValue(
 
 	switch delimiter {
 	case '{':
-		seen := make(map[string]struct{})
-		for decoder.More() {
-			if err := ctx.Err(); err != nil {
-				return err
-			}
-			keyToken, keyErr := decoder.Token()
-			if keyErr != nil {
-				return keyErr
-			}
-			key, ok := keyToken.(string)
-			if !ok {
-				return fmt.Errorf("object key が文字列ではありません")
-			}
-			if _, exists := seen[key]; exists {
-				return speechSearchJSONErrorDuplicate
-			}
-			seen[key] = struct{}{}
-			if err := scanSpeechSearchJSONValue(
-				ctx,
-				decoder,
-				depth+1,
-				valueCount,
-				maximumValues,
-				maximumDepth,
-			); err != nil {
-				return err
-			}
-		}
-		_, err := decoder.Token()
-		return err
+		return scanSpeechSearchJSONObjectContents(
+			ctx,
+			decoder,
+			depth,
+			valueCount,
+			maximumValues,
+			maximumDepth,
+			objectKeys,
+		)
 	case '[':
 		for decoder.More() {
 			if err := scanSpeechSearchJSONValue(
@@ -180,6 +293,7 @@ func scanSpeechSearchJSONValue(
 				valueCount,
 				maximumValues,
 				maximumDepth,
+				objectKeys,
 			); err != nil {
 				return err
 			}
@@ -197,6 +311,25 @@ func decodeSpeechSearchJSON(ctx context.Context, body []byte, target any) error 
 		reader: bytes.NewReader(body),
 	})
 	return decoder.Decode(target)
+}
+
+func decodeSpeechSearchRawResponse(
+	ctx context.Context,
+	body []byte,
+) (rawSpeechSearchResponse, error) {
+	var object map[string]json.RawMessage
+	if err := decodeSpeechSearchJSON(ctx, body, &object); err != nil {
+		return rawSpeechSearchResponse{}, err
+	}
+	return rawSpeechSearchResponse{
+		NumberOfRecords:    object["numberOfRecords"],
+		NumberOfReturn:     object["numberOfReturn"],
+		StartRecord:        object["startRecord"],
+		NextRecordPosition: object["nextRecordPosition"],
+		SpeechRecord:       object["speechRecord"],
+		Message:            object["message"],
+		Details:            object["details"],
+	}, nil
 }
 
 func decodeSpeechSearchResponse(raw rawSpeechSearchResponse) (speechSearchResponse, error) {
@@ -231,28 +364,87 @@ func decodeSpeechSearchResponse(raw rawSpeechSearchResponse) (speechSearchRespon
 	}, nil
 }
 
+func classifySpeechSearchAPIError(raw rawSpeechSearchResponse) error {
+	if len(raw.NumberOfRecords) != 0 ||
+		len(raw.NumberOfReturn) != 0 ||
+		len(raw.StartRecord) != 0 ||
+		len(raw.NextRecordPosition) != 0 ||
+		len(raw.SpeechRecord) != 0 ||
+		len(raw.Message) == 0 {
+		return nil
+	}
+
+	message, err := decodeSpeechSearchRequiredString(raw.Message)
+	if err != nil {
+		return invalidSpeechSearchResponse()
+	}
+	if err := validateSpeechSearchErrorDetails(raw.Details); err != nil {
+		return err
+	}
+	if message == speechSearchBusyMessage {
+		return newSpeechSearchSourceError(model.SourceErrorCodeSourceUnavailable, "")
+	}
+	return invalidSpeechSearchResponse()
+}
+
+func validateSpeechSearchErrorDetails(raw json.RawMessage) error {
+	if len(raw) == 0 || isSpeechSearchJSONNull(raw) {
+		return nil
+	}
+	var details []string
+	if err := json.Unmarshal(raw, &details); err != nil {
+		return invalidSpeechSearchResponse()
+	}
+	return nil
+}
+
 func decodeSpeechRecords(raw json.RawMessage, returnedCount int) ([]speechRecord, error) {
 	if returnedCount == 0 {
-		if len(raw) == 0 || isSpeechSearchJSONNull(raw) {
+		if len(raw) == 0 {
 			return []speechRecord{}, nil
 		}
 	}
 	if len(raw) == 0 || isSpeechSearchJSONNull(raw) {
 		return nil, invalidSpeechSearchResponse()
 	}
-	var values []rawSpeechRecord
-	if err := json.Unmarshal(raw, &values); err != nil {
+	var objects []map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &objects); err != nil {
 		return nil, invalidSpeechSearchResponse()
 	}
-	records := make([]speechRecord, len(values))
-	for index, value := range values {
-		record, err := decodeSpeechRecord(value)
+	records := make([]speechRecord, len(objects))
+	for index, object := range objects {
+		record, err := decodeSpeechRecord(rawSpeechRecordFromObject(object))
 		if err != nil {
 			return nil, err
 		}
 		records[index] = record
 	}
 	return records, nil
+}
+
+func rawSpeechRecordFromObject(object map[string]json.RawMessage) rawSpeechRecord {
+	return rawSpeechRecord{
+		SpeechID:      object["speechID"],
+		SpeechOrder:   object["speechOrder"],
+		Speaker:       object["speaker"],
+		SpeakerYomi:   object["speakerYomi"],
+		SpeakerGroup:  object["speakerGroup"],
+		SpeakerPos:    object["speakerPosition"],
+		SpeakerRole:   object["speakerRole"],
+		Speech:        object["speech"],
+		StartPage:     object["startPage"],
+		SpeechURL:     object["speechURL"],
+		IssueID:       object["issueID"],
+		ImageKind:     object["imageKind"],
+		Session:       object["session"],
+		NameOfHouse:   object["nameOfHouse"],
+		NameOfMeeting: object["nameOfMeeting"],
+		Issue:         object["issue"],
+		Date:          object["date"],
+		Closing:       object["closing"],
+		MeetingURL:    object["meetingURL"],
+		PDFURL:        object["pdfURL"],
+	}
 }
 
 func decodeSpeechRecord(raw rawSpeechRecord) (speechRecord, error) {
@@ -518,6 +710,41 @@ func invalidSpeechSearchResponse() error {
 
 func isSpeechSearchJSONNull(raw json.RawMessage) bool {
 	return strings.EqualFold(string(bytes.TrimSpace(raw)), "null")
+}
+
+func speechSearchTopLevelKeys() map[string]struct{} {
+	return map[string]struct{}{
+		"numberOfRecords":    {},
+		"numberOfReturn":     {},
+		"startRecord":        {},
+		"nextRecordPosition": {},
+		"speechRecord":       {},
+	}
+}
+
+func speechSearchRecordKeys() map[string]struct{} {
+	return map[string]struct{}{
+		"speechID":        {},
+		"speechOrder":     {},
+		"speaker":         {},
+		"speakerYomi":     {},
+		"speakerGroup":    {},
+		"speakerPosition": {},
+		"speakerRole":     {},
+		"speech":          {},
+		"startPage":       {},
+		"speechURL":       {},
+		"issueID":         {},
+		"imageKind":       {},
+		"session":         {},
+		"nameOfHouse":     {},
+		"nameOfMeeting":   {},
+		"issue":           {},
+		"date":            {},
+		"closing":         {},
+		"meetingURL":      {},
+		"pdfURL":          {},
+	}
 }
 
 func maxInt() int {
