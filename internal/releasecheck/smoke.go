@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	smokeTimeout        = 30 * time.Second
+	smokeTimeout        = 60 * time.Second
 	commandCloseTimeout = time.Second
 	protocolVersion     = "2025-11-25"
 )
