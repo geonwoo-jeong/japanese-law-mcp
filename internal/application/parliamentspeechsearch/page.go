@@ -54,6 +54,17 @@ func (p Page) Validate() error {
 	if p.page.ReturnedCount() != len(p.items) {
 		return fmt.Errorf("page.returnedCount と items の件数が一致しません")
 	}
+	totalCount, hasTotalCount := p.page.TotalCount()
+	if !hasTotalCount {
+		return fmt.Errorf("page.totalCount は必須です")
+	}
+	totalRelation, hasTotalRelation := p.page.TotalRelation()
+	if !hasTotalRelation || totalRelation != model.TotalRelationExact {
+		return fmt.Errorf("page.totalRelation は exact でなければなりません")
+	}
+	if totalCount < len(p.items) {
+		return fmt.Errorf("page.totalCount は items の件数以上でなければなりません")
+	}
 	for index, item := range p.items {
 		if err := validateItem(item); err != nil {
 			return fmt.Errorf("items[%d] が有効ではありません: %w", index, err)

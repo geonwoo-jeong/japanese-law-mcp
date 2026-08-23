@@ -99,6 +99,31 @@ func TestPageRejectsReturnedCountMismatchAndInvalidItem(t *testing.T) {
 	); err == nil {
 		t.Fatal("SOT-IF-062: returnedCount と items の不一致を受理した")
 	}
+	totalWithoutRelation := 1
+	pageWithoutTotal, err := model.NewSourcePage(model.SourcePageValues{
+		ReturnedCount: 0,
+		TotalRelation: model.TotalRelationExact,
+	})
+	if err == nil {
+		t.Fatalf("SourcePage の前提作成が不正に成功した: %#v", pageWithoutTotal)
+	}
+	pageLowerBound, err := model.NewSourcePage(model.SourcePageValues{
+		ReturnedCount: 1,
+		TotalCount:    &totalWithoutRelation,
+		TotalRelation: model.TotalRelationLowerBound,
+	})
+	if err != nil {
+		t.Fatalf("SourcePage を作成できない: %v", err)
+	}
+	item := newSpeechItem(t, speechItemValues{})
+	if _, err := parliamentspeechsearch.NewPage(
+		parliamentspeechsearch.PageValues{
+			Items: []model.SourcedResource[model.ParliamentSpeech]{item},
+			Page:  pageLowerBound,
+		},
+	); err == nil {
+		t.Fatal("SOT-IF-062: lower_bound の totalRelation を受理した")
+	}
 
 	tests := map[string]speechItemValues{
 		"resourceType 不一致": {resourceType: "law"},
