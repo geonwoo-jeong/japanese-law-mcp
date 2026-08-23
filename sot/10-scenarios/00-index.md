@@ -11,3 +11,4 @@
 - [09-query-legal-information.md](09-query-legal-information.md)
 - [10-use-non-execution-guidance.md](10-use-non-execution-guidance.md)
 - [11-prioritize-resolved-law-search-result.md](11-prioritize-resolved-law-search-result.md)
+- [12-list-law-revisions.md](12-list-law-revisions.md)

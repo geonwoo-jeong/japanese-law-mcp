@@ -31,3 +31,4 @@
 - [29-cue-task-relation.md](29-cue-task-relation.md)
 - [30-cue-task-relation-v2.md](30-cue-task-relation-v2.md)
 - [31-shared-terminal-sequence.md](31-shared-terminal-sequence.md)
+- [32-law-revision.md](32-law-revision.md)
