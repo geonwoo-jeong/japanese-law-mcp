@@ -64,10 +64,12 @@
 
 ## 確認
 
-必須項目、列挙値、日付、日時、URL、boolean の `false` と欠落の区別、入力値の複製、および全項目の JSON 表現を単体テストで確認する。
+必須項目、列挙値、日付、日時、個別履歴の参照先を保持する `Provenance.url`、boolean の `false` と欠落の区別、入力値の複製、および全項目の JSON 表現を単体テストで確認する。
 
 ## 関連
 
 - [SOT-MODEL-003: LegalSource](03-legal-source.md)
+- [SOT-MODEL-004: Citation](04-citation.md)
 - [SOT-MODEL-009: JSON シリアライズ](09-json-serialization.md)
+- [SOT-MODEL-012: Provenance](12-provenance.md)
 - [SOT-IF-055: `law.revision.list` capability v1](../40-interfaces/55-law-revision-list-capability.md)

@@ -44,7 +44,7 @@
 
 - 入力が制約を満たさない場合は `invalid_argument` を返す。
 - 該当する法令がない場合は `not_found` を返す。
-- route、設定又は認証の失敗は、原因に応じて `unsupported_capability`、`configuration_required` 又は `source_auth_failed` を返す。
+- route、問い合わせ範囲、設定又は認証の失敗は、原因に応じて `unsupported_capability`、`unsupported_query`、`configuration_required` 又は `source_auth_failed` を返す。
 - 外部情報源の制限、一時障害又はローカル同時実行上限は、原因に応じて `rate_limited`、`source_timeout`、`source_unavailable` 又は `source_busy` を返す。
 - 外部契約、応答又は安全上限の問題は、原因に応じて `source_contract_changed`、`invalid_source_response`、`source_response_too_large`、`source_processing_limit` 又は `unsafe_source_content` を返す。
 - 上記へ分類できない内部処理の失敗は `internal_error` を返す。
