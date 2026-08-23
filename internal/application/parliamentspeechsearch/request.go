@@ -67,10 +67,26 @@ func NewRequest(values RequestValues) (Request, error) {
 	if values.Limit != nil {
 		limit = *values.Limit
 	}
+	query := strings.TrimFunc(values.Query, unicode.IsSpace)
+	speaker := strings.TrimFunc(values.Speaker, unicode.IsSpace)
+	meetingName := strings.TrimFunc(values.MeetingName, unicode.IsSpace)
+	for _, field := range []struct {
+		name       string
+		raw        string
+		normalized string
+	}{
+		{name: "query", raw: values.Query, normalized: query},
+		{name: "speaker", raw: values.Speaker, normalized: speaker},
+		{name: "meetingName", raw: values.MeetingName, normalized: meetingName},
+	} {
+		if field.raw != "" && field.normalized == "" {
+			return Request{}, fmt.Errorf("%s は空白だけにできません", field.name)
+		}
+	}
 	request := Request{
-		query:             strings.TrimFunc(values.Query, unicode.IsSpace),
-		speaker:           strings.TrimFunc(values.Speaker, unicode.IsSpace),
-		meetingName:       strings.TrimFunc(values.MeetingName, unicode.IsSpace),
+		query:             query,
+		speaker:           speaker,
+		meetingName:       meetingName,
 		house:             House(strings.TrimFunc(string(values.House), unicode.IsSpace)),
 		fromDate:          cloneDate(values.FromDate),
 		untilDate:         cloneDate(values.UntilDate),

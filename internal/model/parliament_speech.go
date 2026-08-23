@@ -369,7 +369,7 @@ func isNDLOfficialHTTPSURL(value string) bool {
 	}
 	parsed, err := url.Parse(value)
 	return err == nil &&
-		strings.EqualFold(parsed.Hostname(), "kokkai.ndl.go.jp") &&
+		strings.EqualFold(parsed.Host, "kokkai.ndl.go.jp") &&
 		parsed.User == nil &&
 		parsed.Fragment == ""
 }

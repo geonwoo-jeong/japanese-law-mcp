@@ -230,6 +230,15 @@ func TestParliamentSpeechRejectsInvalidValues(t *testing.T) {
 		"speechUrl が外部 origin": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
 			v.SpeechURL = "https://example.com/speech"
 		}),
+		"speechUrl が非標準 port": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
+			v.SpeechURL = "https://kokkai.ndl.go.jp:444/speech"
+		}),
+		"speechUrl に userinfo": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
+			v.SpeechURL = "https://user@kokkai.ndl.go.jp/speech"
+		}),
+		"speechUrl に fragment": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
+			v.SpeechURL = "https://kokkai.ndl.go.jp/speech#fragment"
+		}),
 		"speaker.name の欠落": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
 			v.Speaker = model.ParliamentSpeaker{}
 		}),
@@ -249,6 +258,32 @@ func TestParliamentSpeechRejectsInvalidValues(t *testing.T) {
 			}
 			v.Source = source
 		}),
+		"source が非標準 port": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
+			source, err := model.NewInformationSource(model.InformationSourceValues{
+				ID:         "ndl-diet-records",
+				Name:       "国会会議録検索システム",
+				Publisher:  "国立国会図書館",
+				Authority:  model.AuthorityOfficial,
+				ServiceURL: "https://kokkai.ndl.go.jp:444/",
+			})
+			if err != nil {
+				t.Fatalf("InformationSource を作成できない: %v", err)
+			}
+			v.Source = source
+		}),
+		"source に fragment": withParliamentSpeechChange(values, func(v *model.ParliamentSpeechValues) {
+			source, err := model.NewInformationSource(model.InformationSourceValues{
+				ID:         "ndl-diet-records",
+				Name:       "国会会議録検索システム",
+				Publisher:  "国立国会図書館",
+				Authority:  model.AuthorityOfficial,
+				ServiceURL: "https://kokkai.ndl.go.jp/#fragment",
+			})
+			if err != nil {
+				t.Fatalf("InformationSource を作成できない: %v", err)
+			}
+			v.Source = source
+		}),
 	}
 	for name, candidate := range tests {
 		name, candidate := name, candidate
@@ -257,6 +292,63 @@ func TestParliamentSpeechRejectsInvalidValues(t *testing.T) {
 
 			if _, err := model.NewParliamentSpeech(candidate); err == nil {
 				t.Fatal("SOT-MODEL-034: 不正な ParliamentSpeech を受理した")
+			}
+		})
+	}
+}
+
+func TestParliamentMeetingReferenceRejectsUnsafeURLs(t *testing.T) {
+	t.Parallel()
+
+	values := validParliamentMeetingReference(t)
+	pdfWithPort := "https://kokkai.ndl.go.jp:444/meeting.pdf"
+	pdfWithUserInfo := "https://user@kokkai.ndl.go.jp/meeting.pdf"
+	pdfWithFragment := "https://kokkai.ndl.go.jp/meeting.pdf#fragment"
+	tests := map[string]model.ParliamentMeetingReferenceValues{
+		"meetingUrl が非標準 port": withParliamentMeetingChange(
+			values,
+			func(v *model.ParliamentMeetingReferenceValues) {
+				v.MeetingURL = "https://kokkai.ndl.go.jp:444/meeting"
+			},
+		),
+		"meetingUrl に userinfo": withParliamentMeetingChange(
+			values,
+			func(v *model.ParliamentMeetingReferenceValues) {
+				v.MeetingURL = "https://user@kokkai.ndl.go.jp/meeting"
+			},
+		),
+		"meetingUrl に fragment": withParliamentMeetingChange(
+			values,
+			func(v *model.ParliamentMeetingReferenceValues) {
+				v.MeetingURL = "https://kokkai.ndl.go.jp/meeting#fragment"
+			},
+		),
+		"pdfUrl が非標準 port": withParliamentMeetingChange(
+			values,
+			func(v *model.ParliamentMeetingReferenceValues) {
+				v.PDFURL = &pdfWithPort
+			},
+		),
+		"pdfUrl に userinfo": withParliamentMeetingChange(
+			values,
+			func(v *model.ParliamentMeetingReferenceValues) {
+				v.PDFURL = &pdfWithUserInfo
+			},
+		),
+		"pdfUrl に fragment": withParliamentMeetingChange(
+			values,
+			func(v *model.ParliamentMeetingReferenceValues) {
+				v.PDFURL = &pdfWithFragment
+			},
+		),
+	}
+	for name, candidate := range tests {
+		name, candidate := name, candidate
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if _, err := model.NewParliamentMeetingReference(candidate); err == nil {
+				t.Fatal("SOT-MODEL-034: 安全でない URL を受理した")
 			}
 		})
 	}
@@ -350,6 +442,14 @@ func withParliamentSpeechChange(
 	values model.ParliamentSpeechValues,
 	change func(*model.ParliamentSpeechValues),
 ) model.ParliamentSpeechValues {
+	change(&values)
+	return values
+}
+
+func withParliamentMeetingChange(
+	values model.ParliamentMeetingReferenceValues,
+	change func(*model.ParliamentMeetingReferenceValues),
+) model.ParliamentMeetingReferenceValues {
 	change(&values)
 	return values
 }

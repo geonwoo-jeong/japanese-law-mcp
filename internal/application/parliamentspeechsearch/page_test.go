@@ -3,6 +3,7 @@ package parliamentspeechsearch_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -145,6 +146,59 @@ func TestPageRejectsReturnedCountMismatchAndInvalidItem(t *testing.T) {
 				t.Fatal("SOT-IF-015/SOT-IF-062: 不整合な item を受理した")
 			}
 		})
+	}
+}
+
+func TestPageRejectsMoreThanMaximumItems(t *testing.T) {
+	t.Parallel()
+
+	items := make([]model.SourcedResource[model.ParliamentSpeech], 0, parliamentspeechsearch.MaxLimit+1)
+	for index := 0; index <= parliamentspeechsearch.MaxLimit; index++ {
+		items = append(items, newSpeechItem(t, speechItemValues{
+			speechID: fmt.Sprintf("speech-%d", index),
+		}))
+	}
+	if _, err := parliamentspeechsearch.NewPage(
+		parliamentspeechsearch.PageValues{
+			Items: items,
+			Page:  newSourcePage(t, len(items)),
+		},
+	); err == nil {
+		t.Fatal("SOT-IF-062: 30 件を超える検索結果を受理した")
+	}
+}
+
+func TestPageRequiresExactTotalCount(t *testing.T) {
+	t.Parallel()
+
+	withoutTotal, err := model.NewSourcePage(model.SourcePageValues{ReturnedCount: 0})
+	if err != nil {
+		t.Fatalf("SourcePage を作成できない: %v", err)
+	}
+	if _, err := parliamentspeechsearch.NewPage(
+		parliamentspeechsearch.PageValues{Page: withoutTotal},
+	); err == nil {
+		t.Fatal("SOT-IF-062: totalCount のない page を受理した")
+	}
+
+	total := 1
+	lowerBound, err := model.NewSourcePage(model.SourcePageValues{
+		ReturnedCount: 1,
+		TotalCount:    &total,
+		TotalRelation: model.TotalRelationLowerBound,
+	})
+	if err != nil {
+		t.Fatalf("SourcePage を作成できない: %v", err)
+	}
+	if _, err := parliamentspeechsearch.NewPage(
+		parliamentspeechsearch.PageValues{
+			Items: []model.SourcedResource[model.ParliamentSpeech]{
+				newSpeechItem(t, speechItemValues{}),
+			},
+			Page: lowerBound,
+		},
+	); err == nil {
+		t.Fatal("SOT-IF-062: lower_bound の totalCount を受理した")
 	}
 }
 

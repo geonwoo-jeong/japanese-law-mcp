@@ -54,6 +54,9 @@ func (p Page) Validate() error {
 	if p.page.ReturnedCount() != len(p.items) {
 		return fmt.Errorf("page.returnedCount と items の件数が一致しません")
 	}
+	if len(p.items) > MaxLimit {
+		return fmt.Errorf("items は %d 件以下でなければなりません", MaxLimit)
+	}
 	totalCount, hasTotalCount := p.page.TotalCount()
 	if !hasTotalCount {
 		return fmt.Errorf("page.totalCount は必須です")

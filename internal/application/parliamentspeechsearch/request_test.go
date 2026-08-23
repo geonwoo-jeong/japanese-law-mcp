@@ -75,6 +75,28 @@ func TestNewRequestAcceptsEachSearchCondition(t *testing.T) {
 	}
 }
 
+func TestNewRequestAcceptsEachHouse(t *testing.T) {
+	t.Parallel()
+
+	for _, house := range []parliamentspeechsearch.House{
+		parliamentspeechsearch.HouseOfRepresentatives,
+		parliamentspeechsearch.HouseOfCouncillors,
+		parliamentspeechsearch.BothHouses,
+		parliamentspeechsearch.ConferenceOfBothHouses,
+	} {
+		house := house
+		t.Run(string(house), func(t *testing.T) {
+			t.Parallel()
+
+			if _, err := parliamentspeechsearch.NewRequest(
+				parliamentspeechsearch.RequestValues{House: house},
+			); err != nil {
+				t.Fatalf("SOT-IF-062: house %q を拒否した: %v", house, err)
+			}
+		})
+	}
+}
+
 func TestNewRequestRejectsMissingOrInvalidConditions(t *testing.T) {
 	t.Parallel()
 
@@ -138,6 +160,34 @@ func TestNewRequestRejectsInvalidLimitAndToken(t *testing.T) {
 		},
 	); err == nil {
 		t.Fatal("SOT-IF-062: 上限超過の continuationToken を受理した")
+	}
+}
+
+func TestNewRequestRejectsWhitespaceOnlyOptionalText(t *testing.T) {
+	t.Parallel()
+
+	for name, values := range map[string]parliamentspeechsearch.RequestValues{
+		"query": {
+			Query: " \u3000\t ",
+			House: parliamentspeechsearch.HouseOfCouncillors,
+		},
+		"speaker": {
+			Speaker: " \u3000\t ",
+			House:   parliamentspeechsearch.HouseOfCouncillors,
+		},
+		"meetingName": {
+			MeetingName: " \u3000\t ",
+			House:       parliamentspeechsearch.HouseOfCouncillors,
+		},
+	} {
+		name, values := name, values
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if _, err := parliamentspeechsearch.NewRequest(values); err == nil {
+				t.Fatal("SOT-IF-062: 空白だけの検索文字列を受理した")
+			}
+		})
 	}
 }
 
