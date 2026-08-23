@@ -81,7 +81,7 @@ func TestNewAddsJudicialCasesConditionalProviderAndRoutes(t *testing.T) {
 			t.Fatalf("SOT-IF-046: route %s = %#v, %t", key, route, routeExists)
 		}
 	}
-	if len(got.Providers()) != 3 || len(got.ProviderRoutes()) != 8 {
+	if len(got.Providers()) != 3 || len(got.ProviderRoutes()) != 9 {
 		t.Fatalf(
 			"SOT-IF-046: providers = %d, routes = %d",
 			len(got.Providers()),

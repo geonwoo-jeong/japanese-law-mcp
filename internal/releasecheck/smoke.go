@@ -23,6 +23,7 @@ const (
 )
 
 var officialToolNames = []string{
+	"compare_law_versions",
 	"get_article",
 	"get_law",
 	"list_law_revisions",

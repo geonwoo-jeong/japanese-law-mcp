@@ -9,7 +9,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 
 ## 提供する機能
 
-無設定で起動した場合は、次の七つの法令ツールを公開します。
+無設定で起動した場合は、次の八つの法令ツールを公開します。
 
 | MCP ツール | 用途 | 主な情報源 |
 |---|---|---|
@@ -18,6 +18,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `get_article` | 本則または原始附則の条・項を XML と出典付きで取得する | e-Gov 法令 API Version 2 |
 | `search_law_content` | e-Gov の本文検索式で一致位置を検索する | e-Gov 法令 API Version 2 |
 | `list_law_revisions` | 法令 ID または法令番号から完全な改正履歴を新しい順で取得する | e-Gov 法令 API Version 2 |
+| `compare_law_versions` | 同じ法令の指定した二版について、本則と原始附則の条単位の差分を出典付きで取得する | e-Gov 法令 API Version 2 |
 | `list_law_updates` | 指定日に更新一覧へ掲載された法令を取得する | e-Gov 法令 API Version 1 |
 | `query_legal_information` | 日本語の照会文から利用可能な法情報の取得方法を選び、解釈ごとの型付き結果を返す | e-Gov 法令 API Version 2・Version 1、最高裁判所「裁判例検索」（有効時） |
 
@@ -29,6 +30,8 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `get_judicial_case` | 検索結果の `ref` から同じ掲載裁判例の詳細と公式文書リンクを取得する | 最高裁判所「裁判例検索」 |
 
 裁判例検索はすべての判決等を収録したものではなく、PDF 本文の抽出、上訴関係、判例変更または先例性の判定は行いません。
+
+`compare_law_versions` は、比較前後をそれぞれ正確な法令履歴 ID または基準日で指定します。二版を自動で入れ替えず、本則と原始附則の `Article` だけを比較します。全改正の連続追跡、改正法令ごとの附則、別表、法的評価または要約は対象外です。比較結果は e-Gov が直接提供する差分ではなく、取得した二つの公式原文から生成した加工情報です。
 
 ## 法令名検索
 

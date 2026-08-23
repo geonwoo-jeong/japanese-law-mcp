@@ -2,6 +2,7 @@
 package mcp
 
 import (
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/comparelawversions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -17,6 +18,7 @@ type Dependencies struct {
 	SearchLaws            searchlaws.Port
 	SearchLawContent      searchlawcontent.Port
 	GetLaw                getlaw.Port
+	CompareLawVersions    comparelawversions.Port
 	GetArticle            getarticle.Port
 	ListLawRevisions      listlawrevisions.Port
 	ListLawUpdates        listlawupdates.Port
@@ -72,6 +74,9 @@ func newServer(
 	}
 	if dependencies.GetLaw != nil {
 		addGetLawTool(server, dependencies.GetLaw)
+	}
+	if !isNilCompareLawVersionsPort(dependencies.CompareLawVersions) {
+		addCompareLawVersionsTool(server, dependencies.CompareLawVersions)
 	}
 	if dependencies.GetArticle != nil {
 		addGetArticleTool(server, dependencies.GetArticle)

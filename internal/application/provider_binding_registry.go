@@ -12,6 +12,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -26,6 +27,7 @@ type ProviderBindings struct {
 	LawDocumentRead        lawdocumentread.Port
 	LawArticleRead         lawarticleread.Port
 	LawUpdateList          lawupdatelist.Port
+	LawVersionCompare      lawversioncompare.Port
 }
 
 // ProviderBindingRegistry は、検証済みの型付き binding を providerId ごとに保持する。
@@ -122,6 +124,17 @@ func (r ProviderBindingRegistry) LawDocumentRead(
 		return nil, false
 	}
 	return binding.LawDocumentRead, true
+}
+
+// LawVersionCompare は、providerId の law.version.compare@1 port を返す。
+func (r ProviderBindingRegistry) LawVersionCompare(
+	providerID string,
+) (lawversioncompare.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.LawVersionCompare) {
+		return nil, false
+	}
+	return binding.LawVersionCompare, true
 }
 
 // LawArticleRead は、providerId の law.article.read@1 port を返す。
@@ -224,6 +237,8 @@ func hasPortForCapability(
 		return !isNilTypedPort(value.LawRevisionList)
 	case lawDocumentReadProviderRouteKey():
 		return !isNilTypedPort(value.LawDocumentRead)
+	case lawVersionCompareProviderRouteKey():
+		return !isNilTypedPort(value.LawVersionCompare)
 	case lawArticleReadProviderRouteKey():
 		return !isNilTypedPort(value.LawArticleRead)
 	case lawUpdateListProviderRouteKey():

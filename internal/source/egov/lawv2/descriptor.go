@@ -8,7 +8,7 @@ import (
 
 const (
 	providerID             = "e-gov-law-api-v2"
-	adapterContractVersion = "1.1.0"
+	adapterContractVersion = "1.2.0"
 	upstreamSpecVersion    = "2.1.139"
 )
 
@@ -22,6 +22,7 @@ func Descriptor() model.ProviderDescriptor {
 		mustCapability("law.document.read"),
 		mustCapability("law.revision.list"),
 		mustCapability("law.search"),
+		mustCapability("law.version.compare"),
 	}
 	descriptor, err := model.NewProviderDescriptor(model.ProviderDescriptorValues{
 		ProviderID:             providerID,
@@ -71,6 +72,10 @@ func lawContentSearchCapability() model.ProviderCapability {
 
 func lawRevisionListCapability() model.ProviderCapability {
 	return mustCapability("law.revision.list")
+}
+
+func lawVersionCompareCapability() model.ProviderCapability {
+	return mustCapability("law.version.compare")
 }
 
 func mustCapability(id string) model.ProviderCapability {

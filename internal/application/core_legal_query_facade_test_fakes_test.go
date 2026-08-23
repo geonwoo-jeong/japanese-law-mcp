@@ -10,6 +10,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
@@ -109,6 +110,14 @@ type coreFacadeLawUpdateListPort struct {
 	err      error
 }
 
+type coreFacadeLawVersionComparePort struct {
+	calls    int
+	contexts []context.Context
+	requests []lawversioncompare.Request
+	result   model.SourcedResource[model.LawVersionComparison]
+	err      error
+}
+
 type coreFacadeLawRevisionListPort struct {
 	calls int
 }
@@ -131,19 +140,31 @@ func (p *coreFacadeLawUpdateListPort) List(
 	return p.result, p.err
 }
 
+func (p *coreFacadeLawVersionComparePort) Compare(
+	ctx context.Context,
+	request lawversioncompare.Request,
+) (model.SourcedResource[model.LawVersionComparison], error) {
+	p.calls++
+	p.contexts = append(p.contexts, ctx)
+	p.requests = append(p.requests, request)
+	return p.result, p.err
+}
+
 type coreFacadePorts struct {
-	lawSearch        *coreFacadeLawSearchPort
-	lawContentSearch *coreFacadeLawContentSearchPort
-	lawDocumentRead  *coreFacadeLawDocumentReadPort
-	lawArticleRead   *coreFacadeLawArticleReadPort
-	lawRevisionList  *coreFacadeLawRevisionListPort
-	lawUpdateList    *coreFacadeLawUpdateListPort
+	lawSearch         *coreFacadeLawSearchPort
+	lawContentSearch  *coreFacadeLawContentSearchPort
+	lawDocumentRead   *coreFacadeLawDocumentReadPort
+	lawVersionCompare *coreFacadeLawVersionComparePort
+	lawArticleRead    *coreFacadeLawArticleReadPort
+	lawRevisionList   *coreFacadeLawRevisionListPort
+	lawUpdateList     *coreFacadeLawUpdateListPort
 }
 
 func (p *coreFacadePorts) totalCalls() int {
 	return p.lawSearch.calls +
 		p.lawContentSearch.calls +
 		p.lawDocumentRead.calls +
+		p.lawVersionCompare.calls +
 		p.lawArticleRead.calls +
 		p.lawRevisionList.calls +
 		p.lawUpdateList.calls

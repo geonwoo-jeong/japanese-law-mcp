@@ -13,6 +13,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -46,6 +47,10 @@ func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {
 	if port, exists := registry.LawDocumentRead("complete-provider"); !exists ||
 		port != bindings.LawDocumentRead {
 		t.Fatalf("SOT-ARCH-012: LawDocumentRead() = %#v, %t", port, exists)
+	}
+	if port, exists := registry.LawVersionCompare("complete-provider"); !exists ||
+		port != bindings.LawVersionCompare {
+		t.Fatalf("SOT-IF-058: LawVersionCompare() = %#v, %t", port, exists)
 	}
 	if port, exists := registry.LawArticleRead("complete-provider"); !exists ||
 		port != bindings.LawArticleRead {
@@ -81,6 +86,7 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 		lawdocumentread.CapabilityID,
 		lawrevisionlist.CapabilityID,
 		lawsearch.CapabilityID,
+		lawversioncompare.CapabilityID,
 	)
 
 	wrongMajor := complete
@@ -102,6 +108,7 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 			{id: lawrevisionlist.CapabilityID, majorVersion: lawrevisionlist.MajorVersion},
 			{id: lawsearch.CapabilityID, majorVersion: lawsearch.MajorVersion},
 			{id: lawupdatelist.CapabilityID, majorVersion: 2},
+			{id: lawversioncompare.CapabilityID, majorVersion: lawversioncompare.MajorVersion},
 		},
 	)
 
@@ -210,6 +217,17 @@ func (*fakeLawArticleReadBinding) Read(
 	return model.SourcedResource[model.LawArticleFragment]{}, nil
 }
 
+type fakeLawVersionCompareBinding struct {
+	name string
+}
+
+func (*fakeLawVersionCompareBinding) Compare(
+	context.Context,
+	lawversioncompare.Request,
+) (model.SourcedResource[model.LawVersionComparison], error) {
+	return model.SourcedResource[model.LawVersionComparison]{}, nil
+}
+
 type fakeLawUpdateListBinding struct {
 	name string
 }
@@ -249,12 +267,14 @@ func newCompleteProviderBindings(
 			lawrevisionlist.CapabilityID,
 			lawsearch.CapabilityID,
 			lawupdatelist.CapabilityID,
+			lawversioncompare.CapabilityID,
 		),
 		JudicialDecisionRead:   &fakeJudicialDecisionReadBinding{name: providerID},
 		JudicialDecisionSearch: &fakeJudicialDecisionSearchBinding{name: providerID},
 		LawSearch:              &fakeLawSearchBinding{name: providerID},
 		LawContentSearch:       &fakeLawContentSearchBinding{name: providerID},
 		LawDocumentRead:        &fakeLawDocumentReadBinding{name: providerID},
+		LawVersionCompare:      &fakeLawVersionCompareBinding{name: providerID},
 		LawRevisionList:        &fakeLawRevisionListBinding{name: providerID},
 		LawArticleRead:         &fakeLawArticleReadBinding{name: providerID},
 		LawUpdateList:          &fakeLawUpdateListBinding{name: providerID},

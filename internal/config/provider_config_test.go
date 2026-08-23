@@ -50,12 +50,13 @@ func TestDefaultProviderConfiguration(t *testing.T) {
 	}
 
 	wantRoutes := map[ProviderRouteKey]string{
-		{CapabilityID: "law.article.read", MajorVersion: 1}:   "e-gov-law-api-v2",
-		{CapabilityID: "law.content.search", MajorVersion: 1}: "e-gov-law-api-v2",
-		{CapabilityID: "law.document.read", MajorVersion: 1}:  "e-gov-law-api-v2",
-		{CapabilityID: "law.revision.list", MajorVersion: 1}:  "e-gov-law-api-v2",
-		{CapabilityID: "law.search", MajorVersion: 1}:         "e-gov-law-api-v2",
-		{CapabilityID: "law.update.list", MajorVersion: 1}:    "e-gov-law-api-v1",
+		{CapabilityID: "law.article.read", MajorVersion: 1}:    "e-gov-law-api-v2",
+		{CapabilityID: "law.content.search", MajorVersion: 1}:  "e-gov-law-api-v2",
+		{CapabilityID: "law.document.read", MajorVersion: 1}:   "e-gov-law-api-v2",
+		{CapabilityID: "law.version.compare", MajorVersion: 1}: "e-gov-law-api-v2",
+		{CapabilityID: "law.revision.list", MajorVersion: 1}:   "e-gov-law-api-v2",
+		{CapabilityID: "law.search", MajorVersion: 1}:          "e-gov-law-api-v2",
+		{CapabilityID: "law.update.list", MajorVersion: 1}:     "e-gov-law-api-v1",
 	}
 	routes := got.ProviderRoutes()
 	if len(routes) != len(wantRoutes) {
@@ -266,8 +267,8 @@ aggregateProviderIds = ["custom-provider", "secondary-provider"]
 			}
 
 			routes := got.ProviderRoutes()
-			if len(routes) != 7 {
-				t.Fatalf("SOT-IF-026: providerRoutes の件数 = %d、期待値 = 7", len(routes))
+			if len(routes) != 8 {
+				t.Fatalf("SOT-IF-026: providerRoutes の件数 = %d、期待値 = 8", len(routes))
 			}
 			customRoute := routes[ProviderRouteKey{CapabilityID: "provider.custom.read", MajorVersion: 2}]
 			if customRoute.Selection != ProviderRouteSelectionAggregate ||
@@ -298,8 +299,8 @@ providerRoutes:
 			t.Fatalf("SOT-IF-026: Load() のエラー = %v", err)
 		}
 		routes := got.ProviderRoutes()
-		if len(routes) != 6 {
-			t.Fatalf("SOT-IF-026: providerRoutes の件数 = %d、期待値 = 6", len(routes))
+		if len(routes) != 7 {
+			t.Fatalf("SOT-IF-026: providerRoutes の件数 = %d、期待値 = 7", len(routes))
 		}
 		route := routes[ProviderRouteKey{CapabilityID: "law.search", MajorVersion: 1}]
 		if route.Selection != ProviderRouteSelectionExplicit ||

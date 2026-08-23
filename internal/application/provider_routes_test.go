@@ -12,6 +12,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 )
 
 func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
@@ -26,7 +27,11 @@ func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
 		t.Fatalf("SOT-ARCH-012: registry のエラー = %v", err)
 	}
 	values := completeProviderRouteValues("primary-provider")
-	values[3].RollbackProviderID = "rollback-provider"
+	for index := range values {
+		if values[index].CapabilityID == lawsearch.CapabilityID {
+			values[index].RollbackProviderID = "rollback-provider"
+		}
+	}
 
 	routes, err := application.NewProviderRoutes(registry, values)
 	if err != nil {
@@ -55,6 +60,10 @@ func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
 	if port, exists := routes.LawDocumentRead(); !exists ||
 		port != primary.LawDocumentRead {
 		t.Fatalf("SOT-ARCH-012: LawDocumentRead() = %#v, %t", port, exists)
+	}
+	if port, exists := routes.LawVersionCompare(); !exists ||
+		port != primary.LawVersionCompare {
+		t.Fatalf("SOT-IF-058: LawVersionCompare() = %#v, %t", port, exists)
 	}
 	if port, exists := routes.LawRevisionList(); !exists ||
 		port != primary.LawRevisionList {
@@ -212,6 +221,12 @@ func completeProviderRouteValues(
 		{
 			CapabilityID:      lawdocumentread.CapabilityID,
 			MajorVersion:      lawdocumentread.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: providerID,
+		},
+		{
+			CapabilityID:      lawversioncompare.CapabilityID,
+			MajorVersion:      lawversioncompare.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
 			DefaultProviderID: providerID,
 		},

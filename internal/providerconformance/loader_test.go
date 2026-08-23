@@ -93,24 +93,27 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		"law.document.read",
 		"law.revision.list",
 		"law.search",
+		"law.version.compare",
 	}
 	if got := capabilityIDs(rows); !slices.Equal(got, wantCapabilities) {
 		t.Fatalf("capabilityId = %v、期待値は %v です", got, wantCapabilities)
 	}
 
 	wantSOTs := map[string][]string{
-		"law.article.read":   {"SOT-IF-004", "SOT-IF-011", "SOT-IF-012", "SOT-IF-025"},
-		"law.content.search": {"SOT-IF-004", "SOT-IF-010", "SOT-IF-023", "SOT-IF-028"},
-		"law.document.read":  {"SOT-IF-004", "SOT-IF-011", "SOT-IF-024"},
-		"law.revision.list":  {"SOT-IF-004", "SOT-IF-055", "SOT-IF-057"},
-		"law.search":         {"SOT-IF-004", "SOT-IF-050", "SOT-IF-022"},
+		"law.article.read":    {"SOT-IF-004", "SOT-IF-011", "SOT-IF-012", "SOT-IF-025"},
+		"law.content.search":  {"SOT-IF-004", "SOT-IF-010", "SOT-IF-023", "SOT-IF-028"},
+		"law.document.read":   {"SOT-IF-004", "SOT-IF-011", "SOT-IF-024"},
+		"law.revision.list":   {"SOT-IF-004", "SOT-IF-055", "SOT-IF-057"},
+		"law.search":          {"SOT-IF-004", "SOT-IF-050", "SOT-IF-022"},
+		"law.version.compare": {"SOT-IF-004", "SOT-IF-058", "SOT-IF-060"},
 	}
 	wantFixtures := map[string]string{
-		"law.article.read":   "law-article-read-v1",
-		"law.content.search": "law-content-search-v1",
-		"law.document.read":  "law-document-read-v1",
-		"law.revision.list":  "law-revision-list-v1",
-		"law.search":         "law-search-v1",
+		"law.article.read":    "law-article-read-v1",
+		"law.content.search":  "law-content-search-v1",
+		"law.document.read":   "law-document-read-v1",
+		"law.revision.list":   "law-revision-list-v1",
+		"law.search":          "law-search-v1",
+		"law.version.compare": "law-version-compare-v1",
 	}
 
 	for _, row := range rows {
@@ -139,8 +142,8 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		assertCanonicalPublicErrors(t, row)
 	}
 
-	if got := len(catalog.Rows()); got != 8 {
-		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 8 です", got)
+	if got := len(catalog.Rows()); got != 9 {
+		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 9 です", got)
 	}
 }
 
@@ -439,7 +442,7 @@ func assertCanonicalPublicErrors(t *testing.T, row Row) {
 
 	want := []string{"invalid_argument"}
 	switch row.CapabilityID {
-	case "judicial-decision.read", "law.document.read", "law.revision.list":
+	case "judicial-decision.read", "law.document.read", "law.revision.list", "law.version.compare":
 		want = append(want, "not_found")
 	case "law.article.read":
 		want = append(want, "not_found", "ambiguous_location")

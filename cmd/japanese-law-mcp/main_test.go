@@ -25,6 +25,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
@@ -145,7 +146,7 @@ func TestServerRunnerUsesStreamableHTTP(t *testing.T) {
 	}
 }
 
-func TestDefaultProviderRoutesActivateSixEGovBindings(t *testing.T) {
+func TestDefaultProviderRoutesActivateSevenEGovBindings(t *testing.T) {
 	t.Parallel()
 
 	registry, routes, err := newProviderRoutes(config.Default())
@@ -153,7 +154,7 @@ func TestDefaultProviderRoutesActivateSixEGovBindings(t *testing.T) {
 		t.Fatalf("provider runtime を初期化できません: %v", err)
 	}
 	if descriptor, exists := registry.Descriptor("e-gov-law-api-v2"); !exists ||
-		len(descriptor.Capabilities()) != 5 {
+		len(descriptor.Capabilities()) != 6 {
 		t.Fatalf("e-Gov v2 descriptor = %#v, %t", descriptor, exists)
 	}
 	if descriptor, exists := registry.Descriptor("e-gov-law-api-v1"); !exists ||
@@ -178,6 +179,11 @@ func TestDefaultProviderRoutesActivateSixEGovBindings(t *testing.T) {
 		{
 			lawdocumentread.CapabilityID,
 			lawdocumentread.MajorVersion,
+			"e-gov-law-api-v2",
+		},
+		{
+			lawversioncompare.CapabilityID,
+			lawversioncompare.MajorVersion,
 			"e-gov-law-api-v2",
 		},
 		{
@@ -216,6 +222,9 @@ func TestDefaultProviderRoutesActivateSixEGovBindings(t *testing.T) {
 	}
 	if port, exists := routes.LawDocumentRead(); !exists || port == nil {
 		t.Fatal("law.document.read route に到達できません")
+	}
+	if port, exists := routes.LawVersionCompare(); !exists || port == nil {
+		t.Fatal("law.version.compare route に到達できません")
 	}
 	if port, exists := routes.LawRevisionList(); !exists || port == nil {
 		t.Fatal("law.revision.list route に到達できません")
@@ -558,6 +567,7 @@ func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
 		names[index] = tool.Name
 	}
 	want := []string{
+		"compare_law_versions",
 		"get_article",
 		"get_judicial_case",
 		"get_law",
@@ -679,16 +689,17 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	if err != nil {
 		t.Fatalf("子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 7 ||
-		tools.Tools[0].Name != "get_article" ||
-		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "list_law_revisions" ||
-		tools.Tools[3].Name != "list_law_updates" ||
-		tools.Tools[4].Name != "query_legal_information" ||
-		tools.Tools[5].Name != "search_law_content" ||
-		tools.Tools[6].Name != "search_laws" {
+	if tools.Tools == nil || len(tools.Tools) != 8 ||
+		tools.Tools[0].Name != "compare_law_versions" ||
+		tools.Tools[1].Name != "get_article" ||
+		tools.Tools[2].Name != "get_law" ||
+		tools.Tools[3].Name != "list_law_revisions" ||
+		tools.Tools[4].Name != "list_law_updates" ||
+		tools.Tools[5].Name != "query_legal_information" ||
+		tools.Tools[6].Name != "search_law_content" ||
+		tools.Tools[7].Name != "search_laws" {
 		t.Fatalf(
-			"公開ツール一覧 = %#v, want 法令コア七ツール",
+			"公開ツール一覧 = %#v, want 法令コア八ツール",
 			tools.Tools,
 		)
 	}
@@ -806,14 +817,15 @@ func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HTTP 子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 7 ||
-		tools.Tools[0].Name != "get_article" ||
-		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "list_law_revisions" ||
-		tools.Tools[3].Name != "list_law_updates" ||
-		tools.Tools[4].Name != "query_legal_information" ||
-		tools.Tools[5].Name != "search_law_content" ||
-		tools.Tools[6].Name != "search_laws" {
+	if tools.Tools == nil || len(tools.Tools) != 8 ||
+		tools.Tools[0].Name != "compare_law_versions" ||
+		tools.Tools[1].Name != "get_article" ||
+		tools.Tools[2].Name != "get_law" ||
+		tools.Tools[3].Name != "list_law_revisions" ||
+		tools.Tools[4].Name != "list_law_updates" ||
+		tools.Tools[5].Name != "query_legal_information" ||
+		tools.Tools[6].Name != "search_law_content" ||
+		tools.Tools[7].Name != "search_laws" {
 		t.Fatalf("HTTP 公開ツール一覧 = %#v", tools.Tools)
 	}
 	callResult, err := session.CallTool(ctx, &sdk.CallToolParams{

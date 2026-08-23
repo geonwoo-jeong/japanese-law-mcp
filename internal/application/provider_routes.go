@@ -11,6 +11,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 )
 
 const (
@@ -48,6 +49,13 @@ func lawRevisionListProviderRouteKey() providerRouteKey {
 	return providerRouteKey{
 		capabilityID: lawrevisionlist.CapabilityID,
 		majorVersion: lawrevisionlist.MajorVersion,
+	}
+}
+
+func lawVersionCompareProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: lawversioncompare.CapabilityID,
+		majorVersion: lawversioncompare.MajorVersion,
 	}
 }
 
@@ -236,6 +244,18 @@ func (r ProviderRoutes) LawDocumentRead() (lawdocumentread.Port, bool) {
 	return r.registry.LawDocumentRead(providerID)
 }
 
+// LawVersionCompare は、law.version.compare@1 の実効 primary port を返す。
+func (r ProviderRoutes) LawVersionCompare() (lawversioncompare.Port, bool) {
+	providerID, exists := r.ProviderID(
+		lawversioncompare.CapabilityID,
+		lawversioncompare.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.LawVersionCompare(providerID)
+}
+
 // LawArticleRead は、law.article.read@1 の実効 primary port を返す。
 func (r ProviderRoutes) LawArticleRead() (lawarticleread.Port, bool) {
 	providerID, exists := r.ProviderID(
@@ -307,6 +327,9 @@ func (r ProviderBindingRegistry) hasBinding(
 	case lawDocumentReadProviderRouteKey():
 		_, exists := r.LawDocumentRead(providerID)
 		return exists
+	case lawVersionCompareProviderRouteKey():
+		_, exists := r.LawVersionCompare(providerID)
+		return exists
 	case lawArticleReadProviderRouteKey():
 		_, exists := r.LawArticleRead(providerID)
 		return exists
@@ -334,6 +357,7 @@ func supportedProviderRouteKeys() []providerRouteKey {
 		lawArticleReadProviderRouteKey(),
 		lawContentSearchProviderRouteKey(),
 		lawDocumentReadProviderRouteKey(),
+		lawVersionCompareProviderRouteKey(),
 		lawRevisionListProviderRouteKey(),
 		lawSearchProviderRouteKey(),
 		lawUpdateListProviderRouteKey(),
@@ -345,6 +369,7 @@ func requiredProviderRouteKeys() []providerRouteKey {
 		lawArticleReadProviderRouteKey(),
 		lawContentSearchProviderRouteKey(),
 		lawDocumentReadProviderRouteKey(),
+		lawVersionCompareProviderRouteKey(),
 		lawRevisionListProviderRouteKey(),
 		lawSearchProviderRouteKey(),
 		lawUpdateListProviderRouteKey(),

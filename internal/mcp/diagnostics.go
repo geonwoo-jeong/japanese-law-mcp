@@ -70,7 +70,8 @@ func diagnosticOperation(
 
 func knownDiagnosticOperation(operation string) string {
 	switch operation {
-	case "get_article",
+	case "compare_law_versions",
+		"get_article",
 		"get_judicial_case",
 		"get_law",
 		"list_law_revisions",

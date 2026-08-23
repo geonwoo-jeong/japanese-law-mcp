@@ -112,3 +112,20 @@ func newLawArticleSourceError(
 	}
 	return sourceError
 }
+
+func newLawVersionCompareSourceError(
+	code model.SourceErrorCode,
+	retryAfter string,
+) error {
+	sourceError, err := model.NewSourceError(model.SourceErrorValues{
+		Code:       code,
+		Provider:   Descriptor(),
+		Capability: lawVersionCompareCapability(),
+		Operation:  operationLawData,
+		RetryAfter: retryAfter,
+	})
+	if err != nil {
+		return fmt.Errorf("e-Gov 法令版間比較エラーを正規化できません: %w", err)
+	}
+	return sourceError
+}

@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/comparelawversions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/continuation"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
@@ -22,6 +23,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawrevisions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
@@ -209,6 +211,10 @@ func newPublicDependencies(
 	if err != nil {
 		return projectmcp.Dependencies{}, err
 	}
+	compareLawVersions, err := newCompareLawVersionsService(cfg, registry, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
 	getArticle, err := newGetArticleService(cfg, registry, routes)
 	if err != nil {
 		return projectmcp.Dependencies{}, err
@@ -237,6 +243,7 @@ func newPublicDependencies(
 		SearchLaws:            searchLaws,
 		SearchLawContent:      searchLawContent,
 		GetLaw:                getLaw,
+		CompareLawVersions:    compareLawVersions,
 		GetArticle:            getArticle,
 		ListLawRevisions:      listLawRevisions,
 		ListLawUpdates:        listLawUpdates,
@@ -418,6 +425,40 @@ func newGetArticleService(
 		return nil, fmt.Errorf("公開 get_article service を初期化できません: %w", err)
 	}
 	return getArticle, nil
+}
+
+func newCompareLawVersionsService(
+	cfg config.Config,
+	registry application.ProviderBindingRegistry,
+	routes application.ProviderRoutes,
+) (*comparelawversions.Service, error) {
+	comparer, exists := routes.LawVersionCompare()
+	if !exists {
+		return nil, errors.New("primary law.version.compare binding がありません")
+	}
+	providerID, exists := routes.ProviderID(
+		lawversioncompare.CapabilityID,
+		lawversioncompare.MajorVersion,
+	)
+	if !exists {
+		return nil, errors.New("primary law.version.compare provider がありません")
+	}
+	provider, exists := registry.Descriptor(providerID)
+	if !exists {
+		return nil, errors.New("primary law.version.compare descriptor がありません")
+	}
+	service, err := comparelawversions.NewService(
+		comparer,
+		provider,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"公開 compare_law_versions service を初期化できません: %w",
+			err,
+		)
+	}
+	return service, nil
 }
 
 func newListLawUpdatesService(

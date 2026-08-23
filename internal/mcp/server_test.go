@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/comparelawversions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
@@ -60,6 +61,7 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 
 	serverTransport, clientTransport := sdk.NewInMemoryTransports()
 	serverResult := make(chan error, 1)
+	compareLawVersions := &stubCompareLawVersionsPort{}
 	listLawUpdates := &recordingListLawUpdatesPort{
 		result: mustListLawUpdatesResult(t),
 	}
@@ -79,6 +81,7 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 				SearchLaws:            stubSearchLawsPort{},
 				SearchLawContent:      stubSearchLawContentPort{},
 				GetLaw:                stubGetLawPort{},
+				CompareLawVersions:    compareLawVersions,
 				GetArticle:            &recordingGetArticlePort{},
 				ListLawRevisions:      listLawRevisions,
 				ListLawUpdates:        listLawUpdates,
@@ -128,18 +131,19 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 7 {
-		t.Fatalf("ツール数 = %d, want 7", len(tools.Tools))
+	if len(tools.Tools) != 8 {
+		t.Fatalf("ツール数 = %d, want 8", len(tools.Tools))
 	}
-	if tools.Tools[0].Name != "get_article" ||
-		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "list_law_revisions" ||
-		tools.Tools[3].Name != "list_law_updates" ||
-		tools.Tools[4].Name != "query_legal_information" ||
-		tools.Tools[5].Name != "search_law_content" ||
-		tools.Tools[6].Name != "search_laws" {
+	if tools.Tools[0].Name != "compare_law_versions" ||
+		tools.Tools[1].Name != "get_article" ||
+		tools.Tools[2].Name != "get_law" ||
+		tools.Tools[3].Name != "list_law_revisions" ||
+		tools.Tools[4].Name != "list_law_updates" ||
+		tools.Tools[5].Name != "query_legal_information" ||
+		tools.Tools[6].Name != "search_law_content" ||
+		tools.Tools[7].Name != "search_laws" {
 		t.Fatalf(
-			"tool names = %q, %q, %q, %q, %q, %q, %q",
+			"tool names = %q, %q, %q, %q, %q, %q, %q, %q",
 			tools.Tools[0].Name,
 			tools.Tools[1].Name,
 			tools.Tools[2].Name,
@@ -147,6 +151,7 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 			tools.Tools[4].Name,
 			tools.Tools[5].Name,
 			tools.Tools[6].Name,
+			tools.Tools[7].Name,
 		)
 	}
 	for _, tool := range tools.Tools {
@@ -541,6 +546,92 @@ func mapsEqual(left, right map[string]any) bool {
 }
 
 type stubSearchLawsPort struct{}
+
+type stubCompareLawVersionsPort struct{}
+
+func (*stubCompareLawVersionsPort) Compare(
+	context.Context,
+	comparelawversions.Request,
+) (model.LawVersionComparison, error) {
+	informationSource, err := model.NewInformationSource(model.InformationSourceValues{
+		ID:         "e-gov-law-api-v2",
+		Name:       "e-Gov 法令 API Version 2",
+		Publisher:  "デジタル庁",
+		Authority:  model.AuthorityOfficial,
+		ServiceURL: "https://laws.e-gov.go.jp/api/2/redoc/",
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	source, err := model.NewLegalSource(informationSource)
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	beforeLaw, err := model.NewLawSummary(model.LawSummaryValues{
+		LawID:      "law-1",
+		RevisionID: "rev-1",
+		Title:      "民法",
+		Source:     source,
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	afterLaw, err := model.NewLawSummary(model.LawSummaryValues{
+		LawID:      "law-1",
+		RevisionID: "rev-2",
+		Title:      "民法",
+		Source:     source,
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	beforeCitation, err := model.NewCitation(model.CitationValues{
+		Source:     source,
+		LawID:      "law-1",
+		RevisionID: "rev-1",
+		URL:        "https://laws.e-gov.go.jp/document?lawid=law-1&rev=rev-1",
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	afterCitation, err := model.NewCitation(model.CitationValues{
+		Source:     source,
+		LawID:      "law-1",
+		RevisionID: "rev-2",
+		URL:        "https://laws.e-gov.go.jp/document?lawid=law-1&rev=rev-2",
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	beforeSnapshot, err := model.NewLawVersionSnapshot(model.LawVersionSnapshotValues{
+		Law:      beforeLaw,
+		Citation: beforeCitation,
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	afterSnapshot, err := model.NewLawVersionSnapshot(model.LawVersionSnapshotValues{
+		Law:      afterLaw,
+		Citation: afterCitation,
+	})
+	if err != nil {
+		return model.LawVersionComparison{}, err
+	}
+	return model.NewLawVersionComparison(model.LawVersionComparisonValues{
+		LawID:              "law-1",
+		Scope:              model.LawVersionComparisonScopeMainAndOriginalSupplementaryArticles,
+		Before:             beforeSnapshot,
+		After:              afterSnapshot,
+		BeforeArticleCount: 0,
+		AfterArticleCount:  0,
+		AddedCount:         0,
+		RemovedCount:       0,
+		ModifiedCount:      0,
+		UnchangedCount:     0,
+		TotalCount:         0,
+		Items:              nil,
+	})
+}
 
 func (stubSearchLawsPort) Search(
 	context.Context,

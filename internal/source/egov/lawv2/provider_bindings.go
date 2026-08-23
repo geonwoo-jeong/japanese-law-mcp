@@ -7,7 +7,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/continuation"
 )
 
-// NewProviderBindings は、e-Gov Version 2 の五つの共通 capability binding を一括構成する。
+// NewProviderBindings は、e-Gov Version 2 の六つの共通 capability binding を一括構成する。
 func NewProviderBindings(
 	manager *continuation.Manager,
 ) (application.ProviderBindings, error) {
@@ -46,12 +46,20 @@ func NewProviderBindings(
 			err,
 		)
 	}
+	lawVersionCompare, err := NewLawVersionCompareAdapter()
+	if err != nil {
+		return application.ProviderBindings{}, fmt.Errorf(
+			"e-Gov law.version.compare binding を初期化できません: %w",
+			err,
+		)
+	}
 	return application.ProviderBindings{
-		Descriptor:       Descriptor(),
-		LawSearch:        lawSearch,
-		LawContentSearch: lawContentSearch,
-		LawDocumentRead:  lawDocumentRead,
-		LawArticleRead:   lawArticleRead,
-		LawRevisionList:  lawRevisionList,
+		Descriptor:        Descriptor(),
+		LawSearch:         lawSearch,
+		LawContentSearch:  lawContentSearch,
+		LawDocumentRead:   lawDocumentRead,
+		LawArticleRead:    lawArticleRead,
+		LawRevisionList:   lawRevisionList,
+		LawVersionCompare: lawVersionCompare,
 	}, nil
 }

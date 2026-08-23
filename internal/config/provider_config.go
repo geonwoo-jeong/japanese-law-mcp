@@ -129,6 +129,10 @@ func defaultProviderRoutes(
 			Selection:         ProviderRouteSelectionPrimary,
 			DefaultProviderID: v2ProviderID,
 		},
+		{CapabilityID: "law.version.compare", MajorVersion: 1}: {
+			Selection:         ProviderRouteSelectionPrimary,
+			DefaultProviderID: v2ProviderID,
+		},
 		{CapabilityID: "law.revision.list", MajorVersion: 1}: {
 			Selection:         ProviderRouteSelectionPrimary,
 			DefaultProviderID: v2ProviderID,
