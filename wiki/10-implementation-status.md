@@ -90,6 +90,20 @@
 
 ## 未実装
 
+- [SOT-PROD-014](../sot/00-product/14-legislative-history-extension-pack.md)、
+  [SOT-SCN-014](../sot/10-scenarios/14-search-diet-speeches.md)、
+  [SOT-MODEL-034](../sot/20-model/34-parliament-speech.md)、
+  [SOT-ARCH-041](../sot/30-architecture/41-staged-specialist-extension-surface.md)、
+  [SOT-IF-061](../sot/40-interfaces/61-legislative-history-pack-activation.md)、
+  [SOT-IF-062](../sot/40-interfaces/62-parliament-speech-search-capability.md)、
+  [SOT-IF-063](../sot/40-interfaces/63-source-ndl-diet-speech-api.md)、
+  [SOT-IF-064](../sot/40-interfaces/64-ndl-diet-speech-search-mapping.md)、
+  [SOT-IF-065](../sot/40-interfaces/65-ndl-diet-speech-built-in-adoption.md) および
+  [SOT-IF-066](../sot/40-interfaces/66-mcp-search-diet-speeches.md) に従う、
+  `legislative-history` の第一段階である国会発言検索。共通 model、capability、
+  provider、条件付き route、設定および専門 MCP ツールの順に実装し、全構成が
+  揃った時点で一つの公開面として有効化する。統合照会 contribution は第一段階に
+  含めず、別の採用 SOT ができるまで既存の対象外分類を維持する
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる
@@ -102,4 +116,4 @@
 
 引数を指定しないルートコマンドは stdio MCP サーバーを起動する。無設定時の公開ツールは `search_laws`、`get_law`、`get_article`、`search_law_content`、`list_law_revisions`、`compare_law_versions`、`list_law_updates` および `query_legal_information` の八つである。`streamable-http` を指定した場合は、検証済みの loopback 待受先で `/mcp` を提供し、stdio と同じ公開ツール集合および schema を使用する。
 
-現時点の無設定時は e-Gov 法令 API Version 2 の六つと、e-Gov 法令 API Version 1 の `law.update.list@1` の、合計七つの組込み primary route、法令コアと裁判例の意味認識 query profile、共通前処理および統合照会 application service を起動時に構成する。裁判例 profile は pack の有効状態にかかわらず同じ意味候補を生成するが、無効時は外部情報源を呼ばず `capability_unavailable` とする。`judicial-cases` が有効な場合だけ `courts-hanrei-html` の二つを内部 registry と route へ構成し、裁判例 facade を実行可能にして、`search_judicial_cases` と `get_judicial_case` を一つの集合として追加した十個の MCP ツールを公開する。片方の binding、route、service または tool だけでは transport を開始しない。利用者は設定ファイルで provider の有効化、能力別 primary route および rollback override を指定でき、無効な組合せは transport の開始前に終了コード `2` で拒否する。組込み provider は provider-specific setting と credential slot を持たず、非空の `settings` と `credentialEnvRefs` は受け付けない。
+現時点の無設定時は e-Gov 法令 API Version 2 の六つと、e-Gov 法令 API Version 1 の `law.update.list@1` の、合計七つの組込み primary route、法令コアと裁判例の意味認識 query profile、共通前処理および統合照会 application service を起動時に構成する。裁判例 profile は pack の有効状態にかかわらず同じ意味候補を生成するが、無効時は外部情報源を呼ばず `capability_unavailable` とする。`judicial-cases` が有効な場合だけ `courts-hanrei-html` の二つを内部 registry と route へ構成し、裁判例 facade を実行可能にして、`search_judicial_cases` と `get_judicial_case` を一つの集合として追加した十個の MCP ツールを公開する。片方の binding、route、service または tool だけでは transport を開始しない。`legislative-history` の第一段階は SOT で採用済みだが未実装であるため、現在の binary はまだ同 pack の設定を受理せず、国会発言 provider、route および `search_diet_speeches` を runtime へ登録しない。利用者は設定ファイルで provider の有効化、能力別 primary route および rollback override を指定でき、無効な組合せは transport の開始前に終了コード `2` で拒否する。組込み provider は provider-specific setting と credential slot を持たず、非空の `settings` と `credentialEnvRefs` は受け付けない。

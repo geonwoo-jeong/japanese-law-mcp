@@ -13,3 +13,4 @@
 - [11-prioritize-resolved-law-search-result.md](11-prioritize-resolved-law-search-result.md)
 - [12-list-law-revisions.md](12-list-law-revisions.md)
 - [13-compare-law-versions.md](13-compare-law-versions.md)
+- [14-search-diet-speeches.md](14-search-diet-speeches.md)

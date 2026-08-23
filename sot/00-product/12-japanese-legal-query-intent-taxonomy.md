@@ -68,7 +68,7 @@ pack 依存の取得意図は、法令コアの下位候補へ自動で置き換
 | `translation` | 条文、裁判例または説明の翻訳 |
 | `comparison_or_trace` | 二時点比較、改正差分、連続追跡、比較表生成 |
 | `relationship_analysis` | 影響グラフ、引用関係図、可視化、ネットワーク分析 |
-| `unadopted_pack_or_source` | legislative-history、tax、labor、民間 DB、自治体条例など未採用範囲 |
+| `unadopted_pack_or_source` | 統合照会では未採用の legislative-history、tax、labor、民間 DB、自治体条例などの範囲 |
 | `answer_synthesis` | 取得した資料から最終的な法律回答や結論文を作る要求 |
 
 採用済み取得意図と対象外意図が同じ照会文に混在する場合は、取得部分だけを分離実行しない。照会全体を対象外として扱う。
