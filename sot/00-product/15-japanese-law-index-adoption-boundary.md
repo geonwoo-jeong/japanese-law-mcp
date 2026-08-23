@@ -4,7 +4,7 @@
 
 ## 規定
 
-[日本法令索引](https://hourei.ndl.go.jp/help.html)は、2026年8月23日時点では
+[日本法令索引](https://hourei.ndl.go.jp/help.html)は、2026年8月24日時点では
 Japanese Law MCP の構造化 provider、capability、provider route または公開 MCP
 tool として採用しない。
 
@@ -52,7 +52,7 @@ HTML 画面、未公開 endpoint、旧 API 連携データまたは観測した�
 - 法案、条約承認案件、審議経過と e-Gov lawId の 1 対 1 対応
 - 日本法令索引の詳細画面 URL に見える query parameter を安定 identifier として使うこと
 
-2026年8月23日時点で確認できる一次資料には、日本法令索引自身の stable identifier
+2026年8月24日時点で確認できる一次資料には、日本法令索引自身の stable identifier
 体系、機械取得 contract、または e-Gov lawId との公式対応表は見当たらない。
 したがって、将来採用するとしても、最初の候補は「公布済み現行法令の参照補助」に
 限り、法案や審議経過を同じ識別子体系へ統合する前提を置かない。
