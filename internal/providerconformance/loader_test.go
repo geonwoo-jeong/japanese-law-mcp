@@ -18,16 +18,21 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	}
 
 	providers := catalog.Providers()
-	if len(providers) != 3 {
-		t.Fatalf("provider 数 = %d、期待値は 3 です", len(providers))
+	if len(providers) != 4 {
+		t.Fatalf("provider 数 = %d、期待値は 4 です", len(providers))
 	}
 	courts := providerByID(t, providers, "courts-hanrei-html")
+	ndl := providerByID(t, providers, "ndl-diet-speech-api")
 	v1 := providerByID(t, providers, "e-gov-law-api-v1")
 	v2 := providerByID(t, providers, "e-gov-law-api-v2")
-	if courts.SchemaVersion != 1 || v1.SchemaVersion != 1 || v2.SchemaVersion != 1 {
+	if courts.SchemaVersion != 1 ||
+		ndl.SchemaVersion != 1 ||
+		v1.SchemaVersion != 1 ||
+		v2.SchemaVersion != 1 {
 		t.Fatalf(
-			"schemaVersion = courts:%d, v1:%d, v2:%d、期待値は 1 です",
+			"schemaVersion = courts:%d, ndl:%d, v1:%d, v2:%d、期待値は 1 です",
 			courts.SchemaVersion,
+			ndl.SchemaVersion,
 			v1.SchemaVersion,
 			v2.SchemaVersion,
 		)
@@ -59,6 +64,35 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		assertCasesAreExplicit(t, row)
 		assertCanonicalPublicErrors(t, row)
 	}
+
+	ndlRows := ndl.Rows()
+	if got := capabilityIDs(ndlRows); !slices.Equal(
+		got,
+		[]string{"parliament.speech.search"},
+	) {
+		t.Fatalf("ndl capabilityId = %v", got)
+	}
+	ndlRow := ndlRows[0]
+	if !slices.Equal(
+		ndlRow.InterfaceSOTIDs,
+		[]string{"SOT-IF-061", "SOT-IF-062", "SOT-IF-063", "SOT-IF-064", "SOT-IF-065"},
+	) {
+		t.Fatalf("ndl interfaceSotIds = %v", ndlRow.InterfaceSOTIDs)
+	}
+	if ndlRow.BudgetSOTID != "SOT-IF-063" ||
+		ndlRow.BudgetKey != "diet-speech-search-json" ||
+		ndlRow.ConcurrencyGroup != "ndl-diet-speech-api" ||
+		ndlRow.ArtifactType != "JSON" ||
+		ndlRow.FixtureSet != "parliament-speech-search-v1" ||
+		ndlRow.ParserContractVersion != "1.0.0" ||
+		ndlRow.ImplementedBy !=
+			"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/ndl/kokkai" ||
+		ndlRow.ConformanceTarget != "./internal/source/ndl/kokkai" ||
+		ndlRow.Status != "planned" {
+		t.Fatalf("ndl row = %#v", ndlRow)
+	}
+	assertCasesAreExplicit(t, ndlRow)
+	assertCanonicalPublicErrors(t, ndlRow)
 
 	v1Rows := v1.Rows()
 	if got := capabilityIDs(v1Rows); !slices.Equal(
@@ -142,8 +176,8 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		assertCanonicalPublicErrors(t, row)
 	}
 
-	if got := len(catalog.Rows()); got != 9 {
-		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 9 です", got)
+	if got := len(catalog.Rows()); got != 10 {
+		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 10 です", got)
 	}
 }
 
@@ -166,7 +200,7 @@ func TestLoadの返却値は外部変更から分離される(t *testing.T) {
 	again := catalog.Providers()
 	againV2 := providerByID(t, again, "e-gov-law-api-v2")
 	againRows := againV2.Rows()
-	if len(again) != 3 {
+	if len(again) != 4 {
 		t.Fatal("Providers() の変更が Catalog 内部へ反映されました")
 	}
 	if againRows[0].InterfaceSOTIDs[0] == "SOT-IF-999" ||

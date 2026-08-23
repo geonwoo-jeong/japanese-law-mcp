@@ -100,10 +100,12 @@
   [SOT-IF-064](../sot/40-interfaces/64-ndl-diet-speech-search-mapping.md)、
   [SOT-IF-065](../sot/40-interfaces/65-ndl-diet-speech-built-in-adoption.md) および
   [SOT-IF-066](../sot/40-interfaces/66-mcp-search-diet-speeches.md) に従う、
-  `legislative-history` の第一段階である国会発言検索。実際の provider client、
-  条件付き route、設定受理および専門 MCP ツールはまだ未実装である。全構成が
-  揃った時点で一つの公開面として有効化する。統合照会 contribution は第一段階に
-  含めず、別の採用 SOT ができるまで既存の対象外分類を維持する
+  `legislative-history` の第一段階である国会発言検索。共通 model、capability、
+  provider descriptor および conformance matrix の内部準備には着手済みだが、
+  実際の provider client、条件付き route、設定受理および専門 MCP ツールはまだ
+  未実装である。全構成が揃った時点で一つの公開面として有効化する。統合照会
+  contribution は第一段階に含めず、別の採用 SOT ができるまで既存の対象外分類を
+  維持する
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる

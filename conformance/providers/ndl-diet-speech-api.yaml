@@ -1,0 +1,66 @@
+schemaVersion: 1
+rows:
+  - providerId: ndl-diet-speech-api
+    capabilityId: parliament.speech.search
+    majorVersion: 1
+    operation: "GET /api/speech"
+    interfaceSotIds:
+      - SOT-IF-061
+      - SOT-IF-062
+      - SOT-IF-063
+      - SOT-IF-064
+      - SOT-IF-065
+    budgetSotId: SOT-IF-063
+    budgetKey: diet-speech-search-json
+    concurrencyGroup: ndl-diet-speech-api
+    artifactType: JSON
+    fixtureSet: parliament-speech-search-v1
+    requiredCases:
+      - descriptor
+      - capability-binding
+      - outbound-request
+      - provenance
+      - resource-ref-roundtrip
+      - empty-vs-not-found
+      - unsupported-query
+      - page-invariants
+      - error-normalization
+      - secret-non-exposure
+      - response-bytes-limit
+      - decompressed-bytes-limit
+      - entries-or-objects-limit
+      - depth-limit
+      - parse-timeout
+      - concurrency-limit
+      - cancellation
+      - contract-changed
+    notApplicableCases:
+      - case: authentication
+        reason: このプロバイダーは認証情報を使用しないため。
+      - case: continuation-roundtrip
+        reason: 安定した snapshot と決定的な並び順を提供せず、継続取得を使用しないため。
+      - case: continuation-tamper
+        reason: 継続取得を使用しないため。
+      - case: continuation-expired
+        reason: 継続取得を使用しないため。
+    supportsContinuation: false
+    supportsAuth: false
+    publicErrorSet:
+      - invalid_argument
+      - unsupported_capability
+      - unsupported_query
+      - configuration_required
+      - source_auth_failed
+      - rate_limited
+      - source_timeout
+      - source_unavailable
+      - source_busy
+      - source_contract_changed
+      - invalid_source_response
+      - source_response_too_large
+      - source_processing_limit
+      - unsafe_source_content
+    parserContractVersion: "1.0.0"
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/ndl/kokkai
+    conformanceTarget: ./internal/source/ndl/kokkai
+    status: planned
