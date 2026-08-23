@@ -21,13 +21,15 @@ func TestSpeechSearchHTTPClientReturnsRateLimitedBeforeBodyBudget(t *testing.T) 
 
 	client, err := newSpeechSearchHTTPClient(
 		doerFunc(func(request *http.Request) (*http.Response, error) {
-			return &http.Response{
+			response := &http.Response{
 				StatusCode:    http.StatusTooManyRequests,
 				Header:        make(http.Header),
 				Body:          io.NopCloser(strings.NewReader("busy")),
 				ContentLength: speechSearchResponseBytes + 1,
 				Request:       request,
-			}, nil
+			}
+			response.Header.Set("Retry-After", "7")
+			return response, nil
 		}),
 		time.Now,
 	)
@@ -40,6 +42,14 @@ func TestSpeechSearchHTTPClientReturnsRateLimitedBeforeBodyBudget(t *testing.T) 
 		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "永住許可"}),
 	)
 	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeRateLimited)
+	var sourceError model.SourceError
+	if !errors.As(err, &sourceError) {
+		t.Fatal("rate limit error を取得できません")
+	}
+	retryAfter, exists := sourceError.RetryAfter()
+	if !exists || retryAfter != "7" {
+		t.Fatal("明示された Retry-After を保持していません")
+	}
 }
 
 func TestSpeechSearchHTTPClientMapsEveryServerErrorToUnavailable(t *testing.T) {
@@ -47,8 +57,43 @@ func TestSpeechSearchHTTPClientMapsEveryServerErrorToUnavailable(t *testing.T) {
 
 	client, err := newSpeechSearchHTTPClient(
 		doerFunc(func(request *http.Request) (*http.Response, error) {
-			return &http.Response{
+			response := &http.Response{
 				StatusCode: http.StatusNotImplemented,
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader("")),
+				Request:    request,
+			}
+			response.Header.Set("Retry-After", "9")
+			return response, nil
+		}),
+		time.Now,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = client.fetchSpeechSearch(
+		context.Background(),
+		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "民法"}),
+	)
+	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceUnavailable)
+	var sourceError model.SourceError
+	if !errors.As(err, &sourceError) {
+		t.Fatal("source unavailable error を取得できません")
+	}
+	retryAfter, exists := sourceError.RetryAfter()
+	if !exists || retryAfter != "9" {
+		t.Fatal("5xx が明示した Retry-After を保持していません")
+	}
+}
+
+func TestSpeechSearchHTTPClientRejectsNonStandardStatusAbove599(t *testing.T) {
+	t.Parallel()
+
+	client, err := newSpeechSearchHTTPClient(
+		doerFunc(func(request *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 600,
 				Header:     make(http.Header),
 				Body:       io.NopCloser(strings.NewReader("")),
 				Request:    request,
@@ -64,7 +109,33 @@ func TestSpeechSearchHTTPClientMapsEveryServerErrorToUnavailable(t *testing.T) {
 		context.Background(),
 		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "民法"}),
 	)
-	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceUnavailable)
+	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeInvalidSourceResponse)
+}
+
+func TestSpeechSearchRetryAfterValueAcceptsOnlyExplicitValidValues(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	tests := map[string]struct {
+		value string
+		want  string
+	}{
+		"秒数":     {value: "7", want: "7"},
+		"大きい秒数":  {value: "4294967296", want: "4294967296"},
+		"未来の日時":  {value: now.Add(time.Minute).Format(http.TimeFormat), want: now.Add(time.Minute).Format(http.TimeFormat)},
+		"過去の日時":  {value: now.Add(-time.Minute).Format(http.TimeFormat), want: now.Add(-time.Minute).Format(http.TimeFormat)},
+		"不正な値":   {value: "later"},
+		"空白だけの値": {value: "  "},
+	}
+	for name, test := range tests {
+		name, test := name, test
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if got := speechSearchRetryAfterValue(test.value); got != test.want {
+				t.Fatal("Retry-After の検証結果が一致しません")
+			}
+		})
+	}
 }
 
 func TestSpeechSearchHTTPClientRejectsUnsafeFinalURL(t *testing.T) {

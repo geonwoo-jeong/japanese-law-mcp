@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -121,12 +122,13 @@ func (c speechSearchHTTPClient) fetchSpeechSearch(
 		case response.StatusCode == http.StatusTooManyRequests:
 			return fetchedSpeechSearchResponse{}, newSpeechSearchSourceError(
 				model.SourceErrorCodeRateLimited,
-				"",
+				speechSearchRetryAfterValue(response.Header.Get("Retry-After")),
 			)
-		case response.StatusCode >= http.StatusInternalServerError:
+		case response.StatusCode >= http.StatusInternalServerError &&
+			response.StatusCode <= 599:
 			return fetchedSpeechSearchResponse{}, newSpeechSearchSourceError(
 				model.SourceErrorCodeSourceUnavailable,
-				"",
+				speechSearchRetryAfterValue(response.Header.Get("Retry-After")),
 			)
 		default:
 			return fetchedSpeechSearchResponse{}, newSpeechSearchSourceError(
@@ -298,6 +300,20 @@ func readSpeechSearchAtMost(
 func isSpeechSearchMediaType(value string, expected string) bool {
 	mediaType, _, err := mime.ParseMediaType(value)
 	return err == nil && mediaType == expected
+}
+
+func speechSearchRetryAfterValue(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	if _, err := strconv.ParseUint(value, 10, 64); err == nil {
+		return value
+	}
+	if _, err := http.ParseTime(value); err != nil {
+		return ""
+	}
+	return value
 }
 
 func closeSpeechSearchResponseBody(response *http.Response) {

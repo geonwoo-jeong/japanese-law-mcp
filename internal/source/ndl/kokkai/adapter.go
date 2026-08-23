@@ -73,6 +73,7 @@ func (a *SpeechSearchAdapter) Search(
 	if err := a.acquire(ctx); err != nil {
 		return parliamentspeechsearch.Page{}, err
 	}
+	defer a.release()
 	waitUntil := time.Time{}
 	defer func() {
 		if !waitUntil.IsZero() {
@@ -84,7 +85,6 @@ func (a *SpeechSearchAdapter) Search(
 				}
 			}
 		}
-		a.release()
 	}()
 
 	fetched, err := a.dependencies.client.fetchSpeechSearch(ctx, request)

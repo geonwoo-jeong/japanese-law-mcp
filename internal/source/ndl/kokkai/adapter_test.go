@@ -210,6 +210,51 @@ func TestSpeechSearchAdapterReleasesGateAfterFetchFailure(t *testing.T) {
 	}
 }
 
+func TestSpeechSearchAdapterReleasesGateWhenHoldPanics(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC)
+	gate := make(chan struct{}, 1)
+	adapter, err := newSpeechSearchAdapter(speechSearchAdapterDependencies{
+		client: speechSearchClientFunc(func(
+			context.Context,
+			parliamentspeechsearch.Request,
+		) (fetchedSpeechSearchResponse, error) {
+			return fetchedSpeechSearchResponse{
+				encodedBody: []byte(
+					`{"numberOfRecords":0,"numberOfReturn":0,"startRecord":1}`,
+				),
+				fetchedURL:  "https://kokkai.ndl.go.jp/api/speech?startRecord=1",
+				retrievedAt: now,
+			}, nil
+		}),
+		now: func() time.Time { return now },
+		sleep: func(context.Context, time.Duration) error {
+			panic("検証用 panic")
+		},
+		gate: gate,
+	})
+	if err != nil {
+		t.Fatalf("検証用 adapter を作成できません: %v", err)
+	}
+	panicked := false
+	func() {
+		defer func() {
+			panicked = recover() != nil
+		}()
+		_, _ = adapter.Search(
+			context.Background(),
+			mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "民法"}),
+		)
+	}()
+	if !panicked {
+		t.Fatal("検証用 panic が発生しませんでした")
+	}
+	if len(gate) != 0 {
+		t.Fatal("panic 後に同時実行枠を解放していません")
+	}
+}
+
 func TestSleepSpeechSearchWithContext(t *testing.T) {
 	t.Parallel()
 
