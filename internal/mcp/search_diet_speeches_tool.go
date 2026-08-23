@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
@@ -128,6 +129,7 @@ func decodeSearchDietSpeechesInput(
 ) (parliamentspeechsearch.Request, error) {
 	input := bytes.TrimSpace(arguments)
 	if len(input) == 0 ||
+		!utf8.Valid(input) ||
 		!hasValidJSONSurrogatePairs(input) ||
 		input[0] != '{' ||
 		input[len(input)-1] != '}' {
@@ -320,7 +322,7 @@ func mapSearchDietSpeechesError(err error) model.ErrorResult {
 			return result
 		}
 	}
-	return newInvalidArgumentResult(err)
+	return newInternalErrorResult()
 }
 
 func successSearchDietSpeechesToolResult(

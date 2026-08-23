@@ -38,6 +38,7 @@
 - [SOT-MODEL-020](../sot/20-model/20-judicial-decision-summary.md)、[SOT-MODEL-021](../sot/20-model/21-judicial-decision-details.md)、[SOT-IF-041](../sot/40-interfaces/41-judicial-decision-search-capability.md) および [SOT-IF-042](../sot/40-interfaces/42-judicial-decision-read-capability.md) に従う、不変な裁判例概要・詳細・公式文書リンク、型付き検索・詳細取得 request、page、port、service、参照元 provider の解決、および既存の法令 route を必須のまま維持する任意の `judicial-decision.*` binding・route
 - [SOT-IF-043](../sot/40-interfaces/43-source-courts-hanrei-html.md)、[SOT-IF-044](../sot/40-interfaces/44-courts-hanrei-search-mapping.md)、[SOT-IF-045](../sot/40-interfaces/45-courts-hanrei-read-mapping.md) および [SOT-IF-046](../sot/40-interfaces/46-courts-hanrei-built-in-adoption.md) に従う、固定 HTTPS origin、共有同時実行枠、HTML 資源予算、安全な DOM 解析、六カテゴリー・和暦・公式 PDF・出典の共通モデル対応、同一裁判例の複数掲載カテゴリーを DOM 順の別 item として保持する検索、検索から詳細への参照往復、fixture、二能力 binding factory、ならびに `judicial-cases` 有効時だけ内部 registry へ加える二つの primary route
 - [SOT-IF-047](../sot/40-interfaces/47-mcp-search-judicial-cases.md) と [SOT-IF-048](../sot/40-interfaces/48-mcp-get-judicial-case.md) に従う、固定された収録範囲の注意、共通モデルの `ref`・provenance・page・詳細を変更しない出力、検索結果の canonical ref の往復、正確な整数入力、空結果、`not_found` および公開情報源エラーを扱う `search_judicial_cases` と `get_judicial_case` の MCP handler・契約テスト、ならびに二つを同時にだけ登録する公開依存性
+- [SOT-PROD-014](../sot/00-product/14-legislative-history-extension-pack.md)、[SOT-SCN-014](../sot/10-scenarios/14-search-diet-speeches.md)、[SOT-MODEL-034](../sot/20-model/34-parliament-speech.md)、[SOT-IF-061](../sot/40-interfaces/61-legislative-history-pack-activation.md)、[SOT-IF-062](../sot/40-interfaces/62-parliament-speech-search-capability.md)、[SOT-IF-063](../sot/40-interfaces/63-source-ndl-diet-speech-api.md)、[SOT-IF-064](../sot/40-interfaces/64-ndl-diet-speech-search-mapping.md)、[SOT-IF-065](../sot/40-interfaces/65-ndl-diet-speech-built-in-adoption.md) および [SOT-IF-066](../sot/40-interfaces/66-mcp-search-diet-speeches.md) に従う、不変な国会発言モデル、型付き検索能力、固定 NDL 発言 API の一回取得、安全な JSON 解析と共通 mapping、組込み binding、`legislative-history` 有効時だけの primary route、および固定注意と正確な件数を返す `search_diet_speeches`。第一段階では統合照会 contribution を追加しない
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-054](../sot/40-interfaces/54-egov-law-search-mapping-v3.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.search@1` binding と公開 `search_laws` facade、固定 HTTP 要求、共有 parser、runtime 応答と保存済み契約の分類分離、page invariant、共通モデル mapping、fixture および continuation
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-011](../sot/40-interfaces/11-egov-law-document-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.document.read@1` binding、固定 XML 要求、安全な `Law` 要素抽出、共通モデル mapping、fixture および `not_found` 対応
 - [SOT-IF-004](../sot/40-interfaces/04-source-egov-law-api-v2.md) と [SOT-IF-012](../sot/40-interfaces/12-egov-article-mapping.md) に従う、runtime registry と組込み primary route から到達できる e-Gov 法令 API Version 2 `law.article.read@1` binding、一回の安全な XML 解析による本則・原始附則の条または項の選択、原文保持、共通モデル mapping、fixture、`not_found` および `ambiguous_location` 対応
@@ -90,22 +91,6 @@
 
 ## 未実装
 
-- [SOT-PROD-014](../sot/00-product/14-legislative-history-extension-pack.md)、
-  [SOT-SCN-014](../sot/10-scenarios/14-search-diet-speeches.md)、
-  [SOT-MODEL-034](../sot/20-model/34-parliament-speech.md)、
-  [SOT-ARCH-041](../sot/30-architecture/41-staged-specialist-extension-surface.md)、
-  [SOT-IF-061](../sot/40-interfaces/61-legislative-history-pack-activation.md)、
-  [SOT-IF-062](../sot/40-interfaces/62-parliament-speech-search-capability.md)、
-  [SOT-IF-063](../sot/40-interfaces/63-source-ndl-diet-speech-api.md)、
-  [SOT-IF-064](../sot/40-interfaces/64-ndl-diet-speech-search-mapping.md)、
-  [SOT-IF-065](../sot/40-interfaces/65-ndl-diet-speech-built-in-adoption.md) および
-  [SOT-IF-066](../sot/40-interfaces/66-mcp-search-diet-speeches.md) に従う、
-  `legislative-history` の第一段階である国会発言検索。共通 model、capability、
-  provider descriptor および conformance matrix の内部準備には着手済みだが、
-  実際の provider client、条件付き route、設定受理および専門 MCP ツールはまだ
-  未実装である。全構成が揃った時点で一つの公開面として有効化する。統合照会
-  contribution は第一段階に含めず、別の採用 SOT ができるまで既存の対象外分類を
-  維持する
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる
@@ -118,4 +103,4 @@
 
 引数を指定しないルートコマンドは stdio MCP サーバーを起動する。無設定時の公開ツールは `search_laws`、`get_law`、`get_article`、`search_law_content`、`list_law_revisions`、`compare_law_versions`、`list_law_updates` および `query_legal_information` の八つである。`streamable-http` を指定した場合は、検証済みの loopback 待受先で `/mcp` を提供し、stdio と同じ公開ツール集合および schema を使用する。
 
-現時点の無設定時は e-Gov 法令 API Version 2 の六つと、e-Gov 法令 API Version 1 の `law.update.list@1` の、合計七つの組込み primary route、法令コアと裁判例の意味認識 query profile、共通前処理および統合照会 application service を起動時に構成する。裁判例 profile は pack の有効状態にかかわらず同じ意味候補を生成するが、無効時は外部情報源を呼ばず `capability_unavailable` とする。`judicial-cases` が有効な場合だけ `courts-hanrei-html` の二つを内部 registry と route へ構成し、裁判例 facade を実行可能にして、`search_judicial_cases` と `get_judicial_case` を一つの集合として追加した十個の MCP ツールを公開する。片方の binding、route、service または tool だけでは transport を開始しない。`legislative-history` の第一段階は SOT で採用済みだが未実装であるため、現在の binary はまだ同 pack の設定を受理せず、国会発言 provider、route および `search_diet_speeches` を runtime へ登録しない。利用者は設定ファイルで provider の有効化、能力別 primary route および rollback override を指定でき、無効な組合せは transport の開始前に終了コード `2` で拒否する。組込み provider は provider-specific setting と credential slot を持たず、非空の `settings` と `credentialEnvRefs` は受け付けない。
+現時点の無設定時は e-Gov 法令 API Version 2 の六つと、e-Gov 法令 API Version 1 の `law.update.list@1` の、合計七つの組込み primary route、法令コアと裁判例の意味認識 query profile、共通前処理および統合照会 application service を起動時に構成する。裁判例 profile は pack の有効状態にかかわらず同じ意味候補を生成するが、無効時は外部情報源を呼ばず `capability_unavailable` とする。`judicial-cases` が有効な場合だけ `courts-hanrei-html` の二つを内部 registry と route へ構成し、`search_judicial_cases` と `get_judicial_case` を追加して十個の MCP ツールを公開する。`legislative-history` が有効な場合だけ `ndl-diet-speech-api` と `parliament.speech.search@1` の primary route を構成し、`search_diet_speeches` を追加して九個の MCP ツールを公開する。両 pack を有効にした場合は十一個となる。各 pack の binding、route、公開依存性または tool が一つでも欠ける場合は transport を開始しない。国会発言検索は第一段階の専門公開面であり、統合照会の profile、候補および実行範囲は変更しない。利用者は設定ファイルで provider の有効化、能力別 primary route および rollback override を指定でき、無効な組合せは transport の開始前に終了コード `2` で拒否する。組込み provider は provider-specific setting と credential slot を持たず、非空の `settings` と `credentialEnvRefs` は受け付けない。

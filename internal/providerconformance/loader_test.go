@@ -88,7 +88,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		ndlRow.ImplementedBy !=
 			"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/ndl/kokkai" ||
 		ndlRow.ConformanceTarget != "./internal/source/ndl/kokkai" ||
-		ndlRow.Status != "planned" {
+		ndlRow.Status != "implemented" {
 		t.Fatalf("ndl row = %#v", ndlRow)
 	}
 	assertCasesAreExplicit(t, ndlRow)

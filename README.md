@@ -2,7 +2,7 @@
 
 Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM から検索・取得するための、Go 製 MCP サーバーです。利用者のローカル環境で動作し、法情報の取得先へ直接接続します。
 
-法令コアはデジタル庁の e-Gov 法令 API Version 2 と Version 1 を使用します。選択型の裁判例拡張パックは、最高裁判所の「裁判例検索」が公表する掲載情報を使用します。
+法令コアはデジタル庁の e-Gov 法令 API Version 2 と Version 1 を使用します。選択型の裁判例拡張パックは最高裁判所の「裁判例検索」、立法過程拡張パックは国立国会図書館の「国会会議録検索システム」を使用します。
 
 > [!IMPORTANT]
 > このツールは法的判断や法的助言を行いません。結果には公式情報源を確認するための情報を含めますが、法令の適用や裁判例の先例性は利用者が原文と現在の状況を確認してください。
@@ -30,6 +30,14 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `get_judicial_case` | 検索結果の `ref` から同じ掲載裁判例の詳細と公式文書リンクを取得する | 最高裁判所「裁判例検索」 |
 
 裁判例検索はすべての判決等を収録したものではなく、PDF 本文の抽出、上訴関係、判例変更または先例性の判定は行いません。
+
+`legislative-history` を明示的に有効化すると、次のツールを追加します。
+
+| MCP ツール | 用途 | 主な情報源 |
+|---|---|---|
+| `search_diet_speeches` | 発言本文、発言者、会議、院または開催日から国会発言を検索する | 国立国会図書館「国会会議録検索システム」 |
+
+国会発言検索は発言単位 API の最初の最大 30 件を返します。発言を現行法令、国会の統一見解、立法趣旨または法的結論として扱わず、議案や成立法令との自動対応も行いません。
 
 `compare_law_versions` は、比較前後をそれぞれ正確な法令履歴 ID または基準日で指定します。二版を自動で入れ替えず、本則と原始附則の `Article` だけを比較します。全改正の連続追跡、改正法令ごとの附則、別表、法的評価または要約は対象外です。比較結果は e-Gov が直接提供する差分ではなく、取得した二つの公式原文から生成した加工情報です。
 
@@ -60,6 +68,8 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 法令部分だけを実行せず計画全体を `capability_unavailable` とします。
 
 `judicial-cases` が無効でも裁判例の意図は法令検索へ置き換えずに認識し、外部情報源を呼ばない `capability_unavailable` として返します。`令和4年（ネ）第10039号の裁判例を検索してください` のように、完全な事件番号と検索 task・裁判例 resource がそろう照会は、全角数字・括弧や構造上の空白を決定的な検索語へ整えて裁判例検索として扱います。事件番号だけ、または事件番号を句読点で列挙しただけの入力は外部情報源を呼ばない `unsupported` とし、専門ツールの使用を案内します。事件番号、題名または URL だけから裁判例詳細の `ref` を推測することはありません。入力を決定的に指定した検索や取得、ページ継続には、引き続き `search_judicial_cases` と `get_judicial_case` を使用できます。
+
+`legislative-history` の第一段階は専門ツールだけを追加します。有効にしても `query_legal_information` は国会発言検索を実行しないため、国会会議録の検索には `search_diet_speeches` を指定してください。
 
 ## インストール
 
@@ -118,6 +128,20 @@ japanese-law-mcp --config=/absolute/path/to/config.yaml
 ```
 
 `extensionPacks.judicial-cases.enabled` は設定ファイルからだけ変更できます。省略または `false` に戻して再起動すると、二つの裁判例ツールとその provider route をまとめて無効化します。
+
+## 立法過程拡張パックを有効にする
+
+国会発言検索ツールも既定で無効です。設定ファイルで `legislative-history` を有効にします。
+
+```yaml
+requestTimeout: 30s
+diagnostics: false
+extensionPacks:
+  legislative-history:
+    enabled: true
+```
+
+`extensionPacks.legislative-history.enabled` は設定ファイルからだけ変更できます。省略または `false` に戻して再起動すると、`search_diet_speeches`、NDL provider binding および primary route をまとめて無効化します。`judicial-cases` と同時に有効化することもできます。
 
 ## ローカル Streamable HTTP
 

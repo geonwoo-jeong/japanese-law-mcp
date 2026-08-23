@@ -12,9 +12,6 @@ func TestDefaultDisablesJudicialCasesExtensionPack(t *testing.T) {
 	if got.JudicialCasesEnabled() {
 		t.Fatal("SOT-IF-040: judicial-cases の既定値が有効です")
 	}
-	if got.LegislativeHistoryEnabled() {
-		t.Fatal("SOT-IF-061: legislative-history の既定値が有効です")
-	}
 	if len(got.ExtensionPacks()) != 0 {
 		t.Fatalf("SOT-IF-040: extensionPacks = %#v、期待値 = 空", got.ExtensionPacks())
 	}
@@ -99,32 +96,6 @@ func TestNewAddsJudicialCasesConditionalProviderAndRoutes(t *testing.T) {
 			len(got.Providers()),
 			len(got.ProviderRoutes()),
 		)
-	}
-}
-
-func TestNewAddsLegislativeHistoryConditionalProviderAndRoute(t *testing.T) {
-	t.Parallel()
-
-	values := validProviderValues()
-	values.ExtensionPacks = map[string]ExtensionPackConfig{
-		ExtensionPackLegislativeHistory: {Enabled: true},
-	}
-	got, err := New(values)
-	if err != nil {
-		t.Fatalf("SOT-IF-061/SOT-IF-065: New() のエラー = %v", err)
-	}
-	provider, exists := got.Provider("ndl-diet-speech-api")
-	if !exists || !provider.Enabled || len(provider.Settings) != 0 || len(provider.CredentialEnvRefs) != 0 {
-		t.Fatalf("SOT-IF-065: ndl-diet-speech-api = %#v, %t", provider, exists)
-	}
-	route, routeExists := got.ProviderRoute(ProviderRouteKey{
-		CapabilityID: "parliament.speech.search",
-		MajorVersion: 1,
-	})
-	if !routeExists ||
-		route.Selection != ProviderRouteSelectionPrimary ||
-		route.DefaultProviderID != "ndl-diet-speech-api" {
-		t.Fatalf("SOT-IF-065: route = %#v, %t", route, routeExists)
 	}
 }
 

@@ -3,6 +3,8 @@ package mcp
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -44,7 +46,7 @@ func TestSearchDietSpeechesToolReturnsStructuredSuccess(t *testing.T) {
 		t.Fatalf("search_diet_speeches を呼び出せません: %v", err)
 	}
 	if result == nil || result.IsError {
-		t.Fatalf("tool result = %#v", result)
+		t.Fatal("search_diet_speeches が成功結果を返していません")
 	}
 	text, ok := result.Content[0].(*sdk.TextContent)
 	if !ok {
@@ -59,7 +61,7 @@ func TestSearchDietSpeechesToolReturnsStructuredSuccess(t *testing.T) {
 		payload.Items[0].Ref.ProviderID != "ndl-diet-speech-api" ||
 		payload.Items[0].Data.SpeechID != "speech-1" ||
 		payload.Page.ReturnedCount != 1 {
-		t.Fatalf("payload = %#v", payload)
+		t.Fatal("SOT-IF-066: 公開結果が国会発言契約と一致しません")
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("MCP セッションを終了できません: %v", err)
@@ -99,13 +101,106 @@ func TestSearchDietSpeechesToolRejectsInvalidInput(t *testing.T) {
 		t.Fatalf("tool call error = %v", err)
 	}
 	if result == nil || !result.IsError {
-		t.Fatalf("tool result = %#v, want error", result)
+		t.Fatal("SOT-IF-066: 不正入力を tool error にしていません")
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("MCP セッションを終了できません: %v", err)
 	}
 	if runErr := <-serverResult; runErr != nil {
 		t.Fatalf("MCP サーバーが正常終了しませんでした: %v", runErr)
+	}
+}
+
+func TestDecodeSearchDietSpeechesInputRejectsInvalidUTF8(t *testing.T) {
+	t.Parallel()
+
+	input := append([]byte(`{"query":"`), 0xff)
+	input = append(input, []byte(`"}`)...)
+	if _, err := decodeSearchDietSpeechesInput(input); err == nil {
+		t.Fatal("SOT-IF-062/066: 不正な UTF-8 を受理しました")
+	}
+}
+
+func TestDecodeSearchDietSpeechesInputMapsEverySearchCondition(t *testing.T) {
+	t.Parallel()
+
+	request, err := decodeSearchDietSpeechesInput(json.RawMessage(`{
+		"speaker":" 山田太郎 ",
+		"meetingName":"法務委員会",
+		"house":"house_of_councillors",
+		"fromDate":"2024-01-01",
+		"untilDate":"2024-01-31",
+		"limit":30
+	}`))
+	if err != nil {
+		t.Fatalf("SOT-IF-066: 有効な全検索条件を変換できません: %v", err)
+	}
+	speaker, speakerExists := request.Speaker()
+	meetingName, meetingExists := request.MeetingName()
+	house, houseExists := request.House()
+	fromDate, fromDateExists := request.FromDate()
+	untilDate, untilDateExists := request.UntilDate()
+	if !speakerExists || speaker != "山田太郎" ||
+		!meetingExists || meetingName != "法務委員会" ||
+		!houseExists || house != parliamentspeechsearch.HouseOfCouncillors ||
+		!fromDateExists || fromDate.String() != "2024-01-01" ||
+		!untilDateExists || untilDate.String() != "2024-01-31" ||
+		request.Limit() != 30 {
+		t.Fatal("SOT-IF-062/066: 検索条件の変換結果が一致しません")
+	}
+}
+
+func TestDecodeSearchDietSpeechesInputRejectsBoundaryViolations(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]json.RawMessage{
+		"JSON object 以外":    json.RawMessage(`[]`),
+		"null":              json.RawMessage(`{"query":null}`),
+		"未知項目":              json.RawMessage(`{"query":"民法","unknown":true}`),
+		"非整数 limit":         json.RawMessage(`{"query":"民法","limit":1.5}`),
+		"実在しない日付":           json.RawMessage(`{"fromDate":"2024-02-30"}`),
+		"逆転した日付":            json.RawMessage(`{"fromDate":"2024-02-02","untilDate":"2024-02-01"}`),
+		"未定義の院":             json.RawMessage(`{"house":"diet"}`),
+		"空でない continuation": json.RawMessage(`{"query":"民法","continuationToken":"next"}`),
+	}
+	for name, input := range tests {
+		name, input := name, input
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if _, err := decodeSearchDietSpeechesInput(input); err == nil {
+				t.Fatal("SOT-IF-066: 不正な入力境界を受理しました")
+			}
+		})
+	}
+}
+
+func TestSearchDietSpeechesToolFailsClosedForUnknownPortError(t *testing.T) {
+	t.Parallel()
+
+	result, err := callSearchDietSpeeches(
+		context.Background(),
+		&recordingDietSpeechSearchPort{err: errors.New("秘密の内部原因")},
+		json.RawMessage(`{"query":"民法"}`),
+	)
+	if err != nil {
+		t.Fatalf("tool error = %v", err)
+	}
+	if result == nil || !result.IsError || len(result.Content) != 1 {
+		t.Fatal("SOT-IF-007/066: tool error result を返していません")
+	}
+	text, ok := result.Content[0].(*sdk.TextContent)
+	if !ok {
+		t.Fatal("SOT-IF-007: error content が TextContent ではありません")
+	}
+	if strings.Contains(text.Text, "秘密の内部原因") {
+		t.Fatal("SOT-IF-027/066: 内部原因を公開しました")
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(text.Text), &payload); err != nil {
+		t.Fatalf("error result JSON を解析できません: %v", err)
+	}
+	if payload["code"] != string(model.ErrorCodeInternalError) {
+		t.Fatal("SOT-IF-066: 未分類の失敗を internal_error にしていません")
 	}
 }
 
