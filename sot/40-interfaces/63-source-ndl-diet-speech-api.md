@@ -19,7 +19,7 @@
 | `adapterContractVersion` | `1.0.0` |
 | `upstreamSpecVersion` | 省略 |
 | `verifiedAt` | `2026-08-23` |
-| `interfaceType` | `json-api` |
+| `interfaceType` | `api` |
 | `credentialRequired` | `false` |
 
 descriptor は `parliament.speech.search@1` だけを `extended`、`stable` として宣言する。
