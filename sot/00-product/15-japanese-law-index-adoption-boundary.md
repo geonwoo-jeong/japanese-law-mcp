@@ -39,9 +39,10 @@ HTML 画面、未公開 endpoint、旧 API 連携データまたは観測した�
 公布年月日を検索対象に含めること、および法案について提出回次、提出番号、
 成立・承認年月日、成立・承認回次等を検索対象に含めることを示している。
 
-一方、e-Gov 法令 API の公式文書では、法令名一覧取得 API が公布済み現行法令の
-`LawId`、法令名、法令番号および `PromulgationDate` を返し、法令取得 API が
-法令番号または法令 ID のどちらでも現行法令を取得できるとしている。
+一方、e-Gov 法令 API Version 2 の公式 OpenAPI では、`GET /laws` が公布済み
+現行法令の `law_info.law_id`、`law_info.law_num` および
+`law_info.promulgation_date` を返し、`GET /law_data/{law_id_or_num_or_revision_id}`
+が法令番号または法令 ID のどちらでも現行法令を取得できるとしている。
 
 このため、公布済み現行法令に限れば、少なくとも法令番号を主キーとし、必要に応じて
 公布年月日と法令名を補助条件に使う crosswalk 候補を設計できる。ただし、これは
@@ -94,10 +95,12 @@ API が掲載されていない。国立国会図書館サーチの
 構造化取得手段が公開された場合でも、日本法令索引の結果が法令沿革または法案情報を
 網羅するとは仮定せず、収録範囲、欠落および更新基準を typed metadata として扱う。
 
-この状態では、`SOT-PROD-007` が採用条件とする、文書化された公式の構造化取得方法、
-安定した機械取得契約、再利用条件の境界、および構造変更検知を伴う provider 契約を
-満たせない。これは HTML を技術的に取得できるかどうかではなく、製品が依存できる
-公開契約が揃っているかどうかによる判断である。
+`SOT-PROD-007` は、同じ意味と範囲を持つ公式 API または構造化配布物がない場合、
+同規定の条件を満たす公式 HTML の自動取得を一般的な選択肢として認めている。
+それに対し、この SOT は日本法令索引に固有の追加判断として、安定 identifier、
+構造化取得契約および再利用条件の境界を一次資料で確認できない間は HTML provider
+を採用しない。これは HTML を技術的に取得できるかどうかではなく、製品が依存する
+契約と権利の境界を検証できるかどうかによる判断である。
 
 ## 現時点で採用しない範囲
 
@@ -118,8 +121,10 @@ API が掲載されていない。国立国会図書館サーチの
 将来、日本法令索引を構造化 provider として採用するには、少なくとも次を同じ変更
 単位で満たす。
 
-1. 公式に公開された構造化 API または downloadable dataset が存在し、versioned
-   schema と現在の利用条件を一次資料で確認できる。
+1. この SOT が日本法令索引に固有の追加条件として、公式に公開された構造化 API
+   または downloadable dataset が存在し、versioned schema と現在の利用条件を
+   一次資料で確認できることを要求する。この条件を `SOT-PROD-007` のすべての
+   HTML 情報源へ一般化しない。
 2. 法令索引、法案索引、法令沿革、被改正法令、審議経過のうち、どの資源をどの
    型付き capability で扱うかを新しい SOT で分離して定義できる。
 3. 安定した識別子、pagination、継続取得、欠落、更新単位および日付の意味を
@@ -140,12 +145,15 @@ API が掲載されていない。国立国会図書館サーチの
 
 - この SOT から API 一覧、現行 API 連携先一覧、連携終了告知、日本法令索引ヘルプ
   および利用規約へ到達できること
-- この SOT から e-Gov の法令 API 文書へ到達でき、lawId・法令番号・公布日を
+- この SOT から e-Gov 法令 API Version 2 の OpenAPI と `SOT-IF-004` へ到達でき、
+  `law_info.law_id`、`law_info.law_num` および `law_info.promulgation_date` を
   crosswalk 候補の根拠として確認できること
-- 現在の実装に `hourei.ndl.go.jp` を source provider とする binding、route または
-  公開 tool が存在しないこと
+- provider 登録、route catalog および公開 tool 定義を検索し、現在の実装に
+  `hourei.ndl.go.jp` を source provider とする binding、route または公開 tool が
+  存在しないこと
 - 補足法令名辞書の根拠として使う場合でも、`SOT-ENG-022` の範囲を超えて
-  provider 採用へ拡張しないこと
+  provider 採用へ拡張しないこと。各補足 entry が個別の公式 URL と e-Gov 法令 API
+  Version 2 の公式スナップショットに存在する法令 ID を持つこと
 
 ## 関連
 
@@ -154,5 +162,6 @@ API が掲載されていない。国立国会図書館サーチの
 - [SOT-PROD-007: 情報源取得方式の選択](07-source-acquisition-policy.md)
 - [SOT-PROD-014: 立法過程拡張パックの国会発言検索](14-legislative-history-extension-pack.md)
 - [SOT-ENG-022: 法令名検索辞書](../50-engineering/22-law-name-search-lexicon.md)
-- [法令API（Version 1） - 法令データ ドキュメンテーション（α版）](https://laws.e-gov.go.jp/docs/law-data-basic/8529371-law-api-v1/)
-- [法令種別と法令ID - 法令データ ドキュメンテーション（α版）](https://laws.e-gov.go.jp/docs/law-data-basic/607318a-lawtypes-and-lawid/)
+- [SOT-IF-004: e-Gov 法令 API Version 2](../40-interfaces/04-source-egov-law-api-v2.md)
+- [SOT-IF-054: e-Gov 法令名検索マッピング v3](../40-interfaces/54-egov-law-search-mapping-v3.md)
+- [e-Gov 法令 API Version 2 OpenAPI](https://laws.e-gov.go.jp/api/2/swagger-ui/lawapi-v2.yaml)
