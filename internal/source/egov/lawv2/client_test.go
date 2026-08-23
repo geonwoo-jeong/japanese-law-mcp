@@ -115,6 +115,30 @@ func TestLawClientReturnsSuccessfulJSON(t *testing.T) {
 	}
 }
 
+func TestProductionClientDoesNotFollowRedirects(t *testing.T) {
+	t.Parallel()
+
+	production := newProductionClient()
+	httpClient, ok := production.dependencies.doer.(*http.Client)
+	if !ok {
+		t.Fatalf("production HTTP client の型 = %T", production.dependencies.doer)
+	}
+	if httpClient.CheckRedirect == nil {
+		t.Fatal("e-Gov client の redirect 拒否 policy がありません")
+	}
+	request, err := http.NewRequest(
+		http.MethodGet,
+		"https://redirect.example.test/resource",
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("redirect request を作成できません: %v", err)
+	}
+	if err := httpClient.CheckRedirect(request, nil); !errors.Is(err, http.ErrUseLastResponse) {
+		t.Fatalf("redirect policy error = %v", err)
+	}
+}
+
 func TestLawClientRetriesCandidateStatusAtMostThreeTimes(t *testing.T) {
 	t.Parallel()
 

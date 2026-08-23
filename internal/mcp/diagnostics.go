@@ -73,6 +73,7 @@ func knownDiagnosticOperation(operation string) string {
 	case "get_article",
 		"get_judicial_case",
 		"get_law",
+		"list_law_revisions",
 		"list_law_updates",
 		"query_legal_information",
 		"search_judicial_cases",

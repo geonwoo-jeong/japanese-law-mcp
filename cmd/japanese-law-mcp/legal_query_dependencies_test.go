@@ -152,7 +152,7 @@ func TestPublicLegalQueryReturnsCapabilityUnavailableWithoutProviderCalls(
 	if err != nil {
 		t.Fatalf("公開 tool 一覧を取得できません: %v", err)
 	}
-	if len(tools.Tools) != 6 || tools.Tools[3].Name != "query_legal_information" {
+	if len(tools.Tools) != 7 || tools.Tools[4].Name != "query_legal_information" {
 		t.Fatalf("法令コア公開 tool 一覧 = %#v", tools.Tools)
 	}
 

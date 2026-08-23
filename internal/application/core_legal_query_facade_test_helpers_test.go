@@ -7,6 +7,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
@@ -75,6 +76,7 @@ func newCoreFacadePorts(
 		lawArticleRead: &coreFacadeLawArticleReadPort{
 			result: fixture.lawArticle,
 		},
+		lawRevisionList: &coreFacadeLawRevisionListPort{},
 		lawUpdateList: &coreFacadeLawUpdateListPort{
 			result: coreFacadeLawUpdatePage(
 				t,
@@ -102,6 +104,7 @@ func newCoreFacadeBindings(
 			lawarticleread.CapabilityID,
 			lawcontentsearch.CapabilityID,
 			lawdocumentread.CapabilityID,
+			lawrevisionlist.CapabilityID,
 			lawsearch.CapabilityID,
 			lawupdatelist.CapabilityID,
 		),
@@ -109,6 +112,7 @@ func newCoreFacadeBindings(
 		LawContentSearch: ports.lawContentSearch,
 		LawDocumentRead:  ports.lawDocumentRead,
 		LawArticleRead:   ports.lawArticleRead,
+		LawRevisionList:  ports.lawRevisionList,
 		LawUpdateList:    ports.lawUpdateList,
 	}
 	return providerBindingsWithSource(t, bindings, sourceID)

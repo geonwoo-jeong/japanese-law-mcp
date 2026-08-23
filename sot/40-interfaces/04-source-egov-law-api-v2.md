@@ -11,7 +11,7 @@ e-Gov 法令 API Version 2 は、Japanese Law MCP が日本の法令を検索お
 - 提供主体: デジタル庁
 - 仕様: [e-Gov 法令 API Version 2](https://laws.e-gov.go.jp/api/2/redoc/)
 - 確認した仕様バージョン: `2.1.139`
-- 確認日: `2026-07-25`
+- 確認日: `2026-08-23`
 - API ベース URL: `https://laws.e-gov.go.jp/api/2`
 - 情報源 ID: `e-gov-law-api-v2`
 - 位置付け: 公式情報
@@ -28,9 +28,9 @@ e-Gov 法令 API Version 2 アダプターの `ProviderDescriptor` は、次の�
 | `source.publisher` | `デジタル庁` |
 | `source.authority` | `official` |
 | `source.serviceUrl` | `https://laws.e-gov.go.jp/api/2/redoc/` |
-| `adapterContractVersion` | `1.0.0` |
+| `adapterContractVersion` | `1.1.0` |
 | `upstreamSpecVersion` | `2.1.139` |
-| `verifiedAt` | `2026-07-25` |
+| `verifiedAt` | `2026-08-23` |
 | `interfaceType` | `api` |
 | `credentialRequired` | `false` |
 
@@ -39,7 +39,8 @@ e-Gov 法令 API Version 2 アダプターの `ProviderDescriptor` は、次の�
 1. `law.article.read@1`、`level: core`、`stability: stable`
 2. `law.content.search@1`、`level: core`、`stability: stable`
 3. `law.document.read@1`、`level: core`、`stability: stable`
-4. `law.search@1`、`level: core`、`stability: stable`
+4. `law.revision.list@1`、`level: core`、`stability: stable`
+5. `law.search@1`、`level: core`、`stability: stable`
 
 このアダプターに利用者が変更できる provider-specific setting と credential slot はなく、`settings` と `credentialEnvRefs` は空の object とする。
 
@@ -74,6 +75,7 @@ Japanese Law MCP は、次の利用目的に必要な操作だけを使用する
 | `GET /keyword` | 法令本文検索 | `SOT-IF-010`、`SOT-IF-028` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 法令本文取得 | `SOT-IF-011` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 条文取得 | `SOT-IF-012` |
+| `GET /law_revisions/{law_id_or_num}` | 法令改正履歴 | `SOT-IF-057` |
 
 外部 API のリクエスト項目とレスポンス項目は、公式 OpenAPI 仕様を定義元とする。プロジェクト内のモデルへの変換だけを各マッピング SOT で定義する。
 
@@ -111,10 +113,11 @@ Japanese Law MCP は、次の利用目的に必要な操作だけを使用する
 | `laws-json` | `GET /laws` | JSON | 8 MiB | 16 MiB | 200000 | 32 | 3s | `egov-http` | 1 |
 | `keyword-json` | `GET /keyword` | JSON | 16 MiB | 32 MiB | 500000 | 64 | 5s | `egov-http` | 1 |
 | `law-data-xml` | `GET /law_data/{law_id_or_num_or_revision_id}` | XML | 16 MiB | 32 MiB | 500000 | 128 | 5s | `egov-http` | 1 |
+| `law-revisions-json` | `GET /law_revisions/{law_id_or_num}` | JSON | 8 MiB | 16 MiB | 200000 | 32 | 3s | `egov-http` | 1 |
 
 HTTP content coding による展開がない場合も `decompressedBytes` は解析へ渡す byte 数の上限として適用する。法令本文が予算を超える場合は、部分的な本文を成功として返さず `source_response_too_large` とする。絶対 ceiling と同じ値を使用する `GET /keyword` および法令本文取得は、公式仕様が一回の検索で最大 1000 の一致位置を返し、法令本文のデータサイズが大きい場合があることを理由とする。
 
-三つの budget row は同じ `egov-http` group を共有するため、operation の種類に関係なく e-Gov の外部呼出し、再試行および解析は process 全体で同時に一件までとする。
+四つの budget row は同じ `egov-http` group を共有するため、operation の種類に関係なく e-Gov の外部呼出し、再試行および解析は process 全体で同時に一件までとする。
 
 公式条件に新しい制限または要件が示された場合は、この SOT と契約 fixture を更新してから適用する。原文 URL、取得時点および変換方法は `Provenance` として返し、公式資料で確認できない再配布権または完全性を応答で主張しない。
 
@@ -128,9 +131,9 @@ HTTP content coding による展開がない場合も `decompressedBytes` は解
 引き上げることを確認する。request deadline を超える待機、その他の `4xx`、
 構造不一致、形式不一致および安全上限超過では再試行しないことも確認する。
 
-`laws-json`、`keyword-json` および `law-data-xml` は、各 byte、構造および
+`laws-json`、`keyword-json`、`law-data-xml` および `law-revisions-json` は、各 byte、構造および
 解析時間の上限値を受理し、一単位または一 byte 超過したときに部分結果を
-返さないことを fixture で確認する。三 operation を同じ `egov-http`
+返さないことを fixture で確認する。四 operation を同じ `egov-http`
 concurrency group へ接続し、一つが外部呼出しから解析まで枠を保持している間に
 別 operation を開始すると、後の処理が外部呼出しへ到達せず `source_busy` と
 なることを確認する。cancel、timeout および parser failure の全経路で枠を
@@ -149,6 +152,7 @@ provider contract test と共通 conformance test の両方から到達可能に
 - [SOT-ARCH-004: 情報源アダプター境界](../30-architecture/04-source-adapter-boundary.md)
 - [SOT-IF-015: 情報源操作の共通契約](15-source-operation-contract.md)
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
+- [SOT-IF-057: e-Gov 法令改正履歴のマッピングと組込み採用](57-egov-law-revision-mapping-and-adoption.md)
 - [SOT-ENG-005: SOT と変更の整合](../50-engineering/05-sot-change-unit.md)
 - [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)
 - [SOT-ENG-017: プロバイダー適合性 matrix](../50-engineering/17-provider-conformance-matrix.md)

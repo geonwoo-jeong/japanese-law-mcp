@@ -9,6 +9,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 )
@@ -54,6 +55,10 @@ func TestProviderRoutesResolvePrimaryAndRollbackTypedPorts(t *testing.T) {
 	if port, exists := routes.LawDocumentRead(); !exists ||
 		port != primary.LawDocumentRead {
 		t.Fatalf("SOT-ARCH-012: LawDocumentRead() = %#v, %t", port, exists)
+	}
+	if port, exists := routes.LawRevisionList(); !exists ||
+		port != primary.LawRevisionList {
+		t.Fatalf("SOT-IF-057: LawRevisionList() = %#v, %t", port, exists)
 	}
 	if port, exists := routes.LawArticleRead(); !exists ||
 		port != primary.LawArticleRead {
@@ -156,7 +161,7 @@ func TestProviderRoutesRejectInvalidRoutes(t *testing.T) {
 			return values
 		},
 		"未知の capability": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
-			values[0].CapabilityID = "law.revision.list"
+			values[0].CapabilityID = "law.unknown.read"
 			return values
 		},
 		"未対応 majorVersion": func(values []application.ProviderRouteValues) []application.ProviderRouteValues {
@@ -213,6 +218,12 @@ func completeProviderRouteValues(
 		{
 			CapabilityID:      lawsearch.CapabilityID,
 			MajorVersion:      lawsearch.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: providerID,
+		},
+		{
+			CapabilityID:      lawrevisionlist.CapabilityID,
+			MajorVersion:      lawrevisionlist.MajorVersion,
 			Selection:         application.ProviderRouteSelectionPrimary,
 			DefaultProviderID: providerID,
 		},

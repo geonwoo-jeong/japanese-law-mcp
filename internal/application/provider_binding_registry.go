@@ -9,6 +9,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
@@ -21,6 +22,7 @@ type ProviderBindings struct {
 	JudicialDecisionSearch judicialdecisionsearch.Port
 	LawSearch              lawsearch.Port
 	LawContentSearch       lawcontentsearch.Port
+	LawRevisionList        lawrevisionlist.Port
 	LawDocumentRead        lawdocumentread.Port
 	LawArticleRead         lawarticleread.Port
 	LawUpdateList          lawupdatelist.Port
@@ -98,6 +100,17 @@ func (r ProviderBindingRegistry) LawContentSearch(
 		return nil, false
 	}
 	return binding.LawContentSearch, true
+}
+
+// LawRevisionList は、providerId の law.revision.list@1 port を返す。
+func (r ProviderBindingRegistry) LawRevisionList(
+	providerID string,
+) (lawrevisionlist.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.LawRevisionList) {
+		return nil, false
+	}
+	return binding.LawRevisionList, true
 }
 
 // LawDocumentRead は、providerId の law.document.read@1 port を返す。
@@ -207,6 +220,8 @@ func hasPortForCapability(
 		return !isNilTypedPort(value.LawSearch)
 	case lawContentSearchProviderRouteKey():
 		return !isNilTypedPort(value.LawContentSearch)
+	case lawRevisionListProviderRouteKey():
+		return !isNilTypedPort(value.LawRevisionList)
 	case lawDocumentReadProviderRouteKey():
 		return !isNilTypedPort(value.LawDocumentRead)
 	case lawArticleReadProviderRouteKey():

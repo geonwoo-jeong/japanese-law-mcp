@@ -16,6 +16,7 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/requestpacing"
 )
@@ -65,6 +66,7 @@ type fetchSpec struct {
 	build             func(context.Context) (*http.Request, error)
 	responseBytes     int64
 	decompressedBytes int64
+	successStatus     int
 	mediaType         string
 	mediaTypeError    model.SourceErrorCode
 	sourceError       sourceErrorFactory
@@ -76,10 +78,17 @@ func newProductionClient() lawClient {
 	transport.Proxy = nil
 	transport.DisableCompression = true
 	return lawClient{dependencies: clientDependencies{
-		doer:  &http.Client{Transport: transport},
+		doer: &http.Client{
+			Transport:     transport,
+			CheckRedirect: rejectRedirects,
+		},
 		now:   time.Now,
 		sleep: sleepWithContext,
 	}}
+}
+
+func rejectRedirects(*http.Request, []*http.Request) error {
+	return http.ErrUseLastResponse
 }
 
 func newLawClient(dependencies clientDependencies) (lawClient, error) {
@@ -157,6 +166,24 @@ func (c lawClient) fetchLawArticle(
 	})
 }
 
+func (c lawClient) fetchLawRevisions(
+	ctx context.Context,
+	request lawRevisionRequest,
+) (fetchedResponse, error) {
+	return c.fetchWith(ctx, fetchSpec{
+		build: func(requestContext context.Context) (*http.Request, error) {
+			return buildLawRevisionHTTPRequest(requestContext, request)
+		},
+		responseBytes:     maximumResponseBytes,
+		decompressedBytes: maximumDecompressedBytes,
+		successStatus:     http.StatusOK,
+		mediaType:         "application/json",
+		mediaTypeError:    model.SourceErrorCodeInvalidSourceResponse,
+		sourceError:       newLawRevisionSourceError,
+		notFound:          lawrevisionlist.ErrNotFound,
+	})
+}
+
 func (c lawClient) fetchWith(
 	ctx context.Context,
 	spec fetchSpec,
@@ -178,8 +205,12 @@ func (c lawClient) fetchWith(
 		if readErr != nil {
 			return fetchedResponse{}, readErr
 		}
-		if response.StatusCode >= http.StatusOK &&
-			response.StatusCode < http.StatusMultipleChoices {
+		isSuccess := response.StatusCode >= http.StatusOK &&
+			response.StatusCode < http.StatusMultipleChoices
+		if spec.successStatus != 0 {
+			isSuccess = response.StatusCode == spec.successStatus
+		}
+		if isSuccess {
 			if !isMediaType(
 				response.Header.Get("Content-Type"),
 				spec.mediaType,

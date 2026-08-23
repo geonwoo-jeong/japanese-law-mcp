@@ -9,9 +9,10 @@ import (
 type operation string
 
 const (
-	operationLaws    operation = "GET /laws"
-	operationKeyword operation = "GET /keyword"
-	operationLawData operation = "GET /law_data/{law_id_or_num_or_revision_id}"
+	operationLaws         operation = "GET /laws"
+	operationKeyword      operation = "GET /keyword"
+	operationLawData      operation = "GET /law_data/{law_id_or_num_or_revision_id}"
+	operationLawRevisions operation = "GET /law_revisions/{law_id_or_num}"
 )
 
 func (operation) SourceOperationProviderID() string {
@@ -23,10 +24,28 @@ func (o operation) SourceOperationName() string {
 }
 
 func (o operation) ValidateSourceOperation() error {
-	if o != operationLaws && o != operationKeyword && o != operationLawData {
+	if o != operationLaws && o != operationKeyword && o != operationLawData &&
+		o != operationLawRevisions {
 		return fmt.Errorf("e-Gov operation が定義されていません")
 	}
 	return nil
+}
+
+func newLawRevisionSourceError(
+	code model.SourceErrorCode,
+	retryAfter string,
+) error {
+	sourceError, err := model.NewSourceError(model.SourceErrorValues{
+		Code:       code,
+		Provider:   Descriptor(),
+		Capability: lawRevisionListCapability(),
+		Operation:  operationLawRevisions,
+		RetryAfter: retryAfter,
+	})
+	if err != nil {
+		return fmt.Errorf("e-Gov 法令改正履歴エラーを正規化できません: %w", err)
+	}
+	return sourceError
 }
 
 func newSourceError(code model.SourceErrorCode, retryAfter string) error {

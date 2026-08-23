@@ -18,7 +18,7 @@ type lawContentAdapterDependencies struct {
 
 // LawContentSearchAdapter は、e-Gov API Version 2 の law.content.search@1 planned binding である。
 //
-// runtime registry と MCP route への登録は、四能力を揃える後続変更まで行わない。
+// runtime registry と MCP route への登録は、provider binding factory で一括して行う。
 type LawContentSearchAdapter struct {
 	manager      *continuation.Manager
 	dependencies lawContentAdapterDependencies

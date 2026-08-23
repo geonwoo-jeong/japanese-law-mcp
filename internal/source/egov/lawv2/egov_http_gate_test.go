@@ -28,7 +28,8 @@ func TestProductionEGovBindingsShareHTTPConcurrencyGroup(t *testing.T) {
 	content, contentOK := bindings.LawContentSearch.(*LawContentSearchAdapter)
 	document, documentOK := bindings.LawDocumentRead.(*LawDocumentAdapter)
 	article, articleOK := bindings.LawArticleRead.(*LawArticleAdapter)
-	if !searchOK || !contentOK || !documentOK || !articleOK {
+	revision, revisionOK := bindings.LawRevisionList.(*LawRevisionListAdapter)
+	if !searchOK || !contentOK || !documentOK || !articleOK || !revisionOK {
 		t.Fatalf("e-Gov binding の型が一致しません: %#v", bindings)
 	}
 	gates := []chan struct{}{
@@ -36,6 +37,7 @@ func TestProductionEGovBindingsShareHTTPConcurrencyGroup(t *testing.T) {
 		content.dependencies.gate,
 		document.dependencies.gate,
 		article.dependencies.gate,
+		revision.dependencies.gate,
 	}
 	for index := 1; index < len(gates); index++ {
 		if gates[index] != gates[0] {
@@ -87,6 +89,15 @@ func TestEGovOperationsShareRetryPolicy(t *testing.T) {
 			call: func(ctx context.Context, client lawClient) error {
 				_, err := client.fetchLawArticle(ctx, lawDocumentRequest{
 					identifier: "322CO0000000016",
+				})
+				return err
+			},
+		},
+		{
+			name: "GET /law_revisions",
+			call: func(ctx context.Context, client lawClient) error {
+				_, err := client.fetchLawRevisions(ctx, lawRevisionRequest{
+					lawIDOrNumber: "322CO0000000016",
 				})
 				return err
 			},
@@ -194,6 +205,13 @@ func TestEGovHTTPConcurrencyGroupRejectsCrossOperation(t *testing.T) {
 		),
 	)
 	assertLawArticleSourceError(t, articleErr, model.SourceErrorCodeSourceBusy)
+
+	revision := newTestLawRevisionListAdapter(t, time.Now(), gate, unexpectedDoer)
+	_, revisionErr := revision.List(
+		requestContext,
+		mustLawRevisionListRequest(t, "322CO0000000016"),
+	)
+	assertSourceErrorCode(t, revisionErr, model.SourceErrorCodeSourceBusy)
 	if attempts != 0 {
 		t.Fatalf("後続 operation の HTTP attempts = %d", attempts)
 	}

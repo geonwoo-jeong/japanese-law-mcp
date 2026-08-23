@@ -24,11 +24,20 @@ func TestDescriptorKeepsFixedCapabilityOrder(t *testing.T) {
 	if descriptor.ProviderID() != providerID {
 		t.Fatalf("ProviderID = %q", descriptor.ProviderID())
 	}
+	if descriptor.AdapterContractVersion() != "1.1.0" ||
+		descriptor.VerifiedAt().String() != "2026-08-23" {
+		t.Fatalf(
+			"descriptor version/date = %q, %q",
+			descriptor.AdapterContractVersion(),
+			descriptor.VerifiedAt().String(),
+		)
+	}
 	capabilities := descriptor.Capabilities()
 	expected := []string{
 		"law.article.read",
 		"law.content.search",
 		"law.document.read",
+		"law.revision.list",
 		"law.search",
 	}
 	if len(capabilities) != len(expected) {

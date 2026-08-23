@@ -22,6 +22,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
@@ -144,7 +145,7 @@ func TestServerRunnerUsesStreamableHTTP(t *testing.T) {
 	}
 }
 
-func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
+func TestDefaultProviderRoutesActivateSixEGovBindings(t *testing.T) {
 	t.Parallel()
 
 	registry, routes, err := newProviderRoutes(config.Default())
@@ -152,7 +153,7 @@ func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 		t.Fatalf("provider runtime を初期化できません: %v", err)
 	}
 	if descriptor, exists := registry.Descriptor("e-gov-law-api-v2"); !exists ||
-		len(descriptor.Capabilities()) != 4 {
+		len(descriptor.Capabilities()) != 5 {
 		t.Fatalf("e-Gov v2 descriptor = %#v, %t", descriptor, exists)
 	}
 	if descriptor, exists := registry.Descriptor("e-gov-law-api-v1"); !exists ||
@@ -177,6 +178,11 @@ func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 		{
 			lawdocumentread.CapabilityID,
 			lawdocumentread.MajorVersion,
+			"e-gov-law-api-v2",
+		},
+		{
+			lawrevisionlist.CapabilityID,
+			lawrevisionlist.MajorVersion,
 			"e-gov-law-api-v2",
 		},
 		{
@@ -210,6 +216,9 @@ func TestDefaultProviderRoutesActivateFiveEGovBindings(t *testing.T) {
 	}
 	if port, exists := routes.LawDocumentRead(); !exists || port == nil {
 		t.Fatal("law.document.read route に到達できません")
+	}
+	if port, exists := routes.LawRevisionList(); !exists || port == nil {
+		t.Fatal("law.revision.list route に到達できません")
 	}
 	if port, exists := routes.LawArticleRead(); !exists || port == nil {
 		t.Fatal("law.article.read route に到達できません")
@@ -552,6 +561,7 @@ func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
 		"get_article",
 		"get_judicial_case",
 		"get_law",
+		"list_law_revisions",
 		"list_law_updates",
 		"query_legal_information",
 		"search_judicial_cases",
@@ -669,15 +679,16 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	if err != nil {
 		t.Fatalf("子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 6 ||
+	if tools.Tools == nil || len(tools.Tools) != 7 ||
 		tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "list_law_updates" ||
-		tools.Tools[3].Name != "query_legal_information" ||
-		tools.Tools[4].Name != "search_law_content" ||
-		tools.Tools[5].Name != "search_laws" {
+		tools.Tools[2].Name != "list_law_revisions" ||
+		tools.Tools[3].Name != "list_law_updates" ||
+		tools.Tools[4].Name != "query_legal_information" ||
+		tools.Tools[5].Name != "search_law_content" ||
+		tools.Tools[6].Name != "search_laws" {
 		t.Fatalf(
-			"公開ツール一覧 = %#v, want 法令コア六ツール",
+			"公開ツール一覧 = %#v, want 法令コア七ツール",
 			tools.Tools,
 		)
 	}
@@ -795,13 +806,14 @@ func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HTTP 子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 6 ||
+	if tools.Tools == nil || len(tools.Tools) != 7 ||
 		tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "list_law_updates" ||
-		tools.Tools[3].Name != "query_legal_information" ||
-		tools.Tools[4].Name != "search_law_content" ||
-		tools.Tools[5].Name != "search_laws" {
+		tools.Tools[2].Name != "list_law_revisions" ||
+		tools.Tools[3].Name != "list_law_updates" ||
+		tools.Tools[4].Name != "query_legal_information" ||
+		tools.Tools[5].Name != "search_law_content" ||
+		tools.Tools[6].Name != "search_laws" {
 		t.Fatalf("HTTP 公開ツール一覧 = %#v", tools.Tools)
 	}
 	callResult, err := session.CallTool(ctx, &sdk.CallToolParams{

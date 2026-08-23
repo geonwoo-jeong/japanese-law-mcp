@@ -194,6 +194,71 @@ rows:
     status: implemented
 
   - providerId: e-gov-law-api-v2
+    capabilityId: law.revision.list
+    majorVersion: 1
+    operation: "GET /law_revisions/{law_id_or_num}"
+    interfaceSotIds:
+      - SOT-IF-004
+      - SOT-IF-055
+      - SOT-IF-057
+    budgetSotId: SOT-IF-004
+    budgetKey: law-revisions-json
+    concurrencyGroup: egov-http
+    artifactType: JSON
+    fixtureSet: law-revision-list-v1
+    requiredCases:
+      - descriptor
+      - capability-binding
+      - outbound-request
+      - provenance
+      - resource-ref-roundtrip
+      - empty-vs-not-found
+      - page-invariants
+      - error-normalization
+      - secret-non-exposure
+      - response-bytes-limit
+      - decompressed-bytes-limit
+      - entries-or-objects-limit
+      - depth-limit
+      - parse-timeout
+      - concurrency-limit
+      - cancellation
+      - contract-changed
+    notApplicableCases:
+      - case: authentication
+        reason: このプロバイダーは認証情報を使用しないため。
+      - case: unsupported-query
+        reason: 有効な法令 ID 又は法令番号は追加の検索条件なしで取得するため。
+      - case: continuation-roundtrip
+        reason: 完全一覧を一回で返し、継続取得を使用しないため。
+      - case: continuation-tamper
+        reason: 継続取得を使用しないため。
+      - case: continuation-expired
+        reason: 継続取得を使用しないため。
+    supportsContinuation: false
+    supportsAuth: false
+    publicErrorSet:
+      - invalid_argument
+      - not_found
+      - unsupported_capability
+      - unsupported_query
+      - configuration_required
+      - source_auth_failed
+      - rate_limited
+      - source_timeout
+      - source_unavailable
+      - source_busy
+      - source_contract_changed
+      - invalid_source_response
+      - source_response_too_large
+      - source_processing_limit
+      - unsafe_source_content
+    parserContractVersion: "1.0.0"
+    implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2
+    conformanceTarget: ./internal/source/egov/lawv2
+    status: implemented
+
+  - providerId: e-gov-law-api-v2
     capabilityId: law.search
     majorVersion: 1
     operation: "GET /laws"

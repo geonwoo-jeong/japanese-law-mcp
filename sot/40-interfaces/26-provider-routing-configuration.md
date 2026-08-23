@@ -63,6 +63,9 @@ providerRoutes:
   law.document.read@1:
     selection: primary
     defaultProviderId: e-gov-law-api-v2
+  law.revision.list@1:
+    selection: primary
+    defaultProviderId: e-gov-law-api-v2
   law.search@1:
     selection: primary
     defaultProviderId: e-gov-law-api-v2
@@ -71,7 +74,7 @@ providerRoutes:
     defaultProviderId: e-gov-law-api-v1
 ```
 
-この既定値の `providerId`、descriptor、credential slot、接続範囲および capability は `SOT-IF-004` と `SOT-IF-037` を定義元とする。利用者設定がない通常起動では、この既定値だけで既存の四つの法令機能と `law.update.list@1` に必要な binding を構成できなければならない。
+この既定値の `providerId`、descriptor、credential slot、接続範囲および capability は `SOT-IF-004`、`SOT-IF-037` および `SOT-IF-057` を定義元とする。利用者設定がない通常起動では、この既定値だけで e-Gov Version 2 の五つの法令機能と `law.update.list@1` に必要な binding を構成できなければならない。
 
 新しく追加した provider は、その provider の公開採用と組込み既定値の変更を定義する別の SOT が有効になるまで、この組込み `providers` または `providerRoutes` へ自動追加しない。追加しただけの provider は無設定時に有効化せず、既存の primary route を置き換えない。
 

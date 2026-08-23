@@ -22,6 +22,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawrevisions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
@@ -216,6 +217,10 @@ func newPublicDependencies(
 	if err != nil {
 		return projectmcp.Dependencies{}, err
 	}
+	listLawRevisions, err := newListLawRevisionsService(cfg, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
 	judicialCases, err := newJudicialCasesDependencies(
 		cfg,
 		registry,
@@ -233,6 +238,7 @@ func newPublicDependencies(
 		SearchLawContent:      searchLawContent,
 		GetLaw:                getLaw,
 		GetArticle:            getArticle,
+		ListLawRevisions:      listLawRevisions,
 		ListLawUpdates:        listLawUpdates,
 		QueryLegalInformation: queryLegalInformation,
 		JudicialCases:         judicialCases,
@@ -430,6 +436,27 @@ func newListLawUpdatesService(
 		return nil, fmt.Errorf("公開 list_law_updates service を初期化できません: %w", err)
 	}
 	return listLawUpdates, nil
+}
+
+func newListLawRevisionsService(
+	cfg config.Config,
+	routes application.ProviderRoutes,
+) (*listlawrevisions.Service, error) {
+	revisionLister, exists := routes.LawRevisionList()
+	if !exists {
+		return nil, errors.New("primary law.revision.list binding がありません")
+	}
+	service, err := listlawrevisions.NewService(
+		revisionLister,
+		cfg.RequestTimeout(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"公開 list_law_revisions service を初期化できません: %w",
+			err,
+		)
+	}
+	return service, nil
 }
 
 func validateCompatibilityFacadeRoutes(routes application.ProviderRoutes) error {

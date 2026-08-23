@@ -35,6 +35,9 @@ func TestNewProviderBindingsActivatesDescriptorInventory(t *testing.T) {
 	if _, ok := bindings.LawArticleRead.(*LawArticleAdapter); !ok {
 		t.Fatalf("law.article.read binding = %T", bindings.LawArticleRead)
 	}
+	if _, ok := bindings.LawRevisionList.(*LawRevisionListAdapter); !ok {
+		t.Fatalf("law.revision.list binding = %T", bindings.LawRevisionList)
+	}
 
 	registry, err := application.NewProviderBindingRegistry(
 		[]application.ProviderBindings{bindings},
@@ -58,6 +61,9 @@ func TestNewProviderBindingsActivatesDescriptorInventory(t *testing.T) {
 	if port, exists := registry.LawArticleRead("e-gov-law-api-v2"); !exists || port == nil {
 		t.Fatal("law.article.read binding に到達できません")
 	}
+	if port, exists := registry.LawRevisionList("e-gov-law-api-v2"); !exists || port == nil {
+		t.Fatal("law.revision.list binding に到達できません")
+	}
 
 	capabilities := descriptor.Capabilities()
 	ids := make([]string, len(capabilities))
@@ -68,6 +74,7 @@ func TestNewProviderBindingsActivatesDescriptorInventory(t *testing.T) {
 		"law.article.read",
 		"law.content.search",
 		"law.document.read",
+		"law.revision.list",
 		"law.search",
 	}
 	if !slices.Equal(ids, want) {

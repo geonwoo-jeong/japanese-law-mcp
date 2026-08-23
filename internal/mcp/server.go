@@ -5,6 +5,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/legalquery"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawrevisions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
@@ -17,6 +18,7 @@ type Dependencies struct {
 	SearchLawContent      searchlawcontent.Port
 	GetLaw                getlaw.Port
 	GetArticle            getarticle.Port
+	ListLawRevisions      listlawrevisions.Port
 	ListLawUpdates        listlawupdates.Port
 	QueryLegalInformation legalquery.Port
 	JudicialCases         JudicialCasesDependencies
@@ -73,6 +75,9 @@ func newServer(
 	}
 	if dependencies.GetArticle != nil {
 		addGetArticleTool(server, dependencies.GetArticle)
+	}
+	if !isNilListLawRevisionsPort(dependencies.ListLawRevisions) {
+		addListLawRevisionsTool(server, dependencies.ListLawRevisions)
 	}
 	if dependencies.ListLawUpdates != nil {
 		addListLawUpdatesTool(server, dependencies.ListLawUpdates)

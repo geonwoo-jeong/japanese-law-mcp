@@ -9,7 +9,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 
 ## 提供する機能
 
-無設定で起動した場合は、次の六つの法令ツールを公開します。
+無設定で起動した場合は、次の七つの法令ツールを公開します。
 
 | MCP ツール | 用途 | 主な情報源 |
 |---|---|---|
@@ -17,6 +17,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `get_law` | 法令 ID と任意の基準日から XML 法令本文を取得する | e-Gov 法令 API Version 2 |
 | `get_article` | 本則または原始附則の条・項を XML と出典付きで取得する | e-Gov 法令 API Version 2 |
 | `search_law_content` | e-Gov の本文検索式で一致位置を検索する | e-Gov 法令 API Version 2 |
+| `list_law_revisions` | 法令 ID または法令番号から完全な改正履歴を新しい順で取得する | e-Gov 法令 API Version 2 |
 | `list_law_updates` | 指定日に更新一覧へ掲載された法令を取得する | e-Gov 法令 API Version 1 |
 | `query_legal_information` | 日本語の照会文から利用可能な法情報の取得方法を選び、解釈ごとの型付き結果を返す | e-Gov 法令 API Version 2・Version 1、最高裁判所「裁判例検索」（有効時） |
 

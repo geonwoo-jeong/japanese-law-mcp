@@ -6,6 +6,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
@@ -108,6 +109,18 @@ type coreFacadeLawUpdateListPort struct {
 	err      error
 }
 
+type coreFacadeLawRevisionListPort struct {
+	calls int
+}
+
+func (p *coreFacadeLawRevisionListPort) List(
+	context.Context,
+	lawrevisionlist.Request,
+) (lawrevisionlist.Page, error) {
+	p.calls++
+	return lawrevisionlist.Page{}, nil
+}
+
 func (p *coreFacadeLawUpdateListPort) List(
 	ctx context.Context,
 	request lawupdatelist.Request,
@@ -123,6 +136,7 @@ type coreFacadePorts struct {
 	lawContentSearch *coreFacadeLawContentSearchPort
 	lawDocumentRead  *coreFacadeLawDocumentReadPort
 	lawArticleRead   *coreFacadeLawArticleReadPort
+	lawRevisionList  *coreFacadeLawRevisionListPort
 	lawUpdateList    *coreFacadeLawUpdateListPort
 }
 
@@ -131,6 +145,7 @@ func (p *coreFacadePorts) totalCalls() int {
 		p.lawContentSearch.calls +
 		p.lawDocumentRead.calls +
 		p.lawArticleRead.calls +
+		p.lawRevisionList.calls +
 		p.lawUpdateList.calls
 }
 

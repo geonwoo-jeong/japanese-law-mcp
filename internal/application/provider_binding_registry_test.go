@@ -10,6 +10,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawcontentsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawdocumentread"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
@@ -37,6 +38,10 @@ func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {
 	if port, exists := registry.LawContentSearch("complete-provider"); !exists ||
 		port != bindings.LawContentSearch {
 		t.Fatalf("SOT-ARCH-012: LawContentSearch() = %#v, %t", port, exists)
+	}
+	if port, exists := registry.LawRevisionList("complete-provider"); !exists ||
+		port != bindings.LawRevisionList {
+		t.Fatalf("SOT-IF-057: LawRevisionList() = %#v, %t", port, exists)
 	}
 	if port, exists := registry.LawDocumentRead("complete-provider"); !exists ||
 		port != bindings.LawDocumentRead {
@@ -74,6 +79,7 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 		lawarticleread.CapabilityID,
 		lawcontentsearch.CapabilityID,
 		lawdocumentread.CapabilityID,
+		lawrevisionlist.CapabilityID,
 		lawsearch.CapabilityID,
 	)
 
@@ -93,6 +99,7 @@ func TestProviderBindingRegistryRejectsDeclarationAndPortMismatch(t *testing.T) 
 			{id: lawarticleread.CapabilityID, majorVersion: lawarticleread.MajorVersion},
 			{id: lawcontentsearch.CapabilityID, majorVersion: lawcontentsearch.MajorVersion},
 			{id: lawdocumentread.CapabilityID, majorVersion: lawdocumentread.MajorVersion},
+			{id: lawrevisionlist.CapabilityID, majorVersion: lawrevisionlist.MajorVersion},
 			{id: lawsearch.CapabilityID, majorVersion: lawsearch.MajorVersion},
 			{id: lawupdatelist.CapabilityID, majorVersion: 2},
 		},
@@ -207,6 +214,17 @@ type fakeLawUpdateListBinding struct {
 	name string
 }
 
+type fakeLawRevisionListBinding struct {
+	name string
+}
+
+func (*fakeLawRevisionListBinding) List(
+	context.Context,
+	lawrevisionlist.Request,
+) (lawrevisionlist.Page, error) {
+	return lawrevisionlist.Page{}, nil
+}
+
 func (*fakeLawUpdateListBinding) List(
 	context.Context,
 	lawupdatelist.Request,
@@ -228,6 +246,7 @@ func newCompleteProviderBindings(
 			lawarticleread.CapabilityID,
 			lawcontentsearch.CapabilityID,
 			lawdocumentread.CapabilityID,
+			lawrevisionlist.CapabilityID,
 			lawsearch.CapabilityID,
 			lawupdatelist.CapabilityID,
 		),
@@ -236,6 +255,7 @@ func newCompleteProviderBindings(
 		LawSearch:              &fakeLawSearchBinding{name: providerID},
 		LawContentSearch:       &fakeLawContentSearchBinding{name: providerID},
 		LawDocumentRead:        &fakeLawDocumentReadBinding{name: providerID},
+		LawRevisionList:        &fakeLawRevisionListBinding{name: providerID},
 		LawArticleRead:         &fakeLawArticleReadBinding{name: providerID},
 		LawUpdateList:          &fakeLawUpdateListBinding{name: providerID},
 	}

@@ -1,0 +1,16 @@
+{
+  "checkedOn": "2026-08-23",
+  "operation": "GET /law_revisions/{law_id_or_num}",
+  "successMediaType": "application/json",
+  "responseType": "object",
+  "lawInfo": {"required": true, "type": "object", "nullable": false},
+  "revisions": {"required": true, "type": "array", "nullable": false},
+  "lawId": {"required": false, "type": "string", "nullable": false},
+  "revisionId": {"required": false, "type": "string", "nullable": false},
+  "title": {"required": false, "type": "string", "nullable": false},
+  "remainInForce": {"required": false, "type": "boolean", "nullable": true},
+  "amendmentTypes": ["1", "3", "8"],
+  "missions": ["New", "Partial"],
+  "repealStatuses": ["None", "Repeal", "Expire", "Suspend", "LossOfEffectiveness"],
+  "currentStatuses": ["CurrentEnforced", "UnEnforced", "PreviousEnforced", "Repeal"]
+}

@@ -88,7 +88,7 @@ fixture は `implementedBy` の package 配下に provider ごと、`fixtureSet`
 
 一覧または検索 operation の `page-invariants` は、能力別 SOT と mapping SOT が定義する返却件数、配列長、総件数、次位置、末尾、空結果および前進性を、正常 fixture と不正 fixture の両方で確認する。
 
-e-Gov 法令 API Version 2 の `law.search@1` は、少なくとも `count` と `laws.length`、`total_count`、`next_offset`、公開 `nextOffset` および内部 continuation position の整合を検証する。`law.content.search@1` は、全 `sentences` の展開件数と `sentence_count`、`total_count`、`next_offset` および continuation position の整合を検証する。不正応答を切捨て、再計数または独自 offset の合成で成功へ変換しない。
+e-Gov 法令 API Version 2 の `law.search@1` は、少なくとも `count` と `laws.length`、`total_count`、`next_offset`、公開 `nextOffset` および内部 continuation position の整合を検証する。`law.content.search@1` は、全 `sentences` の展開件数と `sentence_count`、`total_count`、`next_offset` および continuation position の整合を検証する。`law.revision.list@1` は `revisions.length` と `returnedCount` および exact な `totalCount` の一致を検証する。不正応答を切捨て、再計数または独自 offset の合成で成功へ変換しない。
 
 ## status
 
@@ -100,7 +100,7 @@ e-Gov 法令 API Version 2 の `law.search@1` は、少なくとも `count` と 
 
 runtime composition は、`enabled: true` の provider だけについて設定と credential を解決し、その provider の implemented binding を registry へ登録する。disabled provider の factory を呼ばず、credential の欠落を起動失敗にしない。runtime route は、enabled かつ implemented である binding だけを参照する。
 
-新しい provider は明示設定がない限り disabled とし、既存の組込み route を変更しない。e-Gov 法令 API Version 2 は `SOT-IF-026` の既存の組込み既定値で enabled になる provider であり、descriptor が宣言する四 capability をすべて準備した後、四つの compiled binding と既定 route を同時に有効化する。
+新しい provider は明示設定がない限り disabled とし、既存の組込み route を変更しない。e-Gov 法令 API Version 2 は `SOT-IF-026` の既存の組込み既定値で enabled になる provider であり、descriptor が宣言する五 capability と五つの compiled binding および既定 route を一致させる。
 
 planned row の採用を取り消す場合は、その row と未到達の成果物を同じ変更で削除し、関係する SOT または Wiki に理由を記録する。implemented row を廃止する場合は `retired` へ変更し、binding、route および不要になった provider 固有成果物を除去する。
 

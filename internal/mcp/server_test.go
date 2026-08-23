@@ -63,6 +63,9 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	listLawUpdates := &recordingListLawUpdatesPort{
 		result: mustListLawUpdatesResult(t),
 	}
+	listLawRevisions := &recordingListLawRevisionsPort{
+		result: mustMCPListLawRevisionsResult(t, "law-1"),
+	}
 	queryLegalInformation := &recordingQueryLegalInformationPort{
 		result: queryLegalInformationResultFixture(
 			t,
@@ -77,6 +80,7 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 				SearchLawContent:      stubSearchLawContentPort{},
 				GetLaw:                stubGetLawPort{},
 				GetArticle:            &recordingGetArticlePort{},
+				ListLawRevisions:      listLawRevisions,
 				ListLawUpdates:        listLawUpdates,
 				QueryLegalInformation: queryLegalInformation,
 			},
@@ -124,23 +128,25 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 6 {
-		t.Fatalf("ツール数 = %d, want 6", len(tools.Tools))
+	if len(tools.Tools) != 7 {
+		t.Fatalf("ツール数 = %d, want 7", len(tools.Tools))
 	}
 	if tools.Tools[0].Name != "get_article" ||
 		tools.Tools[1].Name != "get_law" ||
-		tools.Tools[2].Name != "list_law_updates" ||
-		tools.Tools[3].Name != "query_legal_information" ||
-		tools.Tools[4].Name != "search_law_content" ||
-		tools.Tools[5].Name != "search_laws" {
+		tools.Tools[2].Name != "list_law_revisions" ||
+		tools.Tools[3].Name != "list_law_updates" ||
+		tools.Tools[4].Name != "query_legal_information" ||
+		tools.Tools[5].Name != "search_law_content" ||
+		tools.Tools[6].Name != "search_laws" {
 		t.Fatalf(
-			"tool names = %q, %q, %q, %q, %q, %q",
+			"tool names = %q, %q, %q, %q, %q, %q, %q",
 			tools.Tools[0].Name,
 			tools.Tools[1].Name,
 			tools.Tools[2].Name,
 			tools.Tools[3].Name,
 			tools.Tools[4].Name,
 			tools.Tools[5].Name,
+			tools.Tools[6].Name,
 		)
 	}
 	for _, tool := range tools.Tools {

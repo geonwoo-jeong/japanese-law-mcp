@@ -8,20 +8,19 @@ import (
 
 const (
 	providerID             = "e-gov-law-api-v2"
-	adapterContractVersion = "1.0.0"
+	adapterContractVersion = "1.1.0"
 	upstreamSpecVersion    = "2.1.139"
 )
 
 // Descriptor は、e-Gov 法令 API Version 2 の固定された記述子を返す。
-//
-// この段階では runtime registry へ登録せず、planned binding の契約テストだけで使う。
 func Descriptor() model.ProviderDescriptor {
 	source := informationSource()
-	verifiedAt := mustDate("2026-07-25")
+	verifiedAt := mustDate("2026-08-23")
 	capabilities := []model.ProviderCapability{
 		mustCapability("law.article.read"),
 		mustCapability("law.content.search"),
 		mustCapability("law.document.read"),
+		mustCapability("law.revision.list"),
 		mustCapability("law.search"),
 	}
 	descriptor, err := model.NewProviderDescriptor(model.ProviderDescriptorValues{
@@ -68,6 +67,10 @@ func lawArticleCapability() model.ProviderCapability {
 
 func lawContentSearchCapability() model.ProviderCapability {
 	return mustCapability("law.content.search")
+}
+
+func lawRevisionListCapability() model.ProviderCapability {
+	return mustCapability("law.revision.list")
 }
 
 func mustCapability(id string) model.ProviderCapability {

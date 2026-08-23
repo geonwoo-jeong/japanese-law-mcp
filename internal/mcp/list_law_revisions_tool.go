@@ -13,6 +13,10 @@ import (
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+type listLawRevisionsInputSchema struct {
+	LawIDOrNumber string `json:"lawIdOrNumber"`
+}
+
 type listLawRevisionsOutput struct {
 	LawID      string                       `json:"lawId"`
 	TotalCount int                          `json:"totalCount"`
@@ -51,6 +55,17 @@ type listLawRevisionsOutputSource struct {
 	Name       string `json:"name"`
 	Authority  string `json:"authority"`
 	ServiceURL string `json:"serviceUrl"`
+}
+
+func addListLawRevisionsTool(server *sdk.Server, lister listlawrevisions.Port) {
+	server.AddTool(&sdk.Tool{
+		Name:         "list_law_revisions",
+		Description:  "法令 ID または法令番号から、公式情報源の完全な改正履歴を新しい順で取得します。",
+		InputSchema:  mustSchemaFor[listLawRevisionsInputSchema](),
+		OutputSchema: mustSchemaFor[listLawRevisionsOutput](),
+	}, func(ctx context.Context, request *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
+		return callListLawRevisions(ctx, lister, request.Params.Arguments)
+	})
 }
 
 func callListLawRevisions(
