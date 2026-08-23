@@ -32,7 +32,9 @@ providerRoutes:
 - `courts-hanrei-html` は provider-specific setting と credential slot を持たず、固定した公式 endpoint だけを使用する。
 - composition root の compiled binding registry は、`judicial-cases` が有効な場合に限り、この provider の factory を呼び出す。拡張パックが無効な間は、利用者が provider または route を明示しても実効構成へ参加させない。
 - 有効な pack の二つの route は同じ provider の型付き port へ到達しなければならない。
-- この採用は既存の e-Gov Version 1 と Version 2 の descriptor、五 capability、primary route、結果、継続位置、設定 scope または公開法令ツールを変更しない。
+- この採用は既存の e-Gov Version 1 と Version 2 の descriptor、七つの法令
+  capability と primary route、結果、継続位置、設定 scope 又は公開法令ツールを
+  変更しない。
 - 他の拡張パックを有効にせず、`judicial-decision.*` 以外の capability を宣言しない。
 - runtime fallback、aggregate route および認証情報の解決を追加しない。
 
@@ -44,7 +46,7 @@ providerRoutes:
 
 - descriptor が二つの capability だけを宣言し、binding inventory と一致すること
 - conformance matrix の二行が `implemented` で、production descriptor、fixture、test、runtime registry および route と一致すること
-- pack 無効時に factory を呼び出さず五つの法令 route を維持すること
+- pack 無効時に factory を呼び出さず七つの法令 route を維持すること
 - pack 有効時に二つの条件付き route と二つの裁判例専門ツールを原子的に構成すること
 - 公開 tool 全体の集合と件数が `SOT-IF-040` と一致すること
 - provider または route の欠落、無効化および不一致を transport 開始前に拒否すること

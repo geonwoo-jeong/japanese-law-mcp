@@ -22,7 +22,7 @@ providerRoutes:
     defaultProviderId: e-gov-law-api-v1
 ```
 
-`e-gov-law-api-v2` の有効化と、`law.article.read@1`、`law.content.search@1`、`law.document.read@1` および `law.search@1` の四つの既定 route は変更しない。起動時の compiled binding registry は両方の descriptor と binding を保持し、`law.update.list@1` は `e-gov-law-api-v1` の型付き port へ到達できなければならない。
+`e-gov-law-api-v2` の有効化と、`SOT-IF-026` が定める同 provider の六つの既定 route は変更しない。起動時の compiled binding registry は両方の descriptor と binding を保持し、`law.update.list@1` は `e-gov-law-api-v1` の型付き port へ到達できなければならない。
 
 ## 適用範囲
 

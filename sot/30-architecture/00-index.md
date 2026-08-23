@@ -39,3 +39,4 @@
 - [37-unified-query-normalized-branch-retention.md](37-unified-query-normalized-branch-retention.md)
 - [38-judicial-query-profile-evidence-mapping-v2.md](38-judicial-query-profile-evidence-mapping-v2.md)
 - [39-core-query-profile-evidence-mapping-v2.md](39-core-query-profile-evidence-mapping-v2.md)
+- [40-law-version-comparison-boundary.md](40-law-version-comparison-boundary.md)

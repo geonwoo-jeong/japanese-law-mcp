@@ -61,7 +61,7 @@ gate は次を確認する。
 
 各 provider binding は一つずつ実装、review、commit する。準備中の row は `status=planned` のままにし、provider package と test が存在しても runtime から到達させない。
 
-planned の準備段階では test 用の descriptor 定義を置けるが、production へ公開しない。一つの `ProviderDescriptor` が複数 capability を宣言する場合は、各 binding を順に準備した後、descriptor の capability 集合と compiled binding inventory が一致する単位でまとめて有効化できる。e-Gov 法令 API Version 2 は、五つの binding と descriptor を一致させて `implemented` とする。
+planned の準備段階では test 用の descriptor 定義を置けるが、production へ公開しない。一つの `ProviderDescriptor` が複数 capability を宣言する場合は、各 binding を順に準備した後、descriptor の capability 集合と compiled binding inventory が一致する単位でまとめて有効化できる。e-Gov 法令 API Version 2 は、六つの binding と descriptor を一致させて `implemented` とする。
 
 既存 provider に capability を追加する場合は、対象の planned row と新しい成果物だけを段階的に変更する。別の有効な SOT が同時変更を採用しない限り、既存の implemented または retired row、既存 descriptor capability、runtime binding および route を維持する。
 

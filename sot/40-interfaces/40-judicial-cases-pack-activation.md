@@ -18,13 +18,18 @@ extensionPacks:
 
 ## 公開ツール集合
 
-法令コアの公開ツール集合は、`search_laws`、`get_law`、`get_article`、`search_law_content`、`list_law_revisions`、`list_law_updates` および `query_legal_information` の七つとする。
+法令コアの公開ツール集合は、`search_laws`、`get_law`、`get_article`、
+`search_law_content`、`list_law_revisions`、`compare_law_versions`、
+`list_law_updates` 及び `query_legal_information` の八つとする。
 
-`judicial-cases` が有効な場合は、上記へ `search_judicial_cases` と `get_judicial_case` を加えた九つとする。それ以外の tool を pack、provider または route の登録だけで暗黙に追加しない。
+`judicial-cases` が有効な場合は、上記へ `search_judicial_cases` と
+`get_judicial_case` を加えた十ツールとする。それ以外の tool を pack、provider 又は
+route の登録だけで暗黙に追加しない。
 
 ## 既定値と rollback
 
-`extensionPacks` または `judicial-cases` を省略した場合、および `enabled: false` の場合は無効とする。無設定起動では上記の法令コア七ツールを公開する。
+`extensionPacks` 又は `judicial-cases` を省略した場合、及び `enabled: false`
+の場合は無効とする。無設定起動では上記の法令コア八ツールを公開する。
 
 裁判例 query profile の意味認識 contribution は、`SOT-ARCH-019` に従い有効状態にかかわらず固定 profile set へ含める。この常設部分は型付き候補へ `requiredPacks=["judicial-cases"]` を付け、無効時の明示的な裁判例照会を外部呼出しなしの `capability_unavailable` とするためだけに使用する。
 
@@ -48,7 +53,13 @@ extensionPacks:
 
 ## 確認
 
-省略、明示した `false`、`true`、未知の pack、未知の項目および型不一致を設定テストで確認する。無効時と有効時で同じ固定順の意味認識 profile set を使うこと、無効時は七ツールと法令 route、有効時は九ツール、裁判例の実行 contribution と二つの裁判例 route、設定不足時は transport 開始前の失敗を composition root のテストで確認する。無効時の裁判例検索と検証済み `ref` による読取り照会は `capability_unavailable` となり、法令または裁判例 provider を呼び出さないことを確認する。
+省略、明示した `false`、`true`、未知の pack、未知の項目及び型不一致を
+設定テストで確認する。無効時と有効時で同じ固定順の意味認識 profile set を
+使うこと、無効時は八ツールと法令 route、有効時は十ツール、裁判例の実行
+contribution と二つの裁判例 route、設定不足時は transport 開始前の失敗を
+composition root のテストで確認する。無効時の裁判例検索と検証済み `ref`
+による読取り照会は `capability_unavailable` となり、法令又は裁判例 provider を
+呼び出さないことを確認する。
 
 ## 関連
 

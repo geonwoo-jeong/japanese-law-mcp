@@ -28,7 +28,7 @@ e-Gov 法令 API Version 2 アダプターの `ProviderDescriptor` は、次の�
 | `source.publisher` | `デジタル庁` |
 | `source.authority` | `official` |
 | `source.serviceUrl` | `https://laws.e-gov.go.jp/api/2/redoc/` |
-| `adapterContractVersion` | `1.1.0` |
+| `adapterContractVersion` | `1.2.0` |
 | `upstreamSpecVersion` | `2.1.139` |
 | `verifiedAt` | `2026-08-23` |
 | `interfaceType` | `api` |
@@ -41,6 +41,7 @@ e-Gov 法令 API Version 2 アダプターの `ProviderDescriptor` は、次の�
 3. `law.document.read@1`、`level: core`、`stability: stable`
 4. `law.revision.list@1`、`level: core`、`stability: stable`
 5. `law.search@1`、`level: core`、`stability: stable`
+6. `law.version.compare@1`、`level: core`、`stability: stable`
 
 このアダプターに利用者が変更できる provider-specific setting と credential slot はなく、`settings` と `credentialEnvRefs` は空の object とする。
 
@@ -75,6 +76,7 @@ Japanese Law MCP は、次の利用目的に必要な操作だけを使用する
 | `GET /keyword` | 法令本文検索 | `SOT-IF-010`、`SOT-IF-028` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 法令本文取得 | `SOT-IF-011` |
 | `GET /law_data/{law_id_or_num_or_revision_id}` | 条文取得 | `SOT-IF-012` |
+| `GET /law_data/{law_id_or_num_or_revision_id}` | 法令版間比較 | `SOT-IF-060` |
 | `GET /law_revisions/{law_id_or_num}` | 法令改正履歴 | `SOT-IF-057` |
 
 外部 API のリクエスト項目とレスポンス項目は、公式 OpenAPI 仕様を定義元とする。プロジェクト内のモデルへの変換だけを各マッピング SOT で定義する。
@@ -153,6 +155,7 @@ provider contract test と共通 conformance test の両方から到達可能に
 - [SOT-IF-015: 情報源操作の共通契約](15-source-operation-contract.md)
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-057: e-Gov 法令改正履歴のマッピングと組込み採用](57-egov-law-revision-mapping-and-adoption.md)
+- [SOT-IF-060: e-Gov 法令版間比較のマッピングと組込み採用](60-egov-law-version-comparison-mapping-and-adoption.md)
 - [SOT-ENG-005: SOT と変更の整合](../50-engineering/05-sot-change-unit.md)
 - [SOT-ENG-016: プロバイダー資源予算](../50-engineering/16-provider-resource-budgets.md)
 - [SOT-ENG-017: プロバイダー適合性 matrix](../50-engineering/17-provider-conformance-matrix.md)

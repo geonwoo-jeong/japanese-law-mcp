@@ -88,6 +88,12 @@
 
 ## 未実装
 
+- [SOT-PROD-013](../sot/00-product/13-law-version-comparison.md)、
+  [SOT-MODEL-033](../sot/20-model/33-law-version-comparison.md) および
+  [SOT-IF-058](../sot/40-interfaces/58-law-version-compare-capability.md) から
+  [SOT-IF-060](../sot/40-interfaces/60-egov-law-version-comparison-mapping-and-adoption.md)
+  に従う、二つの法令版を本則及び原始附則の条単位で比較する共通モデル、
+  e-Gov 専用 adapter、primary route と公開 `compare_law_versions`
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる

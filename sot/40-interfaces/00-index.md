@@ -57,3 +57,6 @@
 - [55-law-revision-list-capability.md](55-law-revision-list-capability.md)
 - [56-mcp-list-law-revisions.md](56-mcp-list-law-revisions.md)
 - [57-egov-law-revision-mapping-and-adoption.md](57-egov-law-revision-mapping-and-adoption.md)
+- [58-law-version-compare-capability.md](58-law-version-compare-capability.md)
+- [59-mcp-compare-law-versions.md](59-mcp-compare-law-versions.md)
+- [60-egov-law-version-comparison-mapping-and-adoption.md](60-egov-law-version-comparison-mapping-and-adoption.md)

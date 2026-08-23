@@ -172,8 +172,8 @@ rollout の段階、進行条件または commit 境界を定義しない。後�
 1. logical input、candidate、plan、item 配分式、concrete result 型および JSON Schema
 2. 固定 corpus、evaluator、core profile、法概念辞書および共通前処理 port
 3. selector、能力別 request materializer、fake 能力 port および executor
-4. core の `query_legal_information` MCP handler と、六つの専門ツールを含む七ツール登録
-5. `judicial-cases` profile contribution、`ref` read、result variant と九ツール登録
+4. core の `query_legal_information` MCP handler と、七つの専門ツールを含む八ツール登録
+5. `judicial-cases` profile contribution、`ref` read、result variant と十ツール登録
 6. 全評価、race、契約、既存専門ツール回帰および中央品質ゲート
 
 前段の型または評価基準を後段の都合で黙って変更せず、意味変更が必要な場合は関係 SOT と corpus expectation を同じ変更で review する。
@@ -194,7 +194,7 @@ profile interface へ公開せず、同じ span の複数意味を重複主題�
 同じ contribution の一候補へまとめ、composer を呼ばなくても原文順の二 step を
 保持することも profile test で確認する。
 
-MCP schema の全 `oneOf` variant、状態と decision の許可された組合せ、状態ごとの interpretation 件数と availability、未知項目拒否、公開 `ref` 供給元の往復、法令専門ツールで `ref` を公開しない互換性、六専門ツールを含む七ツールの core 登録、`judicial-cases` 有効時の九ツール登録、無効へ戻した場合の七ツール rollback、および stdio/HTTP の schema 一致を golden test で確認する。
+MCP schema の全 `oneOf` variant、状態と decision の許可された組合せ、状態ごとの interpretation 件数と availability、未知項目拒否、公開 `ref` 供給元の往復、法令専門ツールで `ref` を公開しない互換性、七専門ツールを含む八ツールの core 登録、`judicial-cases` 有効時の十ツール登録、無効へ戻した場合の八ツール rollback、および stdio/HTTP の schema 一致を golden test で確認する。
 
 ## 関連
 

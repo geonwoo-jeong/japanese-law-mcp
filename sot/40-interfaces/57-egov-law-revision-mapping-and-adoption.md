@@ -121,9 +121,9 @@ HTTP `200` と `application/json` の組合せだけを成功応答とする。H
 
 ## 組込み採用
 
-`e-gov-law-api-v2` の descriptor を `adapterContractVersion: 1.1.0`、
-`verifiedAt: 2026-08-23` とし、既存四能力に `law.revision.list@1` を加えた
-五つの compiled binding を同時に保持する。組込み既定値へ次を追加する。
+`law.revision.list@1` は、`SOT-IF-004` と `SOT-IF-060` が定める現在の
+`e-gov-law-api-v2` descriptor と六つの compiled binding に保持する。
+組込み既定値には次の route を維持する。
 
 ```yaml
 providerRoutes:
@@ -134,7 +134,7 @@ providerRoutes:
 
 composition root はこの route から `list_law_revisions` service を構成し、
 既定の stdio と Streamable HTTP の両方へ同じ schema で登録する。これにより
-法令コアは七ツール、`judicial-cases` 有効時は九ツールとなる。既存 route、
+法令コアは八ツール、`judicial-cases` 有効時は十ツールとなる。既存 route、
 拡張パックの有効条件、検索結果、継続位置および provider setting は変更しない。
 
 ## 確認
@@ -143,7 +143,7 @@ composition root はこの route から `list_law_revisions` service を構成�
 必須値欠落、日付・日時・型不正、重複 ID、順序、URL encoding、media type、
 全資源予算、取消、同時実行、error normalization および秘密非露出を fixture と
 fake transport で確認する。descriptor、binding inventory、既定 route、
-composition root、七・九ツールの固定集合、stdio と Streamable HTTP の schema
+composition root、八・十ツールの固定集合、stdio と Streamable HTTP の schema
 一致、および一回の MCP smoke test を確認する。
 
 ## 関連
@@ -154,4 +154,5 @@ composition root、七・九ツールの固定集合、stdio と Streamable HTTP
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-055: `law.revision.list` capability v1](55-law-revision-list-capability.md)
 - [SOT-IF-056: MCP `list_law_revisions`](56-mcp-list-law-revisions.md)
+- [SOT-IF-060: e-Gov 法令版間比較のマッピングと組込み採用](60-egov-law-version-comparison-mapping-and-adoption.md)
 - [e-Gov 法令 API Version 2 OpenAPI](https://laws.e-gov.go.jp/api/2/swagger-ui/lawapi-v2.yaml)
