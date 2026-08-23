@@ -85,6 +85,7 @@ func (k ProviderRouteKey) String() string {
 
 func defaultProviders(
 	judicialCasesEnabled bool,
+	legislativeHistoryEnabled bool,
 ) map[string]ProviderConfig {
 	providers := map[string]ProviderConfig{
 		"e-gov-law-api-v1": {
@@ -105,14 +106,23 @@ func defaultProviders(
 			CredentialEnvRefs: make(map[string]CredentialEnvRef),
 		}
 	}
+	if legislativeHistoryEnabled {
+		providers["ndl-diet-speech-api"] = ProviderConfig{
+			Enabled:           true,
+			Settings:          make(map[string]any),
+			CredentialEnvRefs: make(map[string]CredentialEnvRef),
+		}
+	}
 	return providers
 }
 
 func defaultProviderRoutes(
 	judicialCasesEnabled bool,
+	legislativeHistoryEnabled bool,
 ) map[ProviderRouteKey]ProviderRoute {
 	const (
 		courtsProviderID = "courts-hanrei-html"
+		dietProviderID   = "ndl-diet-speech-api"
 		v1ProviderID     = "e-gov-law-api-v1"
 		v2ProviderID     = "e-gov-law-api-v2"
 	)
@@ -162,19 +172,35 @@ func defaultProviderRoutes(
 			DefaultProviderID: courtsProviderID,
 		}
 	}
+	if legislativeHistoryEnabled {
+		routes[ProviderRouteKey{
+			CapabilityID: "parliament.speech.search",
+			MajorVersion: 1,
+		}] = ProviderRoute{
+			Selection:         ProviderRouteSelectionPrimary,
+			DefaultProviderID: dietProviderID,
+		}
+	}
 	return routes
 }
 
 func resolveProviderConfigs(
 	values map[string]ProviderConfig,
 	judicialCasesEnabled bool,
+	legislativeHistoryEnabled bool,
 ) (map[string]ProviderConfig, error) {
 	if values == nil {
-		return cloneProviderConfigs(defaultProviders(judicialCasesEnabled)), nil
+		return cloneProviderConfigs(defaultProviders(
+			judicialCasesEnabled,
+			legislativeHistoryEnabled,
+		)), nil
 	}
 	resolved := make(map[string]ProviderConfig)
 	if len(values) != 0 {
-		resolved = cloneProviderConfigs(defaultProviders(judicialCasesEnabled))
+		resolved = cloneProviderConfigs(defaultProviders(
+			judicialCasesEnabled,
+			legislativeHistoryEnabled,
+		))
 	}
 	providerIDs := make([]string, 0, len(values))
 	for providerID := range values {
@@ -205,13 +231,20 @@ func resolveProviderConfigs(
 func resolveProviderRoutes(
 	values map[string]ProviderRoute,
 	judicialCasesEnabled bool,
+	legislativeHistoryEnabled bool,
 ) (map[ProviderRouteKey]ProviderRoute, error) {
 	if values == nil {
-		return cloneProviderRoutes(defaultProviderRoutes(judicialCasesEnabled)), nil
+		return cloneProviderRoutes(defaultProviderRoutes(
+			judicialCasesEnabled,
+			legislativeHistoryEnabled,
+		)), nil
 	}
 	resolved := make(map[ProviderRouteKey]ProviderRoute)
 	if len(values) != 0 {
-		resolved = cloneProviderRoutes(defaultProviderRoutes(judicialCasesEnabled))
+		resolved = cloneProviderRoutes(defaultProviderRoutes(
+			judicialCasesEnabled,
+			legislativeHistoryEnabled,
+		))
 	}
 	rawKeys := make([]string, 0, len(values))
 	for key := range values {

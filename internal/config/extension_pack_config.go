@@ -10,6 +10,8 @@ const (
 
 	// ExtensionPackJudicialCases は、裁判例拡張パックの識別子である。
 	ExtensionPackJudicialCases = "judicial-cases"
+	// ExtensionPackLegislativeHistory は、立法過程拡張パックの識別子である。
+	ExtensionPackLegislativeHistory = "legislative-history"
 )
 
 // ExtensionPackConfig は、一つの拡張パックの起動時設定を表す。
@@ -31,7 +33,8 @@ func resolveExtensionPacks(
 
 	resolved := make(map[string]ExtensionPackConfig, len(values))
 	for _, packID := range packIDs {
-		if packID != ExtensionPackJudicialCases {
+		if packID != ExtensionPackJudicialCases &&
+			packID != ExtensionPackLegislativeHistory {
 			return nil, fmt.Errorf("未知の extension pack %q が指定されています", packID)
 		}
 		resolved[packID] = values[packID]

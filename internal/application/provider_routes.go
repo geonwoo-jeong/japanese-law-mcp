@@ -12,6 +12,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
 )
 
 const (
@@ -84,6 +85,13 @@ func judicialDecisionReadProviderRouteKey() providerRouteKey {
 	return providerRouteKey{
 		capabilityID: judicialdecisionread.CapabilityID,
 		majorVersion: judicialdecisionread.MajorVersion,
+	}
+}
+
+func parliamentSpeechSearchProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: parliamentspeechsearch.CapabilityID,
+		majorVersion: parliamentspeechsearch.MajorVersion,
 	}
 }
 
@@ -304,6 +312,18 @@ func (r ProviderRoutes) JudicialDecisionRead() (judicialdecisionread.Port, bool)
 	return r.registry.JudicialDecisionRead(providerID)
 }
 
+// ParliamentSpeechSearch は、parliament.speech.search@1 の実効 primary port を返す。
+func (r ProviderRoutes) ParliamentSpeechSearch() (parliamentspeechsearch.Port, bool) {
+	providerID, exists := r.ProviderID(
+		parliamentspeechsearch.CapabilityID,
+		parliamentspeechsearch.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.ParliamentSpeechSearch(providerID)
+}
+
 func (r ProviderBindingRegistry) hasBinding(
 	providerID string,
 	key providerRouteKey,
@@ -314,6 +334,9 @@ func (r ProviderBindingRegistry) hasBinding(
 		return exists
 	case judicialDecisionSearchProviderRouteKey():
 		_, exists := r.JudicialDecisionSearch(providerID)
+		return exists
+	case parliamentSpeechSearchProviderRouteKey():
+		_, exists := r.ParliamentSpeechSearch(providerID)
 		return exists
 	case lawSearchProviderRouteKey():
 		_, exists := r.LawSearch(providerID)
@@ -354,6 +377,7 @@ func supportedProviderRouteKeys() []providerRouteKey {
 	return []providerRouteKey{
 		judicialDecisionReadProviderRouteKey(),
 		judicialDecisionSearchProviderRouteKey(),
+		parliamentSpeechSearchProviderRouteKey(),
 		lawArticleReadProviderRouteKey(),
 		lawContentSearchProviderRouteKey(),
 		lawDocumentReadProviderRouteKey(),

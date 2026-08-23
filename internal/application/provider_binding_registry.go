@@ -13,6 +13,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -21,6 +22,7 @@ type ProviderBindings struct {
 	Descriptor             model.ProviderDescriptor
 	JudicialDecisionRead   judicialdecisionread.Port
 	JudicialDecisionSearch judicialdecisionsearch.Port
+	ParliamentSpeechSearch parliamentspeechsearch.Port
 	LawSearch              lawsearch.Port
 	LawContentSearch       lawcontentsearch.Port
 	LawRevisionList        lawrevisionlist.Port
@@ -181,6 +183,17 @@ func (r ProviderBindingRegistry) JudicialDecisionRead(
 	return binding.JudicialDecisionRead, true
 }
 
+// ParliamentSpeechSearch は、providerId の parliament.speech.search@1 port を返す。
+func (r ProviderBindingRegistry) ParliamentSpeechSearch(
+	providerID string,
+) (parliamentspeechsearch.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.ParliamentSpeechSearch) {
+		return nil, false
+	}
+	return binding.ParliamentSpeechSearch, true
+}
+
 func validateProviderBindings(value ProviderBindings) error {
 	declared := make(map[providerRouteKey]struct{}, len(value.Descriptor.Capabilities()))
 	for _, capability := range value.Descriptor.Capabilities() {
@@ -229,6 +242,8 @@ func hasPortForCapability(
 		return !isNilTypedPort(value.JudicialDecisionRead)
 	case judicialDecisionSearchProviderRouteKey():
 		return !isNilTypedPort(value.JudicialDecisionSearch)
+	case parliamentSpeechSearchProviderRouteKey():
+		return !isNilTypedPort(value.ParliamentSpeechSearch)
 	case lawSearchProviderRouteKey():
 		return !isNilTypedPort(value.LawSearch)
 	case lawContentSearchProviderRouteKey():

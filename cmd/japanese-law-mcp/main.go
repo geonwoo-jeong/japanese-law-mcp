@@ -26,6 +26,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawrevisions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo"
@@ -36,6 +37,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/ndl/kokkai"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/stdio"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/transport/streamablehttp"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -235,6 +237,10 @@ func newPublicDependencies(
 	if err != nil {
 		return projectmcp.Dependencies{}, err
 	}
+	legislativeHistory, err := newLegislativeHistoryDependencies(cfg, routes)
+	if err != nil {
+		return projectmcp.Dependencies{}, err
+	}
 	queryLegalInformation, err := newLegalQueryService(cfg, routes)
 	if err != nil {
 		return projectmcp.Dependencies{}, err
@@ -249,6 +255,7 @@ func newPublicDependencies(
 		ListLawUpdates:        listLawUpdates,
 		QueryLegalInformation: queryLegalInformation,
 		JudicialCases:         judicialCases,
+		LegislativeHistory:    legislativeHistory,
 	}, nil
 }
 
@@ -359,6 +366,31 @@ func newJudicialCasesDependencies(
 		return projectmcp.JudicialCasesDependencies{},
 			config.NewValidationError(fmt.Errorf(
 				"judicial-cases の公開依存関係を初期化できません: %w",
+				err,
+			))
+	}
+	return dependencies, nil
+}
+
+func newLegislativeHistoryDependencies(
+	cfg config.Config,
+	routes application.ProviderRoutes,
+) (projectmcp.LegislativeHistoryDependencies, error) {
+	if !cfg.LegislativeHistoryEnabled() {
+		return projectmcp.LegislativeHistoryDependencies{}, nil
+	}
+	searchProvider, exists := routes.ParliamentSpeechSearch()
+	if !exists {
+		return projectmcp.LegislativeHistoryDependencies{},
+			config.NewValidationError(
+				errors.New("primary parliament.speech.search binding がありません"),
+			)
+	}
+	dependencies, err := projectmcp.NewLegislativeHistoryDependencies(searchProvider)
+	if err != nil {
+		return projectmcp.LegislativeHistoryDependencies{},
+			config.NewValidationError(fmt.Errorf(
+				"legislative-history の公開依存関係を初期化できません: %w",
 				err,
 			))
 	}
@@ -583,6 +615,7 @@ func newEnabledProviderBindings(
 			providerID,
 			providers[providerID],
 			cfg.JudicialCasesEnabled(),
+			cfg.LegislativeHistoryEnabled(),
 		); err != nil {
 			return nil, err
 		}
@@ -602,6 +635,8 @@ func newEnabledProviderBindings(
 		switch providerID {
 		case hanrei.Descriptor().ProviderID():
 			binding, err = hanrei.NewProviderBindings()
+		case kokkai.Descriptor().ProviderID():
+			binding, err = kokkai.NewProviderBindings()
 		case lawv1.Descriptor().ProviderID():
 			binding, err = lawv1.NewProviderBindings()
 		case lawv2.Descriptor().ProviderID():
@@ -627,6 +662,7 @@ func validateBuiltInProviderConfig(
 	providerID string,
 	provider config.ProviderConfig,
 	judicialCasesEnabled bool,
+	legislativeHistoryEnabled bool,
 ) error {
 	switch providerID {
 	case hanrei.Descriptor().ProviderID():
@@ -634,6 +670,14 @@ func validateBuiltInProviderConfig(
 			return config.NewValidationError(
 				errors.New(
 					"judicial-cases が無効なため courts-hanrei-html を構成できません",
+				),
+			)
+		}
+	case kokkai.Descriptor().ProviderID():
+		if !legislativeHistoryEnabled {
+			return config.NewValidationError(
+				errors.New(
+					"legislative-history が無効なため ndl-diet-speech-api を構成できません",
 				),
 			)
 		}
@@ -657,30 +701,50 @@ func validateBuiltInProviderConfig(
 }
 
 func validateExtensionPackProviderScope(cfg config.Config) error {
-	if cfg.JudicialCasesEnabled() {
-		return nil
+	if !cfg.JudicialCasesEnabled() {
+		if _, exists := cfg.Provider(hanrei.Descriptor().ProviderID()); exists {
+			return config.NewValidationError(
+				errors.New(
+					"judicial-cases が無効なため courts-hanrei-html を指定できません",
+				),
+			)
+		}
+		for _, key := range []config.ProviderRouteKey{
+			{
+				CapabilityID: judicialdecisionread.CapabilityID,
+				MajorVersion: judicialdecisionread.MajorVersion,
+			},
+			{
+				CapabilityID: judicialdecisionsearch.CapabilityID,
+				MajorVersion: judicialdecisionsearch.MajorVersion,
+			},
+		} {
+			if _, exists := cfg.ProviderRoute(key); exists {
+				return config.NewValidationError(
+					fmt.Errorf(
+						"judicial-cases が無効なため providerRoutes.%s を指定できません",
+						key,
+					),
+				)
+			}
+		}
 	}
-	if _, exists := cfg.Provider(hanrei.Descriptor().ProviderID()); exists {
-		return config.NewValidationError(
-			errors.New(
-				"judicial-cases が無効なため courts-hanrei-html を指定できません",
-			),
-		)
-	}
-	for _, key := range []config.ProviderRouteKey{
-		{
-			CapabilityID: judicialdecisionread.CapabilityID,
-			MajorVersion: judicialdecisionread.MajorVersion,
-		},
-		{
-			CapabilityID: judicialdecisionsearch.CapabilityID,
-			MajorVersion: judicialdecisionsearch.MajorVersion,
-		},
-	} {
+	if !cfg.LegislativeHistoryEnabled() {
+		if _, exists := cfg.Provider(kokkai.Descriptor().ProviderID()); exists {
+			return config.NewValidationError(
+				errors.New(
+					"legislative-history が無効なため ndl-diet-speech-api を指定できません",
+				),
+			)
+		}
+		key := config.ProviderRouteKey{
+			CapabilityID: parliamentspeechsearch.CapabilityID,
+			MajorVersion: parliamentspeechsearch.MajorVersion,
+		}
 		if _, exists := cfg.ProviderRoute(key); exists {
 			return config.NewValidationError(
 				fmt.Errorf(
-					"judicial-cases が無効なため providerRoutes.%s を指定できません",
+					"legislative-history が無効なため providerRoutes.%s を指定できません",
 					key,
 				),
 			)

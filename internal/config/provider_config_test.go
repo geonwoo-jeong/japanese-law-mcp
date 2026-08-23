@@ -76,6 +76,33 @@ func TestDefaultProviderConfiguration(t *testing.T) {
 	}
 }
 
+func TestDefaultProviderConfigurationAddsLegislativeHistoryOnlyWhenEnabled(t *testing.T) {
+	t.Parallel()
+
+	got, err := New(Values{
+		Transport:      string(Default().Transport()),
+		RequestTimeout: Default().RequestTimeout(),
+		ListenAddress:  Default().ListenAddress(),
+		AllowedOrigins: Default().AllowedOrigins(),
+		Diagnostics:    Default().Diagnostics(),
+		ExtensionPacks: map[string]ExtensionPackConfig{
+			ExtensionPackLegislativeHistory: {Enabled: true},
+		},
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-061/SOT-IF-065: New() のエラー = %v", err)
+	}
+	if _, exists := got.Provider("ndl-diet-speech-api"); !exists {
+		t.Fatal("SOT-IF-065: legislative-history 有効時に provider が追加されません")
+	}
+	if _, exists := got.ProviderRoute(ProviderRouteKey{
+		CapabilityID: "parliament.speech.search",
+		MajorVersion: 1,
+	}); !exists {
+		t.Fatal("SOT-IF-065: legislative-history 有効時に route が追加されません")
+	}
+}
+
 func TestConfigOwnsProviderConfigurationSnapshots(t *testing.T) {
 	t.Parallel()
 

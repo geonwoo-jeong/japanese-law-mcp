@@ -26,6 +26,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawversioncompare"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
@@ -281,6 +282,39 @@ func TestJudicialCasesProviderRoutesActivateCourtsBindings(t *testing.T) {
 	}
 }
 
+func TestLegislativeHistoryProviderRoutesActivateNDLBinding(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withLegislativeHistoryEnabled())
+	if err != nil {
+		t.Fatalf("設定を生成できません: %v", err)
+	}
+	registry, routes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("SOT-IF-065: provider runtime を初期化できません: %v", err)
+	}
+	descriptor, exists := registry.Descriptor("ndl-diet-speech-api")
+	if !exists || len(descriptor.Capabilities()) != 1 {
+		t.Fatalf("SOT-IF-065: ndl descriptor = %#v, %t", descriptor, exists)
+	}
+	providerID, routeExists := routes.ProviderID(
+		parliamentspeechsearch.CapabilityID,
+		parliamentspeechsearch.MajorVersion,
+	)
+	if !routeExists || providerID != "ndl-diet-speech-api" {
+		t.Fatalf(
+			"SOT-IF-065: %s@%d provider = %q, %t",
+			parliamentspeechsearch.CapabilityID,
+			parliamentspeechsearch.MajorVersion,
+			providerID,
+			routeExists,
+		)
+	}
+	if port, exists := routes.ParliamentSpeechSearch(); !exists || port == nil {
+		t.Fatal("SOT-IF-065: parliament.speech.search route に到達できません")
+	}
+}
+
 func TestPublicDependenciesRejectMissingCoreRoutes(t *testing.T) {
 	t.Parallel()
 
@@ -399,6 +433,37 @@ func TestProviderRoutesRejectJudicialConfigurationWhenPackDisabled(t *testing.T)
 			if !config.IsValidationError(err) ||
 				!strings.Contains(err.Error(), "judicial-cases") {
 				t.Fatalf("SOT-IF-046: pack 無効時の設定エラー = %v", err)
+			}
+		})
+	}
+}
+
+func TestProviderRoutesRejectLegislativeHistoryConfigurationWhenPackDisabled(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]config.Values{
+		"provider": withTestProviders(map[string]config.ProviderConfig{
+			"ndl-diet-speech-api": {Enabled: false},
+		}),
+		"route": withTestProviderRoutes(map[string]config.ProviderRoute{
+			"parliament.speech.search@1": {
+				Selection:         config.ProviderRouteSelectionPrimary,
+				DefaultProviderID: "ndl-diet-speech-api",
+			},
+		}),
+	}
+	for name, values := range tests {
+		name, values := name, values
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			cfg, err := config.New(values)
+			if err != nil {
+				t.Fatalf("構造上有効な設定を生成できません: %v", err)
+			}
+			_, _, err = newProviderRoutes(cfg)
+			if !config.IsValidationError(err) ||
+				!strings.Contains(err.Error(), "legislative-history") {
+				t.Fatalf("SOT-IF-065: pack 無効時の設定エラー = %v", err)
 			}
 		})
 	}
@@ -580,6 +645,70 @@ func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
 	}
 	if !reflect.DeepEqual(names, want) {
 		t.Fatalf("SOT-IF-040: tool names = %#v, want %#v", names, want)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("MCP セッションを終了できません: %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("MCP サーバーが正常終了しませんでした: %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
+	}
+}
+
+func TestPublicServerIncludesLegislativeHistoryToolAsOneSet(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withLegislativeHistoryEnabled())
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+	registry, routes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("provider runtime を初期化できません: %v", err)
+	}
+	server, err := newPublicServer("test-version", cfg, registry, routes, false)
+	if err != nil {
+		t.Fatalf("公開サーバーを初期化できません: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() { serverResult <- server.Run(ctx, serverTransport) }()
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("MCP セッションを初期化できません: %v", err)
+	}
+	tools, err := session.ListTools(ctx, nil)
+	if err != nil {
+		t.Fatalf("tools/list error = %v", err)
+	}
+	names := make([]string, len(tools.Tools))
+	for index, tool := range tools.Tools {
+		names[index] = tool.Name
+	}
+	want := []string{
+		"compare_law_versions",
+		"get_article",
+		"get_law",
+		"list_law_revisions",
+		"list_law_updates",
+		"query_legal_information",
+		"search_diet_speeches",
+		"search_law_content",
+		"search_laws",
+	}
+	if !reflect.DeepEqual(names, want) {
+		t.Fatalf("SOT-IF-061: tool names = %#v, want %#v", names, want)
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("MCP セッションを終了できません: %v", err)
@@ -958,6 +1087,14 @@ func withJudicialCasesEnabled() config.Values {
 	values := defaultTestConfigValues()
 	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
 		config.ExtensionPackJudicialCases: {Enabled: true},
+	}
+	return values
+}
+
+func withLegislativeHistoryEnabled() config.Values {
+	values := defaultTestConfigValues()
+	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
+		config.ExtensionPackLegislativeHistory: {Enabled: true},
 	}
 	return values
 }

@@ -39,11 +39,11 @@ type Config struct {
 
 // Default は、SOT-IF-026、SOT-IF-029 と SOT-IF-040 が定める既定の起動設定を返す。
 func Default() Config {
-	providers, err := resolveProviderConfigs(nil, false)
+	providers, err := resolveProviderConfigs(nil, false, false)
 	if err != nil {
 		panic("組込み provider 設定を構成できません")
 	}
-	providerRoutes, err := resolveProviderRoutes(nil, false)
+	providerRoutes, err := resolveProviderRoutes(nil, false, false)
 	if err != nil {
 		panic("組込み provider route を構成できません")
 	}
@@ -79,9 +79,11 @@ func New(values Values) (Config, error) {
 		)
 	}
 	judicialCasesEnabled := extensionPacks[ExtensionPackJudicialCases].Enabled
+	legislativeHistoryEnabled := extensionPacks[ExtensionPackLegislativeHistory].Enabled
 	providers, err := resolveProviderConfigs(
 		values.Providers,
 		judicialCasesEnabled,
+		legislativeHistoryEnabled,
 	)
 	if err != nil {
 		return Config{}, fmt.Errorf(
@@ -92,6 +94,7 @@ func New(values Values) (Config, error) {
 	providerRoutes, err := resolveProviderRoutes(
 		values.ProviderRoutes,
 		judicialCasesEnabled,
+		legislativeHistoryEnabled,
 	)
 	if err != nil {
 		return Config{}, fmt.Errorf(
@@ -178,5 +181,11 @@ func (c Config) ExtensionPacks() map[string]ExtensionPackConfig {
 // JudicialCasesEnabled は、裁判例拡張パックが有効かを返す。
 func (c Config) JudicialCasesEnabled() bool {
 	pack, exists := c.extensionPacks[ExtensionPackJudicialCases]
+	return exists && pack.Enabled
+}
+
+// LegislativeHistoryEnabled は、立法過程拡張パックが有効かを返す。
+func (c Config) LegislativeHistoryEnabled() bool {
+	pack, exists := c.extensionPacks[ExtensionPackLegislativeHistory]
 	return exists && pack.Enabled
 }

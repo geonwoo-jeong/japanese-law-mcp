@@ -12,8 +12,20 @@ func TestDefaultDisablesJudicialCasesExtensionPack(t *testing.T) {
 	if got.JudicialCasesEnabled() {
 		t.Fatal("SOT-IF-040: judicial-cases の既定値が有効です")
 	}
+	if got.LegislativeHistoryEnabled() {
+		t.Fatal("SOT-IF-061: legislative-history の既定値が有効です")
+	}
 	if len(got.ExtensionPacks()) != 0 {
 		t.Fatalf("SOT-IF-040: extensionPacks = %#v、期待値 = 空", got.ExtensionPacks())
+	}
+}
+
+func TestDefaultDisablesLegislativeHistoryExtensionPack(t *testing.T) {
+	t.Parallel()
+
+	got := Default()
+	if got.LegislativeHistoryEnabled() {
+		t.Fatal("SOT-IF-061: legislative-history の既定値が有効です")
 	}
 }
 
@@ -90,6 +102,67 @@ func TestNewAddsJudicialCasesConditionalProviderAndRoutes(t *testing.T) {
 	}
 }
 
+func TestNewAddsLegislativeHistoryConditionalProviderAndRoute(t *testing.T) {
+	t.Parallel()
+
+	values := validProviderValues()
+	values.ExtensionPacks = map[string]ExtensionPackConfig{
+		ExtensionPackLegislativeHistory: {Enabled: true},
+	}
+	got, err := New(values)
+	if err != nil {
+		t.Fatalf("SOT-IF-061/SOT-IF-065: New() のエラー = %v", err)
+	}
+	provider, exists := got.Provider("ndl-diet-speech-api")
+	if !exists || !provider.Enabled || len(provider.Settings) != 0 || len(provider.CredentialEnvRefs) != 0 {
+		t.Fatalf("SOT-IF-065: ndl-diet-speech-api = %#v, %t", provider, exists)
+	}
+	route, routeExists := got.ProviderRoute(ProviderRouteKey{
+		CapabilityID: "parliament.speech.search",
+		MajorVersion: 1,
+	})
+	if !routeExists ||
+		route.Selection != ProviderRouteSelectionPrimary ||
+		route.DefaultProviderID != "ndl-diet-speech-api" {
+		t.Fatalf("SOT-IF-065: route = %#v, %t", route, routeExists)
+	}
+}
+
+func TestNewAddsLegislativeHistoryConditionalProviderAndRoutes(t *testing.T) {
+	t.Parallel()
+
+	values := validProviderValues()
+	values.ExtensionPacks = map[string]ExtensionPackConfig{
+		ExtensionPackLegislativeHistory: {Enabled: true},
+	}
+	got, err := New(values)
+	if err != nil {
+		t.Fatalf("SOT-IF-061/SOT-IF-065: New() のエラー = %v", err)
+	}
+
+	provider, exists := got.Provider("ndl-diet-speech-api")
+	if !exists ||
+		!provider.Enabled ||
+		len(provider.Settings) != 0 ||
+		len(provider.CredentialEnvRefs) != 0 {
+		t.Fatalf("SOT-IF-065: ndl-diet-speech-api = %#v, %t", provider, exists)
+	}
+	key := ProviderRouteKey{CapabilityID: "parliament.speech.search", MajorVersion: 1}
+	route, routeExists := got.ProviderRoute(key)
+	if !routeExists ||
+		route.Selection != ProviderRouteSelectionPrimary ||
+		route.DefaultProviderID != "ndl-diet-speech-api" {
+		t.Fatalf("SOT-IF-065: route %s = %#v, %t", key, route, routeExists)
+	}
+	if len(got.Providers()) != 3 || len(got.ProviderRoutes()) != 8 {
+		t.Fatalf(
+			"SOT-IF-065: providers = %d, routes = %d",
+			len(got.Providers()),
+			len(got.ProviderRoutes()),
+		)
+	}
+}
+
 func TestNewAppliesUserOverrideToConditionalProvider(t *testing.T) {
 	t.Parallel()
 
@@ -146,6 +219,47 @@ enabled = true
 			}
 			if !got.JudicialCasesEnabled() {
 				t.Fatal("SOT-IF-040: judicial-cases が有効ではありません")
+			}
+		})
+	}
+}
+
+func TestLoadLegislativeHistoryExtensionPackFormats(t *testing.T) {
+	clearKnownEnvironment(t)
+
+	tests := map[string]string{
+		"config.yaml": `
+extensionPacks:
+  legislative-history:
+    enabled: true
+`,
+		"config.json": `{
+  "extensionPacks": {
+    "legislative-history": {
+      "enabled": true
+    }
+  }
+}`,
+		"config.toml": `
+[extensionPacks.legislative-history]
+enabled = true
+`,
+	}
+	for name, content := range tests {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), name)
+			writeFile(t, path, content)
+
+			got, err := Load(LoadOptions{
+				Flags:         newFlagSet(t),
+				ConfigFile:    path,
+				UserConfigDir: fixedUserConfigDir(t.TempDir()),
+			})
+			if err != nil {
+				t.Fatalf("SOT-IF-039/SOT-IF-061: Load() のエラー = %v", err)
+			}
+			if !got.LegislativeHistoryEnabled() {
+				t.Fatal("SOT-IF-061: legislative-history が有効ではありません")
 			}
 		})
 	}
