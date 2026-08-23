@@ -220,8 +220,9 @@ func TestMapSpeechSearchPageRejectsNonOfficialRequestURL(t *testing.T) {
 		t.Fatalf("検証用 response を作成できません: %v", err)
 	}
 	for name, requestURL := range map[string]string{
-		"別 origin": "https://example.invalid/api/speech",
-		"別 path":   "https://kokkai.ndl.go.jp/api/meeting",
+		"別 origin":     "https://example.invalid/api/speech",
+		"別 path":       "https://kokkai.ndl.go.jp/api/meeting",
+		"encoded path": "https://kokkai.ndl.go.jp/api/%73peech",
 	} {
 		name, requestURL := name, requestURL
 		t.Run(name, func(t *testing.T) {
@@ -238,6 +239,22 @@ func TestMapSpeechSearchPageRejectsNonOfficialRequestURL(t *testing.T) {
 				model.SourceErrorCodeInvalidSourceResponse,
 			)
 		})
+	}
+}
+
+func TestMapSpeechSearchPagePropagatesCancellation(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, err := mapSpeechSearchPage(
+		ctx,
+		speechSearchResponse{},
+		"https://kokkai.ndl.go.jp/api/speech?startRecord=1",
+		time.Date(2026, 8, 23, 12, 0, 0, 0, time.UTC),
+	)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancel の伝播 = %v", err)
 	}
 }
 

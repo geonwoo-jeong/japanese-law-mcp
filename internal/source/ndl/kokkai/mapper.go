@@ -152,6 +152,7 @@ func isSpeechSearchRequestURL(value string) bool {
 		strings.EqualFold(parsed.Scheme, "https") &&
 		strings.EqualFold(parsed.Hostname(), "kokkai.ndl.go.jp") &&
 		parsed.Path == "/api/speech" &&
+		parsed.EscapedPath() == "/api/speech" &&
 		parsed.Port() == "" &&
 		parsed.User == nil &&
 		parsed.Fragment == "" &&

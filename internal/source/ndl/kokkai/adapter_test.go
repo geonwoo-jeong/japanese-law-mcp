@@ -223,6 +223,14 @@ func TestSleepSpeechSearchWithContext(t *testing.T) {
 	}
 }
 
+func TestSpeechSearchOperationRejectsUnknownValue(t *testing.T) {
+	t.Parallel()
+
+	if err := operation("unknown").ValidateSourceOperation(); err == nil {
+		t.Fatal("未知の operation を受理しました")
+	}
+}
+
 type speechSearchClientFunc func(
 	context.Context,
 	parliamentspeechsearch.Request,
