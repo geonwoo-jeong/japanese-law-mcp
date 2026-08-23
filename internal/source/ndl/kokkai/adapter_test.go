@@ -2,6 +2,7 @@ package kokkai
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -126,6 +127,112 @@ func TestSpeechSearchAdapterReturnsCanceledDuringGateHold(t *testing.T) {
 	if calls.Load() != 1 {
 		t.Fatalf("外部呼出し回数 = %d", calls.Load())
 	}
+}
+
+func TestSpeechSearchAdapterValidatesDependenciesAndInput(t *testing.T) {
+	t.Parallel()
+
+	if adapter, err := NewSpeechSearchAdapter(); err != nil || adapter == nil {
+		t.Fatalf("production adapter を作成できません: %v", err)
+	}
+	if _, err := newSpeechSearchAdapter(speechSearchAdapterDependencies{}); err == nil {
+		t.Fatal("不足した依存関係を受理しました")
+	}
+	if _, err := newSpeechSearchAdapter(speechSearchAdapterDependencies{
+		client: speechSearchClientFunc(func(
+			context.Context,
+			parliamentspeechsearch.Request,
+		) (fetchedSpeechSearchResponse, error) {
+			return fetchedSpeechSearchResponse{}, nil
+		}),
+		now:   time.Now,
+		sleep: sleepSpeechSearchWithContext,
+		gate:  make(chan struct{}, 2),
+	}); err == nil {
+		t.Fatal("二件以上の同時実行枠を受理しました")
+	}
+
+	adapter, err := newSpeechSearchAdapter(speechSearchAdapterDependencies{
+		client: speechSearchClientFunc(func(
+			context.Context,
+			parliamentspeechsearch.Request,
+		) (fetchedSpeechSearchResponse, error) {
+			t.Fatal("無効な入力で外部呼出ししました")
+			return fetchedSpeechSearchResponse{}, nil
+		}),
+		now:   time.Now,
+		sleep: sleepSpeechSearchWithContext,
+		gate:  make(chan struct{}, 1),
+	})
+	if err != nil {
+		t.Fatalf("検証用 adapter を作成できません: %v", err)
+	}
+	validRequest := mustSpeechSearchRequest(
+		t,
+		parliamentspeechsearch.RequestValues{Query: "民法"},
+	)
+	if _, err := adapter.Search(nil, validRequest); err == nil {
+		t.Fatal("nil context を受理しました")
+	}
+	if _, err := adapter.Search(context.Background(), parliamentspeechsearch.Request{}); err == nil {
+		t.Fatal("無効な request を受理しました")
+	}
+}
+
+func TestSpeechSearchAdapterReleasesGateAfterFetchFailure(t *testing.T) {
+	t.Parallel()
+
+	gate := make(chan struct{}, 1)
+	adapter, err := newSpeechSearchAdapter(speechSearchAdapterDependencies{
+		client: speechSearchClientFunc(func(
+			context.Context,
+			parliamentspeechsearch.Request,
+		) (fetchedSpeechSearchResponse, error) {
+			return fetchedSpeechSearchResponse{}, newSpeechSearchSourceError(
+				model.SourceErrorCodeSourceUnavailable,
+				"",
+			)
+		}),
+		now:   time.Now,
+		sleep: sleepSpeechSearchWithContext,
+		gate:  gate,
+	})
+	if err != nil {
+		t.Fatalf("検証用 adapter を作成できません: %v", err)
+	}
+	_, err = adapter.Search(
+		context.Background(),
+		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "民法"}),
+	)
+	assertSpeechSearchSourceError(t, err, model.SourceErrorCodeSourceUnavailable)
+	if len(gate) != 0 {
+		t.Fatal("失敗後に同時実行枠を解放していません")
+	}
+}
+
+func TestSleepSpeechSearchWithContext(t *testing.T) {
+	t.Parallel()
+
+	if err := sleepSpeechSearchWithContext(context.Background(), 0); err != nil {
+		t.Fatalf("0 秒待機のエラー = %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := sleepSpeechSearchWithContext(ctx, time.Second); !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancel の伝播 = %v", err)
+	}
+}
+
+type speechSearchClientFunc func(
+	context.Context,
+	parliamentspeechsearch.Request,
+) (fetchedSpeechSearchResponse, error)
+
+func (f speechSearchClientFunc) fetchSpeechSearch(
+	ctx context.Context,
+	request parliamentspeechsearch.Request,
+) (fetchedSpeechSearchResponse, error) {
+	return f(ctx, request)
 }
 
 type doerFunc func(*http.Request) (*http.Response, error)
