@@ -109,6 +109,23 @@ func TestLegalQueryServiceReturnsCapabilityUnavailableForDisabledJudicialSearch(
 			result.Attempts(),
 		)
 	}
+	interpretations := result.Interpretations()
+	if !slices.Equal(
+		result.Notices(),
+		[]string{legalquery.LegalQueryPackDisabledNotice},
+	) ||
+		len(interpretations) != 1 ||
+		interpretations[0].Availability() != legalquery.SelectionAvailabilityPackDisabled ||
+		!slices.Equal(
+			interpretations[0].RequiredPacks(),
+			[]string{legalqueryplanning.JudicialCasesPackID},
+		) {
+		t.Fatalf(
+			"pack 無効時の裁判例照会 notices/interpretations = %#v / %#v",
+			result.Notices(),
+			interpretations,
+		)
+	}
 	if got := calls.snapshot(); len(got) != 0 {
 		t.Fatalf("pack 無効時に provider を呼び出しました: %#v", got)
 	}
@@ -173,13 +190,29 @@ func TestPublicLegalQueryReturnsCapabilityUnavailableWithoutProviderCalls(
 		t.Fatalf("公開統合照会 content の型 = %T", callResult.Content[0])
 	}
 	var payload struct {
-		Status legalquery.LegalQueryResultStatus `json:"status"`
+		Status          legalquery.LegalQueryResultStatus `json:"status"`
+		Notices         []string                          `json:"notices"`
+		Interpretations []struct {
+			Availability  legalquery.SelectionAvailability `json:"availability"`
+			RequiredPacks []string                         `json:"requiredPacks"`
+		} `json:"interpretations"`
 	}
 	if err := json.Unmarshal([]byte(content.Text), &payload); err != nil {
 		t.Fatalf("公開統合照会の JSON を解析できません: %v", err)
 	}
-	if payload.Status != legalquery.LegalQueryResultStatusCapabilityUnavailable {
-		t.Fatalf("公開統合照会 status = %q", payload.Status)
+	if payload.Status != legalquery.LegalQueryResultStatusCapabilityUnavailable ||
+		!slices.Equal(
+			payload.Notices,
+			[]string{legalquery.LegalQueryPackDisabledNotice},
+		) ||
+		len(payload.Interpretations) != 1 ||
+		payload.Interpretations[0].Availability !=
+			legalquery.SelectionAvailabilityPackDisabled ||
+		!slices.Equal(
+			payload.Interpretations[0].RequiredPacks,
+			[]string{legalqueryplanning.JudicialCasesPackID},
+		) {
+		t.Fatalf("公開統合照会 payload = %#v", payload)
 	}
 	if got := calls.snapshot(); len(got) != 0 {
 		t.Fatalf("公開 pack 無効照会で provider を呼び出しました: %#v", got)
@@ -371,6 +404,295 @@ func TestLegalQueryServiceKeepsCoreQueryOnCoreFacadeRoute(t *testing.T) {
 	got := calls.snapshot()
 	if len(got) != 1 || !strings.HasPrefix(got[0], "law.search:") {
 		t.Fatalf("法令コアの provider 呼出し = %#v", got)
+	}
+}
+
+func TestLegalQueryServiceReturnsNonExecutionGuidancePerScenario(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		query     string
+		status    legalquery.LegalQueryResultStatus
+		notices   []string
+		questions []legalquery.LegalQueryQuestion
+	}{
+		{
+			name:   "法的助言だけの要求",
+			query:  "賃金が支払われません。どうすればよいですか。",
+			status: legalquery.LegalQueryResultStatusUnsupported,
+			notices: []string{
+				legalquery.LegalQueryUnsupportedScopeNotice,
+			},
+		},
+		{
+			name:   "翻訳だけの要求",
+			query:  "民法を英語に翻訳してください。",
+			status: legalquery.LegalQueryResultStatusUnsupported,
+			notices: []string{
+				legalquery.LegalQueryUnsupportedScopeNotice,
+			},
+		},
+		{
+			name:   "取得要求と対象外要求の混在",
+			query:  "民法を検索して影響グラフを作成してください。",
+			status: legalquery.LegalQueryResultStatusUnsupported,
+			notices: []string{
+				legalquery.LegalQueryMixedUnsupportedNotice,
+				legalquery.LegalQueryUnsupportedScopeNotice,
+			},
+		},
+		{
+			name:   "五つ以上の明示主題",
+			query:  "民法、刑法、会社法、行政手続法、独禁法をそれぞれ検索してください。",
+			status: legalquery.LegalQueryResultStatusNeedsClarification,
+			questions: []legalquery.LegalQueryQuestion{
+				legalquery.LegalQueryQuestionStepLimitExceeded,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			cfg := config.Default()
+			calls := &legalQueryTestPortCalls{}
+			_, routes := newLegalQueryTestRoutes(t, cfg, calls)
+			service, err := newLegalQueryService(cfg, routes)
+			if err != nil {
+				t.Fatalf("統合照会 service を初期化できません: %v", err)
+			}
+			result, err := service.Query(
+				context.Background(),
+				newLegalQueryRequest(t, test.query),
+			)
+			if err != nil {
+				t.Fatalf("統合照会 error = %v", err)
+			}
+			if result.Status() != test.status ||
+				result.Decision() != legalquery.LegalQueryResultDecisionNoExecution ||
+				len(result.Attempts()) != 0 {
+				t.Fatalf(
+					"非実行結果 = status:%q decision:%q attempts:%#v",
+					result.Status(),
+					result.Decision(),
+					result.Attempts(),
+				)
+			}
+			if !slices.Equal(result.Notices(), test.notices) {
+				t.Fatalf("notices = %#v, want %#v", result.Notices(), test.notices)
+			}
+			if test.questions != nil {
+				clarification, ok := result.(legalquery.LegalQueryNeedsClarificationResult)
+				if !ok {
+					t.Fatalf("明確化結果の型 = %T", result)
+				}
+				if !slices.Equal(
+					clarification.Clarification().Questions(),
+					test.questions,
+				) {
+					t.Fatalf(
+						"questions = %#v, want %#v",
+						clarification.Clarification().Questions(),
+						test.questions,
+					)
+				}
+			}
+			if got := calls.snapshot(); len(got) != 0 {
+				t.Fatalf("非実行結果で provider を呼び出しました: %#v", got)
+			}
+		})
+	}
+}
+
+func TestPublicLegalQueryReturnsStepLimitClarificationOverMCP(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Default()
+	calls := &legalQueryTestPortCalls{}
+	registry, routes := newLegalQueryTestRoutes(t, cfg, calls)
+	server, err := newPublicServer(
+		"test-version",
+		cfg,
+		registry,
+		routes,
+		false,
+	)
+	if err != nil {
+		t.Fatalf("公開 MCP server を初期化できません: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- server.Run(ctx, serverTransport)
+	}()
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("公開 MCP server へ接続できません: %v", err)
+	}
+	callResult, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name: "query_legal_information",
+		Arguments: map[string]any{
+			"query": "民法、刑法、会社法、行政手続法、独禁法をそれぞれ検索してください。",
+		},
+	})
+	if err != nil {
+		t.Fatalf("公開統合照会を呼び出せません: %v", err)
+	}
+	if callResult == nil || callResult.IsError || len(callResult.Content) != 1 {
+		t.Fatalf("公開統合照会の結果 = %#v", callResult)
+	}
+	content, ok := callResult.Content[0].(*sdk.TextContent)
+	if !ok {
+		t.Fatalf("公開統合照会 content の型 = %T", callResult.Content[0])
+	}
+	var payload struct {
+		Status        legalquery.LegalQueryResultStatus `json:"status"`
+		Notices       []string                          `json:"notices"`
+		Clarification struct {
+			Questions []legalquery.LegalQueryQuestion `json:"questions"`
+		} `json:"clarification"`
+	}
+	if err := json.Unmarshal([]byte(content.Text), &payload); err != nil {
+		t.Fatalf("公開統合照会の JSON を解析できません: %v", err)
+	}
+	if payload.Status != legalquery.LegalQueryResultStatusNeedsClarification ||
+		len(payload.Notices) != 0 ||
+		!slices.Equal(payload.Clarification.Questions, []legalquery.LegalQueryQuestion{
+			legalquery.LegalQueryQuestionStepLimitExceeded,
+		}) {
+		t.Fatalf("公開統合照会 payload = %#v", payload)
+	}
+	if got := calls.snapshot(); len(got) != 0 {
+		t.Fatalf("公開 step 上限明確化で provider を呼び出しました: %#v", got)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("公開 MCP session を終了できません: %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("公開 MCP server が正常終了しませんでした: %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("公開 MCP server の終了を待機できません: %v", ctx.Err())
+	}
+}
+
+func TestPublicLegalQueryReturnsUnsupportedGuidanceOverMCP(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Default()
+	calls := &legalQueryTestPortCalls{}
+	registry, routes := newLegalQueryTestRoutes(t, cfg, calls)
+	server, err := newPublicServer(
+		"test-version",
+		cfg,
+		registry,
+		routes,
+		false,
+	)
+	if err != nil {
+		t.Fatalf("公開 MCP server を初期化できません: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- server.Run(ctx, serverTransport)
+	}()
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("公開 MCP server へ接続できません: %v", err)
+	}
+	tests := []struct {
+		name    string
+		query   string
+		notices []string
+	}{
+		{
+			name:  "法的助言だけの要求",
+			query: "賃金が支払われません。どうすればよいですか。",
+			notices: []string{
+				legalquery.LegalQueryUnsupportedScopeNotice,
+			},
+		},
+		{
+			name:  "翻訳だけの要求",
+			query: "民法を英語に翻訳してください。",
+			notices: []string{
+				legalquery.LegalQueryUnsupportedScopeNotice,
+			},
+		},
+		{
+			name:  "取得要求と対象外要求の混在",
+			query: "民法を検索して影響グラフを作成してください。",
+			notices: []string{
+				legalquery.LegalQueryMixedUnsupportedNotice,
+				legalquery.LegalQueryUnsupportedScopeNotice,
+			},
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			callResult, callErr := session.CallTool(ctx, &sdk.CallToolParams{
+				Name: "query_legal_information",
+				Arguments: map[string]any{
+					"query": test.query,
+				},
+			})
+			if callErr != nil {
+				t.Fatalf("公開統合照会を呼び出せません: %v", callErr)
+			}
+			if callResult == nil || callResult.IsError || len(callResult.Content) != 1 {
+				t.Fatalf("公開統合照会の結果 = %#v", callResult)
+			}
+			content, ok := callResult.Content[0].(*sdk.TextContent)
+			if !ok {
+				t.Fatalf("公開統合照会 content の型 = %T", callResult.Content[0])
+			}
+			var payload struct {
+				Status  legalquery.LegalQueryResultStatus `json:"status"`
+				Notices []string                          `json:"notices"`
+			}
+			if err := json.Unmarshal([]byte(content.Text), &payload); err != nil {
+				t.Fatalf("公開統合照会の JSON を解析できません: %v", err)
+			}
+			if payload.Status != legalquery.LegalQueryResultStatusUnsupported ||
+				!slices.Equal(payload.Notices, test.notices) {
+				t.Fatalf("公開統合照会 payload = %#v", payload)
+			}
+		})
+	}
+	if got := calls.snapshot(); len(got) != 0 {
+		t.Fatalf("公開 unsupported 案内で provider を呼び出しました: %#v", got)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("公開 MCP session を終了できません: %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("公開 MCP server が正常終了しませんでした: %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("公開 MCP server の終了を待機できません: %v", ctx.Err())
 	}
 }
 
