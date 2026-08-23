@@ -14,3 +14,4 @@
 - [12-japanese-legal-query-intent-taxonomy.md](12-japanese-legal-query-intent-taxonomy.md)
 - [13-law-version-comparison.md](13-law-version-comparison.md)
 - [14-legislative-history-extension-pack.md](14-legislative-history-extension-pack.md)
+- [15-japanese-law-index-adoption-boundary.md](15-japanese-law-index-adoption-boundary.md)

@@ -41,9 +41,9 @@ capability、provider binding および route を公開できる。`query_legal_
 
 ## 日本法令索引の扱い
 
-[日本法令索引](https://hourei.ndl.go.jp/help.html)は、法令および法案の索引情報を確認する公式参照先の候補として保持する。ただし、確認済みの[国立国会図書館の API 一覧](https://www.ndl.go.jp/use/api)には日本法令索引の専用 API が示されず、国立国会図書館サーチでは 2024 年の更新に伴い[日本法令索引との連携が終了](https://ndlsearch.ndl.go.jp/news/renkei_20240105)している。
-
-したがって、今回の採用では日本法令索引の HTML、未公開 endpoint または旧連携データを構造化 provider として扱わない。将来、公式に文書化された機械取得方法と利用条件を確認できた場合は、議案または法令沿革の別のモデル、capability、情報源および mapping SOT を先に採用する。
+日本法令索引の provider 採用保留境界は `SOT-PROD-015` に従う。したがって、
+この第一段階では日本法令索引を構造化 provider として扱わず、国会発言検索の
+能力、tool、binding または route に含めない。
 
 ## 利用条件と固定注意
 
@@ -62,6 +62,7 @@ capability、provider binding および route を公開できる。`query_legal_
 ## 関連
 
 - [SOT-PROD-009: 選択型法情報拡張パックの境界](09-selectable-legal-information-extension-packs.md)
+- [SOT-PROD-015: 日本法令索引の採用保留境界](15-japanese-law-index-adoption-boundary.md)
 - [SOT-SCN-014: 国会会議録の発言を検索する](../10-scenarios/14-search-diet-speeches.md)
 - [SOT-MODEL-034: ParliamentSpeech](../20-model/34-parliament-speech.md)
 - [SOT-IF-061: `legislative-history` 拡張パックの専門公開面](../40-interfaces/61-legislative-history-pack-activation.md)
