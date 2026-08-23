@@ -5,16 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawrevisionlist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawrevisions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
-
-type listLawRevisionsInputSchema struct {
-	LawIDOrNumber string `json:"lawIdOrNumber"`
-}
 
 type listLawRevisionsOutput struct {
 	LawID      string                       `json:"lawId"`
@@ -56,23 +53,12 @@ type listLawRevisionsOutputSource struct {
 	ServiceURL string `json:"serviceUrl"`
 }
 
-func addListLawRevisionsTool(server *sdk.Server, lister listlawrevisions.Port) {
-	server.AddTool(&sdk.Tool{
-		Name:         "list_law_revisions",
-		Description:  "法令 ID または法令番号から、公式情報源の完全な改正履歴を新しい順で取得します。",
-		InputSchema:  mustSchemaFor[listLawRevisionsInputSchema](),
-		OutputSchema: mustSchemaFor[listLawRevisionsOutput](),
-	}, func(ctx context.Context, request *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
-		return callListLawRevisions(ctx, lister, request.Params.Arguments)
-	})
-}
-
 func callListLawRevisions(
 	ctx context.Context,
 	lister listlawrevisions.Port,
 	arguments json.RawMessage,
 ) (*sdk.CallToolResult, error) {
-	if lister == nil {
+	if isNilListLawRevisionsPort(lister) {
 		return errorToolResult(newInternalErrorResult())
 	}
 	request, err := decodeListLawRevisionsInput(arguments)
@@ -91,6 +77,20 @@ func callListLawRevisions(
 		)))
 	}
 	return successListLawRevisionsToolResult(mapListLawRevisionsOutput(result))
+}
+
+func isNilListLawRevisionsPort(lister listlawrevisions.Port) bool {
+	if lister == nil {
+		return true
+	}
+	value := reflect.ValueOf(lister)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
+		reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	default:
+		return false
+	}
 }
 
 func decodeListLawRevisionsInput(arguments json.RawMessage) (listlawrevisions.Request, error) {

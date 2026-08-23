@@ -194,6 +194,31 @@ func TestListLawRevisionsToolReturnsNonNilEmptyItemsAndPreservesErrors(t *testin
 	assertListLawRevisionsErrorCode(t, result, "internal_error")
 }
 
+func TestListLawRevisionsToolFailsClosedForNilPortVariants(t *testing.T) {
+	t.Parallel()
+
+	var typedNil *recordingListLawRevisionsPort
+	for name, port := range map[string]listlawrevisions.Port{
+		"nil":       nil,
+		"typed nil": typedNil,
+	} {
+		name, port := name, port
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			result, err := callListLawRevisions(
+				context.Background(),
+				port,
+				json.RawMessage(`{"lawIdOrNumber":"law-1"}`),
+			)
+			if err != nil {
+				t.Fatalf("callListLawRevisions() のエラー = %v", err)
+			}
+			assertListLawRevisionsErrorCode(t, result, "internal_error")
+		})
+	}
+}
+
 type recordingListLawRevisionsPort struct {
 	result  listlawrevisions.Result
 	err     error
