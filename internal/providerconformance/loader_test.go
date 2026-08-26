@@ -18,20 +18,23 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	}
 
 	providers := catalog.Providers()
-	if len(providers) != 4 {
-		t.Fatalf("provider 数 = %d、期待値は 4 です", len(providers))
+	if len(providers) != 5 {
+		t.Fatalf("provider 数 = %d、期待値は 5 です", len(providers))
 	}
 	courts := providerByID(t, providers, "courts-hanrei-html")
+	courtsPDF := providerByID(t, providers, "courts-hanrei-pdf")
 	ndl := providerByID(t, providers, "ndl-diet-speech-api")
 	v1 := providerByID(t, providers, "e-gov-law-api-v1")
 	v2 := providerByID(t, providers, "e-gov-law-api-v2")
 	if courts.SchemaVersion != 1 ||
+		courtsPDF.SchemaVersion != 1 ||
 		ndl.SchemaVersion != 1 ||
 		v1.SchemaVersion != 1 ||
 		v2.SchemaVersion != 1 {
 		t.Fatalf(
-			"schemaVersion = courts:%d, ndl:%d, v1:%d, v2:%d、期待値は 1 です",
+			"schemaVersion = courts:%d, courtsPDF:%d, ndl:%d, v1:%d, v2:%d、期待値は 1 です",
 			courts.SchemaVersion,
+			courtsPDF.SchemaVersion,
 			ndl.SchemaVersion,
 			v1.SchemaVersion,
 			v2.SchemaVersion,
@@ -41,29 +44,62 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	courtsRows := courts.Rows()
 	if got := capabilityIDs(courtsRows); !slices.Equal(
 		got,
-		[]string{"judicial-decision.read", "judicial-decision.search"},
+		[]string{
+			"judicial-decision.citing-candidate.search",
+			"judicial-decision.read",
+			"judicial-decision.search",
+		},
 	) {
 		t.Fatalf("courts capabilityId = %v", got)
 	}
 	wantCourtsParserVersions := map[string]string{
-		"judicial-decision.read":   "1.0.0",
-		"judicial-decision.search": "1.1.0",
+		"judicial-decision.citing-candidate.search": "1.2.0",
+		"judicial-decision.read":                    "1.0.0",
+		"judicial-decision.search":                  "1.1.0",
+	}
+	wantCourtsStatuses := map[string]string{
+		"judicial-decision.citing-candidate.search": "planned",
+		"judicial-decision.read":                    "implemented",
+		"judicial-decision.search":                  "implemented",
 	}
 	for _, row := range courtsRows {
 		if row.MajorVersion != 1 ||
-			row.BudgetSOTID != "SOT-IF-043" ||
+			row.BudgetSOTID != "SOT-IF-072" ||
 			row.ConcurrencyGroup != "courts-hanrei-html" ||
 			row.ArtifactType != "HTML" ||
 			row.ParserContractVersion != wantCourtsParserVersions[row.CapabilityID] ||
 			row.ImplementedBy !=
 				"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei" ||
 			row.ConformanceTarget != "./internal/source/courts/hanrei" ||
-			row.Status != "implemented" {
+			row.Status != wantCourtsStatuses[row.CapabilityID] {
 			t.Fatalf("courts row = %#v", row)
 		}
 		assertCasesAreExplicit(t, row)
 		assertCanonicalPublicErrors(t, row)
 	}
+
+	courtsPDFRows := courtsPDF.Rows()
+	if got := capabilityIDs(courtsPDFRows); !slices.Equal(
+		got,
+		[]string{"judicial-decision.case-citation.extract"},
+	) {
+		t.Fatalf("courts PDF capabilityId = %v", got)
+	}
+	courtsPDFRow := courtsPDFRows[0]
+	if courtsPDFRow.MajorVersion != 1 ||
+		courtsPDFRow.BudgetSOTID != "SOT-IF-070" ||
+		courtsPDFRow.BudgetKey != "judicial-citation-pdf" ||
+		courtsPDFRow.ConcurrencyGroup != "courts-hanrei-pdf" ||
+		courtsPDFRow.ArtifactType != "PDF" ||
+		courtsPDFRow.ParserContractVersion != "1.0.0" ||
+		courtsPDFRow.ImplementedBy !=
+			"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanreipdf" ||
+		courtsPDFRow.ConformanceTarget != "./internal/source/courts/hanreipdf" ||
+		courtsPDFRow.Status != "planned" {
+		t.Fatalf("courts PDF row = %#v", courtsPDFRow)
+	}
+	assertCasesAreExplicit(t, courtsPDFRow)
+	assertCanonicalPublicErrors(t, courtsPDFRow)
 
 	ndlRows := ndl.Rows()
 	if got := capabilityIDs(ndlRows); !slices.Equal(
@@ -176,8 +212,8 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		assertCanonicalPublicErrors(t, row)
 	}
 
-	if got := len(catalog.Rows()); got != 10 {
-		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 10 です", got)
+	if got := len(catalog.Rows()); got != 12 {
+		t.Fatalf("Catalog.Rows() の件数 = %d、期待値は 12 です", got)
 	}
 }
 
@@ -200,7 +236,7 @@ func TestLoadの返却値は外部変更から分離される(t *testing.T) {
 	again := catalog.Providers()
 	againV2 := providerByID(t, again, "e-gov-law-api-v2")
 	againRows := againV2.Rows()
-	if len(again) != 4 {
+	if len(again) != 5 {
 		t.Fatal("Providers() の変更が Catalog 内部へ反映されました")
 	}
 	if againRows[0].InterfaceSOTIDs[0] == "SOT-IF-999" ||
@@ -473,6 +509,49 @@ func assertCasesAreExplicit(t *testing.T, row Row) {
 
 func assertCanonicalPublicErrors(t *testing.T, row Row) {
 	t.Helper()
+
+	if row.CapabilityID == "judicial-decision.citing-candidate.search" {
+		want := []string{
+			"invalid_argument",
+			"unsupported_capability",
+			"configuration_required",
+			"unsupported_query",
+			"rate_limited",
+			"source_timeout",
+			"source_unavailable",
+			"source_busy",
+			"source_contract_changed",
+			"invalid_source_response",
+			"source_response_too_large",
+			"source_processing_limit",
+			"unsafe_source_content",
+		}
+		if !slices.Equal(row.PublicErrorSet, want) {
+			t.Errorf("%s の publicErrorSet = %v、期待値は %v です", row.CapabilityID, row.PublicErrorSet, want)
+		}
+		return
+	}
+	if row.CapabilityID == "judicial-decision.case-citation.extract" {
+		want := []string{
+			"invalid_argument",
+			"not_found",
+			"unsupported_capability",
+			"configuration_required",
+			"rate_limited",
+			"source_timeout",
+			"source_unavailable",
+			"source_busy",
+			"source_contract_changed",
+			"invalid_source_response",
+			"source_response_too_large",
+			"source_processing_limit",
+			"unsafe_source_content",
+		}
+		if !slices.Equal(row.PublicErrorSet, want) {
+			t.Errorf("%s の publicErrorSet = %v、期待値は %v です", row.CapabilityID, row.PublicErrorSet, want)
+		}
+		return
+	}
 
 	want := []string{"invalid_argument"}
 	switch row.CapabilityID {

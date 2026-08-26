@@ -18,19 +18,28 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 	if err != nil {
 		t.Fatalf("canonical matrix を読み込めませんでした: %v", err)
 	}
-	if len(rows) != 7 {
-		t.Fatalf("row 数 = %d, want 7", len(rows))
+	if len(rows) != 12 {
+		t.Fatalf("row 数 = %d, want 12", len(rows))
 	}
 	counts := map[string]int{}
+	statusCounts := map[string]map[string]int{}
 	for _, row := range rows {
 		counts[row.providerID]++
+		if statusCounts[row.providerID] == nil {
+			statusCounts[row.providerID] = map[string]int{}
+		}
+		statusCounts[row.providerID][row.status]++
 		switch row.providerID {
 		case "courts-hanrei-html":
 			if row.implementedBy != "internal/source/courts/hanrei" {
 				t.Fatalf("courts implementedBy = %q", row.implementedBy)
 			}
-			if row.status != "implemented" {
-				t.Fatalf("courts status = %q", row.status)
+		case "courts-hanrei-pdf":
+			if row.implementedBy != "internal/source/courts/hanreipdf" {
+				t.Fatalf("courts PDF implementedBy = %q", row.implementedBy)
+			}
+			if row.status != "planned" {
+				t.Fatalf("courts PDF status = %q", row.status)
 			}
 		case "e-gov-law-api-v1":
 			if row.implementedBy != "internal/source/egov/lawv1" {
@@ -46,14 +55,27 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 			if row.status != "implemented" {
 				t.Fatalf("v2 status = %q", row.status)
 			}
+		case "ndl-diet-speech-api":
+			if row.implementedBy != "internal/source/ndl/kokkai" {
+				t.Fatalf("NDL implementedBy = %q", row.implementedBy)
+			}
+			if row.status != "implemented" {
+				t.Fatalf("NDL status = %q", row.status)
+			}
 		default:
 			t.Fatalf("providerId = %q", row.providerID)
 		}
 	}
-	if counts["courts-hanrei-html"] != 2 ||
+	if counts["courts-hanrei-html"] != 3 ||
+		counts["courts-hanrei-pdf"] != 1 ||
 		counts["e-gov-law-api-v1"] != 1 ||
-		counts["e-gov-law-api-v2"] != 4 {
+		counts["e-gov-law-api-v2"] != 6 ||
+		counts["ndl-diet-speech-api"] != 1 {
 		t.Fatalf("provider row counts = %v", counts)
+	}
+	if statusCounts["courts-hanrei-html"]["implemented"] != 2 ||
+		statusCounts["courts-hanrei-html"]["planned"] != 1 {
+		t.Fatalf("courts status counts = %v", statusCounts["courts-hanrei-html"])
 	}
 }
 
@@ -87,6 +109,7 @@ func TestRunProviderConformanceTestsUsesImplementedMatrixTargets(t *testing.T) {
 		"./internal/source/courts/hanrei",
 		"./internal/source/egov/lawv1",
 		"./internal/source/egov/lawv2",
+		"./internal/source/ndl/kokkai",
 	}
 	if !slices.Equal(arguments, want) {
 		t.Fatalf("go arguments = %q, want %q", arguments, want)

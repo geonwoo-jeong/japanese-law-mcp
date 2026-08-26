@@ -27,63 +27,104 @@ func parseSearchResponse(
 	ctx context.Context,
 	body []byte,
 ) (searchResponse, error) {
+	response, _, err := parseSearchResponseWithBudget(
+		ctx,
+		body,
+		maximumSearchDecompressedBytes,
+		maximumSearchHTMLNodes,
+		maximumSearchHTMLDepth,
+	)
+	return response, err
+}
+
+func parseSearchResponseWithBudget(
+	ctx context.Context,
+	body []byte,
+	maximumBytes int,
+	maximumNodes int,
+	maximumDepth int,
+) (searchResponse, int, error) {
 	if ctx == nil {
-		return searchResponse{}, errors.New("context は必須です")
+		return searchResponse{}, 0, errors.New("context は必須です")
 	}
-	if len(body) > maximumSearchDecompressedBytes {
-		return searchResponse{}, newSearchSourceError(
+	if maximumBytes < 0 || maximumNodes < 1 || maximumDepth < 1 {
+		return searchResponse{}, 0, newSearchSourceError(
+			model.SourceErrorCodeSourceProcessingLimit,
+			"",
+		)
+	}
+	if len(body) > maximumBytes {
+		return searchResponse{}, 0, newSearchSourceError(
 			model.SourceErrorCodeSourceResponseTooLarge,
 			"",
 		)
 	}
 	if !utf8.Valid(body) {
-		return searchResponse{}, newSearchSourceError(
+		return searchResponse{}, 0, newSearchSourceError(
 			model.SourceErrorCodeUnsafeSourceContent,
 			"",
 		)
 	}
 	if err := searchHTMLContextError(ctx); err != nil {
-		return searchResponse{}, err
+		return searchResponse{}, 0, err
 	}
-	if err := validateSearchHTMLTokenBudget(ctx, body); err != nil {
-		return searchResponse{}, err
+	tokenCount, err := validateSearchHTMLTokenBudget(
+		ctx,
+		body,
+		maximumNodes,
+		maximumDepth,
+	)
+	if err != nil {
+		return searchResponse{}, tokenCount, err
 	}
 	document, err := html.Parse(&htmlContextReader{
 		ctx:    ctx,
 		reader: bytes.NewReader(body),
 	})
 	if err != nil {
-		return searchResponse{}, classifySearchHTMLParseError(ctx)
+		return searchResponse{}, tokenCount, classifySearchHTMLParseError(ctx)
 	}
-	if err := validateSearchHTMLBudget(ctx, document); err != nil {
-		return searchResponse{}, err
+	nodeCount, err := validateSearchHTMLBudget(
+		ctx,
+		document,
+		maximumNodes,
+		maximumDepth,
+	)
+	if err != nil {
+		return searchResponse{}, nodeCount, err
 	}
-	return decodeSearchDocument(ctx, document)
+	response, err := decodeSearchDocument(ctx, document)
+	return response, nodeCount, err
 }
 
-func validateSearchHTMLTokenBudget(ctx context.Context, body []byte) error {
+func validateSearchHTMLTokenBudget(
+	ctx context.Context,
+	body []byte,
+	maximumNodes int,
+	maximumDepth int,
+) (int, error) {
 	tokenizer := html.NewTokenizer(&htmlContextReader{
 		ctx:    ctx,
 		reader: bytes.NewReader(body),
 	})
 	count := 0
-	openElements := make([]string, 0, maximumSearchHTMLDepth)
+	openElements := make([]string, 0, maximumDepth)
 	for {
 		if err := searchHTMLContextError(ctx); err != nil {
-			return err
+			return count, err
 		}
 		tokenType := tokenizer.Next()
 		switch tokenType {
 		case html.ErrorToken:
 			if errors.Is(tokenizer.Err(), io.EOF) {
-				return nil
+				return count, nil
 			}
-			return invalidSearchResponseError()
+			return count, invalidSearchResponseError()
 		case html.StartTagToken, html.SelfClosingTagToken:
 			token := tokenizer.Token()
 			count += 1 + len(token.Attr)
-			if count > maximumSearchHTMLNodes {
-				return newSearchSourceError(
+			if count > maximumNodes {
+				return count, newSearchSourceError(
 					model.SourceErrorCodeSourceResponseTooLarge,
 					"",
 				)
@@ -91,8 +132,8 @@ func validateSearchHTMLTokenBudget(ctx context.Context, body []byte) error {
 			if tokenType == html.StartTagToken &&
 				!isVoidSearchHTMLElement(token.Data) {
 				openElements = append(openElements, token.Data)
-				if len(openElements) > maximumSearchHTMLDepth {
-					return newSearchSourceError(
+				if len(openElements) > maximumDepth {
+					return count, newSearchSourceError(
 						model.SourceErrorCodeUnsafeSourceContent,
 						"",
 					)
@@ -113,8 +154,8 @@ func validateSearchHTMLTokenBudget(ctx context.Context, body []byte) error {
 		case html.CommentToken:
 			count++
 		}
-		if count > maximumSearchHTMLNodes {
-			return newSearchSourceError(
+		if count > maximumNodes {
+			return count, newSearchSourceError(
 				model.SourceErrorCodeSourceResponseTooLarge,
 				"",
 			)
@@ -449,7 +490,12 @@ func parseSearchTotalDigits(value string) (int, error) {
 	return strconv.Atoi(builder.String())
 }
 
-func validateSearchHTMLBudget(ctx context.Context, root *html.Node) error {
+func validateSearchHTMLBudget(
+	ctx context.Context,
+	root *html.Node,
+	maximumNodes int,
+	maximumDepth int,
+) (int, error) {
 	type pendingNode struct {
 		node         *html.Node
 		elementDepth int
@@ -458,13 +504,18 @@ func validateSearchHTMLBudget(ctx context.Context, root *html.Node) error {
 	count := 0
 	for len(pending) > 0 {
 		if err := searchHTMLContextError(ctx); err != nil {
-			return err
+			return count, err
 		}
 		last := len(pending) - 1
 		current := pending[last]
 		pending = pending[:last]
-		if err := countSearchHTMLNode(current, &count); err != nil {
-			return err
+		if err := countSearchHTMLNode(
+			current,
+			&count,
+			maximumNodes,
+			maximumDepth,
+		); err != nil {
+			return count, err
 		}
 		for child := current.node.LastChild; child != nil; child = child.PrevSibling {
 			depth := current.elementDepth
@@ -474,17 +525,17 @@ func validateSearchHTMLBudget(ctx context.Context, root *html.Node) error {
 			pending = append(pending, pendingNode{node: child, elementDepth: depth})
 		}
 	}
-	return nil
+	return count, nil
 }
 
 func countSearchHTMLNode(current struct {
 	node         *html.Node
 	elementDepth int
-}, count *int) error {
+}, count *int, maximumNodes int, maximumDepth int) error {
 	nodeCount := 0
 	switch current.node.Type {
 	case html.ElementNode:
-		if current.elementDepth > maximumSearchHTMLDepth {
+		if current.elementDepth > maximumDepth {
 			return newSearchSourceError(model.SourceErrorCodeUnsafeSourceContent, "")
 		}
 		nodeCount = 1 + len(current.node.Attr)
@@ -496,7 +547,7 @@ func countSearchHTMLNode(current struct {
 		nodeCount = 1
 	}
 	*count += nodeCount
-	if *count > maximumSearchHTMLNodes {
+	if *count > maximumNodes {
 		return newSearchSourceError(model.SourceErrorCodeSourceResponseTooLarge, "")
 	}
 	return nil

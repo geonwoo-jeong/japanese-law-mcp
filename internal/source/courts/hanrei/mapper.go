@@ -70,6 +70,28 @@ func mapSearchRows(
 	return items, nil
 }
 
+func mapSearchRowsUnlimited(
+	rows []searchResultRow,
+	fetchedURL string,
+	retrievedAt time.Time,
+) ([]model.SourcedResource[model.JudicialDecisionSummary], error) {
+	items := make(
+		[]model.SourcedResource[model.JudicialDecisionSummary],
+		0,
+		len(rows),
+	)
+	for _, row := range rows {
+		for _, detailLink := range row.detailLinks {
+			item, err := mapSearchRow(row, detailLink, fetchedURL, retrievedAt)
+			if err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+		}
+	}
+	return items, nil
+}
+
 func validateSearchMappingInput(
 	response searchResponse,
 	fetchedURL string,
