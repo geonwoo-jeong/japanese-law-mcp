@@ -66,7 +66,7 @@ script を実行せず、HTML から参照される PDF、画像、stylesheet �
 | `参照法条` | `referencedProvisionsText` |
 | `全文`、`要旨` その他の PDF link | `summary.documents` |
 
-`summary.decisionId`、`detailUrl` および `source` は、入力 ref、要求 URL および `SOT-IF-043` の固定値から作る。
+`summary.decisionId`、`detailUrl` および `source` は、入力 ref、要求 URL および `SOT-IF-072` の固定値から作る。
 
 支部を独立したラベルで確認できる場合だけ `summary.branchName` を設定する。`裁判所名・部`、法廷名または裁判所名の文字列から支部若しくは部を切り出さない。`裁判所名・部` は表示された結合値をそのまま `summary.courtName` へ保持する。
 
@@ -92,5 +92,5 @@ PDF link は `SOT-IF-044` と同じ `JudicialDocumentLink` へ対応させる。
 
 - [SOT-MODEL-021: JudicialDecisionDetails](../20-model/21-judicial-decision-details.md)
 - [SOT-IF-042: `judicial-decision.read` capability v1](42-judicial-decision-read-capability.md)
-- [SOT-IF-043: 裁判所「裁判例検索」HTML 情報源](43-source-courts-hanrei-html.md)
+- [SOT-IF-072: 裁判所「裁判例検索」HTML 情報源 v2](72-source-courts-hanrei-html-v2.md)
 - [SOT-IF-044: 裁判所の裁判例検索マッピング](44-courts-hanrei-search-mapping.md)

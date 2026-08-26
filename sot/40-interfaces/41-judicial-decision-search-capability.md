@@ -59,5 +59,5 @@
 - [SOT-SCN-006: 公表裁判例を検索する](../10-scenarios/06-search-judicial-cases.md)
 - [SOT-MODEL-020: JudicialDecisionSummary](../20-model/20-judicial-decision-summary.md)
 - [SOT-IF-016: 情報源の継続取得](16-source-continuation-contract.md)
-- [SOT-IF-043: 裁判所「裁判例検索」HTML 情報源](43-source-courts-hanrei-html.md)
+- [SOT-IF-072: 裁判所「裁判例検索」HTML 情報源 v2](72-source-courts-hanrei-html-v2.md)
 - [SOT-IF-047: MCP `search_judicial_cases`](47-mcp-search-judicial-cases.md)

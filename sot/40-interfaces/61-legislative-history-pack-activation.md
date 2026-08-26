@@ -24,7 +24,7 @@ extensionPacks:
 省略または `false` は無効、`true` は有効とする。未知の項目、型の不一致および
 `null` を受理しない。
 
-この規定は `SOT-IF-040` が定める `judicial-cases` の構造と初期版の意味を変更せず、
+この規定は `SOT-IF-067` が定める `judicial-cases` および `judicial-citations` の構造と意味を変更せず、
 有効な追加 pack ID として `legislative-history` だけを加える。`extensionPacks` の
 入力元と優先順位は `SOT-IF-039` に従い、設定ファイル以外の環境変数または個別の
 コマンドラインフラグを追加しない。

@@ -65,7 +65,7 @@ script を実行せず、CSS、非表示の選択肢、modal、analytics、画�
 | 明示された結果 | `outcome` |
 | 詳細リンク | `detailUrl` |
 | `file-col` の公式 PDF link | `documents` |
-| `SOT-IF-043` の情報源 | `source` |
+| `SOT-IF-072` の情報源 | `source` |
 
 HTML 上で位置を一意に識別できない省略可能項目は設定しない。周辺文字列の語尾または既知語彙だけから、裁判種別、結果、支部若しくは部を推測しない。
 
@@ -104,4 +104,4 @@ HTML 上で位置を一意に識別できない省略可能項目は設定しな
 
 - [SOT-MODEL-020: JudicialDecisionSummary](../20-model/20-judicial-decision-summary.md)
 - [SOT-IF-041: `judicial-decision.search` capability v1](41-judicial-decision-search-capability.md)
-- [SOT-IF-043: 裁判所「裁判例検索」HTML 情報源](43-source-courts-hanrei-html.md)
+- [SOT-IF-072: 裁判所「裁判例検索」HTML 情報源 v2](72-source-courts-hanrei-html-v2.md)

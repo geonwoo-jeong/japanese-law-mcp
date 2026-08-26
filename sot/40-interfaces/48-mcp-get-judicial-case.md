@@ -47,7 +47,7 @@ pack 無効時の未登録、有効時の schema、検索結果からの参照�
 - [SOT-PROD-010: 裁判例拡張パック](../00-product/10-judicial-cases-extension-pack.md)
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-MODEL-021: JudicialDecisionDetails](../20-model/21-judicial-decision-details.md)
-- [SOT-IF-040: `judicial-cases` 拡張パックの有効化](40-judicial-cases-pack-activation.md)
+- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-042: `judicial-decision.read` capability v1](42-judicial-decision-read-capability.md)
 - [SOT-IF-047: MCP `search_judicial_cases`](47-mcp-search-judicial-cases.md)
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)

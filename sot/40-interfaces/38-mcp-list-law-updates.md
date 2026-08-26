@@ -76,7 +76,7 @@
 
 この SOT は、既存の `search_laws`、`get_law`、`get_article` および `search_law_content` に、五つ目の法令コア専門ツールとして `list_law_updates` を追加する。
 
-後から採用した統合照会および拡張パックを含む公開 tool 全体の件数を本 SOT では定義しない。現在の法令コアと `judicial-cases` の tool 集合は `SOT-IF-040`、統合照会の登録は `SOT-IF-051` を定義元とする。
+後から採用した統合照会および拡張パックを含む公開 tool 全体の件数を本 SOT では定義しない。現在の法令コア、`judicial-cases` および `judicial-citations` の tool 集合は `SOT-IF-067`、統合照会の登録は `SOT-IF-051` を定義元とする。
 
 ## 確認
 
@@ -99,5 +99,5 @@
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
 - [SOT-IF-034: `law.update.list` capability v1](34-law-update-list-capability.md)
 - [SOT-IF-037: e-Gov 法令 API Version 1 の組込み採用](37-egov-v1-built-in-adoption.md)
-- [SOT-IF-040: `judicial-cases` 拡張パックの有効化](40-judicial-cases-pack-activation.md)
+- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-051: MCP `query_legal_information`](51-mcp-query-legal-information.md)

@@ -34,3 +34,4 @@
 - [32-law-revision.md](32-law-revision.md)
 - [33-law-version-comparison.md](33-law-version-comparison.md)
 - [34-parliament-speech.md](34-parliament-speech.md)
+- [35-judicial-citation-graph.md](35-judicial-citation-graph.md)

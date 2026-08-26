@@ -35,7 +35,7 @@ stdio とローカル Streamable HTTP は同じ公開 tool 契約を提供し、
 
 ## 拡張パックとの関係
 
-拡張パックの profile contribution、capability、route および公開 tool 集合は `SOT-ARCH-019` と `SOT-IF-040` を定義元とし、本 SOT では重複して定義しない。どの pack 構成でも、内部 contribution は in-process interface として注入し、private MCP endpoint または hidden tool へ変換しない。
+拡張パックの profile contribution、capability、route および公開 tool 集合は `SOT-ARCH-019` と `SOT-IF-067` を定義元とし、本 SOT では重複して定義しない。どの pack 構成でも、内部 contribution は in-process interface として注入し、private MCP endpoint または hidden tool へ変換しない。
 
 ## 確認
 
