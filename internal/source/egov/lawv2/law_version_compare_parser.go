@@ -625,7 +625,7 @@ func writeCompareStructureStart(destination hash.Hash, element xml.StartElement)
 	var count [4]byte
 	binary.BigEndian.PutUint32(
 		count[:],
-		uint32(len(attributes)), //nolint:gosec // 比較 fingerprint の属性数は公式 XML の現実的上限内であり 32-bit field へ固定する。
+		uint32(len(attributes)), //nolint:gosec // SOT-ENG-019: 比較 fingerprint の属性数は公式 XML の現実的上限内であり、仕様上 32-bit field へ固定しても安全である。
 	)
 	_, _ = destination.Write(count[:])
 	for _, attribute := range attributes {
@@ -643,7 +643,7 @@ func writeCompareFingerprintField(destination hash.Hash, kind byte, values ...st
 	for _, value := range values {
 		binary.BigEndian.PutUint32(
 			length[:],
-			uint32(len(value)), //nolint:gosec // 比較 fingerprint の文字列長は 32-bit field へ固定する。
+			uint32(len(value)), //nolint:gosec // SOT-ENG-019: 比較 fingerprint の文字列長は仕様上 32-bit field へ固定し、実入力もその上限内に収まる。
 		)
 		_, _ = destination.Write(length[:])
 		_, _ = destination.Write([]byte(value))
