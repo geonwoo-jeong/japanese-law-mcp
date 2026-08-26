@@ -93,7 +93,8 @@ func evaluateNormalChanges(
 		)
 	}
 	targets := matrixTargets
-	if len(targets) == 0 {
+	matrixScoped := len(targets) != 0
+	if !matrixScoped {
 		targets = sourceTargets
 	}
 	if len(targets) == 0 {
@@ -116,7 +117,7 @@ func evaluateNormalChanges(
 		}
 		return false, nil
 	}
-	allowedTargets, adoptedGroup := adoptedProviderTargetGroup(targets)
+	allowedTargets, adoptedGroup := adoptedProviderTargetGroup(targets, matrixScoped)
 	if !adoptedGroup && len(targets) != 1 {
 		return false, fmt.Errorf(
 			"一つの provider 変更に複数の provider が含まれます: %s",
@@ -238,7 +239,13 @@ func providerKnown(providerID string, packages []providerPackage) bool {
 	return false
 }
 
-func adoptedProviderTargetGroup(targets map[string]struct{}) ([]string, bool) {
+func adoptedProviderTargetGroup(
+	targets map[string]struct{},
+	matrixScoped bool,
+) ([]string, bool) {
+	if !matrixScoped {
+		return nil, false
+	}
 	for _, group := range [][]string{
 		{"courts-hanrei-html", "courts-hanrei-pdf"},
 	} {

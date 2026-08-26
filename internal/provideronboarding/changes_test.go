@@ -190,6 +190,63 @@ func TestValidateNormalChangesAllowsAdoptedCoupledProviderUnit(t *testing.T) {
 	}
 }
 
+func TestValidateNormalChangesRejectsCoupledProviderSourceOnlyMaintenance(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{
+		{
+			providerID:    "courts-hanrei-html",
+			implementedBy: "internal/source/courts/hanrei",
+			status:        "implemented",
+		},
+		{
+			providerID:    "courts-hanrei-pdf",
+			implementedBy: "internal/source/courts/hanreipdf",
+			status:        "implemented",
+		},
+	}
+	err := validateNormalChanges(
+		[]string{
+			"internal/source/courts/hanrei/parser.go",
+			"internal/source/courts/hanreipdf/parser.go",
+		},
+		rows,
+	)
+	if err == nil {
+		t.Fatal("matrix を変更しない複数 provider の maintenance が許可されました")
+	}
+}
+
+func TestValidateNormalChangesRejectsProviderOutsideAdoptedCoupledUnit(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{
+		{
+			providerID:    "courts-hanrei-html",
+			implementedBy: "internal/source/courts/hanrei",
+		},
+		{
+			providerID:    "courts-hanrei-pdf",
+			implementedBy: "internal/source/courts/hanreipdf",
+		},
+		{
+			providerID:    "provider-c",
+			implementedBy: "internal/source/provider/c",
+		},
+	}
+	err := validateNormalChanges(
+		[]string{
+			"conformance/providers/courts-hanrei-html.yaml",
+			"conformance/providers/courts-hanrei-pdf.yaml",
+			"conformance/providers/provider-c.yaml",
+		},
+		rows,
+	)
+	if err == nil {
+		t.Fatal("採用済みの従属 provider 単位へ第三の provider が混在しました")
+	}
+}
+
 func TestRepositoryProviderPathUsesCurrentModule(t *testing.T) {
 	t.Parallel()
 
