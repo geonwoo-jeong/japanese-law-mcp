@@ -145,7 +145,7 @@ func (d *recordingHTMLDoer) Do(request *http.Request) (*http.Response, error) {
 func mustReadHanreiTestdata(t *testing.T, name string) []byte {
 	t.Helper()
 	path := filepath.Join("testdata", name)
-	body, err := os.ReadFile(path)
+	body, err := os.ReadFile(path) //nolint:gosec // SOT-IF-072: testdata 配下の固定 fixture だけを読む。
 	if err != nil {
 		t.Fatalf("fixture %s: %v", name, err)
 	}

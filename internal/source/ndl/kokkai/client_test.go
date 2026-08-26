@@ -378,7 +378,7 @@ func TestSpeechSearchHTTPClientRejectsNilContextAndDependencies(t *testing.T) {
 		t.Fatalf("検証用 client を作成できません: %v", err)
 	}
 	if _, err := client.fetchSpeechSearch(
-		nil,
+		nilSpeechSearchContext(),
 		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "民法"}),
 	); err == nil {
 		t.Fatal("nil context を受理しました")

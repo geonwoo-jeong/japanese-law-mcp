@@ -185,9 +185,14 @@ func TestBuildSpeechSearchHTTPRequestRejectsNilContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SOT-IF-062: request を作成できません: %v", err)
 	}
-	if _, err := buildSpeechSearchHTTPRequest(nil, request); err == nil {
+	if _, err := buildSpeechSearchHTTPRequest(nilSpeechSearchContext(), request); err == nil {
 		t.Fatal("SOT-IF-063: nil context を受理しました")
 	}
+}
+
+func nilSpeechSearchContext() context.Context {
+	var ctx context.Context
+	return ctx
 }
 
 func mustSpeechSearchDate(t *testing.T, value string) *model.Date {

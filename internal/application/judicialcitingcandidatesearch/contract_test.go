@@ -33,7 +33,7 @@ func TestCandidateJSONCopiesEvidenceAndRejectsUnsafeVariants(t *testing.T) {
 
 	candidate := newTestCandidate(t)
 	evidence := candidate.Evidence()
-	if len(evidence) != 1 || candidate.Decision().Ref() != candidate.Decision().Ref() {
+	if len(evidence) != 1 || candidate.Decision().Ref().Key().ResourceID() != "00456/detail3" {
 		t.Fatal("Candidate accessor が有効ではありません")
 	}
 	evidence[0] = model.JudicialCitationEvidence{}

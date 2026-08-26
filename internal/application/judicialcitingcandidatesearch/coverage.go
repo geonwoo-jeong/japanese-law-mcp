@@ -39,7 +39,7 @@ type Attempt = CoverageAttempt
 
 // NewCoverageAttempt は、閉じた検索種類と状態を検証する。
 func NewCoverageAttempt(values CoverageAttemptValues) (CoverageAttempt, error) {
-	attempt := CoverageAttempt{SearchKind: values.SearchKind, Status: values.Status}
+	attempt := CoverageAttempt(values)
 	if err := attempt.Validate(); err != nil {
 		return CoverageAttempt{}, err
 	}

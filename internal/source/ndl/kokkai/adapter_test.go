@@ -121,7 +121,7 @@ func TestSpeechSearchAdapterReturnsCanceledDuringGateHold(t *testing.T) {
 		ctx,
 		mustSpeechSearchRequest(t, parliamentspeechsearch.RequestValues{Query: "永住許可"}),
 	)
-	if err == nil || err != context.Canceled {
+	if err == nil || !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancel during gate hold = %v", err)
 	}
 	if calls.Load() != 1 {
@@ -171,7 +171,7 @@ func TestSpeechSearchAdapterValidatesDependenciesAndInput(t *testing.T) {
 		t,
 		parliamentspeechsearch.RequestValues{Query: "民法"},
 	)
-	if _, err := adapter.Search(nil, validRequest); err == nil {
+	if _, err := adapter.Search(nilSpeechSearchContext(), validRequest); err == nil {
 		t.Fatal("nil context を受理しました")
 	}
 	if _, err := adapter.Search(context.Background(), parliamentspeechsearch.Request{}); err == nil {

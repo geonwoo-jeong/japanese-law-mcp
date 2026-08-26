@@ -41,7 +41,7 @@ func TestRequestRejectsInvalidTargetAndLimit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("versioned ref: %v", err)
 	}
-	invalidVersioned, err = model.NewSourcedResource(model.SourcedResourceValues[model.JudicialDecisionDetails]{
+	_, err = model.NewSourcedResource(model.SourcedResourceValues[model.JudicialDecisionDetails]{
 		Ref:        ref,
 		Provenance: invalidVersioned.Provenance(),
 		Data:       invalidVersioned.Data(),

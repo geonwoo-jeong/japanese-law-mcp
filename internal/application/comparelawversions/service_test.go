@@ -112,7 +112,7 @@ func TestServiceRejectsNilContextAndPropagatesProviderError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("service を構築できません: %v", err)
 	}
-	if _, err := service.Compare(nil, newPublicCompareRequest(t)); err == nil {
+	if _, err := service.Compare(nilCompareContext(), newPublicCompareRequest(t)); err == nil {
 		t.Fatal("nil context を受理しました")
 	}
 	_, err = service.Compare(context.Background(), newPublicCompareRequest(t))
@@ -160,6 +160,11 @@ func newPublicCompareRequest(t *testing.T) comparelawversions.Request {
 		t.Fatalf("request を構築できません: %v", err)
 	}
 	return request
+}
+
+func nilCompareContext() context.Context {
+	var ctx context.Context
+	return ctx
 }
 
 func newSourcedComparison(

@@ -14,12 +14,12 @@ func TestMain(m *testing.M) {
 	switch os.Getenv(testWorkerBehaviorEnv) {
 	case "hang":
 		time.Sleep(time.Hour)
-		os.Exit(2)
+		return
 	case "panic":
 		panic("検査用 panic の非公開本文")
 	case "hang-after-temp":
 		if os.Getenv(privateWorkerEnv) == privateWorkerModePDF {
-			os.Exit(runPrivateWorker(os.Stdin, os.Stdout, func(pdfBytes []byte) (workerOutput, error) {
+			if code := runPrivateWorker(os.Stdin, os.Stdout, func(pdfBytes []byte) (workerOutput, error) {
 				file, _, err := createWorkerTempPDF(pdfBytes, os.Getenv(privateWorkerTempEnv))
 				if err != nil {
 					return workerOutput{}, err
@@ -27,10 +27,13 @@ func TestMain(m *testing.M) {
 				_ = file.Close()
 				time.Sleep(time.Hour)
 				return workerOutput{}, nil
-			}))
+			}); code != 0 {
+				panic("検査用 worker が異常終了しました")
+			}
+			return
 		}
 		time.Sleep(time.Hour)
-		os.Exit(2)
+		return
 	}
 	if handled, code := RunPrivateWorkerIfRequested(
 		os.Stdin,
@@ -38,9 +41,14 @@ func TestMain(m *testing.M) {
 		os.Stderr,
 		os.Getenv(privateWorkerEnv),
 	); handled {
-		os.Exit(code)
+		if code != 0 {
+			panic("検査用 private worker が異常終了しました")
+		}
+		return
 	}
-	os.Exit(m.Run())
+	if code := m.Run(); code != 0 {
+		panic("検査用 test suite が失敗しました")
+	}
 }
 
 func TestProductionWorkerRunnerUsesSameExecutableProtocol(t *testing.T) {

@@ -126,7 +126,8 @@ func TestProductionClientDoesNotFollowRedirects(t *testing.T) {
 	if httpClient.CheckRedirect == nil {
 		t.Fatal("e-Gov client の redirect 拒否 policy がありません")
 	}
-	request, err := http.NewRequest(
+	request, err := http.NewRequestWithContext(
+		context.Background(),
 		http.MethodGet,
 		"https://redirect.example.test/resource",
 		nil,

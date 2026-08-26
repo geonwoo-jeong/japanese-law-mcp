@@ -126,20 +126,20 @@ func NormalizeReferencedProvision(
 	if err != nil || reason != "" {
 		return ResolvedProvision{}, reason, err
 	}
-	location, err := newLawArticleLocation(
+	location, locationErr := newLawArticleLocation(
 		matches[2] != "",
 		matches[3],
 		matches[4],
 		matches[5],
 	)
-	if err != nil {
-		return ResolvedProvision{}, "ambiguous_law_location", nil
+	if locationErr == nil {
+		return ResolvedProvision{
+			lawID:    law.lawID,
+			lawTitle: law.title,
+			location: location,
+		}, "", nil
 	}
-	return ResolvedProvision{
-		lawID:    law.lawID,
-		lawTitle: law.title,
-		location: location,
-	}, "", nil
+	return ResolvedProvision{}, "ambiguous_law_location", nil
 }
 
 // SplitReferencedProvisionText は、詳細ページの参照法条原文を決定的な順序で分割する。

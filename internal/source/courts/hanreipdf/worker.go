@@ -145,7 +145,7 @@ func parsePDFWithTabula(pdfBytes []byte, tempDirectory string) (workerOutput, er
 	}
 	defer func() {
 		_ = file.Close()
-		_ = os.Remove(path)
+		_ = os.Remove(path) //nolint:gosec // SOT-IF-071: CreateTemp が返した同一 path だけを削除する。
 	}()
 
 	pdfReader, err := reader.NewReader(file)
@@ -224,7 +224,7 @@ func createWorkerTempPDF(pdfBytes []byte, tempDirectory string) (*os.File, strin
 	path := file.Name()
 	cleanup := func() {
 		_ = file.Close()
-		_ = os.Remove(path)
+		_ = os.Remove(path) //nolint:gosec // SOT-IF-071: CreateTemp が返した同一 path だけを削除する。
 	}
 	if err := file.Chmod(0o600); err != nil {
 		cleanup()

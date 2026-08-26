@@ -321,7 +321,7 @@ func TestServiceは依存関係と詳細失敗を安全に検証する(t *testin
 		strings.Join(calls, ",") != "detail" {
 		t.Fatalf("error/calls = %#v / %v", err, calls)
 	}
-	if _, err := service.Trace(nil, mustTraceRequest(
+	if _, err := service.Trace(nilTraceContext(), mustTraceRequest(
 		t,
 		root.Ref(),
 		model.JudicialCitationRequestedDirectionOutgoing,
@@ -329,6 +329,11 @@ func TestServiceは依存関係と詳細失敗を安全に検証する(t *testin
 	)); err == nil {
 		t.Fatal("nil context を受理しました")
 	}
+}
+
+func nilTraceContext() context.Context {
+	var ctx context.Context
+	return ctx
 }
 
 func TestServiceは取消後に後続方向を開始しない(t *testing.T) {
