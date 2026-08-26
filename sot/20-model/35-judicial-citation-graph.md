@@ -128,7 +128,7 @@
 
 | 項目 | 型 | 必須 | 意味 |
 |---|---|---:|---|
-| `direction` | string | はい | `outgoing` または `incoming` |
+| `direction` | string | はい | `outgoing`、`incoming` または `shared` |
 | `stage` | string | はい | `official_detail_metadata`、`official_pdf_text`、`official_case_search` または `law_reference_resolution` |
 | `code` | string | はい | 制限または失敗の識別子 |
 | `message` | string | はい | 利用者向け説明 |
@@ -136,7 +136,7 @@
 
 ## 制約
 
-- `status` は要求した方向がすべて `complete` の場合だけ `complete` とする。一方向または一検索が失敗しても型付き結果を一つ以上保持できる場合は `partial` とし、一件以上の `issues` を必須とする。ルート取得失敗、全要求方向失敗または全域取消では成功モデルを返さない。利用者の `incomingLimit` による正常な切詰めだけでは `partial` にしない。
+- `status` は要求した方向がすべて `complete` で、かつ `shared` direction の issue がない場合だけ `complete` とする。一方向、一検索または `shared` stage が失敗しても型付き結果を一つ以上保持できる場合は `partial` とし、一件以上の `issues` を必須とする。ルート取得失敗、全要求方向失敗または全域取消では成功モデルを返さない。利用者の `incomingLimit` による正常な切詰めだけでは `partial` にしない。
 - `relationType`、`evidenceLevel`、`mentionType` および `reason` は本規定の閉じた値だけを使用する。
 - `possible_cites_judicial_decision` は公式検索候補を表し、`cites_judicial_decision` と同じ意味へ縮約しない。
 - `references_law_provision` は、法令名と `LawArticleLocation` を一意に解決できた場合だけ作成する。法令 revision は推測しない。
