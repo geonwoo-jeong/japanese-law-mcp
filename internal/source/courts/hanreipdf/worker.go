@@ -465,6 +465,9 @@ func runWorkerProcess(
 	}()
 	select {
 	case waitErr := <-waited:
+		if err := ctx.Err(); err != nil {
+			return workerOutput{}, err
+		}
 		if waitErr != nil || stdout.exceeded {
 			return workerOutput{}, workerError{failure: workerFailureProcessingLimit}
 		}
