@@ -43,7 +43,7 @@ pack 無効時の未登録、有効時の schema、入力検証、固定 notice�
 ## 関連
 
 - [SOT-PROD-010: 裁判例拡張パック](../00-product/10-judicial-cases-extension-pack.md)
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-041: `judicial-decision.search` capability v1](41-judicial-decision-search-capability.md)
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)

@@ -47,7 +47,7 @@ capability は同じ対象の反復を統合せず、各出現を PDF の page �
 
 ## 資源境界と失敗
 
-この capability は OCR、画像復元、別紙復元、外部 font・resource 取得、自動再試行またはリクエスト間キャッシュを行わない。到達し得る失敗は `invalid_argument`、`not_found`、`unsupported_capability`、`configuration_required`、`source_timeout`、`source_unavailable`、`source_busy`、`source_contract_changed`、`invalid_source_response`、`source_response_too_large`、`source_processing_limit` および `unsafe_source_content` とする。
+この capability は OCR、画像復元、別紙復元、外部 font・resource 取得、自動再試行またはリクエスト間キャッシュを行わない。到達し得る失敗は `invalid_argument`、`not_found`、`unsupported_capability`、`configuration_required`、`rate_limited`、`source_timeout`、`source_unavailable`、`source_busy`、`source_contract_changed`、`invalid_source_response`、`source_response_too_large`、`source_processing_limit` および `unsafe_source_content` とする。
 
 PDF に text layer がない場合は成功結果とし、`documentTextStatus=document_text_unavailable`、二つの mention 配列を空、`occurrenceCount=0` とする。これを「引用なし」と解釈しない。暗号化され復号を要求する PDF は `unsafe_source_content` とする。
 

@@ -65,5 +65,6 @@
 - [SOT-PROD-009: 選択型法情報拡張パックの境界](09-selectable-legal-information-extension-packs.md)
 - [SOT-SCN-006: 公表裁判例を検索する](../10-scenarios/06-search-judicial-cases.md)
 - [SOT-SCN-007: 公表裁判例の詳細を取得する](../10-scenarios/07-get-judicial-case.md)
+- [SOT-PROD-016: 判例引用追跡拡張パック](16-judicial-citations-extension-pack.md)
 - [SOT-IF-072: 裁判所「裁判例検索」HTML 情報源 v2](../40-interfaces/72-source-courts-hanrei-html-v2.md)
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](../40-interfaces/67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](../40-interfaces/67-judicial-citations-pack-activation.md)

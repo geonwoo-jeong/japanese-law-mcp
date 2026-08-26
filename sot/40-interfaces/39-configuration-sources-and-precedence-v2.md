@@ -51,7 +51,7 @@
 
 - [SOT-IF-029: ローカル実行設定](29-local-runtime-configuration.md)
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-061: `legislative-history` 拡張パックの専門公開面](61-legislative-history-pack-activation.md)
 - [SOT-IF-019: コマンドラインインターフェース](19-command-line-interface.md)
 - [SOT-ARCH-015: 起動時設定境界](../30-architecture/15-startup-configuration-boundary.md)

@@ -99,5 +99,5 @@
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
 - [SOT-IF-034: `law.update.list` capability v1](34-law-update-list-capability.md)
 - [SOT-IF-037: e-Gov 法令 API Version 1 の組込み採用](37-egov-v1-built-in-adoption.md)
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-051: MCP `query_legal_information`](51-mcp-query-legal-information.md)

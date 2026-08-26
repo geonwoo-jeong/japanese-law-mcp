@@ -68,7 +68,7 @@ descriptor、compiled binding inventory、conformance matrix、fixture、資源�
 
 ## 関連
 
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-068: 判決文の判例引用抽出 capability](68-judicial-case-citation-extract-capability.md)
 - [SOT-IF-069: 被引用候補検索 capability](69-judicial-citing-candidate-search-capability.md)
 - [SOT-IF-070: 裁判所「裁判例検索」PDF 情報源](70-source-courts-hanrei-pdf.md)

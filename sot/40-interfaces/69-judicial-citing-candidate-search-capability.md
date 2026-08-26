@@ -52,7 +52,7 @@
 
 ## 失敗
 
-到達し得る失敗は `invalid_argument`、`unsupported_capability`、`configuration_required`、`unsupported_query`、`source_timeout`、`source_unavailable`、`source_busy`、`source_contract_changed`、`invalid_source_response`、`source_response_too_large`、`source_processing_limit` および `unsafe_source_content` とする。
+到達し得る失敗は `invalid_argument`、`unsupported_capability`、`configuration_required`、`unsupported_query`、`rate_limited`、`source_timeout`、`source_unavailable`、`source_busy`、`source_contract_changed`、`invalid_source_response`、`source_response_too_large`、`source_processing_limit` および `unsafe_source_content` とする。
 
 ## 確認
 

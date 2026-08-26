@@ -39,4 +39,4 @@
 
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
 - [SOT-ARCH-041: 拡張パックの専門公開面の段階採用](41-staged-specialist-extension-surface.md)
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](../40-interfaces/67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](../40-interfaces/67-judicial-citations-pack-activation.md)

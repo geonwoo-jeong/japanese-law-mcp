@@ -25,6 +25,8 @@
 
 法令コアは既定の製品機能であり、拡張パックとして扱わない。
 
+上表は独立した法情報領域の pack ID を示す。同じ法情報領域の内部で既存 pack に依存する機能パックは、依存関係、起動時エラー、原子的構成および rollback を別の有効な SOT で定義した場合に限って追加できる。`judicial-citations` は `SOT-ARCH-042` が定義する `judicial-cases` の従属機能パックであり、第五の独立した法情報領域として扱わない。
+
 拡張パックの有効化は、同じ capability ID の provider route を置き換える操作ではない。provider route は有効化済みの能力について binding を選ぶだけとし、拡張パックを有効にしたことで既存の法令コアの既定 route、結果または provider を変更しない。
 
 税務または労働の拡張パックが法令コアの `law.*` 能力を利用する場合は、既存の法令コアをそのまま利用する。分野名だけを理由に `tax.law.*`、`labor.law.*` または同じ意味を持つ別能力を作らず、別の法令プロバイダーを法令コアの既定 route へ暗黙に参加させない。
@@ -73,3 +75,4 @@ query profile contribution は capability ID または provider route の代替�
 - [SOT-ARCH-017: 採用可能な能力群](17-approved-capability-families.md)
 - [SOT-IF-026: プロバイダールーティング設定](../40-interfaces/26-provider-routing-configuration.md)
 - [SOT-ARCH-024: 統合照会の内部境界と公開境界](24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-042: 判例引用追跡拡張パックの従属有効化](42-judicial-citations-pack-dependency.md)

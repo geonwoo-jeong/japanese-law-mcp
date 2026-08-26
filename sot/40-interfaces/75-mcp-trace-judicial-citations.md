@@ -55,4 +55,4 @@ pack 無効時の未登録、有効時の原子的登録、schema、`ref` の事
 
 - [SOT-SCN-015: 一件の公表裁判例から引用関係を追跡する](../10-scenarios/15-trace-judicial-citations.md)
 - [SOT-MODEL-035: JudicialCitationGraph](../20-model/35-judicial-citation-graph.md)
-- [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
