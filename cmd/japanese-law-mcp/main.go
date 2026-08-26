@@ -35,6 +35,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanreipdf"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv1"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/egov/lawv2"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/ndl/kokkai"
@@ -44,6 +45,14 @@ import (
 )
 
 func main() {
+	if handled, code := hanreipdf.RunPrivateWorkerIfRequested(
+		os.Stdin,
+		os.Stdout,
+		os.Stderr,
+		os.Getenv("JLMCP_PRIVATE_WORKER_MODE"),
+	); handled {
+		os.Exit(code)
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	code := run(ctx)
 	stop()
