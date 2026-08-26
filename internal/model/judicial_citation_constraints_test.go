@@ -288,6 +288,32 @@ func TestJudicialCitationIncomingCoverageContract(t *testing.T) {
 	}
 }
 
+func TestJudicialCitationIncomingPartialAllowsCompletedSearchesWhenProcessingLimitTruncates(t *testing.T) {
+	t.Parallel()
+
+	limit, attempted, completed := 10, 2, 2
+	incoming, err := model.NewJudicialCitationDirectionCoverage(
+		model.JudicialCitationDirectionCoverageValues{
+			Status:            "partial",
+			Methods:           []model.JudicialCitationMethod{"official_case_search"},
+			Truncated:         true,
+			Limit:             &limit,
+			AttemptedSearches: &attempted,
+			CompletedSearches: &completed,
+		},
+	)
+	if err != nil {
+		t.Fatalf("処理上限で切り詰めた incoming coverage を作成できません: %v", err)
+	}
+	if _, err := model.NewJudicialCitationCoverage(model.JudicialCitationCoverageValues{
+		RequestedDirection: "incoming",
+		Outgoing:           mustDirectionCoverage(t, "not_requested", []string{}),
+		Incoming:           incoming,
+	}); err != nil {
+		t.Fatalf("検索完了後の処理上限による partial を拒否しました: %v", err)
+	}
+}
+
 func TestJudicialCitationPartialRequiresIssueForIncompleteDirection(t *testing.T) {
 	t.Parallel()
 

@@ -244,8 +244,8 @@ func (c JudicialCitationDirectionCoverage) validateForDirection(
 			return fmt.Errorf("complete の incoming では全検索が完了していなければなりません")
 		}
 		if c.status == JudicialCitationDirectionStatusPartial &&
-			*c.completedSearches >= *c.attemptedSearches {
-			return fmt.Errorf("partial の incoming には未完了検索が必要です")
+			*c.completedSearches >= *c.attemptedSearches && !c.truncated {
+			return fmt.Errorf("partial の incoming には未完了検索又は処理上限による切詰めが必要です")
 		}
 	}
 	return nil
