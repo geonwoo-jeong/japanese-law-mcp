@@ -58,7 +58,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		"judicial-decision.search":                  "1.1.0",
 	}
 	wantCourtsStatuses := map[string]string{
-		"judicial-decision.citing-candidate.search": "planned",
+		"judicial-decision.citing-candidate.search": "implemented",
 		"judicial-decision.read":                    "implemented",
 		"judicial-decision.search":                  "implemented",
 	}
@@ -95,7 +95,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 		courtsPDFRow.ImplementedBy !=
 			"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanreipdf" ||
 		courtsPDFRow.ConformanceTarget != "./internal/source/courts/hanreipdf" ||
-		courtsPDFRow.Status != "planned" {
+		courtsPDFRow.Status != "implemented" {
 		t.Fatalf("courts PDF row = %#v", courtsPDFRow)
 	}
 	assertCasesAreExplicit(t, courtsPDFRow)

@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcasecitationextract"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitingcandidatesearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
@@ -141,6 +143,72 @@ func TestProviderRoutesKeepJudicialDecisionRoutesOptional(t *testing.T) {
 	}
 	if _, exists := routes.JudicialDecisionRead(); exists {
 		t.Fatal("SOT-ARCH-019: 未設定の judicial-decision.read route を返した")
+	}
+}
+
+func TestProviderRoutesResolveOptionalJudicialCitationRoutes(t *testing.T) {
+	t.Parallel()
+
+	core := newCompleteProviderBindings(t, "core-provider")
+	citation := newJudicialCitationProviderBindings(t, "citation-provider")
+	registry, err := application.NewProviderBindingRegistry(
+		[]application.ProviderBindings{core, citation},
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-068/SOT-IF-069: registry のエラー = %v", err)
+	}
+	values := append(
+		completeProviderRouteValues("core-provider"),
+		application.ProviderRouteValues{
+			CapabilityID:      judicialcasecitationextract.CapabilityID,
+			MajorVersion:      judicialcasecitationextract.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: "citation-provider",
+		},
+		application.ProviderRouteValues{
+			CapabilityID:      judicialcitingcandidatesearch.CapabilityID,
+			MajorVersion:      judicialcitingcandidatesearch.MajorVersion,
+			Selection:         application.ProviderRouteSelectionPrimary,
+			DefaultProviderID: "citation-provider",
+		},
+	)
+
+	routes, err := application.NewProviderRoutes(registry, values)
+	if err != nil {
+		t.Fatalf("SOT-IF-068/SOT-IF-069: NewProviderRoutes() のエラー = %v", err)
+	}
+	if port, exists := routes.JudicialCaseCitationExtract(); !exists ||
+		port != citation.JudicialCaseCitationExtract {
+		t.Fatalf("SOT-IF-068: JudicialCaseCitationExtract() = %#v, %t", port, exists)
+	}
+	if port, exists := routes.JudicialCitingCandidateSearch(); !exists ||
+		port != citation.JudicialCitingCandidateSearch {
+		t.Fatalf("SOT-IF-069: JudicialCitingCandidateSearch() = %#v, %t", port, exists)
+	}
+}
+
+func TestProviderRoutesKeepJudicialCitationRoutesOptional(t *testing.T) {
+	t.Parallel()
+
+	bindings := newCompleteProviderBindings(t, "core-provider")
+	registry, err := application.NewProviderBindingRegistry(
+		[]application.ProviderBindings{bindings},
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-012: registry のエラー = %v", err)
+	}
+	routes, err := application.NewProviderRoutes(
+		registry,
+		completeProviderRouteValues("core-provider"),
+	)
+	if err != nil {
+		t.Fatalf("SOT-ARCH-042: 引用 route を必須として扱いました: %v", err)
+	}
+	if _, exists := routes.JudicialCaseCitationExtract(); exists {
+		t.Fatal("SOT-ARCH-042: 未設定の引用抽出 route を返しました")
+	}
+	if _, exists := routes.JudicialCitingCandidateSearch(); exists {
+		t.Fatal("SOT-ARCH-042: 未設定の候補検索 route を返しました")
 	}
 }
 

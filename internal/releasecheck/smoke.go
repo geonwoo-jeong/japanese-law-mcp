@@ -245,7 +245,7 @@ func smokeScenarios() []smokeScenario {
 			},
 		},
 		{
-			name: "all-extension-packs",
+			name: "judicial-cases-and-legislative-history",
 			configYAML: "extensionPacks:\n" +
 				"  judicial-cases:\n" +
 				"    enabled: true\n" +
@@ -263,6 +263,51 @@ func smokeScenarios() []smokeScenario {
 				"search_judicial_cases",
 				"search_law_content",
 				"search_laws",
+			},
+		},
+		{
+			name: "judicial-citations",
+			configYAML: "extensionPacks:\n" +
+				"  judicial-cases:\n" +
+				"    enabled: true\n" +
+				"  judicial-citations:\n" +
+				"    enabled: true\n",
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+				"trace_judicial_citations",
+			},
+		},
+		{
+			name: "all-extension-packs",
+			configYAML: "extensionPacks:\n" +
+				"  judicial-cases:\n" +
+				"    enabled: true\n" +
+				"  judicial-citations:\n" +
+				"    enabled: true\n" +
+				"  legislative-history:\n" +
+				"    enabled: true\n",
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_diet_speeches",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+				"trace_judicial_citations",
 			},
 		},
 	}

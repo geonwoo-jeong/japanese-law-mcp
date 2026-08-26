@@ -24,6 +24,7 @@ type Dependencies struct {
 	ListLawUpdates        listlawupdates.Port
 	QueryLegalInformation legalquery.Port
 	JudicialCases         JudicialCasesDependencies
+	JudicialCitations     JudicialCitationsDependencies
 	LegislativeHistory    LegislativeHistoryDependencies
 }
 
@@ -95,6 +96,9 @@ func newServer(
 		)
 	}
 	dependencies.JudicialCases.addTools(server)
+	if dependencies.JudicialCases.ready() {
+		dependencies.JudicialCitations.addTools(server)
+	}
 	dependencies.LegislativeHistory.addTools(server)
 	return server
 }

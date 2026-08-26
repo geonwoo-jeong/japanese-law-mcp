@@ -3,6 +3,8 @@ package application
 import (
 	"fmt"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcasecitationextract"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitingcandidatesearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
@@ -78,6 +80,20 @@ func judicialDecisionSearchProviderRouteKey() providerRouteKey {
 	return providerRouteKey{
 		capabilityID: judicialdecisionsearch.CapabilityID,
 		majorVersion: judicialdecisionsearch.MajorVersion,
+	}
+}
+
+func judicialCaseCitationExtractProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: judicialcasecitationextract.CapabilityID,
+		majorVersion: judicialcasecitationextract.MajorVersion,
+	}
+}
+
+func judicialCitingCandidateSearchProviderRouteKey() providerRouteKey {
+	return providerRouteKey{
+		capabilityID: judicialcitingcandidatesearch.CapabilityID,
+		majorVersion: judicialcitingcandidatesearch.MajorVersion,
 	}
 }
 
@@ -312,6 +328,30 @@ func (r ProviderRoutes) JudicialDecisionRead() (judicialdecisionread.Port, bool)
 	return r.registry.JudicialDecisionRead(providerID)
 }
 
+// JudicialCaseCitationExtract は、judicial-decision.case-citation.extract@1 の実効 primary port を返す。
+func (r ProviderRoutes) JudicialCaseCitationExtract() (judicialcasecitationextract.Port, bool) {
+	providerID, exists := r.ProviderID(
+		judicialcasecitationextract.CapabilityID,
+		judicialcasecitationextract.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.JudicialCaseCitationExtract(providerID)
+}
+
+// JudicialCitingCandidateSearch は、judicial-decision.citing-candidate.search@1 の実効 primary port を返す。
+func (r ProviderRoutes) JudicialCitingCandidateSearch() (judicialcitingcandidatesearch.Port, bool) {
+	providerID, exists := r.ProviderID(
+		judicialcitingcandidatesearch.CapabilityID,
+		judicialcitingcandidatesearch.MajorVersion,
+	)
+	if !exists {
+		return nil, false
+	}
+	return r.registry.JudicialCitingCandidateSearch(providerID)
+}
+
 // ParliamentSpeechSearch は、parliament.speech.search@1 の実効 primary port を返す。
 func (r ProviderRoutes) ParliamentSpeechSearch() (parliamentspeechsearch.Port, bool) {
 	providerID, exists := r.ProviderID(
@@ -329,6 +369,12 @@ func (r ProviderBindingRegistry) hasBinding(
 	key providerRouteKey,
 ) bool {
 	switch key {
+	case judicialCaseCitationExtractProviderRouteKey():
+		_, exists := r.JudicialCaseCitationExtract(providerID)
+		return exists
+	case judicialCitingCandidateSearchProviderRouteKey():
+		_, exists := r.JudicialCitingCandidateSearch(providerID)
+		return exists
 	case judicialDecisionReadProviderRouteKey():
 		_, exists := r.JudicialDecisionRead(providerID)
 		return exists
@@ -375,6 +421,8 @@ func isSupportedProviderRouteKey(key providerRouteKey) bool {
 
 func supportedProviderRouteKeys() []providerRouteKey {
 	return []providerRouteKey{
+		judicialCaseCitationExtractProviderRouteKey(),
+		judicialCitingCandidateSearchProviderRouteKey(),
 		judicialDecisionReadProviderRouteKey(),
 		judicialDecisionSearchProviderRouteKey(),
 		parliamentSpeechSearchProviderRouteKey(),

@@ -2,7 +2,7 @@
 
 Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM から検索・取得するための、Go 製 MCP サーバーです。利用者のローカル環境で動作し、法情報の取得先へ直接接続します。
 
-法令コアはデジタル庁の e-Gov 法令 API Version 2 と Version 1 を使用します。選択型の裁判例拡張パックは最高裁判所の「裁判例検索」、立法過程拡張パックは国立国会図書館の「国会会議録検索システム」を使用します。
+法令コアはデジタル庁の e-Gov 法令 API Version 2 と Version 1 を使用します。選択型の裁判例・判例引用追跡拡張パックは最高裁判所の「裁判例検索」、立法過程拡張パックは国立国会図書館の「国会会議録検索システム」を使用します。
 
 > [!IMPORTANT]
 > このツールは法的判断や法的助言を行いません。結果には公式情報源を確認するための情報を含めますが、法令の適用や裁判例の先例性は利用者が原文と現在の状況を確認してください。
@@ -29,7 +29,15 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `search_judicial_cases` | 裁判所が公表する裁判例を検索する | 最高裁判所「裁判例検索」 |
 | `get_judicial_case` | 検索結果の `ref` から同じ掲載裁判例の詳細と公式文書リンクを取得する | 最高裁判所「裁判例検索」 |
 
-裁判例検索はすべての判決等を収録したものではなく、PDF 本文の抽出、上訴関係、判例変更または先例性の判定は行いません。
+`judicial-cases` だけでは PDF 本文を解析しません。裁判例検索はすべての判決等を収録したものではなく、判例変更または先例性の判定も行いません。
+
+`judicial-cases` と `judicial-citations` をともに明示的に有効化すると、次のツールを追加します。
+
+| MCP ツール | 用途 | 主な情報源 |
+|---|---|---|
+| `trace_judicial_citations` | 一件の裁判例から、確認済みの引用、公式検索上の被引用候補、参照法条および原審を 1-hop graph で返す | 最高裁判所「裁判例検索」の詳細 HTML・全文 PDF・検索 HTML |
+
+判例引用追跡は、公式に公表され取得できた範囲だけをオンデマンドで解析します。被引用候補は実際の全引用回数ではなく、公式検索で観測した候補です。OCR、恒久索引、先例性・拘束力・判例変更・現在の有効性の判定は行いません。
 
 `legislative-history` を明示的に有効化すると、次のツールを追加します。
 
@@ -70,6 +78,8 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 `judicial-cases` が無効でも裁判例の意図は法令検索へ置き換えずに認識し、外部情報源を呼ばない `capability_unavailable` として返します。`令和4年（ネ）第10039号の裁判例を検索してください` のように、完全な事件番号と検索 task・裁判例 resource がそろう照会は、全角数字・括弧や構造上の空白を決定的な検索語へ整えて裁判例検索として扱います。事件番号だけ、または事件番号を句読点で列挙しただけの入力は外部情報源を呼ばない `unsupported` とし、専門ツールの使用を案内します。事件番号、題名または URL だけから裁判例詳細の `ref` を推測することはありません。入力を決定的に指定した検索や取得、ページ継続には、引き続き `search_judicial_cases` と `get_judicial_case` を使用できます。
 
 `legislative-history` の第一段階は専門ツールだけを追加します。有効にしても `query_legal_information` は国会発言検索を実行しないため、国会会議録の検索には `search_diet_speeches` を指定してください。
+
+`judicial-citations` も専門ツールだけを追加します。`query_legal_information` は引用関係の自然文照会を実行しないため、引用追跡には `trace_judicial_citations` を指定してください。
 
 ## インストール
 
@@ -128,6 +138,22 @@ japanese-law-mcp --config=/absolute/path/to/config.yaml
 ```
 
 `extensionPacks.judicial-cases.enabled` は設定ファイルからだけ変更できます。省略または `false` に戻して再起動すると、二つの裁判例ツールとその provider route をまとめて無効化します。
+
+### 判例引用追跡を有効にする
+
+判例引用追跡は `judicial-cases` に依存します。二つをともに明示し、`--config` で読み込みます。
+
+```yaml
+requestTimeout: 30s
+diagnostics: false
+extensionPacks:
+  judicial-cases:
+    enabled: true
+  judicial-citations:
+    enabled: true
+```
+
+`judicial-citations` だけを有効にした設定は起動前に拒否します。省略または `false` に戻すと、PDF provider、二つの引用追跡 route と `trace_judicial_citations` だけを除き、既存の二つの裁判例ツールは維持します。
 
 ## 立法過程拡張パックを有効にする
 

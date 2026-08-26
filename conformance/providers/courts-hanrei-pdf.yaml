@@ -63,4 +63,4 @@ rows:
     parserContractVersion: "1.0.0"
     implementedBy: github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanreipdf
     conformanceTarget: ./internal/source/courts/hanreipdf
-    status: planned
+    status: implemented

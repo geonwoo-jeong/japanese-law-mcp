@@ -21,6 +21,12 @@ var (
 	environmentNamePattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 )
 
+const (
+	judicialCitationPDFProviderID             = "courts-hanrei-pdf"
+	judicialCaseCitationExtractCapabilityID   = "judicial-decision.case-citation.extract"
+	judicialCitingCandidateSearchCapabilityID = "judicial-decision.citing-candidate.search"
+)
+
 // ProviderRouteSelection は、能力に使用する provider の選択方法を表す。
 type ProviderRouteSelection string
 
@@ -85,6 +91,7 @@ func (k ProviderRouteKey) String() string {
 
 func defaultProviders(
 	judicialCasesEnabled bool,
+	judicialCitationsEnabled bool,
 	legislativeHistoryEnabled bool,
 ) map[string]ProviderConfig {
 	providers := map[string]ProviderConfig{
@@ -106,6 +113,13 @@ func defaultProviders(
 			CredentialEnvRefs: make(map[string]CredentialEnvRef),
 		}
 	}
+	if judicialCitationsEnabled {
+		providers[judicialCitationPDFProviderID] = ProviderConfig{
+			Enabled:           true,
+			Settings:          make(map[string]any),
+			CredentialEnvRefs: make(map[string]CredentialEnvRef),
+		}
+	}
 	if legislativeHistoryEnabled {
 		providers["ndl-diet-speech-api"] = ProviderConfig{
 			Enabled:           true,
@@ -118,6 +132,7 @@ func defaultProviders(
 
 func defaultProviderRoutes(
 	judicialCasesEnabled bool,
+	judicialCitationsEnabled bool,
 	legislativeHistoryEnabled bool,
 ) map[ProviderRouteKey]ProviderRoute {
 	const (
@@ -172,6 +187,22 @@ func defaultProviderRoutes(
 			DefaultProviderID: courtsProviderID,
 		}
 	}
+	if judicialCitationsEnabled {
+		routes[ProviderRouteKey{
+			CapabilityID: judicialCaseCitationExtractCapabilityID,
+			MajorVersion: 1,
+		}] = ProviderRoute{
+			Selection:         ProviderRouteSelectionPrimary,
+			DefaultProviderID: judicialCitationPDFProviderID,
+		}
+		routes[ProviderRouteKey{
+			CapabilityID: judicialCitingCandidateSearchCapabilityID,
+			MajorVersion: 1,
+		}] = ProviderRoute{
+			Selection:         ProviderRouteSelectionPrimary,
+			DefaultProviderID: courtsProviderID,
+		}
+	}
 	if legislativeHistoryEnabled {
 		routes[ProviderRouteKey{
 			CapabilityID: "parliament.speech.search",
@@ -187,11 +218,13 @@ func defaultProviderRoutes(
 func resolveProviderConfigs(
 	values map[string]ProviderConfig,
 	judicialCasesEnabled bool,
+	judicialCitationsEnabled bool,
 	legislativeHistoryEnabled bool,
 ) (map[string]ProviderConfig, error) {
 	if values == nil {
 		return cloneProviderConfigs(defaultProviders(
 			judicialCasesEnabled,
+			judicialCitationsEnabled,
 			legislativeHistoryEnabled,
 		)), nil
 	}
@@ -199,6 +232,7 @@ func resolveProviderConfigs(
 	if len(values) != 0 {
 		resolved = cloneProviderConfigs(defaultProviders(
 			judicialCasesEnabled,
+			judicialCitationsEnabled,
 			legislativeHistoryEnabled,
 		))
 	}
@@ -231,11 +265,13 @@ func resolveProviderConfigs(
 func resolveProviderRoutes(
 	values map[string]ProviderRoute,
 	judicialCasesEnabled bool,
+	judicialCitationsEnabled bool,
 	legislativeHistoryEnabled bool,
 ) (map[ProviderRouteKey]ProviderRoute, error) {
 	if values == nil {
 		return cloneProviderRoutes(defaultProviderRoutes(
 			judicialCasesEnabled,
+			judicialCitationsEnabled,
 			legislativeHistoryEnabled,
 		)), nil
 	}
@@ -243,6 +279,7 @@ func resolveProviderRoutes(
 	if len(values) != 0 {
 		resolved = cloneProviderRoutes(defaultProviderRoutes(
 			judicialCasesEnabled,
+			judicialCitationsEnabled,
 			legislativeHistoryEnabled,
 		))
 	}
@@ -263,6 +300,38 @@ func resolveProviderRoutes(
 		resolved[key] = route
 	}
 	return resolved, nil
+}
+
+func validateDisabledJudicialCitationConfiguration(
+	providers map[string]ProviderConfig,
+	routes map[string]ProviderRoute,
+) error {
+	if _, exists := providers[judicialCitationPDFProviderID]; exists {
+		return fmt.Errorf(
+			"judicial-citations が無効な間は provider %q を指定できません",
+			judicialCitationPDFProviderID,
+		)
+	}
+	rawKeys := make([]string, 0, len(routes))
+	for rawKey := range routes {
+		rawKeys = append(rawKeys, rawKey)
+	}
+	sort.Strings(rawKeys)
+	for _, rawKey := range rawKeys {
+		key, err := ParseProviderRouteKey(rawKey)
+		if err != nil {
+			continue
+		}
+		switch key.CapabilityID {
+		case judicialCaseCitationExtractCapabilityID,
+			judicialCitingCandidateSearchCapabilityID:
+			return fmt.Errorf(
+				"judicial-citations が無効な間は provider route %q を指定できません",
+				rawKey,
+			)
+		}
+	}
+	return nil
 }
 
 func validateCredentialEnvRefs(values map[string]CredentialEnvRef) error {

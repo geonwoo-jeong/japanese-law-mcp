@@ -37,13 +37,13 @@ type Config struct {
 	extensionPacks map[string]ExtensionPackConfig
 }
 
-// Default は、SOT-IF-026、SOT-IF-029 と SOT-IF-040 が定める既定の起動設定を返す。
+// Default は、SOT-IF-026、SOT-IF-029、SOT-IF-061 と SOT-IF-067 が定める既定の起動設定を返す。
 func Default() Config {
-	providers, err := resolveProviderConfigs(nil, false, false)
+	providers, err := resolveProviderConfigs(nil, false, false, false)
 	if err != nil {
 		panic("組込み provider 設定を構成できません")
 	}
-	providerRoutes, err := resolveProviderRoutes(nil, false, false)
+	providerRoutes, err := resolveProviderRoutes(nil, false, false, false)
 	if err != nil {
 		panic("組込み provider route を構成できません")
 	}
@@ -79,10 +79,31 @@ func New(values Values) (Config, error) {
 		)
 	}
 	judicialCasesEnabled := extensionPacks[ExtensionPackJudicialCases].Enabled
+	judicialCitationsEnabled := extensionPacks[ExtensionPackJudicialCitations].Enabled
 	legislativeHistoryEnabled := extensionPacks[ExtensionPackLegislativeHistory].Enabled
+	if judicialCitationsEnabled && !judicialCasesEnabled {
+		return Config{}, fmt.Errorf(
+			"設定を検証できません: %w",
+			NewValidationError(fmt.Errorf(
+				"judicial-citations を有効にするには judicial-cases も有効でなければなりません",
+			)),
+		)
+	}
+	if !judicialCitationsEnabled {
+		if err := validateDisabledJudicialCitationConfiguration(
+			values.Providers,
+			values.ProviderRoutes,
+		); err != nil {
+			return Config{}, fmt.Errorf(
+				"設定を検証できません: %w",
+				NewValidationError(err),
+			)
+		}
+	}
 	providers, err := resolveProviderConfigs(
 		values.Providers,
 		judicialCasesEnabled,
+		judicialCitationsEnabled,
 		legislativeHistoryEnabled,
 	)
 	if err != nil {
@@ -94,6 +115,7 @@ func New(values Values) (Config, error) {
 	providerRoutes, err := resolveProviderRoutes(
 		values.ProviderRoutes,
 		judicialCasesEnabled,
+		judicialCitationsEnabled,
 		legislativeHistoryEnabled,
 	)
 	if err != nil {
@@ -181,6 +203,12 @@ func (c Config) ExtensionPacks() map[string]ExtensionPackConfig {
 // JudicialCasesEnabled は、裁判例拡張パックが有効かを返す。
 func (c Config) JudicialCasesEnabled() bool {
 	pack, exists := c.extensionPacks[ExtensionPackJudicialCases]
+	return exists && pack.Enabled
+}
+
+// JudicialCitationsEnabled は、判例引用追跡拡張パックが有効かを返す。
+func (c Config) JudicialCitationsEnabled() bool {
+	pack, exists := c.extensionPacks[ExtensionPackJudicialCitations]
 	return exists && pack.Enabled
 }
 

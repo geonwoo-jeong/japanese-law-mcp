@@ -10,6 +10,8 @@ const (
 
 	// ExtensionPackJudicialCases は、裁判例拡張パックの識別子である。
 	ExtensionPackJudicialCases = "judicial-cases"
+	// ExtensionPackJudicialCitations は、判例引用追跡拡張パックの識別子である。
+	ExtensionPackJudicialCitations = "judicial-citations"
 	// ExtensionPackLegislativeHistory は、立法過程拡張パックの識別子である。
 	ExtensionPackLegislativeHistory = "legislative-history"
 )
@@ -34,6 +36,7 @@ func resolveExtensionPacks(
 	resolved := make(map[string]ExtensionPackConfig, len(values))
 	for _, packID := range packIDs {
 		if packID != ExtensionPackJudicialCases &&
+			packID != ExtensionPackJudicialCitations &&
 			packID != ExtensionPackLegislativeHistory {
 			return nil, fmt.Errorf("未知の extension pack %q が指定されています", packID)
 		}

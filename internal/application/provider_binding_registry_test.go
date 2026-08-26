@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcasecitationextract"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitingcandidatesearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
@@ -67,6 +69,76 @@ func TestProviderBindingRegistryRegistersExactTypedBindings(t *testing.T) {
 	if port, exists := registry.JudicialDecisionRead("complete-provider"); !exists ||
 		port != bindings.JudicialDecisionRead {
 		t.Fatalf("SOT-IF-042: JudicialDecisionRead() = %#v, %t", port, exists)
+	}
+}
+
+func TestProviderBindingRegistryRegistersJudicialCitationBindings(t *testing.T) {
+	t.Parallel()
+
+	bindings := newJudicialCitationProviderBindings(t, "citation-provider")
+	registry, err := application.NewProviderBindingRegistry(
+		[]application.ProviderBindings{bindings},
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-068/SOT-IF-069: NewProviderBindingRegistry() のエラー = %v", err)
+	}
+
+	if port, exists := registry.JudicialCaseCitationExtract("citation-provider"); !exists ||
+		port != bindings.JudicialCaseCitationExtract {
+		t.Fatalf("SOT-IF-068: JudicialCaseCitationExtract() = %#v, %t", port, exists)
+	}
+	if port, exists := registry.JudicialCitingCandidateSearch("citation-provider"); !exists ||
+		port != bindings.JudicialCitingCandidateSearch {
+		t.Fatalf("SOT-IF-069: JudicialCitingCandidateSearch() = %#v, %t", port, exists)
+	}
+	if _, exists := registry.JudicialCaseCitationExtract("missing-provider"); exists {
+		t.Fatal("SOT-IF-068: 未登録 provider の引用抽出 port を返しました")
+	}
+	if _, exists := registry.JudicialCitingCandidateSearch("missing-provider"); exists {
+		t.Fatal("SOT-IF-069: 未登録 provider の候補検索 port を返しました")
+	}
+}
+
+func TestProviderBindingRegistryRejectsJudicialCitationDeclarationAndPortMismatch(t *testing.T) {
+	t.Parallel()
+
+	complete := newJudicialCitationProviderBindings(t, "citation-provider")
+	missingExtract := complete
+	missingExtract.JudicialCaseCitationExtract = nil
+	missingCandidate := complete
+	missingCandidate.JudicialCitingCandidateSearch = nil
+	undeclaredExtract := complete
+	undeclaredExtract.Descriptor = newBindingDescriptor(
+		t,
+		"citation-provider",
+		judicialcitingcandidatesearch.CapabilityID,
+	)
+	undeclaredCandidate := complete
+	undeclaredCandidate.Descriptor = newBindingDescriptor(
+		t,
+		"citation-provider",
+		judicialcasecitationextract.CapabilityID,
+	)
+	var typedNilExtract *fakeJudicialCaseCitationExtractBinding
+	typedNil := complete
+	typedNil.JudicialCaseCitationExtract = typedNilExtract
+
+	for name, bindings := range map[string]application.ProviderBindings{
+		"引用抽出 port の欠落":   missingExtract,
+		"候補検索 port の欠落":   missingCandidate,
+		"未宣言の引用抽出 port":   undeclaredExtract,
+		"未宣言の候補検索 port":   undeclaredCandidate,
+		"引用抽出の typed nil": typedNil,
+	} {
+		name, bindings := name, bindings
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if _, err := application.NewProviderBindingRegistry(
+				[]application.ProviderBindings{bindings},
+			); err == nil {
+				t.Fatalf("SOT-IF-068/SOT-IF-069: 不一致 binding を受理しました: %#v", bindings)
+			}
+		})
 	}
 }
 
@@ -168,6 +240,28 @@ func (*fakeJudicialDecisionSearchBinding) Search(
 
 type fakeJudicialDecisionReadBinding struct {
 	name string
+}
+
+type fakeJudicialCaseCitationExtractBinding struct {
+	name string
+}
+
+func (*fakeJudicialCaseCitationExtractBinding) Extract(
+	context.Context,
+	judicialcasecitationextract.Request,
+) (judicialcasecitationextract.Result, error) {
+	return judicialcasecitationextract.Result{}, nil
+}
+
+type fakeJudicialCitingCandidateSearchBinding struct {
+	name string
+}
+
+func (*fakeJudicialCitingCandidateSearchBinding) Search(
+	context.Context,
+	judicialcitingcandidatesearch.Request,
+) (judicialcitingcandidatesearch.Result, error) {
+	return judicialcitingcandidatesearch.Result{}, nil
 }
 
 func (*fakeJudicialDecisionReadBinding) Read(
@@ -278,6 +372,23 @@ func newCompleteProviderBindings(
 		LawRevisionList:        &fakeLawRevisionListBinding{name: providerID},
 		LawArticleRead:         &fakeLawArticleReadBinding{name: providerID},
 		LawUpdateList:          &fakeLawUpdateListBinding{name: providerID},
+	}
+}
+
+func newJudicialCitationProviderBindings(
+	t *testing.T,
+	providerID string,
+) application.ProviderBindings {
+	t.Helper()
+	return application.ProviderBindings{
+		Descriptor: newBindingDescriptor(
+			t,
+			providerID,
+			judicialcasecitationextract.CapabilityID,
+			judicialcitingcandidatesearch.CapabilityID,
+		),
+		JudicialCaseCitationExtract:   &fakeJudicialCaseCitationExtractBinding{name: providerID},
+		JudicialCitingCandidateSearch: &fakeJudicialCitingCandidateSearchBinding{name: providerID},
 	}
 }
 

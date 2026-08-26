@@ -11,10 +11,10 @@ const (
 	providerID             = "courts-hanrei-html"
 	sourceID               = "courts-hanrei"
 	searchEndpoint         = "https://www.courts.go.jp/hanrei/search1/index.html"
-	adapterContractVersion = "1.1.0"
+	adapterContractVersion = "1.2.0"
 )
 
-// Descriptor は、SOT-IF-043 の provider descriptor を返す。
+// Descriptor は、SOT-IF-072 の provider descriptor を返す。
 func Descriptor() model.ProviderDescriptor {
 	descriptor, err := model.NewProviderDescriptor(model.ProviderDescriptorValues{
 		ProviderID:             providerID,
@@ -24,6 +24,7 @@ func Descriptor() model.ProviderDescriptor {
 		InterfaceType:          model.InterfaceTypeHTML,
 		CredentialRequired:     false,
 		Capabilities: []model.ProviderCapability{
+			mustJudicialCapability("judicial-decision.citing-candidate.search"),
 			mustJudicialCapability("judicial-decision.read"),
 			mustJudicialCapability("judicial-decision.search"),
 		},

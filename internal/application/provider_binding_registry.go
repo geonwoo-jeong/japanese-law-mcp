@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcasecitationextract"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitingcandidatesearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
@@ -19,17 +21,19 @@ import (
 
 // ProviderBindings は、一つの記述子と実装済みの型付き能力ポートを結び付ける。
 type ProviderBindings struct {
-	Descriptor             model.ProviderDescriptor
-	JudicialDecisionRead   judicialdecisionread.Port
-	JudicialDecisionSearch judicialdecisionsearch.Port
-	ParliamentSpeechSearch parliamentspeechsearch.Port
-	LawSearch              lawsearch.Port
-	LawContentSearch       lawcontentsearch.Port
-	LawRevisionList        lawrevisionlist.Port
-	LawDocumentRead        lawdocumentread.Port
-	LawArticleRead         lawarticleread.Port
-	LawUpdateList          lawupdatelist.Port
-	LawVersionCompare      lawversioncompare.Port
+	Descriptor                    model.ProviderDescriptor
+	JudicialCaseCitationExtract   judicialcasecitationextract.Port
+	JudicialCitingCandidateSearch judicialcitingcandidatesearch.Port
+	JudicialDecisionRead          judicialdecisionread.Port
+	JudicialDecisionSearch        judicialdecisionsearch.Port
+	ParliamentSpeechSearch        parliamentspeechsearch.Port
+	LawSearch                     lawsearch.Port
+	LawContentSearch              lawcontentsearch.Port
+	LawRevisionList               lawrevisionlist.Port
+	LawDocumentRead               lawdocumentread.Port
+	LawArticleRead                lawarticleread.Port
+	LawUpdateList                 lawupdatelist.Port
+	LawVersionCompare             lawversioncompare.Port
 }
 
 // ProviderBindingRegistry は、検証済みの型付き binding を providerId ごとに保持する。
@@ -161,6 +165,28 @@ func (r ProviderBindingRegistry) LawUpdateList(
 	return binding.LawUpdateList, true
 }
 
+// JudicialCaseCitationExtract は、providerId の judicial-decision.case-citation.extract@1 port を返す。
+func (r ProviderBindingRegistry) JudicialCaseCitationExtract(
+	providerID string,
+) (judicialcasecitationextract.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.JudicialCaseCitationExtract) {
+		return nil, false
+	}
+	return binding.JudicialCaseCitationExtract, true
+}
+
+// JudicialCitingCandidateSearch は、providerId の judicial-decision.citing-candidate.search@1 port を返す。
+func (r ProviderBindingRegistry) JudicialCitingCandidateSearch(
+	providerID string,
+) (judicialcitingcandidatesearch.Port, bool) {
+	binding, exists := r.bindings[providerID]
+	if !exists || isNilTypedPort(binding.JudicialCitingCandidateSearch) {
+		return nil, false
+	}
+	return binding.JudicialCitingCandidateSearch, true
+}
+
 // JudicialDecisionSearch は、providerId の judicial-decision.search@1 port を返す。
 func (r ProviderBindingRegistry) JudicialDecisionSearch(
 	providerID string,
@@ -238,6 +264,10 @@ func hasPortForCapability(
 	key providerRouteKey,
 ) bool {
 	switch key {
+	case judicialCaseCitationExtractProviderRouteKey():
+		return !isNilTypedPort(value.JudicialCaseCitationExtract)
+	case judicialCitingCandidateSearchProviderRouteKey():
+		return !isNilTypedPort(value.JudicialCitingCandidateSearch)
 	case judicialDecisionReadProviderRouteKey():
 		return !isNilTypedPort(value.JudicialDecisionRead)
 	case judicialDecisionSearchProviderRouteKey():

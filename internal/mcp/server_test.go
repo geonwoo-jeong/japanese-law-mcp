@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/comparelawversions"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitationtrace"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
@@ -194,6 +195,137 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 		}
 	case <-ctx.Done():
 		t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
+	}
+}
+
+func TestJudicialCitationsToolIsRegisteredAtomically(t *testing.T) {
+	t.Parallel()
+
+	complete, err := NewJudicialCitationsDependencies(&stubTraceJudicialCitationsPort{
+		result: mustJudicialCitationGraphResult(t),
+	})
+	if err != nil {
+		t.Fatalf("judicial-citations dependencies を作成できません: %v", err)
+	}
+	judicialCases := mustJudicialCitationCasesDependencies(t)
+	tests := []struct {
+		name         string
+		dependencies Dependencies
+		wantNames    []string
+	}{
+		{name: "disabled", dependencies: Dependencies{}, wantNames: []string{}},
+		{
+			name: "citations without cases",
+			dependencies: Dependencies{
+				JudicialCitations: complete,
+			},
+			wantNames: []string{},
+		},
+		{
+			name: "cases without citations",
+			dependencies: Dependencies{
+				JudicialCases: judicialCases,
+			},
+			wantNames: []string{
+				"get_judicial_case",
+				"search_judicial_cases",
+			},
+		},
+		{
+			name: "complete",
+			dependencies: Dependencies{
+				JudicialCases:     judicialCases,
+				JudicialCitations: complete,
+			},
+			wantNames: []string{
+				"get_judicial_case",
+				"search_judicial_cases",
+				"trace_judicial_citations",
+			},
+		},
+		{
+			name: "partial internal value",
+			dependencies: Dependencies{
+				JudicialCases: judicialCases,
+				JudicialCitations: JudicialCitationsDependencies{
+					initialized: true,
+				},
+			},
+			wantNames: []string{
+				"get_judicial_case",
+				"search_judicial_cases",
+			},
+		},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			serverTransport, clientTransport := sdk.NewInMemoryTransports()
+			serverResult := make(chan error, 1)
+			go func() {
+				serverResult <- NewServerWithDependencies(
+					"test-version",
+					testCase.dependencies,
+				).Run(ctx, serverTransport)
+			}()
+
+			client := sdk.NewClient(
+				&sdk.Implementation{Name: "test-client", Version: "test-version"},
+				nil,
+			)
+			session, connectErr := client.Connect(ctx, clientTransport, nil)
+			if connectErr != nil {
+				t.Fatalf("MCP セッションを初期化できません: %v", connectErr)
+			}
+			tools, listErr := session.ListTools(ctx, nil)
+			if listErr != nil {
+				t.Fatalf("tools/list error = %v", listErr)
+			}
+			names := make([]string, len(tools.Tools))
+			for index, tool := range tools.Tools {
+				names[index] = tool.Name
+			}
+			if !reflect.DeepEqual(names, testCase.wantNames) {
+				t.Fatalf("tool names = %#v, want %#v", names, testCase.wantNames)
+			}
+			if closeErr := session.Close(); closeErr != nil {
+				t.Fatalf("MCP セッションを終了できません: %v", closeErr)
+			}
+			select {
+			case runErr := <-serverResult:
+				if runErr != nil {
+					t.Fatalf("MCP サーバーが正常終了しませんでした: %v", runErr)
+				}
+			case <-ctx.Done():
+				t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
+			}
+		})
+	}
+}
+
+func TestNewJudicialCitationsDependenciesRejectsMissingPort(t *testing.T) {
+	t.Parallel()
+
+	var typedNil *stubTraceJudicialCitationsPort
+	tests := []struct {
+		name  string
+		trace judicialcitationtrace.Port
+	}{
+		{name: "nil", trace: nil},
+		{name: "typed nil", trace: typedNil},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			if _, err := NewJudicialCitationsDependencies(testCase.trace); err == nil {
+				t.Fatal("不完全な judicial-citations dependencies を受理しました")
+			}
+		})
 	}
 }
 

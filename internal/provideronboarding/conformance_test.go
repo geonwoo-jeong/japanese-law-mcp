@@ -38,7 +38,7 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 			if row.implementedBy != "internal/source/courts/hanreipdf" {
 				t.Fatalf("courts PDF implementedBy = %q", row.implementedBy)
 			}
-			if row.status != "planned" {
+			if row.status != "implemented" {
 				t.Fatalf("courts PDF status = %q", row.status)
 			}
 		case "e-gov-law-api-v1":
@@ -73,8 +73,7 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 		counts["ndl-diet-speech-api"] != 1 {
 		t.Fatalf("provider row counts = %v", counts)
 	}
-	if statusCounts["courts-hanrei-html"]["implemented"] != 2 ||
-		statusCounts["courts-hanrei-html"]["planned"] != 1 {
+	if statusCounts["courts-hanrei-html"]["implemented"] != 3 {
 		t.Fatalf("courts status counts = %v", statusCounts["courts-hanrei-html"])
 	}
 }
@@ -107,6 +106,7 @@ func TestRunProviderConformanceTestsUsesImplementedMatrixTargets(t *testing.T) {
 		"-count=1",
 		"./internal/providerconformance",
 		"./internal/source/courts/hanrei",
+		"./internal/source/courts/hanreipdf",
 		"./internal/source/egov/lawv1",
 		"./internal/source/egov/lawv2",
 		"./internal/source/ndl/kokkai",

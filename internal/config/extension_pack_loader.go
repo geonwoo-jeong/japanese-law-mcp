@@ -25,6 +25,7 @@ func decodeExtensionPacks(
 	packs := make(map[string]ExtensionPackConfig, len(object))
 	for _, packID := range packIDs {
 		if packID != ExtensionPackJudicialCases &&
+			packID != ExtensionPackJudicialCitations &&
 			packID != ExtensionPackLegislativeHistory {
 			return nil, fmt.Errorf("未知の extension pack %q が指定されています", packID)
 		}

@@ -107,8 +107,8 @@ func TestSmokeScenariosCoverOptionalExtensionPacks(t *testing.T) {
 	t.Parallel()
 
 	scenarios := smokeScenarios()
-	if len(scenarios) != 4 {
-		t.Fatalf("smoke scenario 数 = %d, want 4", len(scenarios))
+	if len(scenarios) != 6 {
+		t.Fatalf("smoke scenario 数 = %d, want 6", len(scenarios))
 	}
 
 	expected := map[string][]string{
@@ -145,6 +145,32 @@ func TestSmokeScenariosCoverOptionalExtensionPacks(t *testing.T) {
 			"search_law_content",
 			"search_laws",
 		},
+		"judicial-cases-and-legislative-history": {
+			"compare_law_versions",
+			"get_article",
+			"get_judicial_case",
+			"get_law",
+			"list_law_revisions",
+			"list_law_updates",
+			"query_legal_information",
+			"search_diet_speeches",
+			"search_judicial_cases",
+			"search_law_content",
+			"search_laws",
+		},
+		"judicial-citations": {
+			"compare_law_versions",
+			"get_article",
+			"get_judicial_case",
+			"get_law",
+			"list_law_revisions",
+			"list_law_updates",
+			"query_legal_information",
+			"search_judicial_cases",
+			"search_law_content",
+			"search_laws",
+			"trace_judicial_citations",
+		},
 		"all-extension-packs": {
 			"compare_law_versions",
 			"get_article",
@@ -157,6 +183,7 @@ func TestSmokeScenariosCoverOptionalExtensionPacks(t *testing.T) {
 			"search_judicial_cases",
 			"search_law_content",
 			"search_laws",
+			"trace_judicial_citations",
 		},
 	}
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +18,8 @@ import (
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcasecitationextract"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitingcandidatesearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawarticleread"
@@ -250,7 +253,7 @@ func TestJudicialCasesProviderRoutesActivateCourtsBindings(t *testing.T) {
 		t.Fatalf("SOT-IF-046: provider runtime を初期化できません: %v", err)
 	}
 	descriptor, exists := registry.Descriptor("courts-hanrei-html")
-	if !exists || len(descriptor.Capabilities()) != 2 {
+	if !exists || len(descriptor.Capabilities()) != 3 {
 		t.Fatalf("SOT-IF-046: courts descriptor = %#v, %t", descriptor, exists)
 	}
 	for _, capability := range []struct {
@@ -279,6 +282,66 @@ func TestJudicialCasesProviderRoutesActivateCourtsBindings(t *testing.T) {
 	}
 	if port, exists := routes.JudicialDecisionRead(); !exists || port == nil {
 		t.Fatal("SOT-IF-046: judicial-decision.read route に到達できません")
+	}
+	if _, exists := routes.JudicialCitingCandidateSearch(); exists {
+		t.Fatal("SOT-IF-074: judicial-cases 単独で citing-candidate route が到達可能です")
+	}
+}
+
+func TestJudicialCitationsProviderRoutesActivateCitationBindings(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withJudicialCitationsEnabled())
+	if err != nil {
+		t.Fatalf("設定を生成できません: %v", err)
+	}
+	registry, routes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("SOT-IF-074: provider runtime を初期化できません: %v", err)
+	}
+	htmlDescriptor, exists := registry.Descriptor("courts-hanrei-html")
+	if !exists || len(htmlDescriptor.Capabilities()) != 3 {
+		t.Fatalf("SOT-IF-074: html descriptor = %#v, %t", htmlDescriptor, exists)
+	}
+	pdfDescriptor, exists := registry.Descriptor("courts-hanrei-pdf")
+	if !exists || len(pdfDescriptor.Capabilities()) != 1 {
+		t.Fatalf("SOT-IF-074: pdf descriptor = %#v, %t", pdfDescriptor, exists)
+	}
+	for _, capability := range []struct {
+		id       string
+		version  int
+		provider string
+	}{
+		{
+			judicialcasecitationextract.CapabilityID,
+			judicialcasecitationextract.MajorVersion,
+			"courts-hanrei-pdf",
+		},
+		{
+			judicialcitingcandidatesearch.CapabilityID,
+			judicialcitingcandidatesearch.MajorVersion,
+			"courts-hanrei-html",
+		},
+	} {
+		providerID, routeExists := routes.ProviderID(
+			capability.id,
+			capability.version,
+		)
+		if !routeExists || providerID != capability.provider {
+			t.Fatalf(
+				"SOT-IF-074: %s@%d provider = %q, %t",
+				capability.id,
+				capability.version,
+				providerID,
+				routeExists,
+			)
+		}
+	}
+	if port, exists := routes.JudicialCaseCitationExtract(); !exists || port == nil {
+		t.Fatal("SOT-IF-074: judicial-decision.case-citation.extract route に到達できません")
+	}
+	if port, exists := routes.JudicialCitingCandidateSearch(); !exists || port == nil {
+		t.Fatal("SOT-IF-074: judicial-decision.citing-candidate.search route に到達できません")
 	}
 }
 
@@ -464,6 +527,48 @@ func TestProviderRoutesRejectLegislativeHistoryConfigurationWhenPackDisabled(t *
 			if !config.IsValidationError(err) ||
 				!strings.Contains(err.Error(), "legislative-history") {
 				t.Fatalf("SOT-IF-065: pack 無効時の設定エラー = %v", err)
+			}
+		})
+	}
+}
+
+func TestProviderRoutesRejectJudicialCitationsConfigurationWhenPackDisabled(t *testing.T) {
+	t.Parallel()
+
+	candidateRouteValues := withJudicialCasesEnabled()
+	candidateRouteValues.ProviderRoutes = map[string]config.ProviderRoute{
+		"judicial-decision.citing-candidate.search@1": {
+			Selection:         config.ProviderRouteSelectionPrimary,
+			DefaultProviderID: "courts-hanrei-html",
+		},
+	}
+	for name, values := range map[string]config.Values{
+		"provider": withTestProviders(map[string]config.ProviderConfig{
+			"courts-hanrei-pdf": {Enabled: false},
+		}),
+		"extract route": withTestProviderRoutes(map[string]config.ProviderRoute{
+			"judicial-decision.case-citation.extract@1": {
+				Selection:         config.ProviderRouteSelectionPrimary,
+				DefaultProviderID: "courts-hanrei-pdf",
+			},
+		}),
+		"candidate route": candidateRouteValues,
+	} {
+		name, values := name, values
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			cfg, err := config.New(values)
+			if err != nil {
+				if !config.IsValidationError(err) ||
+					!strings.Contains(err.Error(), "judicial-citations") {
+					t.Fatalf("SOT-IF-074: pack 無効時の設定エラー = %v", err)
+				}
+				return
+			}
+			_, _, err = newProviderRoutes(cfg)
+			if !config.IsValidationError(err) ||
+				!strings.Contains(err.Error(), "judicial-citations") {
+				t.Fatalf("SOT-IF-074: pack 無効時の設定エラー = %v", err)
 			}
 		})
 	}
@@ -723,6 +828,72 @@ func TestPublicServerIncludesLegislativeHistoryToolAsOneSet(t *testing.T) {
 	}
 }
 
+func TestPublicServerIncludesJudicialCitationsToolAsOneSet(t *testing.T) {
+	t.Parallel()
+
+	cfg, err := config.New(withJudicialCitationsEnabled())
+	if err != nil {
+		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
+	}
+	registry, routes, err := newProviderRoutes(cfg)
+	if err != nil {
+		t.Fatalf("provider runtime を初期化できません: %v", err)
+	}
+	server, err := newPublicServer("test-version", cfg, registry, routes, false)
+	if err != nil {
+		t.Fatalf("公開サーバーを初期化できません: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	serverResult := make(chan error, 1)
+	go func() { serverResult <- server.Run(ctx, serverTransport) }()
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("MCP セッションを初期化できません: %v", err)
+	}
+	tools, err := session.ListTools(ctx, nil)
+	if err != nil {
+		t.Fatalf("tools/list error = %v", err)
+	}
+	names := make([]string, len(tools.Tools))
+	for index, tool := range tools.Tools {
+		names[index] = tool.Name
+	}
+	want := []string{
+		"compare_law_versions",
+		"get_article",
+		"get_judicial_case",
+		"get_law",
+		"list_law_revisions",
+		"list_law_updates",
+		"query_legal_information",
+		"search_judicial_cases",
+		"search_law_content",
+		"search_laws",
+		"trace_judicial_citations",
+	}
+	if !reflect.DeepEqual(names, want) {
+		t.Fatalf("SOT-IF-067/SOT-IF-075: tool names = %#v, want %#v", names, want)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("MCP セッションを終了できません: %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("MCP サーバーが正常終了しませんでした: %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("MCP サーバーの終了を待機できません: %v", ctx.Err())
+	}
+}
+
 func TestServerRunnerRejectsProviderConfigurationBeforeHTTPStart(t *testing.T) {
 	t.Parallel()
 
@@ -874,6 +1045,10 @@ func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
 	var listenConfig net.ListenConfig
 	reservation, err := listenConfig.Listen(ctx, "tcp", "127.0.0.1:0")
 	if err != nil {
+		if errors.Is(err, os.ErrPermission) || strings.Contains(err.Error(), "operation not permitted") {
+			cancel()
+			t.Skip("loopback port を予約できない環境です")
+		}
 		cancel()
 		t.Fatalf("loopback port を予約できません: %v", err)
 	}
@@ -1087,6 +1262,15 @@ func withJudicialCasesEnabled() config.Values {
 	values := defaultTestConfigValues()
 	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
 		config.ExtensionPackJudicialCases: {Enabled: true},
+	}
+	return values
+}
+
+func withJudicialCitationsEnabled() config.Values {
+	values := defaultTestConfigValues()
+	values.ExtensionPacks = map[string]config.ExtensionPackConfig{
+		config.ExtensionPackJudicialCases:     {Enabled: true},
+		config.ExtensionPackJudicialCitations: {Enabled: true},
 	}
 	return values
 }
