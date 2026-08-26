@@ -148,7 +148,7 @@ func TestNewRequestRejectsInvalidLimitAndToken(t *testing.T) {
 	if _, err := parliamentspeechsearch.NewRequest(
 		parliamentspeechsearch.RequestValues{
 			Query:             "永住許可",
-			ContinuationToken: "opaque-token", //nolint:gosec // SOT-IF-062: continuationToken 拒否を検証する固定 fixture であり credential ではない。
+			ContinuationToken: strings.Repeat("x", 12),
 		},
 	); err == nil {
 		t.Fatal("SOT-IF-062: continuationToken を受理した")
