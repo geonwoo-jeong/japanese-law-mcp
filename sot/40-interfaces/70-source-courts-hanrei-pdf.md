@@ -19,7 +19,7 @@
 | `adapterContractVersion` | `1.0.0` |
 | `upstreamSpecVersion` | 省略 |
 | `verifiedAt` | `2026-08-26` |
-| `interfaceType` | `pdf` |
+| `interfaceType` | `download` |
 | `credentialRequired` | `false` |
 
 descriptor は `judicial-decision.case-citation.extract@1` だけを `extended`、`stable` として宣言する。
@@ -31,6 +31,7 @@ descriptor は `judicial-decision.case-citation.extract@1` だけを `extended`�
 - 入力で PDF URL を自由に受け取らず、同じ request で検証済みの `JudicialDocumentLink` だけを受理する。
 - OCR、外部 font・resource 取得、埋込みファイル展開、自動再試行、background crawling、恒久 cache および稼働監視を追加しない。
 - parser は同一 binary の隔離 worker で実行し、timeout または panic が親 MCP process を終了させない。
+- method は `GET` 一回とし、redirect は同じ HTTPS origin だけを許可する。認証、cookie、proxy、利用者指定 header および任意 endpoint を追加しない。
 
 ## 資源予算
 
@@ -38,15 +39,17 @@ descriptor は `judicial-decision.case-citation.extract@1` だけを `extended`�
 |---|---|---|---:|---:|---:|---:|---:|---|---:|
 | extract | PDF | `judicial-citation-pdf` | 16 MiB | 24 MiB | 50000 | 32 | 4s | `courts-hanrei-pdf` | 1 |
 
-追加の上限として、ページ数 300、抽出 text 2 MiB、citation occurrence 256 件を超えない。
+追加の上限として、ページ数 300、抽出 text 2 MiB、citation occurrence 256 件および evidence excerpt 一件 256 UTF-8 byte を超えない。
+
+PDF と抽出 text は request 終了時に破棄し、cache、SQLite、配布 bundle の全件索引または一時ファイルとして残さない。NII と民間データベースをこの provider の入力又は fallback にしない。
 
 ## エラー
 
-HTTP 404 は `not_found` とする。timeout、一時的接続失敗、5xx、MIME 不一致、PDF magic 不一致、暗号化、過大 object、過大ページ数、worker timeout、解析 panic、資源上限超過および text layer 不在は、`SOT-IF-017` に従って正規化する。text layer 不在は provider エラーではなく capability の成功出力へ反映できる。
+HTTP 404 は `not_found`、429 は `rate_limited` とする。timeout、一時的接続失敗、5xx、MIME 不一致、PDF magic 不一致、暗号化、過大 object、過大ページ数、worker timeout、解析 panicおよび資源上限超過は、`SOT-IF-017` に従って正規化する。text layer 不在は provider エラーではなく capability の成功出力へ反映する。document URL、PDF bytes、抽出 text、worker stderr、stack trace および一時 path をエラー、ログ又は診断へ含めない。
 
 ## 確認
 
-descriptor 固定値、固定 origin、`full_text` URL 制限、同時実行 1、worker 隔離、MIME/magic 検証、ページ数・object・展開量・抽出 text・timeout 上限、暗号化 PDF と image-only PDF の取扱い、および原文非保存を契約テストで確認する。
+descriptor 固定値、固定 origin、`full_text` URL 制限、同時実行 1、worker 隔離、MIME/magic 検証、ページ数・object・展開量・抽出 text・timeout 上限、暗号化 PDF と image-only PDF の取扱い、および成功・失敗・panic・取消後の原文、worker、一時ファイルと同時実行枠の非残存を契約テストで確認する。
 
 ## 関連
 

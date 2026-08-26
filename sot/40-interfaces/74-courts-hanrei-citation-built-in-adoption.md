@@ -4,11 +4,32 @@
 
 ## 規定
 
-`SOT-IF-070` と `SOT-IF-072` に従う citation 用 binding を、`judicial-cases` と `judicial-citations` が同時に有効なときだけ条件付き既定値となる組込み provider として採用する。
+`SOT-IF-072` と `SOT-IF-073` に従う `courts-hanrei-html`、および `SOT-IF-070` と `SOT-IF-071` に従う `courts-hanrei-pdf` を、pack の有効状態に応じた条件付き組込み provider として採用する。
+
+本規定は `SOT-IF-046` の後継であり、既存の裁判例 search/read の binding、route、結果および公開ツールの意味を変更しない。
 
 ## 条件付き組込み値
 
-両 pack が有効な場合に限り、`SOT-IF-026` の組込み値へ次を加える。
+`extensionPacks.judicial-cases.enabled` が `true` の場合は、`SOT-IF-026` の組込み値へ既存の次を加える。
+
+```yaml
+providers:
+  courts-hanrei-html:
+    enabled: true
+    settings: {}
+    credentialEnvRefs: {}
+providerRoutes:
+  judicial-decision.read@1:
+    selection: primary
+    defaultProviderId: courts-hanrei-html
+  judicial-decision.search@1:
+    selection: primary
+    defaultProviderId: courts-hanrei-html
+```
+
+HTML descriptor と compiled binding inventory は三能力で一致させるが、`judicial-citations` が無効な間は候補検索 route を構成せず、公開処理から到達不能にする。
+
+さらに両 pack が有効な場合に限り、次を加える。
 
 ```yaml
 providers:
@@ -25,7 +46,7 @@ providerRoutes:
     defaultProviderId: courts-hanrei-html
 ```
 
-拡張パックが不足している場合は、この provider と二つの route を実効設定へ加えない。無効状態で利用者が `courts-hanrei-pdf` または citation route を明示した場合は、transport 開始前の設定エラーとする。
+依存 pack が不足している場合は、PDF provider と citation 二 route を実効設定へ加えない。無効状態で利用者が `courts-hanrei-pdf` または citation route を明示した場合は、transport 開始前の設定エラーとする。
 
 ## 適用範囲
 
@@ -33,6 +54,9 @@ providerRoutes:
 - `courts-hanrei-pdf` は `judicial-citations` が有効なときだけ factory を呼ぶ。
 - citation route は runtime fallback、aggregate route または別 provider への切替えを追加しない。
 - 既存の法令コア、`judicial-cases`、`legislative-history` および公開ツール契約を変更しない。
+- 二つの追加 route は有効で `implemented` の binding へ到達し、PDF provider、二 route および `trace_judicial_citations` を同じ起動条件で原子的に登録する。
+
+準備中の二つの conformance row は `planned` とし、production route と公開ツールから到達不能にする。provider package、fixture、契約テスト、compiled binding、route および tool がそろう最終接続変更でだけ、二 row を同時に `implemented` へ変更する。
 
 ## 公開
 
@@ -40,10 +64,14 @@ providerRoutes:
 
 ## 確認
 
-descriptor と route の一致、両 pack 無効時と `judicial-cases` 単独時の citation route 非登録、両 pack 有効時の原子的構成、provider 欠落時の起動失敗、および公開 tool 数の一致を確認する。
+descriptor、compiled binding inventory、conformance matrix、fixture、資源予算および route の一致、`planned` row の到達不能、両 pack 無効時と `judicial-cases` 単独時の citation route 非登録、両 pack 有効時の原子的構成、provider 欠落時の起動失敗、PDF factory の条件付き呼出し、および公開 tool 数の一致を確認する。
 
 ## 関連
 
 - [SOT-IF-067: `judicial-citations` 拡張パックの有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-068: 判決文の判例引用抽出 capability](68-judicial-case-citation-extract-capability.md)
+- [SOT-IF-069: 被引用候補検索 capability](69-judicial-citing-candidate-search-capability.md)
 - [SOT-IF-070: 裁判所「裁判例検索」PDF 情報源](70-source-courts-hanrei-pdf.md)
+- [SOT-IF-071: 裁判所 PDF の判例引用抽出マッピング](71-courts-hanrei-pdf-extract-mapping.md)
 - [SOT-IF-072: 裁判所「裁判例検索」HTML 情報源 v2](72-source-courts-hanrei-html-v2.md)
+- [SOT-IF-073: 裁判所検索の被引用候補マッピング](73-courts-hanrei-citing-candidate-search-mapping.md)

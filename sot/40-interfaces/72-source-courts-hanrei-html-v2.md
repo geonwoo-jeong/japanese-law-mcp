@@ -8,7 +8,23 @@
 
 ## 識別
 
-`providerId`、`source`、`serviceUrl`、authority、credential 要件、固定 origin および `judicial-decision.search@1` と `judicial-decision.read@1` の既存契約は、`SOT-IF-043` の後継として維持する。変更点は、descriptor が `judicial-decision.citing-candidate.search@1` を追加で宣言できること、および citation pack が無効なときは同 capability の binding を実効構成へ参加させないことだけとする。
+本規定は `SOT-IF-043` の後継であり、既存の search/read 契約を変えず、次の descriptor を現行の定義元とする。
+
+| 項目 | 値 |
+|---|---|
+| `providerId` | `courts-hanrei-html` |
+| `source.id` | `courts-hanrei` |
+| `source.name` | `裁判所 裁判例検索` |
+| `source.publisher` | `最高裁判所` |
+| `source.authority` | `official` |
+| `source.serviceUrl` | `https://www.courts.go.jp/hanrei/search1/index.html` |
+| `adapterContractVersion` | `1.2.0` |
+| `upstreamSpecVersion` | 省略 |
+| `verifiedAt` | `2026-07-26` |
+| `interfaceType` | `html` |
+| `credentialRequired` | `false` |
+
+descriptor は `judicial-decision.citing-candidate.search@1`、`judicial-decision.read@1`、`judicial-decision.search@1` を capability ID 順に `extended`、`stable` として宣言する。`verifiedAt` は既存 operation を含む全契約の再確認日のうち最も古い日とし、候補検索だけの確認日で上書きしない。
 
 ## 公式公開面
 
@@ -26,10 +42,23 @@
 - 追加 capability は、事件番号と存在する場合の判例集表記だけを検索語として使う。
 - 検索語、HTML 本文、URL query または結果本文をエラー、診断またはログへ含めない。
 - citation pack が無効な場合は、この capability の route を登録しない。
+- origin は `https://www.courts.go.jp` に固定し、認証、cookie、proxy、任意 URL、background crawling、恒久 cache、稼働監視および自動再試行を追加しない。
+- HTML parser は DOM として解析し、script、stylesheet、画像、PDFその他の埋込み resource を取得又は実行しない。
+- 候補の詳細 HTML 又は PDF を連鎖取得しない。
+
+## 資源予算
+
+既存 search/read の資源予算を変更しない。候補検索は一 operation 内の最大二 response を合算し、次の上限を使用する。
+
+| operation | artifact | `budgetKey` | `responseBytes` | `decompressedBytes` | `entriesOrObjects` | `depth` | `parseTimeout` | `concurrencyGroup` | `concurrency` |
+|---|---|---|---:|---:|---:|---:|---:|---|---:|
+| citing-candidate-search | HTML | `judicial-citing-candidate-search-html` | 4 MiB | 8 MiB | 200000 | 64 | 4s | `courts-hanrei-html` | 1 |
+
+最初の request 前に共有同時実行枠を一回取得し、最大二回の取得、解析および mapping が全て終了するまで保持する。成功、失敗、timeout および取消の全経路で枠を返却する。
 
 ## 確認
 
-既存の二能力契約を維持したまま descriptor に第三能力を追加できること、pack 無効時に citation capability route を登録しないこと、既存 search/read の資源予算と動作を変えないこと、および公式 HTML fixture で第三能力を追加確認することを契約テストで確認する。
+descriptor の全固定値と三能力 inventory、既存二能力契約、pack 無効時の citation route 非登録、固定 origin、最大二 request、候補 resource 非取得、資源予算、全終了経路での同時実行枠解放、および公式 HTML fixture を契約テストで確認する。
 
 ## 関連
 

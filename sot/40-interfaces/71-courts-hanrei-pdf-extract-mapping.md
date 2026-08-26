@@ -8,16 +8,27 @@
 
 ## 入力対応
 
-- `ref` はルート裁判例の `SourceResourceRef` をそのまま使用する。
-- `documentLink` は同じルート裁判例詳細が示した `JudicialDocumentLink` をそのまま使用する。
+- `decision` は同じ request の詳細取得結果をそのまま使用する。
+- `document` はその詳細に一回だけ含まれる `full_text` の `JudicialDocumentLink` をそのまま使用する。
 - PDF URL、判例番号パターン、正規化辞書または fuzzy 候補を入力へ追加しない。
+
+すべての所属、origin、path、media type および `%PDF-` magic を外向き取得又は parser 起動より前に検証する。PDF を一回だけ取得し、自動再試行しない。
+
+## parser の採用と隔離
+
+純粋 Go の `github.com/tsawler/tabula` を固定した版で先に評価し、日本語 fixture、context 取消および全資源予算 gate を満たす場合だけ採用する。満たさない場合は、固定した版の `github.com/dslipak/pdf` を同じ gate で評価する。両方が満たさない場合は capability 契約、予算又は fixture を緩和せず、provider の conformance row を `planned` のままにしてこの実装段階を中止する。複数 parser を production runtime fallback として同梱しない。
+
+parser は MCP と同じ executable の非公開 worker mode を子 process として起動する。検証済み PDF は標準入力、上限付きの構造化結果は標準出力だけで受け渡し、shell、公開 CLI option、network 又は外部 resource を worker から使用しない。親は request context と 4 秒の短い方を期限とし、timeout、取消、panic、異常終了又は protocol 違反時に worker を終了して reap する。worker の失敗で MCP process を終了させない。
 
 ## 抽出規則
 
-- 判例参照として扱うのは、事件番号、裁判所種別、裁判年月日、判例集表記その他の組合せから、公表裁判例詳細 URL を一意に構成できる明示的記載だけとする。
+- 判例参照として扱うのは、完全な事件番号、裁判所と裁判日の組又は一意な判例集表記など、採用済みの厳密な構文で対象同一性を構成できる明示的記載だけとする。
 - 一意に構成できない場合、または複数の公表裁判例候補へ一致する場合は `unresolvedMentions` とする。
 - 同一 PDF 内の重複言及は occurrence として数えられるが、最終 graph edge では統合できるよう根拠を保持する。
 - 言及位置は PDF ページ番号と、そのページ内の短い周辺文字列で表せる範囲に限る。
+- PDF bytes の SHA-256 を `sha256:{hex}` として provenance の `contentDigest` に保持する。`transformation=extracted`、`methodId=SOT-IF-071` とし、位置を確認できる場合だけ `Provenance.location` に page を設定する。
+
+text layer から有効な文字を一つも取得できない場合は `document_text_unavailable` の成功縮退とする。壊れた encoding、暗号化又は安全に辿れない参照構造を空 text に読み替えない。
 
 ## 法的意味の禁止
 
@@ -29,7 +40,7 @@
 
 ## 確認
 
-明示的参照の抽出、一意に解決できない言及の未解決化、重複 occurrence、自己参照の扱い、抜粋長上限、text layer 不在の成功縮退および法的意味の非推論を mapping テストで確認する。
+小さな日本語 fixture と注入可能な小さい test budget を用い、明示的参照、重複 occurrence、オフターゲット、page 順、digest と provenance、image-only、暗号化、不正 magic、過大・深すぎる PDF、timeout、panic、取消、抜粋長上限、text layer 不在の成功縮退および法的意味の非推論を mapping テストで確認する。終了後に worker、pipe、一時ファイルと同時実行枠が残らないことも確認する。
 
 ## 関連
 
