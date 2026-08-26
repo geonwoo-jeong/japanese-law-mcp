@@ -37,10 +37,28 @@ func judicialcasecitationextracttestRequestWithSourceID(
 	currentSourceID string,
 	documentURL string,
 ) (model.SourcedResource[model.JudicialDecisionDetails], model.JudicialDocumentLink) {
+	return judicialcasecitationextracttestRequestWithOptions(t, extractRequestFixtureOptions{
+		sourceID:    currentSourceID,
+		documentURL: documentURL,
+	})
+}
+
+type extractRequestFixtureOptions struct {
+	sourceID         string
+	documentURL      string
+	reporterCitation *string
+	divisionName     *string
+	decisionType     *string
+}
+
+func judicialcasecitationextracttestRequestWithOptions(
+	t *testing.T,
+	options extractRequestFixtureOptions,
+) (model.SourcedResource[model.JudicialDecisionDetails], model.JudicialDocumentLink) {
 	t.Helper()
 
 	source, err := model.NewInformationSource(model.InformationSourceValues{
-		ID:         currentSourceID,
+		ID:         options.sourceID,
 		Name:       "裁判所 裁判例検索",
 		Publisher:  "最高裁判所",
 		Authority:  model.AuthorityOfficial,
@@ -53,7 +71,7 @@ func judicialcasecitationextracttestRequestWithSourceID(
 		Kind:      model.JudicialDocumentKindFullText,
 		Label:     "判決文",
 		MediaType: model.JudicialDocumentMediaTypePDF,
-		URL:       documentURL,
+		URL:       options.documentURL,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -65,6 +83,8 @@ func judicialcasecitationextracttestRequestWithSourceID(
 		CaseNumber:          "令和6(受)123",
 		DecisionDate:        mustDate(t, "2025-01-02"),
 		CourtName:           "最高裁判所",
+		DivisionName:        options.divisionName,
+		DecisionType:        options.decisionType,
 		DetailURL:           "https://www.courts.go.jp/app/hanrei_jp/detail2?id=00001",
 		Documents:           []model.JudicialDocumentLink{document},
 		Source:              source,
@@ -73,13 +93,14 @@ func judicialcasecitationextracttestRequestWithSourceID(
 		t.Fatal(err)
 	}
 	details, err := model.NewJudicialDecisionDetails(model.JudicialDecisionDetailsValues{
-		Summary: summary,
+		Summary:          summary,
+		ReporterCitation: options.reporterCitation,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
-		SourceID:     currentSourceID,
+		SourceID:     options.sourceID,
 		ResourceType: "judicial-decision",
 		ResourceID:   "00001",
 	})

@@ -93,6 +93,102 @@ func TestBuildExtractResultMapsWorkerOutputToCapabilityResult(t *testing.T) {
 	}
 }
 
+func TestBuildExtractResultAcceptsStrictCourtDateAndReporterIdentities(t *testing.T) {
+	t.Parallel()
+
+	request := mustExtractRequest(t)
+	result, err := buildExtractResult(
+		request,
+		time.Date(2026, 8, 26, 13, 0, 0, 0, time.FixedZone("JST", 9*60*60)),
+		[]byte("%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF"),
+		workerOutput{
+			PageCount:         2,
+			ObjectCount:       5,
+			DecompressedBytes: 128,
+			Occurrences: []workerMention{
+				{
+					Page:             1,
+					ReferenceText:    "民集59巻7号2087頁",
+					DecisionIdentity: "民集59巻7号2087頁",
+					Excerpt:          "民集59巻7号2087頁を引用する。",
+				},
+				{
+					Page:             2,
+					ReferenceText:    "最高裁判所平成17年9月14日大法廷判決",
+					DecisionIdentity: "最高裁判所平成17年9月14日大法廷判決",
+					Excerpt:          "最高裁判所平成17年9月14日大法廷判決を参照する。",
+				},
+			},
+			TextUnavailable: false,
+			Truncated:       false,
+		},
+	)
+	if err == nil {
+		if got := result.ConfirmedDecisionMentions(); len(got) != 2 {
+			t.Fatalf("confirmed=%#v", got)
+		}
+		return
+	}
+	t.Fatalf("strict identity を受理できていません: %v", err)
+}
+
+func TestBuildExtractResultFiltersStrictReporterAndCourtDateSelfReferences(t *testing.T) {
+	t.Parallel()
+
+	reporterCitation := "民集第59巻7号2087頁"
+	divisionName := "大法廷"
+	decisionType := "判決"
+	decision, document := judicialcasecitationextracttestRequestWithOptions(
+		t,
+		extractRequestFixtureOptions{
+			sourceID:         sourceID,
+			documentURL:      "https://www.courts.go.jp/assets/hanrei/00001.pdf",
+			reporterCitation: &reporterCitation,
+			divisionName:     &divisionName,
+			decisionType:     &decisionType,
+		},
+	)
+	request, err := judicialcasecitationextract.NewRequest(
+		judicialcasecitationextract.RequestValues{Decision: decision, Document: document},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := buildExtractResult(
+		request,
+		mustRetrievedAt(t),
+		[]byte("%PDF-test"),
+		workerOutput{
+			PageCount:         1,
+			ObjectCount:       5,
+			DecompressedBytes: 10,
+			Occurrences: []workerMention{
+				{
+					Page:             1,
+					ReferenceText:    "民集59巻7号2087頁",
+					DecisionIdentity: "民集59巻7号2087頁",
+					Excerpt:          "民集59巻7号2087頁",
+				},
+				{
+					Page:             1,
+					ReferenceText:    "最高裁判所令和7年1月2日大法廷判決",
+					DecisionIdentity: "最高裁判所令和7年1月2日大法廷判決",
+					Excerpt:          "最高裁判所令和7年1月2日大法廷判決",
+				},
+			},
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.OccurrenceCount() != 0 ||
+		len(result.ConfirmedDecisionMentions()) != 0 ||
+		len(result.UnresolvedMentions()) != 0 {
+		t.Fatalf("self references が残りました: %#v", result)
+	}
+}
+
 func TestBuildExtractResultTreatsTextUnavailableAsSuccessfulDegradation(t *testing.T) {
 	t.Parallel()
 
@@ -223,7 +319,7 @@ func TestScanExtractedTextSkipsEraWordWithoutCaseShape(t *testing.T) {
 	}
 }
 
-func TestScanExtractedTextPreservesStrictUnsupportedReferenceFormsInSourceOrder(t *testing.T) {
+func TestScanExtractedTextExtractsStrictReferenceFormsInSourceOrder(t *testing.T) {
 	t.Parallel()
 
 	mentions, truncated := scanExtractedText(
@@ -244,14 +340,15 @@ func TestScanExtractedTextPreservesStrictUnsupportedReferenceFormsInSourceOrder(
 			t.Fatalf("mentions[%d]=%#v want=%q", index, mentions[index], want)
 		}
 	}
-	for _, mention := range mentions[:2] {
-		if mention.confirmed() ||
-			mention.Reason != model.JudicialCitationUnresolvedReasonUnsupportedReference {
-			t.Fatalf("unsupported mention=%#v", mention)
-		}
+	wantIdentities := []string{
+		"民集59巻7号2087頁",
+		"最高裁判所平成17年9月14日大法廷判決",
+		"令和6(受)123",
 	}
-	if !mentions[2].confirmed() {
-		t.Fatalf("case-number mention=%#v", mentions[2])
+	for index, want := range wantIdentities {
+		if !mentions[index].confirmed() || mentions[index].DecisionIdentity != want {
+			t.Fatalf("mentions[%d]=%#v wantIdentity=%q", index, mentions[index], want)
+		}
 	}
 }
 
@@ -265,5 +362,23 @@ func TestScanExtractedTextDoesNotPromoteLooseCourtDateOrReporterText(t *testing.
 	)
 	if len(mentions) != 0 || truncated {
 		t.Fatalf("mentions=%#v truncated=%t", mentions, truncated)
+	}
+}
+
+func TestScanExtractedTextPreservesDuplicateStrictReporterOccurrences(t *testing.T) {
+	t.Parallel()
+
+	mentions, truncated := scanExtractedText(
+		"民集59巻7号2087頁を引用し、再び民集第59巻第7号2087頁を引用する。",
+		1,
+		maximumOccurrences,
+	)
+	if truncated || len(mentions) != 2 {
+		t.Fatalf("mentions=%#v truncated=%t", mentions, truncated)
+	}
+	for index, mention := range mentions {
+		if !mention.confirmed() || mention.DecisionIdentity != "民集59巻7号2087頁" {
+			t.Fatalf("mentions[%d]=%#v", index, mention)
+		}
 	}
 }
