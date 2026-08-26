@@ -40,7 +40,7 @@ func mustDecisionDetails(
 		}
 		documents = append(documents, document)
 	}
-	ref := mustRef(t, "root:detail2")
+	ref := mustRef(t, "95570/detail2")
 	summary := mustSummary(
 		t,
 		ref,
@@ -124,7 +124,7 @@ func mustDetailProvenance(t *testing.T, key model.SourceResourceKey) model.Prove
 	value, err := model.NewProvenance(model.ProvenanceValues{
 		Source:         mustSource(t),
 		ResourceKey:    key,
-		URL:            "https://www.courts.go.jp/hanrei/root/detail2/index.html",
+		URL:            "https://www.courts.go.jp/hanrei/95570/detail2/index.html",
 		RetrievedAt:    time.Date(2026, 8, 27, 1, 0, 0, 0, time.UTC),
 		MediaType:      "text/html",
 		Transformation: model.ProvenanceTransformationNormalized,
@@ -219,7 +219,7 @@ func mustCandidate(
 	category model.JudicialPublicationCategory,
 ) judicialcitingcandidatesearch.Candidate {
 	t.Helper()
-	ref := mustRef(t, decisionID+":detail2")
+	ref := mustRef(t, decisionID+"/detail2")
 	summary := mustSummary(t, ref, decisionID, "令和5年（受）第2号", date, category, []model.JudicialDocumentLink{})
 	provenance, err := model.NewProvenance(model.ProvenanceValues{
 		Source:         mustSource(t),

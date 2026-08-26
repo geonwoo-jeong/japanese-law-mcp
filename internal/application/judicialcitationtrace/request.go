@@ -4,6 +4,7 @@ package judicialcitationtrace
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
@@ -14,6 +15,8 @@ const (
 	// MaximumIncomingLimit は、被引用候補上限の最大値である。
 	MaximumIncomingLimit = 10
 )
+
+var canonicalJudicialDecisionResourceIDPattern = regexp.MustCompile(`^[0-9]+/detail[2-8]$`)
 
 // RequestValues は、引用追跡入力の境界値を保持する。
 type RequestValues struct {
@@ -67,11 +70,23 @@ func (r Request) Validate() error {
 		return newArgumentError("ref", "は有効な SourceResourceRef でなければなりません")
 	}
 	key := r.ref.Key()
+	if r.ref.ProviderID() != "courts-hanrei-html" {
+		return newArgumentError("ref", "の providerId は courts-hanrei-html でなければなりません")
+	}
+	if key.SourceID() != "courts-hanrei" {
+		return newArgumentError("ref", "の sourceId は courts-hanrei でなければなりません")
+	}
 	if key.ResourceType() != "judicial-decision" {
 		return newArgumentError("ref", "の resourceType は judicial-decision でなければなりません")
 	}
 	if _, exists := key.VersionID(); exists {
 		return newArgumentError("ref", "に versionId は指定できません")
+	}
+	if !canonicalJudicialDecisionResourceIDPattern.MatchString(key.ResourceID()) {
+		return newArgumentError(
+			"ref",
+			"の resourceId は裁判所の canonical resource ID {decisionId}/detail{2..8} でなければなりません",
+		)
 	}
 	switch r.direction {
 	case model.JudicialCitationRequestedDirectionOutgoing,

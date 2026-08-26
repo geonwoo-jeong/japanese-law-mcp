@@ -13,7 +13,7 @@ func TestNewRequestは省略値をbothと5にする(t *testing.T) {
 	t.Parallel()
 
 	request, err := judicialcitationtrace.NewRequest(judicialcitationtrace.RequestValues{
-		Ref: mustRef(t, "root:detail2"),
+		Ref: mustRef(t, "95570/detail2"),
 	})
 	if err != nil {
 		t.Fatalf("NewRequest() error = %v", err)
@@ -59,6 +59,43 @@ func TestRequestは不正な参照と直接JSON復元を拒否する(t *testing.
 	}
 }
 
+func TestNewRequestはproviderSourceCanonicalResourceIDを外部呼出し前に拒否する(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		ref  model.SourceResourceRef
+	}{
+		{
+			name: "providerId",
+			ref:  mustCustomRef(t, "other-provider", "courts-hanrei", "judicial-decision", "12345/detail2", ""),
+		},
+		{
+			name: "sourceId",
+			ref:  mustCustomRef(t, "courts-hanrei-html", "other-source", "judicial-decision", "12345/detail2", ""),
+		},
+		{
+			name: "resourceId",
+			ref:  mustCustomRef(t, "courts-hanrei-html", "courts-hanrei", "judicial-decision", "12345:detail2", ""),
+		},
+		{
+			name: "versionId",
+			ref:  mustCustomRef(t, "courts-hanrei-html", "courts-hanrei", "judicial-decision", "12345/detail2", "v1"),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			if _, err := judicialcitationtrace.NewRequest(judicialcitationtrace.RequestValues{
+				Ref: test.ref,
+			}); err == nil {
+				t.Fatalf("%s を受理しました", test.name)
+			}
+		})
+	}
+}
+
 func TestNewRequestは方向と候補上限を外部呼出し前に拒否する(t *testing.T) {
 	t.Parallel()
 
@@ -70,7 +107,7 @@ func TestNewRequestは方向と候補上限を外部呼出し前に拒否する(
 		{
 			name: "direction",
 			values: judicialcitationtrace.RequestValues{
-				Ref:       mustRef(t, "root:detail2"),
+				Ref:       mustRef(t, "95570/detail2"),
 				Direction: model.JudicialCitationRequestedDirection("sideways"),
 			},
 			field: "direction",
@@ -78,7 +115,7 @@ func TestNewRequestは方向と候補上限を外部呼出し前に拒否する(
 		{
 			name: "incomingLimit lower",
 			values: judicialcitationtrace.RequestValues{
-				Ref:           mustRef(t, "root:detail2"),
+				Ref:           mustRef(t, "95570/detail2"),
 				IncomingLimit: intPointer(0),
 			},
 			field: "incomingLimit",
@@ -86,7 +123,7 @@ func TestNewRequestは方向と候補上限を外部呼出し前に拒否する(
 		{
 			name: "incomingLimit upper",
 			values: judicialcitationtrace.RequestValues{
-				Ref:           mustRef(t, "root:detail2"),
+				Ref:           mustRef(t, "95570/detail2"),
 				IncomingLimit: intPointer(11),
 			},
 			field: "incomingLimit",
@@ -104,3 +141,31 @@ func TestNewRequestは方向と候補上限を外部呼出し前に拒否する(
 }
 
 func intPointer(value int) *int { return &value }
+
+func mustCustomRef(
+	t *testing.T,
+	providerID, sourceID, resourceType, resourceID, versionID string,
+) model.SourceResourceRef {
+	t.Helper()
+
+	keyValues := model.SourceResourceKeyValues{
+		SourceID:     sourceID,
+		ResourceType: resourceType,
+		ResourceID:   resourceID,
+	}
+	if versionID != "" {
+		keyValues.VersionID = versionID
+	}
+	key, err := model.NewSourceResourceKey(keyValues)
+	if err != nil {
+		t.Fatalf("key = %v", err)
+	}
+	ref, err := model.NewSourceResourceRef(model.SourceResourceRefValues{
+		ProviderID: providerID,
+		Key:        key,
+	})
+	if err != nil {
+		t.Fatalf("ref = %v", err)
+	}
+	return ref
+}
