@@ -3,6 +3,7 @@ package judicialcasecitationextract
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
@@ -72,6 +73,21 @@ func (r Request) Validate() error {
 	}
 	if matches != 1 {
 		return invalidDocumentArgument("は decision.data.summary.documents に一回だけ完全一致で含まれなければなりません")
+	}
+	return nil
+}
+
+// ValidateProviderSource は、判例詳細が指定情報源に属することを確認する。
+func (r Request) ValidateProviderSource(expectedSourceID string) error {
+	if err := r.Validate(); err != nil {
+		return err
+	}
+	if strings.TrimSpace(expectedSourceID) == "" {
+		return invalidDecisionArgument("の sourceId は空にできません")
+	}
+	if r.decision.Ref().Key().SourceID() != expectedSourceID ||
+		r.decision.Data().Summary().Source().ID() != expectedSourceID {
+		return invalidDecisionArgument("の sourceId は provider が扱う情報源と一致しなければなりません")
 	}
 	return nil
 }

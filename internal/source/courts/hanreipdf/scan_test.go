@@ -134,6 +134,36 @@ func TestBuildExtractResultTreatsTextUnavailableAsSuccessfulDegradation(t *testi
 	}
 }
 
+func TestBuildExtractResultFiltersSelfReferenceOccurrence(t *testing.T) {
+	t.Parallel()
+
+	result, err := buildExtractResult(
+		mustExtractRequest(t),
+		mustRetrievedAt(t),
+		[]byte("%PDF-test"),
+		workerOutput{
+			PageCount:         1,
+			ObjectCount:       5,
+			DecompressedBytes: 10,
+			Occurrences: []workerMention{{
+				Page:             1,
+				ReferenceText:    "令和6(受)123",
+				DecisionIdentity: "令和6(受)123",
+				Excerpt:          "令和6(受)123",
+			}},
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.OccurrenceCount() != 0 ||
+		len(result.ConfirmedDecisionMentions()) != 0 ||
+		len(result.UnresolvedMentions()) != 0 ||
+		result.Truncated() {
+		t.Fatalf("result=%#v", result)
+	}
+}
+
 func TestBuildExtractResultFailsClosedWhenSelfFilteringWouldBreakTruncationContract(t *testing.T) {
 	t.Parallel()
 

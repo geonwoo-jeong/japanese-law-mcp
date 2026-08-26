@@ -18,8 +18,9 @@ import (
 func judicialcasecitationextracttestRequest(
 	t *testing.T,
 ) (model.SourcedResource[model.JudicialDecisionDetails], model.JudicialDocumentLink) {
-	return judicialcasecitationextracttestRequestWithURL(
+	return judicialcasecitationextracttestRequestWithSourceID(
 		t,
+		sourceID,
 		"https://www.courts.go.jp/assets/hanrei/00001.pdf",
 	)
 }
@@ -28,10 +29,18 @@ func judicialcasecitationextracttestRequestWithURL(
 	t *testing.T,
 	documentURL string,
 ) (model.SourcedResource[model.JudicialDecisionDetails], model.JudicialDocumentLink) {
+	return judicialcasecitationextracttestRequestWithSourceID(t, sourceID, documentURL)
+}
+
+func judicialcasecitationextracttestRequestWithSourceID(
+	t *testing.T,
+	currentSourceID string,
+	documentURL string,
+) (model.SourcedResource[model.JudicialDecisionDetails], model.JudicialDocumentLink) {
 	t.Helper()
 
 	source, err := model.NewInformationSource(model.InformationSourceValues{
-		ID:         sourceID,
+		ID:         currentSourceID,
 		Name:       "裁判所 裁判例検索",
 		Publisher:  "最高裁判所",
 		Authority:  model.AuthorityOfficial,
@@ -70,7 +79,7 @@ func judicialcasecitationextracttestRequestWithURL(
 		t.Fatal(err)
 	}
 	key, err := model.NewSourceResourceKey(model.SourceResourceKeyValues{
-		SourceID:     sourceID,
+		SourceID:     currentSourceID,
 		ResourceType: "judicial-decision",
 		ResourceID:   "00001",
 	})

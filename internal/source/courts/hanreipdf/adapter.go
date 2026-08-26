@@ -72,7 +72,7 @@ func (a *JudicialDecisionCaseCitationExtractAdapter) Extract(
 	if ctx == nil {
 		return judicialcasecitationextract.Result{}, fmt.Errorf("context は必須です")
 	}
-	if err := request.Validate(); err != nil {
+	if err := request.ValidateProviderSource(sourceID); err != nil {
 		return judicialcasecitationextract.Result{}, err
 	}
 	if !isAllowedDocumentURL(request.Document().URL()) {

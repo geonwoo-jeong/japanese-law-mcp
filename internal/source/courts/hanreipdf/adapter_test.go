@@ -76,6 +76,38 @@ func TestAdapterRejectsUnsafeDocumentURLBeforeExternalCall(t *testing.T) {
 	assertHanreiPDFSourceErrorCode(t, err, model.SourceErrorCodeUnsafeSourceContent)
 }
 
+func TestAdapterRejectsDecisionFromDifferentSourceBeforeExternalCall(t *testing.T) {
+	t.Parallel()
+
+	decision, document := judicialcasecitationextracttestRequestWithSourceID(
+		t,
+		"other-source",
+		"https://www.courts.go.jp/assets/hanrei/00001.pdf",
+	)
+	request, err := judicialcasecitationextract.NewRequest(
+		judicialcasecitationextract.RequestValues{Decision: decision, Document: document},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	adapter, err := newJudicialDecisionCaseCitationExtractAdapter(adapterDependencies{
+		doer: roundTripFunc(func(*http.Request) (*http.Response, error) {
+			t.Fatal("異なる sourceId は外部取得前に拒否されるべきです")
+			return nil, nil
+		}),
+		now:       func() time.Time { return mustRetrievedAt(t) },
+		gate:      make(chan struct{}, 1),
+		runWorker: func(context.Context, []byte) (workerOutput, error) { return workerOutput{}, nil },
+		timeout:   parseTimeout,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := adapter.Extract(context.Background(), request); err == nil {
+		t.Fatal("異なる sourceId を受理しました")
+	}
+}
+
 func TestAdapterMapsWorkerDeadlineToSourceTimeout(t *testing.T) {
 	t.Parallel()
 

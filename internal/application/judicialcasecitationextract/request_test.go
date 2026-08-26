@@ -126,6 +126,25 @@ func TestRequestRejectsSummaryAndLastProvenanceSourceMismatch(t *testing.T) {
 	}
 }
 
+func TestRequestValidateProviderSourceRejectsDifferentSourceID(t *testing.T) {
+	t.Parallel()
+
+	decision, document := testDecisionResource(t)
+	request, err := NewRequest(RequestValues{Decision: decision, Document: document})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := request.ValidateProviderSource("courts-hanrei"); err != nil {
+		t.Fatalf("一致する sourceId を拒否しました: %v", err)
+	}
+	if err := request.ValidateProviderSource("other-source"); err == nil {
+		t.Fatal("異なる sourceId を受理しました")
+	}
+	if err := request.ValidateProviderSource(""); err == nil {
+		t.Fatal("空の sourceId を受理しました")
+	}
+}
+
 func TestRequestIsImmutableAndRejectsZeroValueAndDirectRestore(t *testing.T) {
 	t.Parallel()
 
