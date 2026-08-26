@@ -117,7 +117,7 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 
 `query_legal_information` は法令コアの公開ツールとして、stdio と Streamable HTTP の両方へ同じ schema で常時登録する。拡張パックの有効化はこの tool の登録有無を変えず、実行できる profile contribution と result variant だけを変える。
 
-既存専門ツールの名前、schema、pagination、provider route およびエラー契約を変更しない。公開 tool 数と pack ごとの構成は `SOT-IF-040` を定義元とする。
+既存専門ツールの名前、schema、pagination、provider route およびエラー契約を変更しない。公開 tool 数と pack ごとの構成は `SOT-IF-067` を定義元とする。
 
 ## 確認
 
@@ -147,4 +147,4 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
-- [SOT-IF-040: `judicial-cases` 拡張パックの有効化](40-judicial-cases-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)

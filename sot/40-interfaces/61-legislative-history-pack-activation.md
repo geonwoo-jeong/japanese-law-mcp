@@ -74,5 +74,5 @@ profile set または公開結果を変更しない。
 - [SOT-ARCH-019: 拡張パックの有効化境界](../30-architecture/19-extension-pack-activation-boundary.md)
 - [SOT-ARCH-041: 拡張パックの専門公開面の段階採用](../30-architecture/41-staged-specialist-extension-surface.md)
 - [SOT-IF-039: 設定ソースと優先順位 v2](39-configuration-sources-and-precedence-v2.md)
-- [SOT-IF-040: `judicial-cases` 拡張パックの有効化](40-judicial-cases-pack-activation.md)
+- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
 - [SOT-IF-065: 国立国会図書館の国会発言検索の組込み採用](65-ndl-diet-speech-built-in-adoption.md)
