@@ -41,6 +41,8 @@
 
 `JudicialCitingCandidateSearchCoverage` は、事件番号、次いで判例集表記の順に `searchKind` と `status: complete | failed` を保持する `attempts`、成功結果で観測した item 数、自己参照・重複除外後の候補数および `truncated` を持つ。issue は失敗した `searchKind` と共通情報源エラーを持ち、検索語、URL query または HTML 本文を持たない。
 
+`truncated` は、自己参照除外と `ref` 基準の重複排除後の候補数が実効 `limit` を超えた場合、又は公式 HTML が未取得の後続結果の存在を明示した場合だけ `true` とする。一検索の失敗だけを `truncated` に読み替えず、`status=partial` と issue で表す。
+
 ## 制約
 
 - 検索は、事件番号で一回、`reporterCitation` が存在する場合だけ追加で一回の最大二回とする。

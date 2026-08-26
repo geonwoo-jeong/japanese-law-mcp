@@ -46,7 +46,7 @@
 - ルート詳細取得失敗、全要求方向失敗または全体キャンセルはツールエラーとする。
 - 片方向だけ失敗した場合は、成功方向の結果を保持して `issues` に失敗を記録する。
 - 被引用候補検索の二回中一回だけが失敗した場合は、成功検索の候補を保持して incoming を `partial` とする。両方が失敗した場合だけ incoming 全体を失敗とする。
-- `direction` に `outgoing` が含まれ、詳細 HTML に `full_text` PDF が存在しない場合は `coverage.outgoing.status=unavailable` と `code=full_text_document_unavailable` を記録し、他の取得済み要素があれば型付き結果を保持する。
+- `direction` に `outgoing` が含まれ、詳細 HTML に `full_text` PDF が存在しない場合は `coverage.outgoing.status=unavailable` と `code=full_text_document_unavailable` を記録する。PDF に text layer がない場合も `outgoing.status=unavailable` と `code=document_text_unavailable` を記録する。いずれも情報源から確認できた成功縮退であり、方向の実行失敗には数えず、`status=partial` の型付き結果を保持する。
 - 法条又は原審の共有正規化段階で recoverable な失敗が起きた場合は、取得済み graph 要素を保持したまま `direction=shared` の issue を記録する。
 - PDF の text layer 不在は、確認済み引用ゼロではなく coverage/issue の縮退理由として扱う。
 
@@ -58,7 +58,7 @@ graph の summary は、確認済み外向き引用、被引用候補、法条�
 
 ## 確認
 
-成功、片方向失敗、両方向失敗、キャンセル、タイムアウトおよび上限超過で、一時ファイル、worker、抽出 text および同時実行枠がリクエスト終了後に残らないことを確認する。
+成功、`full_text` PDF 非掲載、text layer 不在、共有正規化の部分失敗、片方向失敗、両方向失敗、キャンセル、タイムアウトおよび上限超過で、一時ファイル、worker、抽出 text および同時実行枠がリクエスト終了後に残らないことを確認する。
 
 ## 関連
 

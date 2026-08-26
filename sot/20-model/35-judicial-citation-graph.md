@@ -121,7 +121,9 @@
 
 要求していない方向は `not_requested` と空の `methods` にする。詳細 metadata はどの方向でも
 処理するが、`outgoing` の方向状態は判例参照 PDF 抽出、`incoming` は候補検索の完了状態を
-表す。`outgoing` は公式 `full_text` PDF が存在しない場合に `unavailable` を使用できる。
+表す。`outgoing` は公式 `full_text` PDF が存在しない場合又は PDF に text layer がない場合に
+`unavailable` を使用できる。これは情報源から確認できた成功縮退であり、方向の実行失敗には
+数えない。
 利用者が指定した `incomingLimit` で正常に切り詰めたことだけでは方向を `partial` にせず、
 `complete` と `truncated: true` を両立できる。
 
@@ -139,9 +141,19 @@
 
 - `status` は要求した方向がすべて `complete` で、かつ `shared` direction の issue がない場合だけ `complete` とする。一方向、一検索または `shared` stage が失敗しても型付き結果を一つ以上保持できる場合は `partial` とし、一件以上の `issues` を必須とする。ルート取得失敗、全要求方向失敗または全域取消では成功モデルを返さない。利用者の `incomingLimit` による正常な切詰めだけでは `partial` にしない。
 - `relationType`、`evidenceLevel`、`mentionType` および `reason` は本規定の閉じた値だけを使用する。
+- ルートノードは `nodeType=judicial_decision` とし、`ref` と `decisionSummary` を必須で持つ。`nodeType=judicial_decision` は `ref` と `decisionSummary`、`nodeType=law_provision` は `lawReference`、`nodeType=judicial_decision_reference` は `referenceText` だけを各型の条件付き field とし、他の型専用 field を併記しない。
+- edge の向き、node 型および根拠水準は次の組合せだけを許す。
+
+  | `relationType` | `fromNodeId` | `toNodeId` | `evidenceLevel` |
+  |---|---|---|---|
+  | `cites_judicial_decision` | ルート `judicial_decision` | `judicial_decision` 又は厳密に同定した `judicial_decision_reference` | `exact_text_match` |
+  | `possible_cites_judicial_decision` | 候補 `judicial_decision` | ルート `judicial_decision` | `official_search_candidate` |
+  | `references_law_provision` | ルート `judicial_decision` | `law_provision` | `official_metadata` |
+  | `has_lower_court_decision` | ルート `judicial_decision` | `judicial_decision` 又は公式 metadata から構成した `judicial_decision_reference` | `official_metadata` |
+
 - `possible_cites_judicial_decision` は公式検索候補を表し、`cites_judicial_decision` と同じ意味へ縮約しない。
 - `references_law_provision` は、法令名と `LawArticleLocation` を一意に解決できた場合だけ作成する。法令 revision は推測しない。
-- `has_lower_court_decision` は公式詳細 HTML に原審メタデータが存在し、裁判所名と事件番号を同一の原審裁判例参照へ構成できる場合に限る。読めない場合は `judicial_decision_reference` または `unresolvedMentions` を使用する。
+- `has_lower_court_decision` は公式詳細 HTML に原審メタデータが存在し、裁判所名と事件番号を同一の原審裁判例参照へ構成できる場合に限る。値が不足して同一参照を構成できない場合は `unresolvedMentions` を使用し、完全な metadata から公式掲載 `ref` を作れない場合だけ `judicial_decision_reference` を使用する。
 - 同じ `fromNodeId`、`toNodeId` および `relationType` を持つ重複 edge は一件に統合し、`evidence` の列挙順を保持する。
 - 判例関係 edge は全 relation を合わせて 64 件、法条 edge は 32 件を超えない。上限到達時は決定的な先頭を保持し、coverage の `truncated` と issue で示す。
 - `excerpt` は根拠確認に必要な最小限にとどめ、単一情報源から過度に長い原文を複製しない。
@@ -150,7 +162,7 @@
 
 ## 確認
 
-閉じた relation 種別、候補と確認済み引用の分離、法条正規化の一意条件、重複 edge 統合、evidence 順序保持、partial の条件、coverage 集計、未解決言及の保持および JSON 表現を単体テストで確認する。
+閉じた relation 種別、relation ごとの向き・node 型・根拠水準、node の条件付き field、候補と確認済み引用の分離、法条正規化の一意条件、重複 edge 統合、evidence 順序保持、partial の条件、coverage 集計、未解決言及の保持および JSON 表現を単体テストで確認する。
 
 ## 関連
 

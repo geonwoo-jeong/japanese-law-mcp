@@ -12,7 +12,7 @@
 - `document` はその詳細に一回だけ含まれる `full_text` の `JudicialDocumentLink` をそのまま使用する。
 - PDF URL、判例番号パターン、正規化辞書または fuzzy 候補を入力へ追加しない。
 
-すべての所属、origin、path、media type および `%PDF-` magic を外向き取得又は parser 起動より前に検証する。PDF を一回だけ取得し、自動再試行しない。
+所属、origin、path および宣言された media type は外向き取得前に検証する。取得後は response の media type と `%PDF-` magic を parser 起動前に検証する。PDF を一回だけ取得し、自動再試行しない。
 
 ## parser の採用と隔離
 

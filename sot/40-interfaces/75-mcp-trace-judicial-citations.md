@@ -37,7 +37,7 @@ graph には `impactScore`、`goodLaw`、`overruled`、治療的評価、拘束�
 
 このツールは入力検証後、ルート詳細 HTML 一回、参照法条・原審 metadata の正規化、要求時の PDF 一回、および要求時の候補検索二回の順に、合計四つの外向き request を上限として実行する。`direction` に `outgoing` が含まれても、詳細 HTML に公式 `full_text` PDF が存在しない場合は PDF provider を呼ばない。候補又は参照先の詳細・PDF、法令 APIその他を連鎖取得しない。
 
-片方向だけ失敗した場合、候補検索二回の一方だけ失敗した場合、法条・原審の共有正規化段階で recoverable な失敗が起きた場合、又は `outgoing` を要求したのに公式 `full_text` PDF が存在しない場合は、成功結果を捨てず `status=partial` と direction、stage、公開可能な code を持つ `issues` を返す。法条・原審の共有正規化 issue は `direction=shared` とし、公式 `full_text` PDF 不在は `direction=outgoing`、`stage=official_detail_metadata`、`code=full_text_document_unavailable` とする。PDF text layer 不在は「引用なし」ではなく `document_text_unavailable` の issue と縮退 coverage にする。ルート詳細失敗、全要求方向失敗又は全体キャンセルは部分 graph を公開せず `isError: true` とする。
+片方向だけ失敗した場合、候補検索二回の一方だけ失敗した場合、法条・原審の共有正規化段階で recoverable な失敗が起きた場合、又は `outgoing` を要求したのに公式 `full_text` PDF が存在しない場合は、成功結果を捨てず `status=partial` と direction、stage、公開可能な code を持つ `issues` を返す。法条・原審の共有正規化 issue は `direction=shared` とする。公式 `full_text` PDF 不在は `direction=outgoing`、`stage=official_detail_metadata`、`code=full_text_document_unavailable`、PDF text layer 不在は `direction=outgoing`、`stage=official_pdf_text`、`code=document_text_unavailable` とし、いずれも `outgoing.status=unavailable` にする。これは情報源から確認できた成功縮退であり、全要求方向失敗の判定には含めない。ルート詳細失敗、実行した全要求方向の失敗又は全体キャンセルは部分 graph を公開せず `isError: true` とする。
 
 要求した全処理が採用済み上限内で成功した場合は edge が空でも `status=complete` とする。利用者の `incomingLimit` で正常に候補を切り詰めたことだけでは `partial` にせず、coverage の `truncated` で示す。
 
@@ -49,7 +49,7 @@ graph には `impactScore`、`goodLaw`、`overruled`、治療的評価、拘束�
 
 ## 確認
 
-pack 無効時の未登録、有効時の原子的登録、schema、`ref` の事前検証、`direction` と `incomingLimit` の境界、固定 `coverageNotice`、最大四 request、片方向 partial、候補一検索 partial、全方向失敗、全体取消、PDF text layer 不在、graph 閉包、未解決言及、原文非露出、非採用項目の拒否、既存二裁判例ツールの JSON 非変更、`query_legal_information` の非変更、および stdio/Streamable HTTP の schema と結果の一致を MCP 契約テストで確認する。
+pack 無効時の未登録、有効時の原子的登録、schema、`ref` の事前検証、`direction` と `incomingLimit` の境界、固定 `coverageNotice`、最大四 request、片方向 partial、候補一検索 partial、共有正規化 partial、全方向失敗、全体取消、`full_text` PDF 非掲載、PDF text layer 不在、relation ごとの node/evidence 閉包、未解決言及、原文非露出、非採用項目の拒否、既存二裁判例ツールの JSON 非変更、`query_legal_information` の非変更、および stdio/Streamable HTTP の schema と結果の一致を MCP 契約テストで確認する。
 
 ## 関連
 

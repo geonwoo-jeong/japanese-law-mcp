@@ -57,7 +57,7 @@ extensionPacks:
 `judicial-citations` も有効な場合に限り、次を別の一つの集合として追加する。
 
 - 利用シナリオ: `SOT-SCN-015`
-- capability: `judicial-decision.case-citation.extract@1`、`judicial-decision.citing-candidate.search@1`
+- 到達可能な capability route: `judicial-decision.case-citation.extract@1`、`judicial-decision.citing-candidate.search@1`
 - MCP ツール: `trace_judicial_citations`
 - provider と route: `SOT-IF-074` の条件付き組込み値
 - `trace_judicial_citations` 専用の application service と内部 graph 組立て

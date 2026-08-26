@@ -20,12 +20,14 @@
 
 - 利用シナリオ: `SOT-SCN-015`
 - 共通モデル: `SOT-MODEL-035`
-- capability: `judicial-decision.case-citation.extract@1` および `judicial-decision.citing-candidate.search@1`
+- 到達可能な capability route: `judicial-decision.case-citation.extract@1` および `judicial-decision.citing-candidate.search@1`
 - provider と route: `SOT-IF-074`
 - MCP ツール: `trace_judicial_citations`
 - application service: 詳細取得、法条・原審正規化、PDF 抽出、候補検索、graph 合成および coverage 集計
 
 どれか一つでも構成できない場合は transport を開始しない。片方の capability だけ、片方の provider だけ、route だけ、または tool だけを公開しない。`judicial-citations` を無効に戻した場合はこの集合だけを除き、`judicial-cases` の検索・詳細公開面を維持する。
+
+既存 `courts-hanrei-html` の production descriptor と compiled binding inventory は、最終接続後に候補検索 capability を実装済み能力として宣言できる。ただし `judicial-citations` が無効な起動では候補検索 route、引用追跡 application service および MCP tool を構成せず、公開処理から到達不能にする。これは capability route の有効化ではなく、不変 descriptor と実装済み binding の登録である。`courts-hanrei-pdf` の factory、descriptor および binding は `judicial-citations` が有効な場合だけ登録する。
 
 ## 統合照会との境界
 

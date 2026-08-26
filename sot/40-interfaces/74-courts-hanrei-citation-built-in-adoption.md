@@ -27,7 +27,7 @@ providerRoutes:
     defaultProviderId: courts-hanrei-html
 ```
 
-HTML descriptor と compiled binding inventory は三能力で一致させるが、`judicial-citations` が無効な間は候補検索 route を構成せず、公開処理から到達不能にする。
+最終接続で候補検索 row を `implemented` にした後は、HTML descriptor と compiled binding inventory を三能力で一致させる。ただし `judicial-citations` が無効な間は候補検索 route、引用追跡 application service および MCP tool を構成せず、候補検索 binding を公開処理から到達不能にする。準備中の `planned` row は production descriptor 又は compiled binding inventory に含めない。
 
 さらに両 pack が有効な場合に限り、次を加える。
 
