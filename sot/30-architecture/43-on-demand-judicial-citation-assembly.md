@@ -10,7 +10,7 @@
 
 1. ルート裁判例の詳細 HTML を一度取得する。
 2. 方向にかかわらず、詳細 HTML の `参照法条` と原審メタデータを正確に正規化する。
-3. 詳細 HTML に `full_text` PDF があり、`direction` に `outgoing` が含まれる場合だけ、その PDF を一度取得して解析する。
+3. 詳細 HTML に `full_text` PDF があり、`direction` に `outgoing` が含まれる場合だけ、その PDF を一度取得して解析する。`full_text` PDF 自体がない場合は PDF provider を呼ばない。
 4. `direction` に `incoming` が含まれる場合だけ、事件番号と存在する場合の判例集表記で公式検索を最大二回実行する。
 5. 取得した原文から request scope の graph を組み立て、応答後に破棄する。
 
@@ -46,6 +46,7 @@
 - ルート詳細取得失敗、全要求方向失敗または全体キャンセルはツールエラーとする。
 - 片方向だけ失敗した場合は、成功方向の結果を保持して `issues` に失敗を記録する。
 - 被引用候補検索の二回中一回だけが失敗した場合は、成功検索の候補を保持して incoming を `partial` とする。両方が失敗した場合だけ incoming 全体を失敗とする。
+- `direction` に `outgoing` が含まれ、詳細 HTML に `full_text` PDF が存在しない場合は `coverage.outgoing.status=unavailable` と `code=full_text_document_unavailable` を記録し、他の取得済み要素があれば型付き結果を保持する。
 - 法条又は原審の共有正規化段階で recoverable な失敗が起きた場合は、取得済み graph 要素を保持したまま `direction=shared` の issue を記録する。
 - PDF の text layer 不在は、確認済み引用ゼロではなく coverage/issue の縮退理由として扱う。
 

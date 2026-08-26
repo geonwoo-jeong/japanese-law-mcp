@@ -27,6 +27,7 @@
 - `judicial-citations` だけが有効、または `judicial-cases` が無効な場合は、起動時設定エラーとする。
 - ルート裁判例の詳細取得に失敗した場合、または要求したすべての方向が失敗した場合は、MCP ツールエラーとする。
 - `both` で片方向だけ成功した場合、または被引用候補の二検索の一方だけ成功した場合は、成功した結果を捨てず、失敗した処理の `issues` を含む `status=partial` を返す。
+- `direction` に `outgoing` が含まれ、詳細 HTML に公式 `full_text` PDF が存在しない場合は、PDF を取得せず `coverage.outgoing.status=unavailable` と `full_text_document_unavailable` の issue を返す。
 - PDF に text layer がない場合、確認済み外向き引用を空と断定せず、`document_text_unavailable` を coverage と issue に記録する。
 - あいまいな判例参照、あいまいな法条、自己参照だけに依存する候補、または fuzzy 一致に依存する候補は edge に昇格させず、`unresolvedMentions` に残す。
 

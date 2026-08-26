@@ -60,7 +60,7 @@ extensionPacks:
 - capability: `judicial-decision.case-citation.extract@1`、`judicial-decision.citing-candidate.search@1`
 - MCP ツール: `trace_judicial_citations`
 - provider と route: `SOT-IF-074` の条件付き組込み値
-- 引用追跡の facade、request materializer および application service
+- `trace_judicial_citations` 専用の application service と内部 graph 組立て
 
 必要な binding、provider、primary route または tool 依存関係を起動時に構成できない場合は transport を開始せず設定エラーとする。
 

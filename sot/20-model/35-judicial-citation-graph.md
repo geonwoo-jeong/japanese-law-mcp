@@ -121,8 +121,9 @@
 
 要求していない方向は `not_requested` と空の `methods` にする。詳細 metadata はどの方向でも
 処理するが、`outgoing` の方向状態は判例参照 PDF 抽出、`incoming` は候補検索の完了状態を
-表す。利用者が指定した `incomingLimit` で正常に切り詰めたことだけでは方向を `partial` に
-せず、`complete` と `truncated: true` を両立できる。
+表す。`outgoing` は公式 `full_text` PDF が存在しない場合に `unavailable` を使用できる。
+利用者が指定した `incomingLimit` で正常に切り詰めたことだけでは方向を `partial` にせず、
+`complete` と `truncated: true` を両立できる。
 
 ### `JudicialCitationIssue`
 
