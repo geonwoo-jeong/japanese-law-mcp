@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitation"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawtarget"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitationnormalize"
+	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
 )
 
@@ -14,8 +15,8 @@ func TestNormalizeLowerCourtDecision(t *testing.T) {
 	t.Parallel()
 
 	details := newDetails(t, "東京高等裁判所", "令和5年（ネ）第100号", "2025-01-31", "民法第177条")
-	got, ok := judicialcitation.NormalizeLowerCourtDecision(details)
-	if !ok {
+	got, ok, err := judicialcitation.NormalizeLowerCourtDecision(details)
+	if err != nil || !ok {
 		t.Fatal("SOT-MODEL-035/SOT-ARCH-043: 原審情報を正規化できませんでした")
 	}
 	if got.CourtName() != "東京高等裁判所" ||
@@ -25,7 +26,21 @@ func TestNormalizeLowerCourtDecision(t *testing.T) {
 	}
 }
 
-func TestNormalizeReferencedProvisionsResolvesAndKeepsCurrentLaw(t *testing.T) {
+func TestNormalizeLowerCourtDecisionは欠落と不正値を区別する(t *testing.T) {
+	t.Parallel()
+
+	missing := newDetails(t, "", "", "", "")
+	if _, ok, err := judicialcitation.NormalizeLowerCourtDecision(missing); err != nil || ok {
+		t.Fatalf("欠落 metadata = (ok=%t, err=%v)", ok, err)
+	}
+
+	malformed := newDetails(t, "東京高等裁判所", "令和5年（ネ）第100号 補足", "", "")
+	if _, ok, err := judicialcitation.NormalizeLowerCourtDecision(malformed); err == nil || ok {
+		t.Fatalf("不正 metadata = (ok=%t, err=%v)", ok, err)
+	}
+}
+
+func TestNormalizeReferencedProvisionsは正確一致と登録別名だけを解決する(t *testing.T) {
 	t.Parallel()
 
 	details := newDetails(
@@ -33,86 +48,94 @@ func TestNormalizeReferencedProvisionsResolvesAndKeepsCurrentLaw(t *testing.T) {
 		"東京高等裁判所",
 		"令和5年（ネ）第100号",
 		"2025-01-31",
-		"民法第177条、同法第709条、附則第1条",
+		"民法第177条、個情法附則第2条第1項、同法第709条",
 	)
 	provenance := newProvenance(t)
 	result, err := judicialcitation.NormalizeReferencedProvisions(
 		context.Background(),
-		fakeResolver{
-			results: map[string]lawtarget.ResolvedLawTarget{
-				"民法": mustResolvedLawTarget(t, "129AC0000000089", "民法", lawtarget.MatchKindExact),
-				"同法": mustResolvedLawTarget(t, "129AC0000000089", "民法", lawtarget.MatchKindRegisteredTerm),
-			},
-		},
+		mustExactLawAliasResolver(t),
 		details,
 		provenance,
 	)
 	if err != nil {
 		t.Fatalf("NormalizeReferencedProvisions() のエラー = %v", err)
 	}
-	if len(result.References()) != 3 || len(result.Unresolved()) != 0 {
+	if len(result.References()) != 2 || len(result.Unresolved()) != 1 {
 		t.Fatalf("正規化結果 = %#v / %#v", result.References(), result.Unresolved())
 	}
-	if result.References()[1].Location().ArticleNumber() != "709" ||
-		result.References()[2].Location().Provision() != model.LawArticleProvisionSupplementary {
+	if result.References()[1].Location().ArticleNumber() != "2" ||
+		result.References()[1].Location().Provision() != model.LawArticleProvisionSupplementary {
 		t.Fatalf("法条位置 = %#v", result.References())
+	}
+	if result.Unresolved()[0].Reason() != model.JudicialCitationUnresolvedReasonUnsupportedReference {
+		t.Fatalf("unresolved reason = %q", result.Unresolved()[0].Reason())
 	}
 }
 
-func TestNormalizeReferencedProvisionsRejectsFuzzyOrUnknownLaw(t *testing.T) {
+func TestNormalizeReferencedProvisionsは誤記と曖昧別名を未解決のまま保持する(t *testing.T) {
 	t.Parallel()
 
-	details := newDetails(t, "", "", "", "みんぽう第177条")
+	details := newDetails(
+		t,
+		"",
+		"",
+		"",
+		"個人情報保護砲第177条、開示法第1条、未登録架空特別法名第3条、民法第1条第1項第1号",
+	)
 	result, err := judicialcitation.NormalizeReferencedProvisions(
 		context.Background(),
-		fakeResolver{
-			results: map[string]lawtarget.ResolvedLawTarget{
-				"みんぽう": mustResolvedLawTarget(
-					t,
-					"129AC0000000089",
-					"民法",
-					lawtarget.MatchKindUniqueTypoCorrection,
-				),
-			},
-		},
+		mustExactLawAliasResolver(t),
 		details,
 		newProvenance(t),
 	)
 	if err != nil {
 		t.Fatalf("NormalizeReferencedProvisions() のエラー = %v", err)
 	}
-	if len(result.References()) != 0 || len(result.Unresolved()) != 1 {
+	if len(result.References()) != 0 || len(result.Unresolved()) != 4 {
 		t.Fatalf("正規化結果 = %#v / %#v", result.References(), result.Unresolved())
 	}
 	if result.Unresolved()[0].Reason() != model.JudicialCitationUnresolvedReasonFuzzyMatchOnly {
-		t.Fatalf("unresolved reason = %q", result.Unresolved()[0].Reason())
+		t.Fatalf("unresolved[0] reason = %q", result.Unresolved()[0].Reason())
+	}
+	if result.Unresolved()[1].Reason() != model.JudicialCitationUnresolvedReasonAmbiguousTarget {
+		t.Fatalf("unresolved[1] reason = %q", result.Unresolved()[1].Reason())
+	}
+	if result.Unresolved()[2].Reason() != model.JudicialCitationUnresolvedReasonUnregisteredLawName {
+		t.Fatalf("unresolved[2] reason = %q", result.Unresolved()[2].Reason())
+	}
+	if result.Unresolved()[3].Reason() != model.JudicialCitationUnresolvedReasonAmbiguousLawLocation {
+		t.Fatalf("unresolved[3] reason = %q", result.Unresolved()[3].Reason())
 	}
 }
 
-type fakeResolver struct {
-	results map[string]lawtarget.ResolvedLawTarget
-}
-
-func (f fakeResolver) ResolveLogicalInput(
-	_ context.Context,
-	query string,
-) (lawtarget.ResolvedLawTarget, bool, error) {
-	value, exists := f.results[query]
-	return value, exists, nil
-}
-
-func mustResolvedLawTarget(
-	t *testing.T,
-	lawID string,
-	title string,
-	matchKind lawtarget.MatchKind,
-) lawtarget.ResolvedLawTarget {
+func mustExactLawAliasResolver(t *testing.T) judicialcitationnormalize.ExactLawAliasResolver {
 	t.Helper()
-	target, err := lawtarget.NewResolvedLawTarget(lawID, title, matchKind)
+
+	resolver, err := judicialcitationnormalize.NewExactLawAliasResolver([]lawnamelexicon.Entry{
+		{
+			ResourceID: "129AC0000000089",
+			Canonical:  "民法",
+		},
+		{
+			ResourceID: "416AC0000000057",
+			Canonical:  "個人情報の保護に関する法律",
+			Terms:      []string{"個人情報保護法", "個情法"},
+		},
+		{
+			ResourceID: "disclosure-a",
+			Canonical:  "独立行政法人等の保有する情報の公開に関する法律",
+			Terms:      []string{"開示法"},
+		},
+		{
+			ResourceID: "disclosure-b",
+			Canonical:  "行政機関の保有する情報の公開に関する法律",
+			Terms:      []string{"開示法"},
+		},
+	})
 	if err != nil {
-		t.Fatalf("resolved law target を構築できません: %v", err)
+		t.Fatalf("resolver を構築できません: %v", err)
 	}
-	return target
+	return resolver
 }
 
 func newDetails(
