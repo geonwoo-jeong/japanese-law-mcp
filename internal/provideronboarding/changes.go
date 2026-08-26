@@ -116,18 +116,23 @@ func evaluateNormalChanges(
 		}
 		return false, nil
 	}
-	if len(targets) != 1 {
+	allowedTargets, adoptedGroup := adoptedProviderTargetGroup(targets)
+	if !adoptedGroup && len(targets) != 1 {
 		return false, fmt.Errorf(
 			"一つの provider 変更に複数の provider が含まれます: %s",
 			strings.Join(sortedSet(targets), ", "),
 		)
 	}
-	target := sortedSet(targets)[0]
-	if !providerKnown(target, packages) {
-		return false, fmt.Errorf(
-			"matrix の providerId に対応する provider package がありません: %s",
-			target,
-		)
+	if len(allowedTargets) == 0 {
+		allowedTargets = sortedSet(targets)
+	}
+	for _, target := range allowedTargets {
+		if !providerKnown(target, packages) {
+			return false, fmt.Errorf(
+				"matrix の providerId に対応する provider package がありません: %s",
+				target,
+			)
+		}
 	}
 	for _, changedPath := range paths {
 		if commonContractPath(changedPath) {
@@ -137,7 +142,7 @@ func evaluateNormalChanges(
 			)
 		}
 		owner, found := providerPackageOwner(changedPath, packages)
-		if found && owner.providerID != target {
+		if found && !containsString(allowedTargets, owner.providerID) {
 			return false, fmt.Errorf(
 				"対象外 provider package の変更です: %s",
 				changedPath,
@@ -227,6 +232,36 @@ func hasPathPrefix(value, prefix string) bool {
 func providerKnown(providerID string, packages []providerPackage) bool {
 	for _, providerPackage := range packages {
 		if providerPackage.providerID == providerID {
+			return true
+		}
+	}
+	return false
+}
+
+func adoptedProviderTargetGroup(targets map[string]struct{}) ([]string, bool) {
+	for _, group := range [][]string{
+		{"courts-hanrei-html", "courts-hanrei-pdf"},
+	} {
+		if len(targets) != len(group) {
+			continue
+		}
+		matched := true
+		for _, target := range group {
+			if _, exists := targets[target]; !exists {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			return append([]string(nil), group...), true
+		}
+	}
+	return nil, false
+}
+
+func containsString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
 			return true
 		}
 	}

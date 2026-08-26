@@ -158,6 +158,38 @@ func TestValidateNormalChangesAllowsSingleProviderPackage(t *testing.T) {
 	}
 }
 
+func TestValidateNormalChangesAllowsAdoptedCoupledProviderUnit(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{
+		{
+			providerID:    "courts-hanrei-html",
+			implementedBy: "internal/source/courts/hanrei",
+			status:        "implemented",
+		},
+		{
+			providerID:    "courts-hanrei-pdf",
+			implementedBy: "internal/source/courts/hanreipdf",
+			status:        "implemented",
+		},
+	}
+	err := validateNormalChanges(
+		[]string{
+			"conformance/providers/courts-hanrei-html.yaml",
+			"conformance/providers/courts-hanrei-pdf.yaml",
+			"internal/source/courts/hanrei/provider_bindings.go",
+			"internal/source/courts/hanreipdf/provider_bindings.go",
+			"internal/application/provider_routes.go",
+			"internal/config/provider_config.go",
+			"cmd/japanese-law-mcp/main.go",
+		},
+		rows,
+	)
+	if err != nil {
+		t.Fatalf("採用済みの従属 provider 単位が拒否されました: %v", err)
+	}
+}
+
 func TestRepositoryProviderPathUsesCurrentModule(t *testing.T) {
 	t.Parallel()
 
