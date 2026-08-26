@@ -62,7 +62,9 @@ func (v ReferenceValidator) ValidateCandidateContent(
 		return err
 	}
 	if !reflect.DeepEqual(document, expected) || !bytes.Equal(raw, expectedRaw) {
-		return fmt.Errorf("candidate content が現在の閉じた参照集合と一致しません")
+		return legalquerycandidateeval.NewCurrentStaleError(
+			legalquerycandidateeval.StaleReasonCandidateContentDrift,
+		)
 	}
 	return nil
 }
@@ -84,9 +86,19 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			err
 	}
+	staleReasons := make([]legalquerycandidateeval.StaleReason, 0, 2)
+	appendReasons := func(additional ...legalquerycandidateeval.StaleReason) error {
+		merged, err := legalquerycandidateeval.AppendStaleReasons(staleReasons, additional...)
+		if err != nil {
+			return err
+		}
+		staleReasons = merged
+		return nil
+	}
 	if document.EvaluatorVersion != evaluators.CurrentVersion {
-		return legalquerycandidateeval.RequestReferenceValidation{},
-			fmt.Errorf("新しい evaluation request は current evaluatorVersion を必要とします")
+		if err := appendReasons(legalquerycandidateeval.StaleReasonCurrentEvaluatorDrift); err != nil {
+			return legalquerycandidateeval.RequestReferenceValidation{}, err
+		}
 	}
 	if document.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 {
 		return legalquerycandidateeval.RequestReferenceValidation{},
@@ -106,12 +118,20 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		document.SchemaVersion,
 	)
 	if err != nil {
-		return legalquerycandidateeval.RequestReferenceValidation{}, err
+		if reasons, ok := legalquerycandidateeval.StaleReasonsFromError(err); ok {
+			if err := appendReasons(reasons...); err != nil {
+				return legalquerycandidateeval.RequestReferenceValidation{}, err
+			}
+		} else {
+			return legalquerycandidateeval.RequestReferenceValidation{}, err
+		}
 	}
-	if !reflect.DeepEqual(document.RequiredReviewSOTs, references) ||
-		document.RequiredReviewSOTSetSHA256 != legalquerycandidateeval.SOTSetSHA256(references) {
-		return legalquerycandidateeval.RequestReferenceValidation{},
-			fmt.Errorf("evaluation request の SOT 参照が現在の有効集合と一致しません")
+	if len(references) > 0 &&
+		(!reflect.DeepEqual(document.RequiredReviewSOTs, references) ||
+			document.RequiredReviewSOTSetSHA256 != legalquerycandidateeval.SOTSetSHA256(references)) {
+		if err := appendReasons(legalquerycandidateeval.StaleReasonReviewSOTDigestDrift); err != nil {
+			return legalquerycandidateeval.RequestReferenceValidation{}, err
+		}
 	}
 	corpus, err := legalquerycorpus.LoadManifest(
 		ctx,
@@ -132,7 +152,9 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{},
 			fmt.Errorf("evaluation request が corpus manifest と一致しません")
 	}
-	return legalquerycandidateeval.RequestReferenceValidation{
+	validation := legalquerycandidateeval.RequestReferenceValidation{
 		CurrentRequiredReviewSOTs: cloneSOTReferences(references),
-	}, nil
+		StaleReasons:              append([]legalquerycandidateeval.StaleReason(nil), staleReasons...),
+	}
+	return validation, legalquerycandidateeval.NewCurrentStaleError(staleReasons...)
 }

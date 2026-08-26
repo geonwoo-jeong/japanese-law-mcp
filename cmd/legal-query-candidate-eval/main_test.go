@@ -31,6 +31,7 @@ const (
 	verificationHandoffReadStage   = "candidate-evaluation-handoff-read-stage"
 	verificationUnknownFailClosed  = "candidate-evaluation-unknown-fail-closed"
 	verificationIndeterminateGate  = "candidate-evaluation-indeterminate-reviewed-retry-gate"
+	verificationReadinessNonBypass = "candidate-evaluation-readiness-non-bypass"
 )
 
 func TestFixedArguments(t *testing.T) {
@@ -78,13 +79,18 @@ func TestFixedArgumentsRejectEveryAlternative(t *testing.T) {
 			"--output-directory=./.artifacts/legal-query-candidate-evaluation",
 			"--profile=next",
 		},
+		"stale bypass": {
+			"--repository=.",
+			"--output-directory=./.artifacts/legal-query-candidate-evaluation",
+			"--allow-stale",
+		},
 	}
 	for name, args := range cases {
 		name, args := name, args
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			if _, err := parseFixedArguments(args); err == nil {
-				t.Fatalf("%s: 代替引数を受理しました: %#v", verificationCIAuthority, args)
+				t.Fatalf("%s/%s: 代替引数を受理しました: %#v", verificationCIAuthority, verificationReadinessNonBypass, args)
 			}
 		})
 	}
@@ -134,6 +140,9 @@ func TestChildWorkerEnvironmentRejectsDriftAndAmbientState(t *testing.T) {
 		},
 		"任意の環境変数": func(values []string) []string {
 			return append(values, "LANG=ja_JP.UTF-8")
+		},
+		"stale bypass": func(values []string) []string {
+			return append(values, "JAPANESE_LAW_MCP_ALLOW_STALE=1")
 		},
 		"不正な環境 entry": func(values []string) []string {
 			return append(values, "MALFORMED")

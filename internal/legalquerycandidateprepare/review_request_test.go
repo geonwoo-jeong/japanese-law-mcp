@@ -2,12 +2,13 @@ package legalquerycandidateprepare
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
 )
 
-func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *testing.T) {
+func TestBuildReviewは同じContentとHistoricalSOT集合へ固定する(t *testing.T) {
 	t.Parallel()
 
 	repository, err := filepath.Abs(filepath.Join("..", ".."))
@@ -22,14 +23,7 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	if err != nil {
 		t.Fatalf("candidate content を直列化できません: %v", err)
 	}
-	references, err := BuildRequiredSOTReferences(
-		t.Context(),
-		repository,
-		manifest.SchemaVersion,
-	)
-	if err != nil {
-		t.Fatalf("review SOT 集合を解決できません: %v", err)
-	}
+	references := fixedHistoricalSOTReferencesForTest(t, manifest.SchemaVersion)
 	architecture := mustReviewForTest(
 		t, manifest, manifestRaw, references,
 		legalquerycandidateeval.ReviewScopeArchitecture,
@@ -48,47 +42,39 @@ func TestBuildReviewAndRequestは同じContentとSOT集合へ固定する(t *tes
 	if err != nil {
 		t.Fatalf("testability review を直列化できません: %v", err)
 	}
-	legacyRequest, legacyErr := BuildEvaluationRequest(
-		t.Context(), repository, "corpus-v12", manifest, manifestRaw,
-		architecture, architectureRaw, testability, testabilityRaw,
-		"default-2",
-	)
-	if legacyErr == nil || legacyRequest.EvaluationID != "" {
-		t.Fatalf(
-			"candidate-evaluation-corpus-admissibility: corpus-v12 を新しい request として受理しました: evaluationId=%q corpusVersion=%q error=%v",
-			legacyRequest.EvaluationID,
-			legacyRequest.CorpusVersion,
-			legacyErr,
-		)
-	}
-
 	request, err := BuildEvaluationRequest(
 		t.Context(), repository, "corpus-v16", manifest, manifestRaw,
 		architecture, architectureRaw, testability, testabilityRaw,
 		"default-8",
 	)
+	if request.EvaluationID != "" || !legalquerycandidateeval.IsCurrentStale(err) {
+		t.Fatalf("candidate-evaluation-stale-candidate-readiness-fail: stale schema から request を構成しました: request=%#v error=%v", request, err)
+	}
+	if architecture.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		testability.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
+		architecture.ReviewedSOTSetSHA256 != legalquerycandidateeval.SOTSetSHA256(references) ||
+		testability.ReviewedSOTSetSHA256 != legalquerycandidateeval.SOTSetSHA256(references) {
+		t.Fatalf("candidate-evaluation-review-content-binding: review binding=(%#v,%#v)", architecture, testability)
+	}
+}
+
+func fixedHistoricalSOTReferencesForTest(
+	t *testing.T,
+	schemaVersion int,
+) []legalquerycandidateeval.SOTReference {
+	t.Helper()
+	ids, err := legalquerycandidateeval.RequiredReviewSOTIDsForSchema(schemaVersion)
 	if err != nil {
-		t.Fatalf("candidate-evaluation-request-identity: request を構成できません: %v", err)
+		t.Fatalf("schema version %d の SOT ID を解決できません: %v", schemaVersion, err)
 	}
-	requestRaw, err := legalquerycandidateeval.MarshalCanonicalJSON(request)
-	if err != nil {
-		t.Fatalf("request を直列化できません: %v", err)
+	references := make([]legalquerycandidateeval.SOTReference, 0, len(ids))
+	for _, id := range ids {
+		references = append(references, legalquerycandidateeval.SOTReference{
+			SOTID:             id,
+			SOTDocumentSHA256: strings.Repeat("a", 64),
+		})
 	}
-	if _, err := legalquerycandidateeval.DecodeEvaluationRequest(requestRaw); err != nil {
-		t.Fatalf("candidate-evaluation-request-identity: request を自己検証できません: %v", err)
-	}
-	if request.CandidateContentManifestSHA256 !=
-		legalquerycandidateeval.RawSHA256(manifestRaw) ||
-		request.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
-		request.RequiredReviewSOTSetSHA256 !=
-			legalquerycandidateeval.SOTSetSHA256(references) ||
-		request.EvaluatorVersion != "legal-query-evaluator-v3" ||
-		request.CorpusVersion != "corpus-v16" ||
-		request.BaselineVersion != "default-8" ||
-		architecture.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
-		testability.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 {
-		t.Fatalf("candidate-evaluation-review-content-binding: request binding = %#v", request)
-	}
+	return references
 }
 
 func mustReviewForTest(

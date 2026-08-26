@@ -24,66 +24,82 @@ func LoadCurrentEvaluation(
 	repositoryRoot string,
 	referenceValidator ReferenceValidator,
 ) (CurrentEvaluation, error) {
-	if err := checkContext(ctx); err != nil {
+	inspection, err := InspectCurrentEvaluation(ctx, repositoryRoot, referenceValidator)
+	if err != nil {
 		return CurrentEvaluation{}, err
 	}
+	if inspection.ReadinessState() == CurrentReadinessStale {
+		return CurrentEvaluation{}, NewCurrentStaleError(inspection.StaleReasons()...)
+	}
+	return inspection.Evaluation(), nil
+}
+
+// InspectCurrentEvaluation は、完全性を検証してから current readiness を導出する。
+func InspectCurrentEvaluation(
+	ctx context.Context,
+	repositoryRoot string,
+	referenceValidator ReferenceValidator,
+) (CurrentEvaluationInspection, error) {
+	if err := checkContext(ctx); err != nil {
+		return CurrentEvaluationInspection{}, err
+	}
 	if referenceValidator == nil {
-		return CurrentEvaluation{}, fmt.Errorf("外部参照 validator が指定されていません")
+		return CurrentEvaluationInspection{}, fmt.Errorf("外部参照 validator が指定されていません")
 	}
 	repository, err := legalqueryartifact.OpenRepository(repositoryRoot)
 	if err != nil {
-		return CurrentEvaluation{}, fmt.Errorf("candidate evaluation repository を開けません: %w", err)
+		return CurrentEvaluationInspection{}, fmt.Errorf("candidate evaluation repository を開けません: %w", err)
 	}
 	defer func() { _ = repository.Close() }()
 	root, err := openCandidateEvaluationRoot(repository)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	defer func() { _ = root.Close() }()
-	return loadCurrentEvaluationFromRoot(ctx, repository, root, referenceValidator)
+	return inspectCurrentEvaluationFromRoot(ctx, repository, root, referenceValidator)
 }
 
-func loadCurrentEvaluationFromRoot(
+func inspectCurrentEvaluationFromRoot(
 	ctx context.Context,
 	repository *legalqueryartifact.Repository,
 	root *legalqueryartifact.Repository,
 	referenceValidator ReferenceValidator,
-) (CurrentEvaluation, error) {
+) (CurrentEvaluationInspection, error) {
 	layout, err := validateRootEntries(root)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	schemas, err := loadSchemas(root)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	pointer, err := loadPointer(ctx, root, schemas)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	artifacts, err := loadPreparationArtifacts(ctx, root, schemas, layout, false)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	if err := validatePreparationBindings(artifacts); err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	if err := validateEvaluatorVersions(artifacts.requests, referenceValidator); err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	current, exists := artifacts.requests[pointer.EvaluationID]
 	if !exists {
-		return CurrentEvaluation{}, fmt.Errorf("current evaluation request が存在しません")
+		return CurrentEvaluationInspection{}, fmt.Errorf("current evaluation request が存在しません")
 	}
 	if current.document.SchemaVersion != pointer.SchemaVersion {
-		return CurrentEvaluation{}, fmt.Errorf("pointer と current request の schemaVersion が一致しません")
+		return CurrentEvaluationInspection{}, fmt.Errorf("pointer と current request の schemaVersion が一致しません")
 	}
 	if err := checkRequestReservationPreflight(current.document, artifacts.requests); err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	results, err := loadTrackedResults(ctx, root, schemas, layout)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
 	}
 	history, currentResult, currentResultRaw, err := bindTrackedResults(
 		pointer.EvaluationID,
@@ -91,7 +107,19 @@ func loadCurrentEvaluationFromRoot(
 		results,
 	)
 	if err != nil {
-		return CurrentEvaluation{}, err
+		return CurrentEvaluationInspection{}, err
+	}
+	reports, err := validateTrackedReportBindings(repository, root, artifacts.requests, results, layout)
+	if err != nil {
+		return CurrentEvaluationInspection{}, err
+	}
+	evaluation := CurrentEvaluation{
+		Prepared:         prepareCurrent(pointer, current.document, artifacts),
+		RequestRaw:       bytes.Clone(current.raw),
+		History:          append([]ConsumedEvaluation(nil), history...),
+		CurrentResult:    currentResult,
+		CurrentResultRaw: bytes.Clone(currentResultRaw),
+		CurrentReportRaw: bytes.Clone(reports[pointer.EvaluationID]),
 	}
 	// 未評価の current だけを現在の source と照合する。評価済みの
 	// current は不変な request/result/report の replay であり、後続候補の
@@ -103,21 +131,14 @@ func loadCurrentEvaluationFromRoot(
 			artifacts,
 			referenceValidator,
 		); err != nil {
-			return CurrentEvaluation{}, err
+			reasons, stale := StaleReasonsFromError(err)
+			if !stale {
+				return CurrentEvaluationInspection{}, err
+			}
+			return staleInspection(evaluation, reasons)
 		}
 	}
-	reports, err := validateTrackedReportBindings(repository, root, artifacts.requests, results, layout)
-	if err != nil {
-		return CurrentEvaluation{}, err
-	}
-	return CurrentEvaluation{
-		Prepared:         prepareCurrent(pointer, current.document, artifacts),
-		RequestRaw:       bytes.Clone(current.raw),
-		History:          append([]ConsumedEvaluation(nil), history...),
-		CurrentResult:    currentResult,
-		CurrentResultRaw: bytes.Clone(currentResultRaw),
-		CurrentReportRaw: bytes.Clone(reports[pointer.EvaluationID]),
-	}, nil
+	return readyInspection(evaluation), nil
 }
 
 func loadTrackedResults(

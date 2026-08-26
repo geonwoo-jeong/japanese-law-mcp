@@ -25,14 +25,10 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	if err != nil {
 		t.Fatalf("candidate-evaluation-request-identity: corpus manifest を読めません: %v", err)
 	}
-	references, err := BuildRequiredSOTReferences(
-		context.Background(),
-		root,
+	references := fixedHistoricalSOTReferencesForTest(
+		t,
 		legalquerycandidateeval.SchemaVersionV3,
 	)
-	if err != nil {
-		t.Fatalf("candidate-evaluation-review-content-binding: SOT 参照を作れません: %v", err)
-	}
 	manifest := corpus.Manifest()
 	request := legalquerycandidateeval.EvaluationRequest{
 		SchemaVersion:              legalquerycandidateeval.SchemaVersionV3,
@@ -45,10 +41,17 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		RequiredReviewSOTSetSHA256: legalquerycandidateeval.SOTSetSHA256(references),
 		BaselineVersion:            "default-8",
 	}
-	if _, err := validator.ValidateEvaluationRequest(
+	validation, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
-	); err != nil {
-		t.Fatalf("candidate-evaluation-request-identity: 外部参照を検証できません: %v", err)
+	)
+	if reasons, stale := legalquerycandidateeval.StaleReasonsFromError(err); !stale || len(validation.CurrentRequiredReviewSOTs) != 0 ||
+		!legalquerycandidateeval.EqualStaleReasons(
+			reasons,
+			[]legalquerycandidateeval.StaleReason{
+				legalquerycandidateeval.StaleReasonReviewSOTLifecycleDrift,
+			},
+		) {
+		t.Fatalf("candidate-evaluation-stale-candidate-readiness-fail: 外部参照結果=(%#v,%v)", validation, err)
 	}
 
 	request.EvaluatorVersion = evaluators.Version2
@@ -104,14 +107,32 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 	if err != nil {
 		t.Fatalf("candidate-evaluation-current-single-target: validator を作成できません: %v", err)
 	}
-	current, err := legalquerycandidateeval.LoadCurrentEvaluation(
+	inspection, err := legalquerycandidateeval.InspectCurrentEvaluation(
 		context.Background(),
 		root,
 		validator,
 	)
 	if err != nil {
-		t.Fatalf("candidate-evaluation-current-single-target: 実際の候補評価 tree を再読込できません: %v", err)
+		t.Fatalf("candidate-evaluation-stale-current-repository-integrity: 実際の候補評価 tree の完全性を検証できません: %v", err)
 	}
+	if inspection.ReadinessState() != legalquerycandidateeval.CurrentReadinessStale ||
+		!legalquerycandidateeval.EqualStaleReasons(
+			inspection.StaleReasons(),
+			[]legalquerycandidateeval.StaleReason{
+				legalquerycandidateeval.StaleReasonCandidateContentDrift,
+				legalquerycandidateeval.StaleReasonReviewSOTLifecycleDrift,
+			},
+		) {
+		t.Fatalf("candidate-evaluation-stale-product-quality-pass: readiness=%q reasons=%v", inspection.ReadinessState(), inspection.StaleReasons())
+	}
+	if _, err := legalquerycandidateeval.LoadCurrentEvaluation(
+		context.Background(),
+		root,
+		validator,
+	); !legalquerycandidateeval.IsCurrentStale(err) {
+		t.Fatalf("candidate-evaluation-stale-strict-loader-rejection: strict loader error=%v", err)
+	}
+	current := inspection.Evaluation()
 	prepared := current.Prepared
 	if prepared.Pointer.EvaluationID == "" ||
 		prepared.Request.EvaluationID == "" ||
@@ -165,10 +186,11 @@ func Test不確定終了Requestを再利用せず新しいCurrentへ進める(t 
 	if err != nil {
 		t.Fatalf("candidate-evaluation-indeterminate-reviewed-retry-gate: validator を作成できません: %v", err)
 	}
-	current, err := legalquerycandidateeval.LoadCurrentEvaluation(context.Background(), root, validator)
+	inspection, err := legalquerycandidateeval.InspectCurrentEvaluation(context.Background(), root, validator)
 	if err != nil {
-		t.Fatalf("candidate-evaluation-indeterminate-reviewed-retry-gate: current を読めません: %v", err)
+		t.Fatalf("candidate-evaluation-indeterminate-reviewed-retry-gate: current の完全性を検証できません: %v", err)
 	}
+	current := inspection.Evaluation()
 	oldPath := filepath.Join(
 		root, "testdata", "legalquery", "candidate-evaluations", "requests",
 		indeterminateEvaluationID+".json",

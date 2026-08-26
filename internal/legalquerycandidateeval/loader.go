@@ -42,6 +42,7 @@ type ReferenceValidator interface {
 // validator は request 内の集合を複製せず、repository の index と原 byte から構成する。
 type RequestReferenceValidation struct {
 	CurrentRequiredReviewSOTs []SOTReference
+	StaleReasons              []StaleReason
 }
 
 // PreparedCurrent は評価前の current request と内容固定済み参照を保持する。
@@ -337,6 +338,15 @@ func validateExternalReferences(
 	artifacts preparationArtifacts,
 	validator ReferenceValidator,
 ) error {
+	staleReasons := make([]StaleReason, 0, len(staleReasonOrder))
+	appendReasons := func(additional ...StaleReason) error {
+		merged, err := AppendStaleReasons(staleReasons, additional...)
+		if err != nil {
+			return err
+		}
+		staleReasons = merged
+		return nil
+	}
 	currentManifest, exists := artifacts.manifests[currentRequest.CandidateContentID]
 	if !exists {
 		return fmt.Errorf("current request の candidate content が存在しません")
@@ -348,7 +358,13 @@ func validateExternalReferences(
 	if err := validator.ValidateCandidateContent(
 		ctx, bytes.Clone(currentManifest.raw), manifestDocument,
 	); err != nil {
-		return fmt.Errorf("candidate content の外部参照検証に失敗しました: %w", err)
+		if reasons, ok := StaleReasonsFromError(err); ok {
+			if err := appendReasons(reasons...); err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("candidate content の外部参照検証に失敗しました: %w", err)
+		}
 	}
 	currentRequestArtifact, exists := artifacts.requests[currentRequest.EvaluationID]
 	if !exists {
@@ -362,12 +378,31 @@ func validateExternalReferences(
 		ctx, bytes.Clone(currentRequestArtifact.raw), requestDocument,
 	)
 	if err != nil {
-		return fmt.Errorf("evaluation request の外部参照検証に失敗しました: %w", err)
+		if reasons, ok := StaleReasonsFromError(err); ok {
+			if err := appendReasons(reasons...); err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("evaluation request の外部参照検証に失敗しました: %w", err)
+		}
 	}
-	if err := validateCurrentSOTBinding(requestDocument, validation); err != nil {
+	if err := appendReasons(validation.StaleReasons...); err != nil {
 		return err
 	}
-	return nil
+	if len(validation.CurrentRequiredReviewSOTs) > 0 {
+		if err := validateCurrentSOTBinding(requestDocument, validation); err != nil {
+			if reasons, ok := StaleReasonsFromError(err); ok {
+				if err := appendReasons(reasons...); err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+	} else if len(staleReasons) == 0 {
+		return fmt.Errorf("current SOT index の検証結果がありません")
+	}
+	return NewCurrentStaleError(staleReasons...)
 }
 
 func validateCurrentSOTBinding(
@@ -380,7 +415,7 @@ func validateCurrentSOTBinding(
 	}
 	if !slices.Equal(references, request.RequiredReviewSOTs) ||
 		SOTSetSHA256(references) != request.RequiredReviewSOTSetSHA256 {
-		return fmt.Errorf("request の review SOT 集合が current SOT 原 byte と一致しません")
+		return NewCurrentStaleError(StaleReasonReviewSOTDigestDrift)
 	}
 	return nil
 }

@@ -3,11 +3,12 @@ package legalquerycandidateworker
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateprofile"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycorpus"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalqueryeval/evaluators"
 )
@@ -26,83 +27,37 @@ func TestReport直列化失敗はReport完成前の段階に分類する(t *test
 	}
 }
 
-func TestProductionPreparationはHoldoutを開く前にCandidatePayloadを閉じる(t *testing.T) {
+func TestProductionPreparationはStaleCurrentをHoldout前に拒否する(t *testing.T) {
 	if !useExactCandidateToolchain(t) {
 		t.Skip("候補再現用 Go 環境がないため local では実行しません")
 	}
 
-	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
-	if err != nil {
-		t.Fatalf("production candidate を準備できません: %v", err)
-	}
-	if prepared.EvaluationID == "" || len(prepared.RequestRaw) == 0 ||
-		prepared.request.EvaluationID != prepared.EvaluationID ||
-		prepared.content.CandidateContentID != prepared.request.CandidateContentID ||
-		prepared.repository != "../.." {
-		t.Fatal("production preparation payload の identity が不正です")
-	}
-	if prepared.request.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
-		prepared.content.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 ||
-		prepared.request.CorpusVersion != "corpus-v16" ||
-		prepared.request.BaselineVersion != "default-8" {
-		t.Fatalf("production preparation request が後続予約と一致しません: %#v", prepared.request)
-	}
-	if prepared.request.EvaluatorVersion != evaluators.Version3 {
-		t.Fatalf("production preparation request の evaluatorVersion = %q", prepared.request.EvaluatorVersion)
-	}
-	if prepared.tracked != nil || len(prepared.trackedRaw) != 0 ||
-		len(prepared.trackedReportRaw) != 0 {
-		t.Fatal("production preparation が未評価 current に tracked replay を結び付けました")
+	if _, err := loadPreparedEvaluation(
+		context.Background(),
+		"../..",
+	); !legalquerycandidateeval.IsCurrentStale(err) {
+		t.Fatalf("candidate-evaluation-stale-candidate-readiness-fail: stale current の preparation error=%v", err)
 	}
 }
 
-func TestCurrentCandidateはDevelopment全件でReport構成前提を満たす(
+func TestCurrentCandidateのStaleはWorkerとOutputを非到達にする(
 	t *testing.T,
 ) {
 	if !useExactCandidateToolchain(t) {
 		t.Skip("候補再現用 Go 環境がないため local では実行しません")
 	}
 
-	const verificationID = "candidate-evaluation-development-structural-preflight"
-
-	prepared, err := loadPreparedEvaluation(context.Background(), "../..")
-	if err != nil {
-		t.Fatalf("%s: candidate preparation に失敗しました", verificationID)
+	outputRoot := filepath.Join(t.TempDir(), "handoff")
+	_, err := Execute(context.Background(), Input{
+		RepositoryRoot: "../..",
+		OutputRoot:     outputRoot,
+	})
+	if !legalquerycandidateeval.IsCurrentStale(err) ||
+		FailureExitCode(err) != FailureCodePreparedLoad {
+		t.Fatalf("candidate-evaluation-stale-worker-unreachable: worker error=%v code=%d", err, FailureExitCode(err))
 	}
-	candidate, err := legalquerycandidateprofile.Load()
-	if err != nil {
-		t.Fatalf("%s: candidate profile load に失敗しました", verificationID)
-	}
-	if err := verifyCandidatePlanningIdentity(candidate, prepared.content); err != nil {
-		t.Fatalf("%s: candidate planning identity が一致しません", verificationID)
-	}
-	development, err := legalquerycorpus.LoadDevelopment(
-		context.Background(),
-		"../..",
-		"testdata/legalquery/"+prepared.request.CorpusVersion+"/development",
-	)
-	if err != nil {
-		t.Fatalf("%s: development corpus load に失敗しました", verificationID)
-	}
-	evaluator, err := newCandidateEvaluator(prepared.request.EvaluatorVersion, candidate)
-	if err != nil {
-		t.Fatalf("%s: candidate evaluator の構築に失敗しました", verificationID)
-	}
-	completed := 0
-	cases := development.Cases()
-	for _, semanticCase := range cases {
-		if _, _, _, err := evaluator.EvaluateWithPlan(
-			context.Background(),
-			semanticCase,
-		); err != nil {
-			t.Fatalf(
-				"%s: development case の構造評価に失敗しました（完了 %d/%d）",
-				verificationID,
-				completed,
-				len(cases),
-			)
-		}
-		completed++
+	if _, statErr := os.Lstat(outputRoot); !errors.Is(statErr, os.ErrNotExist) {
+		t.Fatalf("candidate-evaluation-stale-output-unreachable: output が残りました: %v", statErr)
 	}
 }
 

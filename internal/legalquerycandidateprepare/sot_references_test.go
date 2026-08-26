@@ -7,7 +7,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/legalquerycandidateeval"
 )
 
-func TestBuildRequiredSOTReferencesは固定Indexから有効文書だけを解決する(
+func TestBuildRequiredSOTReferencesは廃止SOTをStaleとして隔離する(
 	t *testing.T,
 ) {
 	t.Parallel()
@@ -21,23 +21,50 @@ func TestBuildRequiredSOTReferencesは固定Indexから有効文書だけを解�
 		legalquerycandidateeval.SchemaVersionV3,
 	} {
 		references, err := BuildRequiredSOTReferences(t.Context(), repository, schemaVersion)
-		if err != nil {
-			t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の SOT 集合を解決できません: %v", schemaVersion, err)
+		reasons, stale := legalquerycandidateeval.StaleReasonsFromError(err)
+		if len(references) != 0 || !stale || !legalquerycandidateeval.EqualStaleReasons(
+			reasons,
+			[]legalquerycandidateeval.StaleReason{
+				legalquerycandidateeval.StaleReasonReviewSOTLifecycleDrift,
+			},
+		) {
+			t.Fatalf("candidate-evaluation-stale-candidate-readiness-fail: schema version %d の結果=(%v,%v)", schemaVersion, references, err)
 		}
-		want, err := legalquerycandidateeval.RequiredReviewSOTIDsForSchema(schemaVersion)
-		if err != nil {
-			t.Fatalf("schema version %d の SOT ID 集合を解決できません: %v", schemaVersion, err)
+	}
+}
+
+func TestValidateRequiredSOTDocumentはLifecycleDriftと破損を区別する(t *testing.T) {
+	t.Parallel()
+
+	const heading = "# SOT-IF-040: テスト\n"
+	if err := validateRequiredSOTDocument(
+		"SOT-IF-040",
+		[]byte(heading+"\n- 状態: 有効\n\n## 規定\n"),
+	); err != nil {
+		t.Fatalf("有効な SOT を拒否しました: %v", err)
+	}
+	for _, status := range []string{"草案", "廃止"} {
+		err := validateRequiredSOTDocument(
+			"SOT-IF-040",
+			[]byte(heading+"\n- 状態: "+status+"\n\n## 規定\n"),
+		)
+		if !legalquerycandidateeval.IsCurrentStale(err) {
+			t.Fatalf("candidate-evaluation-stale-reason-closed-set: status=%s error=%v", status, err)
 		}
-		if len(references) != len(want) {
-			t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の SOT 件数 = %d, want %d", schemaVersion, len(references), len(want))
-		}
-		for index, reference := range references {
-			if reference.SOTID != want[index] || len(reference.SOTDocumentSHA256) != 64 {
-				t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の SOT[%d] = %#v", schemaVersion, index, reference)
+	}
+	for name, raw := range map[string][]byte{
+		"状態欠落":       []byte(heading + "\n## 規定\n"),
+		"未知状態":       []byte(heading + "\n- 状態: 保留\n\n## 規定\n"),
+		"状態重複":       []byte(heading + "\n- 状態: 有効\n- 状態: 廃止\n\n## 規定\n"),
+		"heading不一致": []byte("# SOT-IF-067: テスト\n\n- 状態: 有効\n"),
+	} {
+		name, raw := name, raw
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := validateRequiredSOTDocument("SOT-IF-040", raw)
+			if err == nil || legalquerycandidateeval.IsCurrentStale(err) {
+				t.Fatalf("candidate-evaluation-stale-does-not-mask-artifact-corruption: error=%v", err)
 			}
-		}
-		if got := legalquerycandidateeval.SOTSetSHA256(references); len(got) != 64 {
-			t.Fatalf("candidate-evaluation-review-content-binding: schema version %d の set digest = %q", schemaVersion, got)
-		}
+		})
 	}
 }

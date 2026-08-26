@@ -6,6 +6,150 @@ import (
 	"testing"
 )
 
+type staleReferenceValidator struct{}
+
+func (staleReferenceValidator) ValidateEvaluatorVersion(string) error {
+	return nil
+}
+
+type staleThenFatalReferenceValidator struct {
+	unknownReason bool
+}
+
+func (staleThenFatalReferenceValidator) ValidateEvaluatorVersion(string) error {
+	return nil
+}
+
+func (staleThenFatalReferenceValidator) ValidateCandidateContent(
+	context.Context,
+	[]byte,
+	CandidateContentManifest,
+) error {
+	return NewCurrentStaleError(StaleReasonCandidateContentDrift)
+}
+
+func (v staleThenFatalReferenceValidator) ValidateEvaluationRequest(
+	_ context.Context,
+	_ []byte,
+	document EvaluationRequest,
+) (RequestReferenceValidation, error) {
+	if v.unknownReason {
+		return RequestReferenceValidation{
+			CurrentRequiredReviewSOTs: append([]SOTReference(nil), document.RequiredReviewSOTs...),
+			StaleReasons:              []StaleReason{"unknown_reason"},
+		}, nil
+	}
+	return RequestReferenceValidation{}, errRejectedReference
+}
+
+func (staleReferenceValidator) ValidateCandidateContent(
+	context.Context,
+	[]byte,
+	CandidateContentManifest,
+) error {
+	return NewCurrentStaleError(StaleReasonCandidateContentDrift)
+}
+
+func (staleReferenceValidator) ValidateEvaluationRequest(
+	_ context.Context,
+	_ []byte,
+	document EvaluationRequest,
+) (RequestReferenceValidation, error) {
+	return RequestReferenceValidation{
+		CurrentRequiredReviewSOTs: append([]SOTReference(nil), document.RequiredReviewSOTs...),
+	}, NewCurrentStaleError(StaleReasonReviewSOTLifecycleDrift)
+}
+
+func TestInspectCurrentEvaluationは完全性を保ったStaleを隔離する(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	request := prepareCandidateEvaluationFixture(t, root)
+	inspection, err := InspectCurrentEvaluation(
+		context.Background(),
+		root,
+		staleReferenceValidator{},
+	)
+	if err != nil {
+		t.Fatalf("candidate-evaluation-stale-product-quality-pass: stale current の完全性検査に失敗しました: %v", err)
+	}
+	if inspection.ReadinessState() != CurrentReadinessStale ||
+		inspection.Evaluation().Prepared.Request.EvaluationID != request.EvaluationID ||
+		!EqualStaleReasons(inspection.StaleReasons(), []StaleReason{
+			StaleReasonCandidateContentDrift,
+			StaleReasonReviewSOTLifecycleDrift,
+		}) {
+		t.Fatalf("candidate-evaluation-stale-current-repository-integrity: inspection=%+v reasons=%v", inspection.Evaluation(), inspection.StaleReasons())
+	}
+	first := inspection.Evaluation()
+	originalRequestByte := first.RequestRaw[0]
+	originalHoldoutDigest := first.Prepared.Request.HoldoutLeakageGroupDigests[0]
+	originalProfileID := first.Prepared.CandidateContent.ProfileArtifacts[0].ProfileID
+	first.RequestRaw[0] ^= 0xff
+	first.Prepared.Request.HoldoutLeakageGroupDigests[0] = "changed"
+	first.Prepared.CandidateContent.ProfileArtifacts[0].ProfileID = "changed"
+	reasons := inspection.StaleReasons()
+	reasons[0] = StaleReasonCurrentEvaluatorDrift
+	second := inspection.Evaluation()
+	if second.RequestRaw[0] != originalRequestByte ||
+		second.Prepared.Request.HoldoutLeakageGroupDigests[0] != originalHoldoutDigest ||
+		second.Prepared.CandidateContent.ProfileArtifacts[0].ProfileID != originalProfileID ||
+		inspection.StaleReasons()[0] != StaleReasonCandidateContentDrift {
+		t.Fatal("candidate-evaluation-stale-current-repository-integrity: inspection の不変値を共有しました")
+	}
+
+	if _, err := LoadCurrentEvaluation(
+		context.Background(),
+		root,
+		staleReferenceValidator{},
+	); !IsCurrentStale(err) {
+		t.Fatalf("candidate-evaluation-stale-strict-loader-rejection: stale current を strict loader が受理しました: %v", err)
+	}
+}
+
+func TestInspectCurrentEvaluationはStaleでArtifact改変を隠さない(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	prepareCandidateEvaluationFixture(t, root)
+	writeCandidateFixture(
+		t,
+		root,
+		"testdata/legalquery/candidate-evaluations/schema-v2.json",
+		[]byte("{}\n"),
+	)
+	if _, err := InspectCurrentEvaluation(
+		context.Background(),
+		root,
+		staleReferenceValidator{},
+	); err == nil || IsCurrentStale(err) {
+		t.Fatalf("candidate-evaluation-stale-does-not-mask-artifact-corruption: schema 改変を stale に変換しました: %v", err)
+	}
+}
+
+func TestInspectCurrentEvaluationはStaleよりFatalと未知理由を優先する(t *testing.T) {
+	t.Parallel()
+
+	for name, validator := range map[string]ReferenceValidator{
+		"readiness error":      staleThenFatalReferenceValidator{},
+		"unknown stale reason": staleThenFatalReferenceValidator{unknownReason: true},
+	} {
+		name, validator := name, validator
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			root := t.TempDir()
+			prepareCandidateEvaluationFixture(t, root)
+			if _, err := InspectCurrentEvaluation(
+				context.Background(),
+				root,
+				validator,
+			); err == nil || IsCurrentStale(err) {
+				t.Fatalf("candidate-evaluation-stale-does-not-mask-artifact-corruption: error=%v", err)
+			}
+		})
+	}
+}
+
 func TestLoadCurrentEvaluationは未評価とReplay履歴を同じ入口で返す(t *testing.T) {
 	t.Parallel()
 

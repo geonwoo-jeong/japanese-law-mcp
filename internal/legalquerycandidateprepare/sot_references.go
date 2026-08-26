@@ -167,8 +167,26 @@ func validateRequiredSOTDocument(id string, raw []byte) error {
 	if !strings.HasPrefix(firstLine, "# "+id+":") {
 		return fmt.Errorf("SOT %s の heading が一致しません", id)
 	}
-	if !strings.Contains(string(raw), "\n- 状態: 有効\n") {
-		return fmt.Errorf("SOT %s は有効ではありません", id)
+	status := ""
+	statusCount := 0
+	for _, line := range strings.Split(string(raw), "\n") {
+		if !strings.HasPrefix(line, "- 状態: ") {
+			continue
+		}
+		statusCount++
+		status = strings.TrimPrefix(line, "- 状態: ")
 	}
-	return nil
+	if statusCount != 1 {
+		return fmt.Errorf("SOT %s の状態が一意ではありません", id)
+	}
+	switch status {
+	case "有効":
+		return nil
+	case "草案", "廃止":
+		return legalquerycandidateeval.NewCurrentStaleError(
+			legalquerycandidateeval.StaleReasonReviewSOTLifecycleDrift,
+		)
+	default:
+		return fmt.Errorf("SOT %s の状態が不正です", id)
+	}
 }
