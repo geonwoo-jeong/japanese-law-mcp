@@ -155,6 +155,10 @@ current adoption tuple から到達する production 経路を確認する
 常に固定する版ではない。初回導入後の現行値は current adoption tuple を
 定義元とする。
 
+current request が鮮度乖離で評価不能になった場合の readiness 分類、製品品質ゲートとの
+分離、および stale current を同じ request のまま再利用せず隔離する規則は
+`SOT-ENG-043` を定義元とする。
+
 `default-2` の構造上有効な report が完成する前に、候補 source または review 対象を
 修正しなければ再試行できなくなった場合は、第 4 段階 4 の再準備として扱う。
 `SOT-ENG-038` に従って `default-2` の不変な準備成果物を置換済み準備として残し、
@@ -418,6 +422,7 @@ production composition root、標準 corpus、baseline および検索例カタ�
 - [SOT-ENG-035: 統合照会 profile metadata 成果物契約](35-unified-query-profile-metadata-artifact-contract.md)
 - [SOT-ENG-036: 統合照会の評価 baseline 成果物契約](36-unified-query-evaluation-baseline-artifact-contract.md)
 - [SOT-ENG-038: 統合照会の内容固定済み候補 holdout 評価 handoff](38-content-bound-candidate-evaluation-handoff.md)
+- [SOT-ENG-043: 候補評価準備の鮮度と製品品質ゲートの分離](43-candidate-evaluation-readiness-separation.md)
 - [SOT-IF-011: e-Gov 法令本文取得マッピング](../40-interfaces/11-egov-law-document-mapping.md)
 - [SOT-IF-052: e-Gov キーワード検索 JSON 応答の受理契約](../40-interfaces/52-egov-keyword-response-contract.md)
 - [SOT-IF-053: MCP `search_laws` v3](../40-interfaces/53-mcp-search-laws-v3.md)

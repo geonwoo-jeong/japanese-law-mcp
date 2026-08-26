@@ -215,3 +215,4 @@ profile、version 1、version 2 および version 3 evaluator までの実配線
 - [SOT-ENG-039: 内容固定済み候補による統合照会の導入段階と変更順序](39-content-bound-unified-query-rollout-stages.md)
 - [SOT-ENG-040: 候補 holdout 評価の閉じた失敗段階診断](40-candidate-evaluation-failure-diagnostics.md)
 - [SOT-ENG-041: 候補評価における入力別処理失敗の評価写像](41-candidate-evaluation-case-failure-mapping.md)
+- [SOT-ENG-043: 候補評価準備の鮮度と製品品質ゲートの分離](43-candidate-evaluation-readiness-separation.md)
