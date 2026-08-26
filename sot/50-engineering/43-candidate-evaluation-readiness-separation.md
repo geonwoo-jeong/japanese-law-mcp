@@ -225,11 +225,21 @@ evaluator だけで再現する。
 - stale request の digest を現在の source 又は SOT から再計算して上書きする
 - schema version を増やさずに `current.json` だけを別 identity へ進める
 
-候補評価を再開する場合は、本規定と `SOT-ENG-042` を参照する別の有効な SOT で
-新しい schema version、exact SOT 集合および root entry 集合を採用する。その後、
-過去の全 request と衝突しない新しい corpus、holdout、leakage group digest、baseline
-version、candidate content、独立 review 二件、request および pointer を一つの準備単位で
-追加する。現在予約済みの `corpus-v16` と `default-8` は再利用しない。
+`candidate_content_drift` 又は `review_sot_digest_drift` だけを解消し、schema が固定する
+field、意味、exact SOT ID 集合、evaluator 又は root entry 集合を変更しない場合は、
+`SOT-ENG-038` と `SOT-ENG-042` に従って同じ schema 世代の新しい不変 manifest、独立
+review 二件、request および pointer を原子的に準備できる。この場合も、過去の全 request と
+衝突しない corpus、holdout、leakage group digest および baseline version を使用する。
+
+`review_sot_lifecycle_drift` により exact SOT ID 集合を変える場合、
+`current_evaluator_drift` により schema が固定する evaluator を変える場合、又は field、意味、
+root entry 集合を変える場合は、本規定と `SOT-ENG-042` を参照する別の有効な SOT で新しい
+schema version と exact 集合を先に採用する。その後、新しい candidate content、独立 review
+二件、request および pointer を前項と同じ一つの準備単位で追加する。
+
+現在の schema version 3 request は、廃止された `SOT-IF-040` を exact 集合に含むため後者に
+該当する。version 3 の配列内で `SOT-IF-067` へ置き換えず、予約済みの `corpus-v16`、
+`default-8`、holdout digest および leakage group digest を後続準備へ再利用しない。
 
 ## 確認
 
@@ -242,6 +252,9 @@ version、candidate content、独立 review 二件、request および pointer �
 - `candidate-evaluation-stale-holdout-unreachable`
 - `candidate-evaluation-stale-output-unreachable`
 - `candidate-evaluation-stale-does-not-mask-artifact-corruption`
+- `candidate-evaluation-stale-product-quality-pass`
+- `candidate-evaluation-stale-candidate-readiness-fail`
+- `candidate-evaluation-readiness-non-bypass`
 - `candidate-evaluation-ready-current-strict-loader`
 - `candidate-evaluation-historical-replay-freshness-isolation`
 - `candidate-evaluation-v2-v3-artifact-immutability`
@@ -249,6 +262,13 @@ version、candidate content、独立 review 二件、request および pointer �
 実 repository の検査は `ready` と `stale` のどちらでも完全性を省略しない。合成 fixture で
 四つの理由、未知理由、複数理由の固定順、stale と改変の同時発生、strict dispatch の拒否、
 fresh current の受理および tracked replay の現在鮮度非依存を確認する。
+
+`candidate-evaluation-stale-product-quality-pass` と
+`candidate-evaluation-stale-candidate-readiness-fail` は同じ合成 stale snapshot を入力にし、
+repository 完全性と製品側の適用可能な gate が成功する一方、候補 gate が非ゼロで失敗する
+組を一つの回帰契約として確認する。`candidate-evaluation-readiness-non-bypass` は command の
+閉じた flag、environment および内部 dependency graph を検査し、readiness を省略する入口、
+test hook、fallback 又は evaluator への別経路が存在しないことを確認する。
 
 合成 fixture では、閉じた stale 理由とは別に、少なくとも次を current drift と同時又は
 単独で発生させ、error が優先し、holdout・worker・dispatch・出力生成が非到達であることを
