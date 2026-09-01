@@ -15,6 +15,7 @@ import (
 
 const (
 	keyTransport      = "transport"
+	keyToolExposure   = "toolExposure"
 	keyRequestTimeout = "requestTimeout"
 	keyListenAddress  = "listenAddress"
 	keyAllowedOrigins = "allowedOrigins"
@@ -59,6 +60,9 @@ func Load(options LoadOptions) (Config, error) {
 	values.Providers = fileValues.providers
 	values.ProviderRoutes = fileValues.providerRoutes
 	values.ExtensionPacks = fileValues.extensionPacks
+	if fileValues.toolExposure != "" {
+		values.ToolExposure = fileValues.toolExposure
+	}
 	return New(values)
 }
 
@@ -123,7 +127,7 @@ func validateFileSettings(settings *viper.Viper) error {
 	fileSettings := settings.AllSettings()
 	for key, value := range fileSettings {
 		switch canonicalConfigKey(key) {
-		case keyTransport, keyRequestTimeout, keyListenAddress:
+		case keyTransport, keyToolExposure, keyRequestTimeout, keyListenAddress:
 			if _, ok := value.(string); !ok {
 				return fmt.Errorf("設定項目 %s の型が正しくありません", canonicalConfigKey(key))
 			}
@@ -150,6 +154,8 @@ func canonicalConfigKey(key string) string {
 	switch strings.ToLower(key) {
 	case strings.ToLower(keyTransport):
 		return keyTransport
+	case strings.ToLower(keyToolExposure):
+		return keyToolExposure
 	case strings.ToLower(keyRequestTimeout):
 		return keyRequestTimeout
 	case strings.ToLower(keyListenAddress):
@@ -193,6 +199,7 @@ func isStringSlice(value any) bool {
 func setDefaults(settings *viper.Viper) {
 	defaults := Default()
 	settings.SetDefault(keyTransport, string(defaults.Transport()))
+	settings.SetDefault(keyToolExposure, string(defaults.ToolExposure()))
 	settings.SetDefault(keyRequestTimeout, defaults.RequestTimeout().String())
 	settings.SetDefault(keyListenAddress, defaults.ListenAddress())
 	settings.SetDefault(keyAllowedOrigins, defaults.AllowedOrigins())
@@ -256,6 +263,7 @@ func decodeValues(settings *viper.Viper) (Values, error) {
 
 	return Values{
 		Transport:      settings.GetString(keyTransport),
+		ToolExposure:   settings.GetString(keyToolExposure),
 		RequestTimeout: timeout,
 		ListenAddress:  settings.GetString(keyListenAddress),
 		AllowedOrigins: origins,

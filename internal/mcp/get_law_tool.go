@@ -50,7 +50,7 @@ type getLawOutputSource struct {
 	ServiceURL string `json:"serviceUrl"`
 }
 
-func addGetLawTool(server *sdk.Server, getter getlaw.Port) {
+func addGetLawTool(server toolRegistrar, getter getlaw.Port) {
 	server.AddTool(&sdk.Tool{
 		Name:         "get_law",
 		Description:  "法令識別子を使い、e-Gov で確認できる法令本文を XML で取得します。",

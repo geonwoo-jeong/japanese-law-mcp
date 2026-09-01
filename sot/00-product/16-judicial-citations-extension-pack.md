@@ -65,4 +65,4 @@
 - [SOT-PROD-010: 裁判例拡張パック](10-judicial-cases-extension-pack.md)
 - [SOT-SCN-015: 一件の公表裁判例から引用関係を追跡する](../10-scenarios/15-trace-judicial-citations.md)
 - [SOT-ARCH-042: 判例引用追跡拡張パックの従属有効化](../30-architecture/42-judicial-citations-pack-dependency.md)
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](../40-interfaces/67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)

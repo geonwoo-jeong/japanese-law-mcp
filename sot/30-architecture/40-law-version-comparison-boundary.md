@@ -30,7 +30,7 @@ provider の parser を変更しない。
 一回の比較は一つの primary provider とその一つの source だけを使用し、前後版を
 別 provider へ分けず、失敗時に別 provider へ fallback 又は fan-out しない。
 
-この機能は `compare_law_versions` という専門 MCP ツールとして公開し、
+この機能は `compare_law_versions` という専門操作として提供し、MCP からの直接公開または発見と実行による到達方法は `SOT-IF-077` に従う。この操作は
 `query_legal_information` の task、profile、辞書、候補又は実行経路には
 参加させない。統合法情報照会で比較を対象外とする `SOT-PROD-011` と
 `SOT-PROD-012` の境界を維持する。
@@ -62,3 +62,4 @@ provider adapter は、前後の原文取得に使う既存上限に加え、対
 - [SOT-ARCH-014: 外部原文の一時処理](14-ephemeral-source-artifacts.md)
 - [SOT-ARCH-020: 採用済みユースケース境界](20-adopted-use-case-boundary.md)
 - [SOT-IF-058: `law.version.compare` capability v1](../40-interfaces/58-law-version-compare-capability.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)

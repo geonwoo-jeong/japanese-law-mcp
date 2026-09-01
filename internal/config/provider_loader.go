@@ -16,6 +16,7 @@ type structuredFileValues struct {
 	providers      map[string]ProviderConfig
 	providerRoutes map[string]ProviderRoute
 	extensionPacks map[string]ExtensionPackConfig
+	toolExposure   string
 }
 
 func loadStructuredFileValues(path string) (structuredFileValues, error) {
@@ -49,11 +50,35 @@ func loadStructuredFileValues(path string) (structuredFileValues, error) {
 	if err != nil {
 		return structuredFileValues{}, err
 	}
+	toolExposureValue, toolExposurePresent := findDocumentValue(document, keyToolExposure)
+	toolExposure, err := decodeToolExposure(toolExposureValue, toolExposurePresent)
+	if err != nil {
+		return structuredFileValues{}, err
+	}
 	return structuredFileValues{
 		providers:      providers,
 		providerRoutes: routes,
 		extensionPacks: packs,
+		toolExposure:   toolExposure,
 	}, nil
+}
+
+func decodeToolExposure(value any, present bool) (string, error) {
+	if !present {
+		return string(ToolExposureCompact), nil
+	}
+	exposure, ok := value.(string)
+	if !ok {
+		return "", fmt.Errorf("toolExposure は string でなければなりません")
+	}
+	if exposure != string(ToolExposureCompact) && exposure != string(ToolExposureFull) {
+		return "", fmt.Errorf(
+			"toolExposure は %q または %q でなければなりません",
+			ToolExposureCompact,
+			ToolExposureFull,
+		)
+	}
+	return exposure, nil
 }
 
 func decodeConfigDocument(extension string, data []byte) (map[string]any, error) {

@@ -34,14 +34,14 @@ func TestServerRunnerWiresDiagnosticsForEveryTransportOnlyWhenEnabled(t *testing
 			name:        "stdio enabled",
 			transport:   config.TransportStdio,
 			diagnostics: true,
-			want: `{"component":"mcp","operation":"search_laws","errorCode":"invalid_argument"}` +
+			want: `{"component":"mcp","operation":"execute_legal_tool","errorCode":"invalid_argument"}` +
 				"\n",
 		},
 		{
 			name:        "streamable HTTP enabled",
 			transport:   config.TransportStreamableHTTP,
 			diagnostics: true,
-			want: `{"component":"mcp","operation":"search_laws","errorCode":"invalid_argument"}` +
+			want: `{"component":"mcp","operation":"execute_legal_tool","errorCode":"invalid_argument"}` +
 				"\n",
 		},
 	}
@@ -153,10 +153,13 @@ func callInvalidSearchForDiagnostics(
 	}
 
 	result, callErr := session.CallTool(ctx, &sdk.CallToolParams{
-		Name: "search_laws",
+		Name: "execute_legal_tool",
 		Arguments: map[string]any{
-			"query":       "診断へ出してはいけない検索語",
-			"hiddenField": "診断へ出してはいけない値",
+			"toolName": "search_laws",
+			"arguments": map[string]any{
+				"query":       "診断へ出してはいけない検索語",
+				"hiddenField": "診断へ出してはいけない値",
+			},
 		},
 	})
 	closeErr := session.Close()

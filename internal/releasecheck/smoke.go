@@ -22,21 +22,28 @@ const (
 	protocolVersion     = "2025-11-25"
 )
 
-var officialToolNames = []string{
+var compactToolNames = []string{
+	"discover_legal_tools",
+	"execute_legal_tool",
+	"query_legal_information",
+}
+
+var coreSpecialistToolNames = []string{
 	"compare_law_versions",
 	"get_article",
 	"get_law",
 	"list_law_revisions",
 	"list_law_updates",
-	"query_legal_information",
 	"search_law_content",
 	"search_laws",
 }
 
 type smokeScenario struct {
-	name       string
-	configYAML string
-	toolNames  []string
+	name                string
+	configYAML          string
+	toolNames           []string
+	specialistToolNames []string
+	compact             bool
 }
 
 func smokeTarget(
@@ -200,117 +207,131 @@ func verifyMCPServer(
 	if !equalStrings(names, scenario.toolNames) {
 		return fmt.Errorf("MCP tool 一覧 = %v, want %v", names, scenario.toolNames)
 	}
-	return validateMissingInputError(ctx, session)
+	if scenario.compact {
+		if err := validateDiscoveredSpecialistTools(
+			ctx,
+			session,
+			scenario.specialistToolNames,
+		); err != nil {
+			return err
+		}
+	}
+	return validateMissingInputError(ctx, session, scenario.compact)
 }
 
 func smokeScenarios() []smokeScenario {
 	return []smokeScenario{
-		{
-			name:      "default",
-			toolNames: append([]string(nil), officialToolNames...),
-		},
-		{
-			name: "judicial-cases",
-			configYAML: "extensionPacks:\n" +
-				"  judicial-cases:\n" +
+		newCompactSmokeScenario("default", ""),
+		newCompactSmokeScenario(
+			"judicial-cases",
+			"extensionPacks:\n"+
+				"  judicial-cases:\n"+
 				"    enabled: true\n",
-			toolNames: []string{
-				"compare_law_versions",
-				"get_article",
-				"get_judicial_case",
-				"get_law",
-				"list_law_revisions",
-				"list_law_updates",
-				"query_legal_information",
-				"search_judicial_cases",
-				"search_law_content",
-				"search_laws",
-			},
-		},
-		{
-			name: "legislative-history",
-			configYAML: "extensionPacks:\n" +
-				"  legislative-history:\n" +
+			"get_judicial_case",
+			"search_judicial_cases",
+		),
+		newCompactSmokeScenario(
+			"legislative-history",
+			"extensionPacks:\n"+
+				"  legislative-history:\n"+
 				"    enabled: true\n",
-			toolNames: []string{
-				"compare_law_versions",
-				"get_article",
-				"get_law",
-				"list_law_revisions",
-				"list_law_updates",
-				"query_legal_information",
-				"search_diet_speeches",
-				"search_law_content",
-				"search_laws",
-			},
-		},
-		{
-			name: "judicial-cases-and-legislative-history",
-			configYAML: "extensionPacks:\n" +
-				"  judicial-cases:\n" +
-				"    enabled: true\n" +
-				"  legislative-history:\n" +
+			"search_diet_speeches",
+		),
+		newCompactSmokeScenario(
+			"judicial-cases-and-legislative-history",
+			"extensionPacks:\n"+
+				"  judicial-cases:\n"+
+				"    enabled: true\n"+
+				"  legislative-history:\n"+
 				"    enabled: true\n",
-			toolNames: []string{
-				"compare_law_versions",
-				"get_article",
-				"get_judicial_case",
-				"get_law",
-				"list_law_revisions",
-				"list_law_updates",
-				"query_legal_information",
-				"search_diet_speeches",
-				"search_judicial_cases",
-				"search_law_content",
-				"search_laws",
-			},
-		},
-		{
-			name: "judicial-citations",
-			configYAML: "extensionPacks:\n" +
-				"  judicial-cases:\n" +
-				"    enabled: true\n" +
-				"  judicial-citations:\n" +
+			"get_judicial_case",
+			"search_diet_speeches",
+			"search_judicial_cases",
+		),
+		newCompactSmokeScenario(
+			"judicial-citations",
+			"extensionPacks:\n"+
+				"  judicial-cases:\n"+
+				"    enabled: true\n"+
+				"  judicial-citations:\n"+
 				"    enabled: true\n",
-			toolNames: []string{
-				"compare_law_versions",
-				"get_article",
-				"get_judicial_case",
-				"get_law",
-				"list_law_revisions",
-				"list_law_updates",
-				"query_legal_information",
-				"search_judicial_cases",
-				"search_law_content",
-				"search_laws",
-				"trace_judicial_citations",
-			},
-		},
-		{
-			name: "all-extension-packs",
-			configYAML: "extensionPacks:\n" +
-				"  judicial-cases:\n" +
-				"    enabled: true\n" +
-				"  judicial-citations:\n" +
-				"    enabled: true\n" +
-				"  legislative-history:\n" +
+			"get_judicial_case",
+			"search_judicial_cases",
+			"trace_judicial_citations",
+		),
+		newCompactSmokeScenario(
+			"all-extension-packs",
+			"extensionPacks:\n"+
+				"  judicial-cases:\n"+
+				"    enabled: true\n"+
+				"  judicial-citations:\n"+
+				"    enabled: true\n"+
+				"  legislative-history:\n"+
 				"    enabled: true\n",
-			toolNames: []string{
-				"compare_law_versions",
-				"get_article",
-				"get_judicial_case",
-				"get_law",
-				"list_law_revisions",
-				"list_law_updates",
-				"query_legal_information",
-				"search_diet_speeches",
-				"search_judicial_cases",
-				"search_law_content",
-				"search_laws",
-				"trace_judicial_citations",
-			},
-		},
+			"get_judicial_case",
+			"search_diet_speeches",
+			"search_judicial_cases",
+			"trace_judicial_citations",
+		),
+		newFullSmokeScenario("full-default", ""),
+		newFullSmokeScenario(
+			"full-all-extension-packs",
+			"extensionPacks:\n"+
+				"  judicial-cases:\n"+
+				"    enabled: true\n"+
+				"  judicial-citations:\n"+
+				"    enabled: true\n"+
+				"  legislative-history:\n"+
+				"    enabled: true\n",
+			"get_judicial_case",
+			"search_diet_speeches",
+			"search_judicial_cases",
+			"trace_judicial_citations",
+		),
 	}
+}
+
+func newCompactSmokeScenario(
+	name, configYAML string,
+	extraSpecialistToolNames ...string,
+) smokeScenario {
+	specialistToolNames := sortedToolNames(
+		coreSpecialistToolNames,
+		extraSpecialistToolNames,
+	)
+	return smokeScenario{
+		name:                name,
+		configYAML:          configYAML,
+		toolNames:           append([]string(nil), compactToolNames...),
+		specialistToolNames: specialistToolNames,
+		compact:             true,
+	}
+}
+
+func newFullSmokeScenario(
+	name, configYAML string,
+	extraSpecialistToolNames ...string,
+) smokeScenario {
+	specialistToolNames := sortedToolNames(
+		coreSpecialistToolNames,
+		extraSpecialistToolNames,
+	)
+	return smokeScenario{
+		name:       name,
+		configYAML: "toolExposure: full\n" + configYAML,
+		toolNames: sortedToolNames(
+			specialistToolNames,
+			[]string{"query_legal_information"},
+		),
+	}
+}
+
+func sortedToolNames(base, extra []string) []string {
+	names := make([]string, 0, len(base)+len(extra))
+	names = append(names, base...)
+	names = append(names, extra...)
+	sort.Strings(names)
+	return names
 }
 
 func writeSmokeConfig(
@@ -351,29 +372,128 @@ func validateInitializeResult(result *sdk.InitializeResult, version string) erro
 	if result.Capabilities == nil || result.Capabilities.Tools == nil {
 		return fmt.Errorf("MCP tools capability がありません")
 	}
+	if result.Capabilities.Resources != nil {
+		return fmt.Errorf("未提供の MCP resources capability があります")
+	}
+	if result.Capabilities.Prompts != nil {
+		return fmt.Errorf("未提供の MCP prompts capability があります")
+	}
 	return nil
+}
+
+func validateDiscoveredSpecialistTools(
+	ctx context.Context,
+	session *sdk.ClientSession,
+	wantNames []string,
+) error {
+	result, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name: "discover_legal_tools",
+		Arguments: map[string]any{
+			"limit": 16,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("専門 tool の探索を実行できません: %w", err)
+	}
+	if result == nil || result.IsError {
+		return fmt.Errorf("専門 tool の探索が成功結果を返しません")
+	}
+	structuredJSON, err := json.Marshal(result.StructuredContent)
+	if err != nil {
+		return fmt.Errorf("専門 tool の探索結果を読み取れません: %w", err)
+	}
+	var payload struct {
+		TotalCount    int  `json:"totalCount"`
+		ReturnedCount int  `json:"returnedCount"`
+		OmittedCount  int  `json:"omittedCount"`
+		Truncated     bool `json:"truncated"`
+		Tools         []struct {
+			Name         string          `json:"name"`
+			Description  string          `json:"description"`
+			InputSchema  json.RawMessage `json:"inputSchema"`
+			OutputSchema json.RawMessage `json:"outputSchema"`
+		} `json:"tools"`
+	}
+	if err := json.Unmarshal(structuredJSON, &payload); err != nil {
+		return fmt.Errorf("専門 tool の探索結果を解析できません: %w", err)
+	}
+	if payload.TotalCount != len(wantNames) ||
+		payload.ReturnedCount != len(wantNames) ||
+		payload.OmittedCount != 0 ||
+		payload.Truncated {
+		return fmt.Errorf(
+			"専門 tool の探索件数 = total:%d returned:%d omitted:%d truncated:%t, want total:%d returned:%d omitted:0 truncated:false",
+			payload.TotalCount,
+			payload.ReturnedCount,
+			payload.OmittedCount,
+			payload.Truncated,
+			len(wantNames),
+			len(wantNames),
+		)
+	}
+	gotNames := make([]string, 0, len(payload.Tools))
+	for _, tool := range payload.Tools {
+		gotNames = append(gotNames, tool.Name)
+		if strings.TrimSpace(tool.Description) == "" {
+			return fmt.Errorf("探索した専門 tool %q に説明がありません", tool.Name)
+		}
+		if !isJSONObject(tool.InputSchema) || !isJSONObject(tool.OutputSchema) {
+			return fmt.Errorf("探索した専門 tool %q の schema が不正です", tool.Name)
+		}
+	}
+	if !equalStrings(gotNames, wantNames) {
+		return fmt.Errorf(
+			"探索した専門 tool 一覧 = %v, want %v",
+			gotNames,
+			wantNames,
+		)
+	}
+	return nil
+}
+
+func isJSONObject(value json.RawMessage) bool {
+	var object map[string]json.RawMessage
+	return len(value) != 0 && json.Unmarshal(value, &object) == nil && object != nil
 }
 
 func validateMissingInputError(
 	ctx context.Context,
 	session *sdk.ClientSession,
+	compact bool,
 ) error {
+	toolName := "search_laws"
+	arguments := map[string]any{}
+	if compact {
+		toolName = "execute_legal_tool"
+		arguments = map[string]any{
+			"toolName":  "search_laws",
+			"arguments": map[string]any{},
+		}
+	}
 	result, err := session.CallTool(ctx, &sdk.CallToolParams{
-		Name:      "search_laws",
-		Arguments: map[string]any{},
+		Name:      toolName,
+		Arguments: arguments,
 	})
 	if err != nil {
 		return fmt.Errorf("入力欠落の tools/call を実行できません: %w", err)
 	}
-	if !result.IsError || len(result.Content) != 1 {
+	if result == nil || !result.IsError || len(result.Content) != 1 {
 		return fmt.Errorf("入力欠落の tools/call がエラー結果を返しません")
+	}
+	if result.StructuredContent != nil {
+		return fmt.Errorf("入力欠落の tools/call に structuredContent があります")
 	}
 	text, ok := result.Content[0].(*sdk.TextContent)
 	if !ok {
 		return fmt.Errorf("入力欠落の tools/call が text error を返しません")
 	}
 	var payload struct {
-		Code string `json:"code"`
+		Code      string `json:"code"`
+		Retryable bool   `json:"retryable"`
+		Details   struct {
+			Field  string `json:"field"`
+			Reason string `json:"reason"`
+		} `json:"details"`
 	}
 	if err := json.Unmarshal([]byte(text.Text), &payload); err != nil {
 		return fmt.Errorf("入力欠落の error 結果を解析できません: %w", err)
@@ -383,6 +503,16 @@ func validateMissingInputError(
 			"入力欠落の error code = %q, want %q",
 			payload.Code,
 			"invalid_argument",
+		)
+	}
+	if payload.Retryable ||
+		payload.Details.Field != "arguments" ||
+		!strings.Contains(payload.Details.Reason, "query") {
+		return fmt.Errorf(
+			"入力欠落の error details = retryable:%t field:%q reason:%q",
+			payload.Retryable,
+			payload.Details.Field,
+			payload.Details.Reason,
 		)
 	}
 	return nil

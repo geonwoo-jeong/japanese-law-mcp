@@ -57,7 +57,7 @@ type listLawRevisionsOutputSource struct {
 	ServiceURL string `json:"serviceUrl"`
 }
 
-func addListLawRevisionsTool(server *sdk.Server, lister listlawrevisions.Port) {
+func addListLawRevisionsTool(server toolRegistrar, lister listlawrevisions.Port) {
 	server.AddTool(&sdk.Tool{
 		Name:         "list_law_revisions",
 		Description:  "法令 ID または法令番号から、公式情報源の完全な改正履歴を新しい順で取得します。",

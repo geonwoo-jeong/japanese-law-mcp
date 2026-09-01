@@ -55,7 +55,7 @@ route、公開ツールおよび統合照会の profile set が変わらない�
 
 ## 関連
 
-- [SOT-IF-061: `legislative-history` 拡張パックの専門公開面](61-legislative-history-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-IF-062: `parliament.speech.search` capability v1](62-parliament-speech-search-capability.md)
 - [SOT-IF-063: 国立国会図書館の国会発言検索 API 情報源](63-source-ndl-diet-speech-api.md)
 - [SOT-IF-064: 国立国会図書館の国会発言検索マッピング](64-ndl-diet-speech-search-mapping.md)

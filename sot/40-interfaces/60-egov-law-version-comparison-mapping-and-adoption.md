@@ -126,8 +126,8 @@ providerRoutes:
 ```
 
 composition root はこの route から `compare_law_versions` service を構成し、
-既定の stdio と Streamable HTTP の両方へ同じ schema で登録する。これにより
-法令コアは八ツール、`judicial-cases` 有効時は十ツールとなる。統合法情報照会の
+stdio と Streamable HTTP の両方へ同じ schema で提供する。公開方式ごとの直接登録と
+専門操作 registry の構成は `SOT-IF-077` に従う。統合法情報照会の
 profile、辞書、候補、評価 corpus、既存 route、pack 条件及び provider setting は
 変更しない。
 
@@ -138,7 +138,7 @@ profile、辞書、候補、評価 corpus、既存 route、pack 条件及び pro
 重複同一性、空文字の条、空白差、順序、全件数、各 Citation、derived provenance、
 二回取得の開始間隔、同時実行、単一条と削除条範囲の共存、範囲の一単位保持、
 全資源上限、error normalization、descriptor、
-binding、既定 route、八・十ツール、両 transport の schema 及び MCP smoke test を
+binding、既定 route、公開方式ごとのツール集合と専門操作 registry、両 transport の schema 及び MCP smoke test を
 fixture と fake transport で確認する。
 
 ## 関連
@@ -150,5 +150,6 @@ fixture と fake transport で確認する。
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-058: `law.version.compare` capability v1](58-law-version-compare-capability.md)
 - [SOT-IF-059: MCP `compare_law_versions`](59-mcp-compare-law-versions.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [法令 API Version 2 OpenAPI](https://laws.e-gov.go.jp/api/2/swagger-ui/lawapi-v2.yaml)
 - [法令標準 XML スキーマ](https://laws.e-gov.go.jp/docs/law-data-basic/419a603-xml-schema-for-japanese-law/)

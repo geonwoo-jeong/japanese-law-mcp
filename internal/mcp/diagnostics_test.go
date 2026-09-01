@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -91,10 +92,7 @@ func TestAddDiagnosticsWritesPublicFieldsOnly(t *testing.T) {
 
 			serverTransport, clientTransport := sdk.NewInMemoryTransports()
 			var diagnostics bytes.Buffer
-			server := NewServerWithDependencies(
-				"test-version",
-				testCase.dependencies,
-			)
+			server := NewServerWithDependencies("test-version", testCase.dependencies)
 			if err := AddDiagnostics(server, &diagnostics); err != nil {
 				t.Fatalf("AddDiagnostics() error = %v", err)
 			}
@@ -214,6 +212,77 @@ func TestAddDiagnosticsHidesUnknownToolName(t *testing.T) {
 	}
 	if strings.Contains(diagnostics.String(), "秘密値") {
 		t.Fatalf("診断出力に入力値が含まれています: %q", diagnostics.String())
+	}
+}
+
+func TestAddDiagnosticsKeepsExecuteLegalToolAsPublicOperation(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	var diagnostics bytes.Buffer
+	dependencies := newCoreTestDependencies(t)
+	dependencies.SearchLaws = errorSearchLawsPort{}
+	server, err := NewServerWithDependenciesAndExposure(
+		"test-version",
+		dependencies,
+		ToolExposureCompact,
+	)
+	if err != nil {
+		t.Fatalf("compact MCP サーバーを構成できません: %v", err)
+	}
+	if err := AddDiagnostics(server, &diagnostics); err != nil {
+		t.Fatalf("AddDiagnostics() error = %v", err)
+	}
+	serverResult := make(chan error, 1)
+	go func() {
+		serverResult <- server.Run(ctx, serverTransport)
+	}()
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("Connect() error = %v", err)
+	}
+	result, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name: executeLegalToolToolName,
+		Arguments: map[string]any{
+			"toolName": "search_laws",
+			"arguments": map[string]any{
+				"query": "秘密の検索語",
+			},
+		},
+	})
+	if err != nil || result == nil || !result.IsError {
+		t.Fatalf("CallTool() result = %#v, error = %v", result, err)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+	select {
+	case runErr := <-serverResult:
+		if runErr != nil {
+			t.Fatalf("server run error = %v", runErr)
+		}
+	case <-ctx.Done():
+		t.Fatalf("server shutdown wait error = %v", ctx.Err())
+	}
+
+	events := parseDiagnosticsTestEvents(t, diagnostics.String())
+	want := []diagnosticEvent{{
+		Component: "mcp",
+		Operation: executeLegalToolToolName,
+		ErrorCode: "source_busy",
+	}}
+	if !reflect.DeepEqual(events, want) {
+		t.Fatalf("diagnostics = %#v, want %#v", events, want)
+	}
+	if strings.Contains(diagnostics.String(), "search_laws") ||
+		strings.Contains(diagnostics.String(), "秘密の検索語") {
+		t.Fatalf("diagnostics leaked inner operation or input = %q", diagnostics.String())
 	}
 }
 

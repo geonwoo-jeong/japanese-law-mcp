@@ -111,7 +111,7 @@ func TestLoadはcanonicalArtifactsを読み込む(t *testing.T) {
 	ndlRow := ndlRows[0]
 	if !slices.Equal(
 		ndlRow.InterfaceSOTIDs,
-		[]string{"SOT-IF-061", "SOT-IF-062", "SOT-IF-063", "SOT-IF-064", "SOT-IF-065"},
+		[]string{"SOT-IF-077", "SOT-IF-062", "SOT-IF-063", "SOT-IF-064", "SOT-IF-065"},
 	) {
 		t.Fatalf("ndl interfaceSotIds = %v", ndlRow.InterfaceSOTIDs)
 	}

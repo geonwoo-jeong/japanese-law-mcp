@@ -19,6 +19,9 @@ func TestDefaultConfig(t *testing.T) {
 	if got.Transport() != TransportStdio {
 		t.Fatalf("SOT-IF-029: transport = %q、期待値 = %q", got.Transport(), TransportStdio)
 	}
+	if got.ToolExposure() != ToolExposureCompact {
+		t.Fatalf("SOT-IF-077: toolExposure = %q、期待値 = %q", got.ToolExposure(), ToolExposureCompact)
+	}
 	if got.RequestTimeout() != 30*time.Second {
 		t.Fatalf("SOT-IF-029: requestTimeout = %s、期待値 = 30s", got.RequestTimeout())
 	}
@@ -39,6 +42,7 @@ func TestConfigOwnsAllowedOrigins(t *testing.T) {
 	origins := []string{"https://example.test"}
 	got, err := New(Values{
 		Transport:      string(TransportStreamableHTTP),
+		ToolExposure:   string(ToolExposureCompact),
 		RequestTimeout: 30 * time.Second,
 		ListenAddress:  "127.0.0.1:8080",
 		AllowedOrigins: origins,
@@ -61,6 +65,7 @@ func TestNewRejectsInvalidValues(t *testing.T) {
 
 	valid := Values{
 		Transport:      string(TransportStreamableHTTP),
+		ToolExposure:   string(ToolExposureCompact),
 		RequestTimeout: 30 * time.Second,
 		ListenAddress:  "127.0.0.1:8080",
 		AllowedOrigins: []string{"https://example.test"},
@@ -68,6 +73,8 @@ func TestNewRejectsInvalidValues(t *testing.T) {
 
 	tests := map[string]Values{
 		"トランスポート":              withTransport(valid, "invalid"),
+		"ツール公開方式":              withToolExposure(valid, "invalid"),
+		"ツール公開方式の欠落":           withToolExposure(valid, ""),
 		"タイムアウトの下限":            withTimeout(valid, 999*time.Millisecond),
 		"タイムアウトの上限":            withTimeout(valid, 121*time.Second),
 		"待受先":                  withListenAddress(valid, "127.0.0.1"),
@@ -102,6 +109,7 @@ func TestNewAcceptsIPv6LoopbackListenAddress(t *testing.T) {
 
 	got, err := New(Values{
 		Transport:      string(TransportStreamableHTTP),
+		ToolExposure:   string(ToolExposureCompact),
 		RequestTimeout: 30 * time.Second,
 		ListenAddress:  "[::1]:8080",
 		AllowedOrigins: []string{"https://example.test"},
@@ -111,6 +119,29 @@ func TestNewAcceptsIPv6LoopbackListenAddress(t *testing.T) {
 	}
 	if got.ListenAddress() != "[::1]:8080" {
 		t.Fatalf("SOT-IF-029: listenAddress = %q", got.ListenAddress())
+	}
+}
+
+func TestNewValidatesToolExposure(t *testing.T) {
+	t.Parallel()
+
+	values := Values{
+		Transport:      string(TransportStdio),
+		ToolExposure:   string(ToolExposureFull),
+		RequestTimeout: 30 * time.Second,
+		ListenAddress:  "127.0.0.1:8080",
+	}
+	got, err := New(values)
+	if err != nil {
+		t.Fatalf("SOT-IF-077: full 設定のエラー = %v", err)
+	}
+	if got.ToolExposure() != ToolExposureFull {
+		t.Fatalf("SOT-IF-077: toolExposure = %q、期待値 = %q", got.ToolExposure(), ToolExposureFull)
+	}
+
+	values.ToolExposure = "unknown"
+	if _, err := New(values); err == nil {
+		t.Fatal("SOT-IF-077: 未知の toolExposure を受理しました")
 	}
 }
 
@@ -319,6 +350,105 @@ func TestLoadSupportedExplicitFormats(t *testing.T) {
 	}
 }
 
+func TestLoadReadsToolExposureFromSupportedConfigFormats(t *testing.T) {
+	clearKnownEnvironment(t)
+
+	tests := map[string]string{
+		"config.yaml": "toolExposure: full\n",
+		"config.yml":  "toolExposure: full\n",
+		"config.json": "{\"toolExposure\":\"full\"}\n",
+		"config.toml": "toolExposure = \"full\"\n",
+	}
+
+	for name, content := range tests {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), name)
+			writeFile(t, path, content)
+
+			got, err := Load(LoadOptions{
+				Flags:         newFlagSet(t),
+				ConfigFile:    path,
+				UserConfigDir: fixedUserConfigDir(t.TempDir()),
+			})
+			if err != nil {
+				t.Fatalf("SOT-IF-077: Load() のエラー = %v", err)
+			}
+			if got.ToolExposure() != ToolExposureFull {
+				t.Fatalf("SOT-IF-077: toolExposure = %q", got.ToolExposure())
+			}
+		})
+	}
+}
+
+func TestLoadToolExposureIsConfigFileOnly(t *testing.T) {
+	clearKnownEnvironment(t)
+	t.Setenv("JAPANESE_LAW_MCP_TOOL_EXPOSURE", "full")
+
+	rogueFlags := newFlagSet(t)
+	rogueFlags.String("tool-exposure", "", "")
+	if err := rogueFlags.Set("tool-exposure", "full"); err != nil {
+		t.Fatalf("テスト用フラグを設定できません: %v", err)
+	}
+	got, err := Load(LoadOptions{
+		Flags:         rogueFlags,
+		UserConfigDir: fixedUserConfigDir(t.TempDir()),
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-077: Load() のエラー = %v", err)
+	}
+	if got.ToolExposure() != ToolExposureCompact {
+		t.Fatalf("SOT-IF-077: ファイル外の値で toolExposure が変わりました: %q", got.ToolExposure())
+	}
+
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	writeFile(t, path, "toolExposure: full\n")
+	t.Setenv("JAPANESE_LAW_MCP_TOOL_EXPOSURE", "compact")
+	if err := rogueFlags.Set("tool-exposure", "compact"); err != nil {
+		t.Fatalf("テスト用フラグを更新できません: %v", err)
+	}
+	got, err = Load(LoadOptions{
+		Flags:         rogueFlags,
+		ConfigFile:    path,
+		UserConfigDir: fixedUserConfigDir(t.TempDir()),
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-077: Load() のエラー = %v", err)
+	}
+	if got.ToolExposure() != ToolExposureFull {
+		t.Fatalf("SOT-IF-077: 設定ファイルの toolExposure = %q、期待値 = %q", got.ToolExposure(), ToolExposureFull)
+	}
+}
+
+func TestLoadRejectsInvalidToolExposureFileValues(t *testing.T) {
+	clearKnownEnvironment(t)
+
+	tests := map[string]string{
+		"null.yaml":    "toolExposure: null\n",
+		"number.yaml":  "toolExposure: 1\n",
+		"boolean.json": "{\"toolExposure\":true}\n",
+		"array.json":   "{\"toolExposure\":[\"compact\"]}\n",
+		"object.toml":  "[toolExposure]\nmode = \"compact\"\n",
+		"value.toml":   "toolExposure = 1\n",
+		"empty.yaml":   "toolExposure: \"\"\n",
+		"unknown.yaml": "toolExposure: hidden\n",
+	}
+
+	for name, content := range tests {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), name)
+			writeFile(t, path, content)
+			_, err := Load(LoadOptions{
+				Flags:         newFlagSet(t),
+				ConfigFile:    path,
+				UserConfigDir: fixedUserConfigDir(t.TempDir()),
+			})
+			if err == nil || !strings.Contains(err.Error(), "toolExposure") {
+				t.Fatalf("SOT-IF-077: エラー = %v", err)
+			}
+		})
+	}
+}
+
 func TestLoadEnvironmentValues(t *testing.T) {
 	clearKnownEnvironment(t)
 	t.Setenv("JAPANESE_LAW_MCP_TRANSPORT", "streamable-http")
@@ -481,6 +611,7 @@ func clearKnownEnvironment(t *testing.T) {
 		"JAPANESE_LAW_MCP_LISTEN_ADDRESS",
 		"JAPANESE_LAW_MCP_ALLOWED_ORIGINS",
 		"JAPANESE_LAW_MCP_DIAGNOSTICS",
+		"JAPANESE_LAW_MCP_TOOL_EXPOSURE",
 	} {
 		value, exists := os.LookupEnv(key)
 		if err := os.Unsetenv(key); err != nil {
@@ -516,6 +647,11 @@ func writeFile(t *testing.T, path, content string) {
 
 func withTransport(input Values, transport string) Values {
 	input.Transport = transport
+	return input
+}
+
+func withToolExposure(input Values, exposure string) Values {
+	input.ToolExposure = exposure
 	return input
 }
 

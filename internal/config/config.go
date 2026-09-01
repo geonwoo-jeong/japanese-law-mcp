@@ -13,9 +13,18 @@ const (
 	TransportStreamableHTTP Transport = "streamable-http"
 )
 
+// ToolExposure は、MCP クライアントへ公開するツール面を表す。
+type ToolExposure string
+
+const (
+	ToolExposureCompact ToolExposure = "compact"
+	ToolExposureFull    ToolExposure = "full"
+)
+
 // Values は、検証前の起動設定値を保持する。
 type Values struct {
 	Transport      string
+	ToolExposure   string
 	RequestTimeout time.Duration
 	ListenAddress  string
 	AllowedOrigins []string
@@ -28,6 +37,7 @@ type Values struct {
 // Config は、検証済みで変更不能な起動設定を保持する。
 type Config struct {
 	transport      Transport
+	toolExposure   ToolExposure
 	requestTimeout time.Duration
 	listenAddress  string
 	allowedOrigins []string
@@ -37,7 +47,7 @@ type Config struct {
 	extensionPacks map[string]ExtensionPackConfig
 }
 
-// Default は、SOT-IF-026、SOT-IF-029、SOT-IF-061 と SOT-IF-067 が定める既定の起動設定を返す。
+// Default は、SOT-IF-026、SOT-IF-029 と SOT-IF-077 が定める既定の起動設定を返す。
 func Default() Config {
 	providers, err := resolveProviderConfigs(nil, false, false, false)
 	if err != nil {
@@ -53,6 +63,7 @@ func Default() Config {
 	}
 	return Config{
 		transport:      TransportStdio,
+		toolExposure:   ToolExposureCompact,
 		requestTimeout: 30 * time.Second,
 		listenAddress:  "127.0.0.1:8080",
 		allowedOrigins: make([]string, 0),
@@ -130,6 +141,7 @@ func New(values Values) (Config, error) {
 
 	return Config{
 		transport:      Transport(values.Transport),
+		toolExposure:   ToolExposure(values.ToolExposure),
 		requestTimeout: values.RequestTimeout,
 		listenAddress:  values.ListenAddress,
 		allowedOrigins: origins,
@@ -143,6 +155,11 @@ func New(values Values) (Config, error) {
 // Transport は、検証済みのトランスポートを返す。
 func (c Config) Transport() Transport {
 	return c.transport
+}
+
+// ToolExposure は、検証済みのツール公開方式を返す。
+func (c Config) ToolExposure() ToolExposure {
+	return c.toolExposure
 }
 
 // RequestTimeout は、検証済みの外部リクエストタイムアウトを返す。

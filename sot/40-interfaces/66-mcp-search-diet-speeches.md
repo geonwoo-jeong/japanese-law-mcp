@@ -4,12 +4,12 @@
 
 ## 規定
 
-`search_diet_speeches` は、`SOT-IF-061` に従って `legislative-history` の専門公開面が
+`search_diet_speeches` は、`SOT-IF-077` に従って `legislative-history` の専門操作が
 有効な場合だけ `parliament.speech.search@1` を公開し、公式国会発言を出典、正確な
 件数および固定した利用上の注意とともに返す MCP ツールとする。
 
-登録は、同じ pack 条件で `SOT-IF-065` の provider binding と primary route を構成できる
-場合に限る。統合照会 contribution は第一段階の登録条件に含めず、このツールの登録を
+専門操作の有効化は、同じ pack 条件で `SOT-IF-065` の provider binding と primary route を構成できる
+場合に限る。統合照会 contribution は第一段階の構成条件に含めず、この操作の有効化を
 理由に `query_legal_information` の範囲を広げない。
 
 ## 入力
@@ -53,7 +53,7 @@
 
 ## 確認
 
-pack 無効時の未登録、有効時の binding・route との原子的な登録、schema、少なくとも一つの検索条件、文字列・院名・日付・上限の検証、空でない token の事前拒否、固定 notice、空結果、最大 30 件、exact page、`ref` と provenance の無変更公開、法的結論の非生成および全エラー対応を MCP 契約テストで確認する。
+pack 無効時に専門操作を利用可能にしないこと、有効時に binding・route と原子的に構成し、`compact` の発見と実行および `full` の直接呼出しで同じ schema、少なくとも一つの検索条件、文字列・院名・日付・上限の検証、空でない token の事前拒否、固定 notice、空結果、最大 30 件、exact page、`ref` と provenance の無変更公開、法的結論の非生成および全エラー対応になることを MCP 契約テストで確認する。
 
 ## 関連
 
@@ -61,6 +61,6 @@ pack 無効時の未登録、有効時の binding・route との原子的な登�
 - [SOT-MODEL-034: ParliamentSpeech](../20-model/34-parliament-speech.md)
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
-- [SOT-IF-061: `legislative-history` 拡張パックの専門公開面](61-legislative-history-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-IF-062: `parliament.speech.search` capability v1](62-parliament-speech-search-capability.md)
 - [SOT-IF-065: 国立国会図書館の国会発言検索の組込み採用](65-ndl-diet-speech-built-in-adoption.md)

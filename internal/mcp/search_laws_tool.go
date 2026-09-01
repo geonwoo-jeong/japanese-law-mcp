@@ -43,7 +43,7 @@ type searchLawsOutputSource struct {
 }
 
 func addSearchLawsTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	searcher searchlaws.Port,
 ) {
 	inputSchema := mustSchemaFor[searchLawsInputSchema]()

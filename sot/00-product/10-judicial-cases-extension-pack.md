@@ -54,7 +54,7 @@
 
 ## 有効化
 
-この拡張パックは `SOT-IF-067` に従って明示的に有効化した場合だけ公開する。無設定起動では従来の法令コアだけを維持する。
+この拡張パックは `SOT-IF-077` に従って明示的に有効化した場合だけ専門操作を利用可能にする。無設定起動では法令コアだけを維持する。
 
 ## 確認
 
@@ -67,4 +67,4 @@
 - [SOT-SCN-007: 公表裁判例の詳細を取得する](../10-scenarios/07-get-judicial-case.md)
 - [SOT-PROD-016: 判例引用追跡拡張パック](16-judicial-citations-extension-pack.md)
 - [SOT-IF-072: 裁判所「裁判例検索」HTML 情報源 v2](../40-interfaces/72-source-courts-hanrei-html-v2.md)
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](../40-interfaces/67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)

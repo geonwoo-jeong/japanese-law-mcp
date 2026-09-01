@@ -219,7 +219,7 @@ evaluator だけで再現する。
 `stale` の解消を理由として、次を行わない。
 
 - schema version 2 又は 3 の exact SOT ID 配列を変更する
-- `SOT-IF-040` を同じ配列内で `SOT-IF-067` へ置き換える
+- `SOT-IF-040` を同じ配列内で `SOT-IF-077` へ置き換える
 - 既存 manifest、review、request、result、report または schema を変更、移動、削除する
 - current request の corpus、holdout、leakage group digest または baseline version を再利用する
 - stale request の digest を現在の source 又は SOT から再計算して上書きする
@@ -238,7 +238,7 @@ schema version と exact 集合を先に採用する。その後、新しい can
 二件、request および pointer を前項と同じ一つの準備単位で追加する。
 
 現在の schema version 3 request は、廃止された `SOT-IF-040` を exact 集合に含むため後者に
-該当する。version 3 の配列内で `SOT-IF-067` へ置き換えず、予約済みの `corpus-v16`、
+該当する。version 3 の配列内で `SOT-IF-077` へ置き換えず、予約済みの `corpus-v16`、
 `default-8`、holdout digest および leakage group digest を後続準備へ再利用しない。
 
 ## 確認

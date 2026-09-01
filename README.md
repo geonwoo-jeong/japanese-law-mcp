@@ -9,9 +9,32 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 
 ## 提供する機能
 
-無設定で起動した場合は、次の八つの法令ツールを公開します。
+無設定で起動した場合は `toolExposure: compact` を使用し、拡張パックの組合せにかかわらず次の三つだけを直接公開します。
 
-| MCP ツール | 用途 | 主な情報源 |
+| MCP ツール | 用途 |
+|---|---|
+| `discover_legal_tools` | 現在利用できる専門操作を名前または説明から検索し、正確な入出力 schema と省略件数を返す |
+| `execute_legal_tool` | 発見した一つの読取り専用専門操作を、その操作固有の結果・エラー契約のまま実行する |
+| `query_legal_information` | 日本語の照会文から利用可能な法情報の取得方法を選び、解釈ごとの型付き結果を返す |
+
+決定的な入力で専門操作を使う場合は、まず `discover_legal_tools` を呼び出します。
+
+```json
+{"query":"法令の改正履歴","limit":5}
+```
+
+応答の `tools` は名前順で、各項目に `name`、`description`、`inputSchema` および `outputSchema` を含みます。`totalCount`、`returnedCount`、`omittedCount` および `truncated` により、候補が省略されたかを判別できます。次に、返された `name` と schema に適合する入力を `execute_legal_tool` へ渡します。
+
+```json
+{
+  "toolName": "list_law_revisions",
+  "arguments": {"lawId": "322AC0000000049"}
+}
+```
+
+法令コアでは、次の七つの専門操作を常に利用できます。
+
+| 専門操作 | 用途 | 主な情報源 |
 |---|---|---|
 | `search_laws` | 法令名、略称、表記揺れ、自然文または軽微な誤記から法令を検索する | e-Gov 法令 API Version 2 |
 | `get_law` | 法令 ID と任意の基準日から XML 法令本文を取得する | e-Gov 法令 API Version 2 |
@@ -20,28 +43,27 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 | `list_law_revisions` | 法令 ID または法令番号から完全な改正履歴を新しい順で取得する | e-Gov 法令 API Version 2 |
 | `compare_law_versions` | 同じ法令の指定した二版について、本則と原始附則の条単位の差分を出典付きで取得する | e-Gov 法令 API Version 2 |
 | `list_law_updates` | 指定日に更新一覧へ掲載された法令を取得する | e-Gov 法令 API Version 1 |
-| `query_legal_information` | 日本語の照会文から利用可能な法情報の取得方法を選び、解釈ごとの型付き結果を返す | e-Gov 法令 API Version 2・Version 1、最高裁判所「裁判例検索」（有効時） |
 
-`judicial-cases` を明示的に有効化すると、次の二つを同時に追加します。
+`judicial-cases` を明示的に有効化すると、次の二つの専門操作を同時に利用できます。
 
-| MCP ツール | 用途 | 主な情報源 |
+| 専門操作 | 用途 | 主な情報源 |
 |---|---|---|
 | `search_judicial_cases` | 裁判所が公表する裁判例を検索する | 最高裁判所「裁判例検索」 |
 | `get_judicial_case` | 検索結果の `ref` から同じ掲載裁判例の詳細と公式文書リンクを取得する | 最高裁判所「裁判例検索」 |
 
 `judicial-cases` だけでは PDF 本文を解析しません。裁判例検索はすべての判決等を収録したものではなく、判例変更または先例性の判定も行いません。
 
-`judicial-cases` と `judicial-citations` をともに明示的に有効化すると、次のツールを追加します。
+`judicial-cases` と `judicial-citations` をともに明示的に有効化すると、次の専門操作を利用できます。
 
-| MCP ツール | 用途 | 主な情報源 |
+| 専門操作 | 用途 | 主な情報源 |
 |---|---|---|
 | `trace_judicial_citations` | 一件の裁判例から、確認済みの引用、公式検索上の被引用候補、参照法条および原審を 1-hop graph で返す | 最高裁判所「裁判例検索」の詳細 HTML・全文 PDF・検索 HTML |
 
 判例引用追跡は、公式に公表され取得できた範囲だけをオンデマンドで解析します。被引用候補は実際の全引用回数ではなく、公式検索で観測した候補です。OCR、恒久索引、先例性・拘束力・判例変更・現在の有効性の判定は行いません。
 
-`legislative-history` を明示的に有効化すると、次のツールを追加します。
+`legislative-history` を明示的に有効化すると、次の専門操作を利用できます。
 
-| MCP ツール | 用途 | 主な情報源 |
+| 専門操作 | 用途 | 主な情報源 |
 |---|---|---|
 | `search_diet_speeches` | 発言本文、発言者、会議、院または開催日から国会発言を検索する | 国立国会図書館「国会会議録検索システム」 |
 
@@ -77,11 +99,11 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 `needs_clarification` で返します。無効な拡張パックを必要とする計画も、
 法令部分だけを実行せず計画全体を `capability_unavailable` とします。
 
-`judicial-cases` が無効でも裁判例の意図は法令検索へ置き換えずに認識し、外部情報源を呼ばない `capability_unavailable` として返します。`令和4年（ネ）第10039号の裁判例を検索してください` のように、完全な事件番号と検索 task・裁判例 resource がそろう照会は、全角数字・括弧や構造上の空白を決定的な検索語へ整えて裁判例検索として扱います。事件番号だけ、または事件番号を句読点で列挙しただけの入力は外部情報源を呼ばない `unsupported` とし、専門ツールの使用を案内します。事件番号、題名または URL だけから裁判例詳細の `ref` を推測することはありません。入力を決定的に指定した検索や取得、ページ継続には、引き続き `search_judicial_cases` と `get_judicial_case` を使用できます。
+`judicial-cases` が無効でも裁判例の意図は法令検索へ置き換えずに認識し、外部情報源を呼ばない `capability_unavailable` として返します。`令和4年（ネ）第10039号の裁判例を検索してください` のように、完全な事件番号と検索 task・裁判例 resource がそろう照会は、全角数字・括弧や構造上の空白を決定的な検索語へ整えて裁判例検索として扱います。事件番号だけ、または事件番号を句読点で列挙しただけの入力は外部情報源を呼ばない `unsupported` とし、専門操作の使用を案内します。事件番号、題名または URL だけから裁判例詳細の `ref` を推測することはありません。入力を決定的に指定した検索や取得、ページ継続には、`compact` では `search_judicial_cases` と `get_judicial_case` を発見して実行し、`full` では同名ツールを直接使用できます。
 
-`legislative-history` の第一段階は専門ツールだけを追加します。有効にしても `query_legal_information` は国会発言検索を実行しないため、国会会議録の検索には `search_diet_speeches` を指定してください。
+`legislative-history` の第一段階は専門操作だけを追加します。有効にしても `query_legal_information` は国会発言検索を実行しないため、国会会議録の検索には `search_diet_speeches` を発見して実行してください。
 
-`judicial-citations` も専門ツールだけを追加します。`query_legal_information` は引用関係の自然文照会を実行しないため、引用追跡には `trace_judicial_citations` を指定してください。
+`judicial-citations` も専門操作だけを追加します。`query_legal_information` は引用関係の自然文照会を実行しないため、引用追跡には `trace_judicial_citations` を発見して実行してください。
 
 ## インストール
 
@@ -125,7 +147,7 @@ go build -trimpath -o ./bin/japanese-law-mcp ./cmd/japanese-law-mcp
 
 ## 裁判例拡張パックを有効にする
 
-裁判例ツールは既定で無効です。次の設定ファイルを作成し、`--config` で明示します。
+裁判例の専門操作は既定で無効です。次の設定ファイルを作成し、`--config` で明示します。
 
 ```yaml
 requestTimeout: 30s
@@ -139,7 +161,7 @@ extensionPacks:
 japanese-law-mcp --config=/absolute/path/to/config.yaml
 ```
 
-`extensionPacks.judicial-cases.enabled` は設定ファイルからだけ変更できます。省略または `false` に戻して再起動すると、二つの裁判例ツールとその provider route をまとめて無効化します。
+`extensionPacks.judicial-cases.enabled` は設定ファイルからだけ変更できます。`compact` では二操作が発見と実行の対象になり、直接公開する三ツールは増えません。省略または `false` に戻して再起動すると、二つの裁判例操作とその provider route をまとめて無効化します。
 
 ### 判例引用追跡を有効にする
 
@@ -155,11 +177,11 @@ extensionPacks:
     enabled: true
 ```
 
-`judicial-citations` だけを有効にした設定は起動前に拒否します。省略または `false` に戻すと、PDF provider、二つの引用追跡 route と `trace_judicial_citations` だけを除き、既存の二つの裁判例ツールは維持します。
+`judicial-citations` だけを有効にした設定は起動前に拒否します。省略または `false` に戻すと、PDF provider、二つの引用追跡 route と `trace_judicial_citations` だけを除き、既存の二つの裁判例操作は維持します。
 
 ## 立法過程拡張パックを有効にする
 
-国会発言検索ツールも既定で無効です。設定ファイルで `legislative-history` を有効にします。
+国会発言検索の専門操作も既定で無効です。設定ファイルで `legislative-history` を有効にします。
 
 ```yaml
 requestTimeout: 30s
@@ -170,6 +192,16 @@ extensionPacks:
 ```
 
 `extensionPacks.legislative-history.enabled` は設定ファイルからだけ変更できます。省略または `false` に戻して再起動すると、`search_diet_speeches`、NDL provider binding および primary route をまとめて無効化します。`judicial-cases` と同時に有効化することもできます。
+
+## 既存の専門ツールを直接公開する
+
+従来の専門ツール名を直接呼び出すクライアントでは、設定ファイルに `toolExposure: full` を指定します。
+
+```yaml
+toolExposure: full
+```
+
+`full` は `discover_legal_tools` と `execute_legal_tool` を公開せず、法令コア七操作と `query_legal_information` の八ツールを直接公開します。有効な拡張パックに応じて専門ツールを追加し、最大十二ツールになります。`toolExposure` を削除するか `compact` へ戻して再起動すると、三ツールの簡潔な公開面へ戻ります。`toolExposure` は設定ファイルからだけ変更でき、環境変数や個別のコマンドラインフラグはありません。
 
 ## ローカル Streamable HTTP
 
@@ -200,6 +232,7 @@ japanese-law-mcp \
 
 | 名前 | 既定値 | 説明 |
 |---|---|---|
+| `toolExposure` | `compact` | `compact` は三ツールから専門操作を発見・実行し、`full` は既存ツールを直接公開する |
 | `transport` | `stdio` | `stdio` または `streamable-http` |
 | `requestTimeout` | `30s` | 外部 request の timeout。1 秒以上 120 秒以下 |
 | `listenAddress` | `127.0.0.1:8080` | loopback HTTP の待受先 |
@@ -208,7 +241,7 @@ japanese-law-mcp \
 
 設定の優先順位は、コマンドラインフラグ、環境変数、選択した設定ファイル、既定値の順です。`--config` を省略した場合は OS の利用者設定ディレクトリにある `japanese-law-mcp/config.yaml` だけを自動検索し、現在の作業ディレクトリは検索しません。
 
-対応する設定形式は YAML、JSON および TOML です。未知の項目、重複 key、型の不一致、無効な provider route などは transport の開始前に拒否します。
+対応する設定形式は YAML、JSON および TOML です。未知の項目、重複 key、型の不一致、無効な provider route などは transport の開始前に拒否します。`toolExposure`、`extensionPacks`、`providers` および `providerRoutes` は設定ファイルだけから読み込みます。
 
 ## 開発と検証
 

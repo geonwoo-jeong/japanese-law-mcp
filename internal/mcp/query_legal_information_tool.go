@@ -12,7 +12,7 @@ import (
 )
 
 func addQueryLegalInformationTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	querier legalquery.Port,
 ) {
 	server.AddTool(

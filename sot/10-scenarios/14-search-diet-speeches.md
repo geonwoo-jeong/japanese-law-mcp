@@ -8,7 +8,7 @@
 
 ## 開始条件
 
-`query`、`speaker`、`meetingName`、`house`、`fromDate` または `untilDate` のうち一つ以上が有効であり、`SOT-IF-061` に従って `legislative-history` の専門公開面が有効である。
+`query`、`speaker`、`meetingName`、`house`、`fromDate` または `untilDate` のうち一つ以上が有効であり、`SOT-IF-077` に従って `legislative-history` の専門操作が利用可能である。
 
 `limit` と `continuationToken` は検索条件に数えない。
 

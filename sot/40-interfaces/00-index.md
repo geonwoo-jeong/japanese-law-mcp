@@ -76,3 +76,4 @@
 - [74-courts-hanrei-citation-built-in-adoption.md](74-courts-hanrei-citation-built-in-adoption.md)
 - [75-mcp-trace-judicial-citations.md](75-mcp-trace-judicial-citations.md)
 - [76-mcp-list-law-updates-v2.md](76-mcp-list-law-updates-v2.md)
+- [77-mcp-tool-exposure-and-extension-packs.md](77-mcp-tool-exposure-and-extension-packs.md)

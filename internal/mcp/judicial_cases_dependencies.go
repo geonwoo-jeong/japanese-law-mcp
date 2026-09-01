@@ -5,7 +5,6 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionread"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialdecisionsearch"
-	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // JudicialCasesDependencies は、裁判例検索と詳細取得を一つの公開単位として保持する。
@@ -35,7 +34,7 @@ func NewJudicialCasesDependencies(
 	}, nil
 }
 
-func (d JudicialCasesDependencies) addTools(server *sdk.Server) {
+func (d JudicialCasesDependencies) addTools(server toolRegistrar) {
 	if !d.ready() {
 		return
 	}
@@ -46,5 +45,11 @@ func (d JudicialCasesDependencies) addTools(server *sdk.Server) {
 func (d JudicialCasesDependencies) ready() bool {
 	return d.initialized &&
 		!isNilJudicialSearchPort(d.search) &&
+		!isNilJudicialReadPort(d.read)
+}
+
+func (d JudicialCasesDependencies) configured() bool {
+	return d.initialized ||
+		!isNilJudicialSearchPort(d.search) ||
 		!isNilJudicialReadPort(d.read)
 }

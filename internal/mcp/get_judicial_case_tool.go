@@ -52,7 +52,7 @@ type getJudicialCaseOutputDetails struct {
 }
 
 func addGetJudicialCaseTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	reader judicialdecisionread.Port,
 ) {
 	server.AddTool(&sdk.Tool{

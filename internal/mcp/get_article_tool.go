@@ -26,7 +26,7 @@ type getArticleOutput struct {
 	Citation getLawOutputCitation `json:"citation"`
 }
 
-func addGetArticleTool(server *sdk.Server, getter getarticle.Port) {
+func addGetArticleTool(server toolRegistrar, getter getarticle.Port) {
 	server.AddTool(&sdk.Tool{
 		Name:         "get_article",
 		Description:  "法令識別子と条文位置を使い、e-Gov で確認できる条文を XML で取得します。",

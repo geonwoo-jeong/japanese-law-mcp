@@ -117,7 +117,7 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 
 `query_legal_information` は法令コアの公開ツールとして、stdio と Streamable HTTP の両方へ同じ schema で常時登録する。拡張パックの有効化はこの tool の登録有無を変えず、実行できる profile contribution と result variant だけを変える。
 
-既存専門ツールの名前、schema、pagination、provider route およびエラー契約を変更しない。公開 tool 数と pack ごとの構成は `SOT-IF-067` を定義元とする。
+既存専門操作の名前、schema、pagination、provider route およびエラー契約を変更しない。公開 tool 数、専門操作 registry および pack ごとの構成は `SOT-IF-077` を定義元とする。
 
 ## 確認
 
@@ -143,8 +143,8 @@ URL、capability ID、provider ID、source ID、e-Gov の `lawId` 若しくは `
 - [SOT-MODEL-016: SourceResourceRef](../20-model/16-source-resource-ref.md)
 - [SOT-MODEL-024: LegalQueryResult](../20-model/24-legal-query-result.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](../30-architecture/22-unified-query-planning-pipeline.md)
-- [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-044: MCP 公開ツールと専門操作 registry の境界](../30-architecture/44-mcp-tool-operation-registry-boundary.md)
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)
 - [SOT-IF-026: プロバイダールーティング設定](26-provider-routing-configuration.md)
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)

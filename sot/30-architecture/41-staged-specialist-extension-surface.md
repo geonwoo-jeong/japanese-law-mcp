@@ -4,11 +4,11 @@
 
 ## 規定
 
-選択型法情報拡張パックは、型付きの専門 MCP 公開面と、自然文を扱う統合照会
+選択型法情報拡張パックは、型付きの専門操作面と、自然文を扱う統合照会
 contribution を別の段階で採用できる。ただし、各段階の内部は原子的に構成し、
 provider package、route、tool または query profile の一部だけを公開しない。
 
-本規定は、`SOT-ARCH-019` が専門ツールと統合照会 contribution を同じ製品機能の
+本規定は、`SOT-ARCH-019` が専門操作と統合照会 contribution を同じ製品機能の
 集合として有効化する規則に対する、採用時期だけの限定的な特則である。pack 固有の
 有効な SOT が本規定を明示的に参照して第一段階を採用した場合は、統合照会
 contribution の同時有効化に限って本規定を優先する。明示的な第一段階の採用がない
@@ -18,7 +18,7 @@ pack には、この特則を適用しない。
 ならびに各段階の内部の原子性は変更しない。統合照会を第二段階で採用した後の固定
 profile set、無効時の `pack_disabled` および rollback も同 SOT に従う。
 
-## 第一段階: 専門公開面
+## 第一段階: 専門操作面
 
 拡張パック固有の有効な SOT が第一段階を採用した場合は、次を一つの集合として
 構成する。
@@ -26,14 +26,14 @@ profile set、無効時の `pack_disabled` および rollback も同 SOT に従�
 - 拡張パックの有効化設定と rollback
 - 採用済みの利用シナリオ、共通モデルおよび型付き capability
 - capability を実装する provider binding と明示的な route
-- capability をそのまま公開する専門 MCP tool
+- capability をそのまま実行する読取り専用の専門操作
 
 一つでも構成できない場合は transport を開始しない。拡張パックが無効な場合は、
-provider factory、binding、route および専門 MCP tool を実効構成へ加えない。
+provider factory、binding、route および専門操作を実効構成へ加えない。
 
 第一段階は `query_legal_information` の製品範囲を広げない。統合照会の profile、cue、
 candidate、能力別 facade、request materializer および result variant を追加せず、
-当該 pack に関する自然文照会は既存の対象外分類を維持する。専門 tool が公開済みで
+当該 pack に関する自然文照会は既存の対象外分類を維持する。専門操作が利用可能で
 あっても、統合照会への採用を推測しない。
 
 ## 第二段階: 統合照会 contribution
@@ -47,8 +47,8 @@ materializer および result variant を一つの集合として構成する。
 contribution は pack の有効状態にかかわらず固定 profile set へ保持し、pack が無効な
 場合は外部情報源を呼ばず `capability_unavailable` とする。
 
-第二段階を採用していない pack は、専門 tool が利用可能でも統合照会では未採用のまま
-とする。第一段階の provider-independent なモデル、capability および専門 tool の契約は、
+第二段階を採用していない pack は、専門操作が利用可能でも統合照会では未採用のまま
+とする。第一段階の provider-independent なモデル、capability および専門操作の契約は、
 第二段階の採否によって変更しない。
 
 ## 確認
@@ -64,4 +64,4 @@ contribution は pack の有効状態にかかわらず固定 profile set へ保
 - [SOT-PROD-011: 統合法情報照会の製品範囲](../00-product/11-unified-legal-query-scope.md)
 - [SOT-PROD-012: 日本法情報照会の意図分類と受理境界](../00-product/12-japanese-legal-query-intent-taxonomy.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
-- [SOT-IF-061: `legislative-history` 拡張パックの専門公開面](../40-interfaces/61-legislative-history-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)

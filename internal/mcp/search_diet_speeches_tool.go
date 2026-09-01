@@ -71,7 +71,7 @@ type searchDietSpeechesOutputMeeting struct {
 }
 
 func addSearchDietSpeechesTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	searcher parliamentspeechsearch.Port,
 ) {
 	inputSchema := mustSchemaFor[searchDietSpeechesInputSchema]()

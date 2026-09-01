@@ -132,10 +132,10 @@ providerRoutes:
     defaultProviderId: e-gov-law-api-v2
 ```
 
-composition root はこの route から `list_law_revisions` service を構成し、
-既定の stdio と Streamable HTTP の両方へ同じ schema で登録する。これにより
-法令コアは八ツール、`judicial-cases` 有効時は十ツールとなる。既存 route、
-拡張パックの有効条件、検索結果、継続位置および provider setting は変更しない。
+composition root はこの route から `list_law_revisions` service と専門操作を構成し、
+stdio と Streamable HTTP の両方へ同じ schema で提供する。公開方式ごとの直接登録と
+専門操作 registry の構成は `SOT-IF-077` に従う。既存 route、拡張パックの有効条件、
+検索結果、継続位置および provider setting は変更しない。
 
 ## 確認
 
@@ -143,8 +143,8 @@ composition root はこの route から `list_law_revisions` service を構成�
 必須値欠落、日付・日時・型不正、重複 ID、順序、URL encoding、media type、
 全資源予算、取消、同時実行、error normalization および秘密非露出を fixture と
 fake transport で確認する。descriptor、binding inventory、既定 route、
-composition root、八・十ツールの固定集合、stdio と Streamable HTTP の schema
-一致、および一回の MCP smoke test を確認する。
+composition root、公開方式ごとのツール集合と専門操作 registry、stdio と
+Streamable HTTP の schema 一致、および一回の MCP smoke test を確認する。
 
 ## 関連
 
@@ -155,4 +155,5 @@ composition root、八・十ツールの固定集合、stdio と Streamable HTTP
 - [SOT-IF-055: `law.revision.list` capability v1](55-law-revision-list-capability.md)
 - [SOT-IF-056: MCP `list_law_revisions`](56-mcp-list-law-revisions.md)
 - [SOT-IF-060: e-Gov 法令版間比較のマッピングと組込み採用](60-egov-law-version-comparison-mapping-and-adoption.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [e-Gov 法令 API Version 2 OpenAPI](https://laws.e-gov.go.jp/api/2/swagger-ui/lawapi-v2.yaml)

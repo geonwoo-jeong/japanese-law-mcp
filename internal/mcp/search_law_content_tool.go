@@ -57,7 +57,7 @@ type searchLawContentOutputSource struct {
 }
 
 func addSearchLawContentTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	searcher searchlawcontent.Port,
 ) {
 	server.AddTool(&sdk.Tool{

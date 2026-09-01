@@ -22,7 +22,7 @@ func TestDefaultDisablesLegislativeHistoryExtensionPack(t *testing.T) {
 
 	got := Default()
 	if got.LegislativeHistoryEnabled() {
-		t.Fatal("SOT-IF-061: legislative-history の既定値が有効です")
+		t.Fatal("SOT-IF-077: legislative-history の既定値が有効です")
 	}
 }
 
@@ -31,7 +31,7 @@ func TestDefaultDisablesJudicialCitationsExtensionPack(t *testing.T) {
 
 	got := Default()
 	if got.JudicialCitationsEnabled() {
-		t.Fatal("SOT-IF-067: judicial-citations の既定値が有効です")
+		t.Fatal("SOT-IF-077: judicial-citations の既定値が有効です")
 	}
 }
 
@@ -117,7 +117,7 @@ func TestNewAddsLegislativeHistoryConditionalProviderAndRoutes(t *testing.T) {
 	}
 	got, err := New(values)
 	if err != nil {
-		t.Fatalf("SOT-IF-061/SOT-IF-065: New() のエラー = %v", err)
+		t.Fatalf("SOT-IF-077/SOT-IF-065: New() のエラー = %v", err)
 	}
 
 	provider, exists := got.Provider("ndl-diet-speech-api")
@@ -153,7 +153,7 @@ func TestNewAddsJudicialCitationsConditionalProviderAndRoutes(t *testing.T) {
 	}
 	got, err := New(values)
 	if err != nil {
-		t.Fatalf("SOT-IF-067/SOT-IF-074: New() のエラー = %v", err)
+		t.Fatalf("SOT-IF-077/SOT-IF-074: New() のエラー = %v", err)
 	}
 
 	provider, exists := got.Provider("courts-hanrei-pdf")
@@ -188,7 +188,7 @@ func TestNewAddsJudicialCitationsConditionalProviderAndRoutes(t *testing.T) {
 	}
 	if len(got.Providers()) != 4 || len(got.ProviderRoutes()) != 11 {
 		t.Fatalf(
-			"SOT-IF-067/SOT-IF-074: providers = %d, routes = %d",
+			"SOT-IF-077/SOT-IF-074: providers = %d, routes = %d",
 			len(got.Providers()),
 			len(got.ProviderRoutes()),
 		)
@@ -225,12 +225,12 @@ func TestNewResolvesAllValidExtensionPackCombinations(t *testing.T) {
 			}
 			got, err := New(values)
 			if err != nil {
-				t.Fatalf("SOT-IF-067: New() のエラー = %v", err)
+				t.Fatalf("SOT-IF-077: New() のエラー = %v", err)
 			}
 			if len(got.Providers()) != test.providerCount ||
 				len(got.ProviderRoutes()) != test.routeCount {
 				t.Fatalf(
-					"SOT-IF-067: providers = %d, routes = %d",
+					"SOT-IF-077: providers = %d, routes = %d",
 					len(got.Providers()),
 					len(got.ProviderRoutes()),
 				)
@@ -247,7 +247,7 @@ func TestNewRejectsJudicialCitationsWithoutJudicialCases(t *testing.T) {
 		ExtensionPackJudicialCitations: {Enabled: true},
 	}
 	if _, err := New(values); err == nil {
-		t.Fatal("SOT-IF-067: judicial-citations 単独有効化を受理しました")
+		t.Fatal("SOT-IF-077: judicial-citations 単独有効化を受理しました")
 	}
 }
 
@@ -412,10 +412,10 @@ enabled = true
 				UserConfigDir: fixedUserConfigDir(t.TempDir()),
 			})
 			if err != nil {
-				t.Fatalf("SOT-IF-039/SOT-IF-061: Load() のエラー = %v", err)
+				t.Fatalf("SOT-IF-039/SOT-IF-077: Load() のエラー = %v", err)
 			}
 			if !got.LegislativeHistoryEnabled() {
-				t.Fatal("SOT-IF-061: legislative-history が有効ではありません")
+				t.Fatal("SOT-IF-077: legislative-history が有効ではありません")
 			}
 		})
 	}
@@ -461,10 +461,10 @@ enabled = true
 				UserConfigDir: fixedUserConfigDir(t.TempDir()),
 			})
 			if err != nil {
-				t.Fatalf("SOT-IF-039/SOT-IF-067: Load() のエラー = %v", err)
+				t.Fatalf("SOT-IF-039/SOT-IF-077: Load() のエラー = %v", err)
 			}
 			if !got.JudicialCasesEnabled() || !got.JudicialCitationsEnabled() {
-				t.Fatal("SOT-IF-067: judicial-citations 構成が有効ではありません")
+				t.Fatal("SOT-IF-077: judicial-citations 構成が有効ではありません")
 			}
 		})
 	}

@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/parliamentspeechsearch"
-	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // LegislativeHistoryDependencies は、国会発言検索を一つの公開単位として保持する。
@@ -28,7 +27,7 @@ func NewLegislativeHistoryDependencies(
 	}, nil
 }
 
-func (d LegislativeHistoryDependencies) addTools(server *sdk.Server) {
+func (d LegislativeHistoryDependencies) addTools(server toolRegistrar) {
 	if !d.ready() {
 		return
 	}
@@ -37,6 +36,10 @@ func (d LegislativeHistoryDependencies) addTools(server *sdk.Server) {
 
 func (d LegislativeHistoryDependencies) ready() bool {
 	return d.initialized && !isNilParliamentSpeechSearchPort(d.search)
+}
+
+func (d LegislativeHistoryDependencies) configured() bool {
+	return d.initialized || !isNilParliamentSpeechSearchPort(d.search)
 }
 
 func isNilParliamentSpeechSearchPort(search parliamentspeechsearch.Port) bool {

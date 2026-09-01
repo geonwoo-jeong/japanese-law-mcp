@@ -88,7 +88,7 @@ type compareLawVersionsOutputLocation struct {
 	DivisionNumber   string                    `json:"divisionNumber,omitempty"`
 }
 
-func addCompareLawVersionsTool(server *sdk.Server, comparer comparelawversions.Port) {
+func addCompareLawVersionsTool(server toolRegistrar, comparer comparelawversions.Port) {
 	server.AddTool(&sdk.Tool{
 		Name:         "compare_law_versions",
 		Description:  "同じ法令の二つの版を条単位で比較し、追加・削除・変更を返します。",

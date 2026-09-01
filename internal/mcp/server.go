@@ -2,6 +2,8 @@
 package mcp
 
 import (
+	"fmt"
+
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/comparelawversions"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getarticle"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/getlaw"
@@ -11,6 +13,16 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlawcontent"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/searchlaws"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
+)
+
+// ToolExposure は、MCP tools/list へ提示する公開面を表す。
+type ToolExposure string
+
+const (
+	// ToolExposureCompact は、統合照会と専門操作の発見・実行入口だけを公開する。
+	ToolExposureCompact ToolExposure = "compact"
+	// ToolExposureFull は、従来の専門ツールをすべて直接公開する。
+	ToolExposureFull ToolExposure = "full"
 )
 
 // Dependencies は、公開 MCP サーバーへ注入する能力ポートを保持する。
@@ -38,7 +50,16 @@ func NewServerWithDependencies(
 	version string,
 	dependencies Dependencies,
 ) *sdk.Server {
-	return newServer(version, dependencies, nil)
+	return newLegacyServer(version, dependencies, nil)
+}
+
+// NewServerWithDependenciesAndExposure は、指定した公開面の MCP サーバーを返す。
+func NewServerWithDependenciesAndExposure(
+	version string,
+	dependencies Dependencies,
+	exposure ToolExposure,
+) (*sdk.Server, error) {
+	return newServer(version, dependencies, exposure, nil)
 }
 
 // NewSessionlessServerWithDependencies は、HTTP session ID を発行しない MCP サーバーを返す。
@@ -46,12 +67,62 @@ func NewSessionlessServerWithDependencies(
 	version string,
 	dependencies Dependencies,
 ) *sdk.Server {
-	return newServer(version, dependencies, func() string { return "" })
+	return newLegacyServer(version, dependencies, func() string { return "" })
+}
+
+// NewSessionlessServerWithDependenciesAndExposure は、HTTP session ID を発行せず、
+// 指定した公開面を持つ MCP サーバーを返す。
+func NewSessionlessServerWithDependenciesAndExposure(
+	version string,
+	dependencies Dependencies,
+	exposure ToolExposure,
+) (*sdk.Server, error) {
+	return newServer(
+		version,
+		dependencies,
+		exposure,
+		func() string { return "" },
+	)
 }
 
 func newServer(
 	version string,
 	dependencies Dependencies,
+	exposure ToolExposure,
+	getSessionID func() string,
+) (*sdk.Server, error) {
+	if exposure != ToolExposureCompact && exposure != ToolExposureFull {
+		return nil, fmt.Errorf("tool exposure %q は compact または full でなければなりません", exposure)
+	}
+	registry, err := newOperationRegistry(dependencies)
+	if err != nil {
+		return nil, err
+	}
+	if err := validateRequiredPublicOperations(registry); err != nil {
+		return nil, err
+	}
+	server := newSDKServer(version, getSessionID)
+	if exposure == ToolExposureFull {
+		if err := registry.addAllTo(server); err != nil {
+			return nil, err
+		}
+		return server, nil
+	}
+
+	specialists := registry.specialists()
+	addDiscoverLegalToolsTool(server, specialists)
+	addExecuteLegalToolTool(server, specialists)
+	query, _ := registry.lookup(queryLegalInformationToolName)
+	tool, cloneErr := cloneToolDefinition(query.tool)
+	if cloneErr != nil {
+		return nil, fmt.Errorf("%s を登録できません: %w", queryLegalInformationToolName, cloneErr)
+	}
+	server.AddTool(tool, query.handler)
+	return server, nil
+}
+
+func newSDKServer(
+	version string,
 	getSessionID func() string,
 ) *sdk.Server {
 	server := sdk.NewServer(
@@ -68,6 +139,15 @@ func newServer(
 		},
 	)
 	server.AddReceivingMiddleware(requestPacingMiddleware)
+	return server
+}
+
+func newLegacyServer(
+	version string,
+	dependencies Dependencies,
+	getSessionID func() string,
+) *sdk.Server {
+	server := newSDKServer(version, getSessionID)
 	if dependencies.SearchLaws != nil {
 		addSearchLawsTool(server, dependencies.SearchLaws)
 	}
@@ -90,10 +170,7 @@ func newServer(
 		addListLawUpdatesTool(server, dependencies.ListLawUpdates)
 	}
 	if !isNilQueryLegalInformationPort(dependencies.QueryLegalInformation) {
-		addQueryLegalInformationTool(
-			server,
-			dependencies.QueryLegalInformation,
-		)
+		addQueryLegalInformationTool(server, dependencies.QueryLegalInformation)
 	}
 	dependencies.JudicialCases.addTools(server)
 	if dependencies.JudicialCases.ready() {

@@ -16,3 +16,4 @@
 - [14-legislative-history-extension-pack.md](14-legislative-history-extension-pack.md)
 - [15-japanese-law-index-adoption-boundary.md](15-japanese-law-index-adoption-boundary.md)
 - [16-judicial-citations-extension-pack.md](16-judicial-citations-extension-pack.md)
+- [17-compact-mcp-public-surface.md](17-compact-mcp-public-surface.md)

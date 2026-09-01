@@ -8,7 +8,7 @@
 
 ## 開始条件
 
-`ref` が `judicial-decision` の有効な `SourceResourceRef` であり、`SOT-IF-067` に従って `judicial-cases` と `judicial-citations` の両方が有効である。
+`ref` が `judicial-decision` の有効な `SourceResourceRef` であり、`SOT-IF-077` に従って `judicial-cases` と `judicial-citations` の両方が有効である。
 
 `direction` は `outgoing`、`incoming` または `both` である。`incomingLimit` は 1 以上 10 以下であり、省略時は 5 とする。
 

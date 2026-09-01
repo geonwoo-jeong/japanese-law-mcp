@@ -27,7 +27,7 @@ providerRoutes:
     defaultProviderId: courts-hanrei-html
 ```
 
-最終接続で候補検索 row を `implemented` にした後は、HTML descriptor と compiled binding inventory を三能力で一致させる。ただし `judicial-citations` が無効な間は候補検索 route、引用追跡 application service および MCP tool を構成せず、候補検索 binding を公開処理から到達不能にする。準備中の `planned` row は production descriptor 又は compiled binding inventory に含めない。
+最終接続で候補検索 row を `implemented` にした後は、HTML descriptor と compiled binding inventory を三能力で一致させる。ただし `judicial-citations` が無効な間は候補検索 route、引用追跡 application service および専門操作を構成せず、候補検索 binding を公開処理から到達不能にする。準備中の `planned` row は production descriptor 又は compiled binding inventory に含めない。
 
 さらに両 pack が有効な場合に限り、次を加える。
 
@@ -54,21 +54,21 @@ providerRoutes:
 - `courts-hanrei-pdf` は `judicial-citations` が有効なときだけ factory を呼ぶ。
 - citation route は runtime fallback、aggregate route または別 provider への切替えを追加しない。
 - 既存の法令コア、`judicial-cases`、`legislative-history` および公開ツール契約を変更しない。
-- 二つの追加 route は有効で `implemented` の binding へ到達し、PDF provider、二 route および `trace_judicial_citations` を同じ起動条件で原子的に登録する。
+- 二つの追加 route は有効で `implemented` の binding へ到達し、PDF provider、二 route および `trace_judicial_citations` 専門操作を同じ起動条件で原子的に構成する。
 
-準備中の二つの conformance row は `planned` とし、production route と公開ツールから到達不能にする。provider package、fixture、契約テスト、compiled binding、route および tool がそろう最終接続変更でだけ、二 row を同時に `implemented` へ変更する。
+準備中の二つの conformance row は `planned` とし、production route と公開操作から到達不能にする。provider package、fixture、契約テスト、compiled binding、route および専門操作がそろう最終接続変更でだけ、二 row を同時に `implemented` へ変更する。
 
 ## 公開
 
-内部 binding の到達性だけでは公開面を追加しない。`judicial-citations` の有効化と `SOT-IF-075` に従う MCP ツールがそろった場合だけ公開する。
+内部 binding の到達性だけでは利用可能な専門操作を追加しない。`judicial-citations` の有効化と `SOT-IF-075` に従う専門操作がそろった場合だけ、`SOT-IF-077` の方式で公開する。
 
 ## 確認
 
-descriptor、compiled binding inventory、conformance matrix、fixture、資源予算および route の一致、`planned` row の到達不能、両 pack 無効時と `judicial-cases` 単独時の citation route 非登録、両 pack 有効時の原子的構成、provider 欠落時の起動失敗、PDF factory の条件付き呼出し、および公開 tool 数の一致を確認する。
+descriptor、compiled binding inventory、conformance matrix、fixture、資源予算および route の一致、`planned` row の到達不能、両 pack 無効時と `judicial-cases` 単独時の citation route 非登録、両 pack 有効時の原子的構成、provider 欠落時の起動失敗、PDF factory の条件付き呼出し、ならびに `SOT-IF-077` の専門操作数と公開ツール数の一致を確認する。
 
 ## 関連
 
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-IF-068: 判決文の判例引用抽出 capability](68-judicial-case-citation-extract-capability.md)
 - [SOT-IF-069: 被引用候補検索 capability](69-judicial-citing-candidate-search-capability.md)
 - [SOT-IF-070: 裁判所「裁判例検索」PDF 情報源](70-source-courts-hanrei-pdf.md)

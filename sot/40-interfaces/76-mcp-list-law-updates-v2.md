@@ -81,7 +81,7 @@
 
 ## 公開ツール構成
 
-公開 tool 集合における `list_law_updates` の位置付けと件数は `SOT-IF-067` を定義元とし、統合照会の登録は `SOT-IF-051` を定義元とする。
+公開 tool 集合と専門操作 registry における `list_law_updates` の位置付けと件数は `SOT-IF-077` を定義元とし、統合照会の契約は `SOT-IF-051` を定義元とする。
 
 ## 確認
 
@@ -108,5 +108,5 @@
 - [SOT-IF-034: `law.update.list` capability v1](34-law-update-list-capability.md)
 - [SOT-IF-035: e-Gov 法令 API Version 1 更新一覧](35-source-egov-law-api-v1.md)
 - [SOT-IF-037: e-Gov 法令 API Version 1 の組込み採用](37-egov-v1-built-in-adoption.md)
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-IF-051: MCP `query_legal_information`](51-mcp-query-legal-information.md)

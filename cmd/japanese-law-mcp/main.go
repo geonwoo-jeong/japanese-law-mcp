@@ -169,13 +169,33 @@ func newPublicServer(
 	if err != nil {
 		return nil, err
 	}
+	exposure, err := mapToolExposure(cfg.ToolExposure())
+	if err != nil {
+		return nil, err
+	}
 	if sessionless {
-		return projectmcp.NewSessionlessServerWithDependencies(
+		return projectmcp.NewSessionlessServerWithDependenciesAndExposure(
 			version,
 			dependencies,
-		), nil
+			exposure,
+		)
 	}
-	return projectmcp.NewServerWithDependencies(version, dependencies), nil
+	return projectmcp.NewServerWithDependenciesAndExposure(
+		version,
+		dependencies,
+		exposure,
+	)
+}
+
+func mapToolExposure(exposure config.ToolExposure) (projectmcp.ToolExposure, error) {
+	switch exposure {
+	case config.ToolExposureCompact:
+		return projectmcp.ToolExposureCompact, nil
+	case config.ToolExposureFull:
+		return projectmcp.ToolExposureFull, nil
+	default:
+		return "", fmt.Errorf("MCP ツール公開方式 %q には対応していません", exposure)
+	}
 }
 
 func newPublicDependencies(

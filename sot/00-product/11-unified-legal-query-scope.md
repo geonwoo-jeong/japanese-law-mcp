@@ -4,7 +4,7 @@
 
 ## 規定
 
-Japanese Law MCP は、既存の専門 MCP ツールを維持したまま、日本語の照会文を採用済みの公式法情報取得能力へ結び付ける `query_legal_information` を、追加の公開入口として提供する。
+Japanese Law MCP は、既存の専門操作契約を維持したまま、日本語の照会文を採用済みの公式法情報取得能力へ結び付ける `query_legal_information` を、追加の直接公開入口として提供する。専門操作の公開方法は `SOT-IF-077` に従う。
 
 ## 利用目的
 
@@ -30,11 +30,11 @@ Japanese Law MCP は、既存の専門 MCP ツールを維持したまま、日�
 
 法令のリビジョン、基準日、法令番号、条、項、事件番号および情報源参照は resource ではなく、上表の能力へ渡す型付き条件として扱う。
 
-## 既存専門ツールとの関係
+## 既存専門操作との関係
 
 `query_legal_information` は、`search_laws`、`search_law_content`、`get_law`、`get_article`、`list_law_updates`、`search_judicial_cases` および `get_judicial_case` を置き換えない。
 
-入力と取得対象を決定的に指定できる利用者は、ページ継続、プロバイダー固有の互換入力または厳密な結果型を持つ既存専門ツールを使用する。統合法情報照会は、自然文から適切な能力へ到達するための facade とし、専門ツールの契約や経路を変更しない。
+入力と取得対象を決定的に指定できる利用者は、ページ継続、プロバイダー固有の互換入力または厳密な結果型を持つ既存専門操作を使用する。統合法情報照会は、自然文から適切な能力へ到達するための facade とし、専門操作の契約や経路を変更しない。
 
 ## 対象外
 
@@ -49,7 +49,7 @@ Japanese Law MCP は、既存の専門 MCP ツールを維持したまま、日�
 
 上記の task、resource または拡張パックを追加する場合は、製品範囲、利用シナリオ、型付き能力、公開 MCP 契約、情報源の権威境界および検証方法を定める別の有効な SOT を先に採用する。
 
-実行可能な情報取得と、法的助言、翻訳または未採用 task/resource が一つの照会文に混在する場合は、情報取得部分だけを実行しない。照会全体を対象外として外部情報源を呼ばず、取得要求だけを分けて専門ツールまたは統合照会へ入力するよう案内する。
+実行可能な情報取得と、法的助言、翻訳または未採用 task/resource が一つの照会文に混在する場合は、情報取得部分だけを実行しない。照会全体を対象外として外部情報源を呼ばず、取得要求だけを分けて専門操作または統合照会へ入力するよう案内する。
 
 ## 利用上の境界
 
@@ -57,7 +57,7 @@ Japanese Law MCP は、既存の専門 MCP ツールを維持したまま、日�
 
 ## 確認
 
-公開ツールの契約テストで上表以外の組合せを実行しないこと、既存専門ツールの schema と経路が変わらないこと、対象外との混在要求が外部情報源を呼ばないこと、裁判例 read が検証済み `ref` を必要とすること、および裁判例の収録範囲注意を失わないことを確認する。
+公開ツールの契約テストで上表以外の組合せを実行しないこと、既存専門操作の schema と経路が変わらないこと、対象外との混在要求が外部情報源を呼ばないこと、裁判例 read が検証済み `ref` を必要とすること、および裁判例の収録範囲注意を失わないことを確認する。
 
 ## 関連
 
@@ -65,5 +65,6 @@ Japanese Law MCP は、既存の専門 MCP ツールを維持したまま、日�
 - [SOT-PROD-009: 選択型法情報拡張パックの境界](09-selectable-legal-information-extension-packs.md)
 - [SOT-PROD-010: 裁判例拡張パック](10-judicial-cases-extension-pack.md)
 - [SOT-SCN-009: 日本語の法情報を統合照会する](../10-scenarios/09-query-legal-information.md)
-- [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-044: MCP 公開ツールと専門操作 registry の境界](../30-architecture/44-mcp-tool-operation-registry-boundary.md)
 - [SOT-IF-051: MCP `query_legal_information`](../40-interfaces/51-mcp-query-legal-information.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)

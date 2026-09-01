@@ -19,6 +19,14 @@ func validateValues(values Values) error {
 	if transport != TransportStdio && transport != TransportStreamableHTTP {
 		return fmt.Errorf("transport は %q または %q でなければなりません", TransportStdio, TransportStreamableHTTP)
 	}
+	toolExposure := ToolExposure(values.ToolExposure)
+	if toolExposure != ToolExposureCompact && toolExposure != ToolExposureFull {
+		return fmt.Errorf(
+			"toolExposure は %q または %q でなければなりません",
+			ToolExposureCompact,
+			ToolExposureFull,
+		)
+	}
 	if values.RequestTimeout < minimumRequestTimeout || values.RequestTimeout > maximumRequestTimeout {
 		return fmt.Errorf("requestTimeout は 1 秒以上 120 秒以下でなければなりません")
 	}

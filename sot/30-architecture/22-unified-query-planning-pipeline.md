@@ -75,11 +75,11 @@ transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公
 
 各段階は入力を変更せず新しい値を返す。辞書、profile、tokenizer、registry および route は起動後に変更せず、照会間で候補、入力、結果または学習状態を保持しない。
 
-## 既存専門ツール
+## 既存専門操作
 
-既存の専門 MCP ツールは、この planner を通さず対応する既存ユースケースへ直接到達する。統合照会を追加しても、専門ツールの入力解釈、pagination、provider 固有 facade またはエラー契約を変更しない。
+既存の専門操作 handler は、この planner を通さず対応する既存ユースケースへ直接到達する。統合照会を追加しても、専門操作の入力解釈、pagination、provider 固有 facade またはエラー契約を変更しない。MCP からの到達方法は `SOT-IF-077` に従う。
 
-統合照会は専門 MCP ツールを MCP 経由で再呼出しせず、その背後にある型付きユースケースを能力別 application facade から in-process で利用する。
+統合照会は専門操作 handler を再呼出しせず、その背後にある型付きユースケースを能力別 application facade から in-process で利用する。
 
 ## 禁止する形
 
@@ -94,7 +94,7 @@ transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公
 
 静的依存検査で上記 import 境界を確認する。fake の前処理、profile、能力別 facade、materializer および route を差し替え、MCP transport とネットワークなしで planner と executor を単体テストできることを確認する。
 
-法令 ID と検証済み `ref` の request materialization、`ref` 不一致の外部呼出し前拒否、既存専門ツールが planner なしで起動できること、および統合照会が専門ツールの MCP handler を呼び出さないことをアーキテクチャテストで確認する。
+法令 ID と検証済み `ref` の request materialization、`ref` 不一致の外部呼出し前拒否、既存専門操作が planner なしで起動できること、および統合照会が専門操作の MCP handler を呼び出さないことをアーキテクチャテストで確認する。
 
 ## 関連
 
@@ -108,4 +108,5 @@ transport 非依存の `legalquery.Request` は、`ref` の共通構造と、公
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](27-unified-query-cross-profile-composition.md)
 - [SOT-ARCH-030: 解決済み法令対象の検索結果優先順位](30-canonical-law-target-priority.md)
 - [SOT-MODEL-023: LegalQueryPlan](../20-model/23-legal-query-plan.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-ENG-025: 統合照会のパッケージ構成](../50-engineering/25-unified-query-package-layout.md)

@@ -89,7 +89,7 @@ resource を具体的に明示したときは、その resource に対応する 
 
 member、step origin および getter が返す配列は不変として扱い、照会間で
 保存しない。`sourceStartByte`、構成元 ID、role および未合成 member は、
-`SOT-ARCH-024` に従い公開 MCP 結果へ出さない。
+`SOT-ARCH-044` に従い公開 MCP 結果へ出さない。
 
 member は pack の有効状態、provider ID、route、外部件数、応答速度または
 materialized request を持たない。
@@ -112,5 +112,5 @@ hedge と複数代替候補を合成せず合成不適格にすることは comp
 - [SOT-MODEL-022: LegalQueryCandidate](22-legal-query-candidate.md)
 - [SOT-MODEL-025: LegalQueryPreprocessResult](25-legal-query-preprocess-result.md)
 - [SOT-MODEL-026: QueryProfileContribution](26-query-profile-contribution.md)
-- [SOT-ARCH-024: 統合照会の内部境界と公開境界](../30-architecture/24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-044: MCP 公開ツールと専門操作 registry の境界](../30-architecture/44-mcp-tool-operation-registry-boundary.md)
 - [SOT-ARCH-027: 統合照会の profile 横断候補合成](../30-architecture/27-unified-query-cross-profile-composition.md)

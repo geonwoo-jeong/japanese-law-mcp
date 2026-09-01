@@ -104,7 +104,7 @@ type searchJudicialCasesOutputPage struct {
 }
 
 func addSearchJudicialCasesTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	searcher judicialdecisionsearch.Port,
 ) {
 	inputSchema := mustSchemaFor[searchJudicialCasesInputSchema]()

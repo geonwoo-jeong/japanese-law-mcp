@@ -55,7 +55,7 @@ type listLawUpdatesOutputSource struct {
 }
 
 func addListLawUpdatesTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	lister listlawupdates.Port,
 ) {
 	inputSchema := mustSchemaFor[listLawUpdatesInputSchema]()

@@ -19,7 +19,7 @@ const (
 )
 
 func addTraceJudicialCitationsTool(
-	server *sdk.Server,
+	server toolRegistrar,
 	tracer judicialcitationtrace.Port,
 ) {
 	server.AddTool(&sdk.Tool{

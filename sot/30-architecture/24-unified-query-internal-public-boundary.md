@@ -1,6 +1,8 @@
 # SOT-ARCH-024: 統合照会の内部境界と公開境界
 
-- 状態: 有効
+- 状態: 廃止
+- 廃止理由: 専門操作 registry と `compact`、`full` の二つの公開方式を導入し、hidden tool を禁止する従来の公開境界では現在の適用範囲を表せなくなったため
+- 後継: [SOT-ARCH-044: MCP 公開ツールと専門操作 registry の境界](44-mcp-tool-operation-registry-boundary.md)
 
 ## 規定
 

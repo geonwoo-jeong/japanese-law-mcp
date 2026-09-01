@@ -14,7 +14,7 @@
 
 ユースケースは共通情報モデルを使って処理を組み立て、能力別の型付き情報源ポートを呼び出す。MCP 固有のリクエスト型、HTTP リクエスト型、HTML 要素、外部 API のレスポンス型およびプロバイダー固有 DTO を判断へ持ち込まない。
 
-拡張パックが無効な場合も、そのユースケース実装またはプロバイダーの登録だけを理由に公開ツールを追加しない。公開面の選択は `SOT-ARCH-019` に従う。
+拡張パックが無効な場合も、そのユースケース実装またはプロバイダーの登録だけを理由に専門操作を利用可能にしない。拡張パックと操作の有効化は `SOT-ARCH-019`、MCP の公開方式は `SOT-IF-077` に従う。
 
 ## 確認
 
@@ -27,3 +27,4 @@
 - [SOT-ARCH-017: 採用可能な能力群](17-approved-capability-families.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
 - [SOT-ARCH-040: 法令版間比較の境界](40-law-version-comparison-boundary.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)

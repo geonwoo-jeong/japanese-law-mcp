@@ -16,3 +16,4 @@
 - [14-search-diet-speeches.md](14-search-diet-speeches.md)
 - [15-trace-judicial-citations.md](15-trace-judicial-citations.md)
 - [16-list-law-updates-v2.md](16-list-law-updates-v2.md)
+- [17-discover-and-execute-legal-tool.md](17-discover-and-execute-legal-tool.md)

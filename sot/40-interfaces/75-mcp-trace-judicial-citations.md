@@ -4,7 +4,7 @@
 
 ## 規定
 
-`trace_judicial_citations` は、`SOT-IF-067` に従って `judicial-citations` の専門公開面が有効な場合だけ、一件の公表裁判例から 1-hop の引用関係 graph を返す MCP ツールとする。
+`trace_judicial_citations` は、`SOT-IF-077` に従って `judicial-citations` の専門操作が利用可能な場合だけ、一件の公表裁判例から 1-hop の引用関係 graph を返す MCP ツールとする。
 
 ## 入力
 
@@ -49,10 +49,10 @@ graph には `impactScore`、`goodLaw`、`overruled`、治療的評価、拘束�
 
 ## 確認
 
-pack 無効時の未登録、有効時の原子的登録、schema、`ref` の事前検証、`direction` と `incomingLimit` の境界、固定 `coverageNotice`、最大四 request、片方向 partial、候補一検索 partial、共有正規化 partial、全方向失敗、全体取消、`full_text` PDF 非掲載、PDF text layer 不在、relation ごとの node/evidence 閉包、未解決言及、原文非露出、非採用項目の拒否、既存二裁判例ツールの JSON 非変更、`query_legal_information` の非変更、および stdio/Streamable HTTP の schema と結果の一致を MCP 契約テストで確認する。
+pack 無効時に専門操作を利用可能にしないこと、有効時に依存構成と原子的に有効化し、`compact` の発見と実行および `full` の直接呼出しで同じ schema、`ref` の事前検証、`direction` と `incomingLimit` の境界、固定 `coverageNotice`、最大四 request、片方向 partial、候補一検索 partial、共有正規化 partial、全方向失敗、全体取消、`full_text` PDF 非掲載、PDF text layer 不在、relation ごとの node/evidence 閉包、未解決言及、原文非露出、非採用項目の拒否、既存二裁判例操作の JSON 非変更、`query_legal_information` の非変更、および stdio/Streamable HTTP の schema と結果の一致を MCP 契約テストで確認する。
 
 ## 関連
 
 - [SOT-SCN-015: 一件の公表裁判例から引用関係を追跡する](../10-scenarios/15-trace-judicial-citations.md)
 - [SOT-MODEL-035: JudicialCitationGraph](../20-model/35-judicial-citation-graph.md)
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)

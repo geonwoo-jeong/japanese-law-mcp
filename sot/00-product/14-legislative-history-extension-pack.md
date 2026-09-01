@@ -6,7 +6,7 @@
 
 `legislative-history` の最初の機能範囲として、国立国会図書館の国会会議録検索システムに登録された発言を検索し、発言本文、発言者、会議情報および公式参照先を確認する読取り専用機能を採用する。
 
-この採用は `SOT-ARCH-041` の第一段階とし、`SOT-IF-061` に従って専門 MCP ツール、
+この採用は `SOT-ARCH-041` の第一段階とし、`SOT-IF-077` に従って専門操作、
 capability、provider binding および route を公開できる。`query_legal_information` への
 参加は採用しない。同ツールでは、`SOT-PROD-011` と `SOT-PROD-012` が定める
 `legislative-history` の対象外分類を維持し、後続の統合照会 SOT が有効になるまで
@@ -65,7 +65,7 @@ capability、provider binding および route を公開できる。`query_legal_
 - [SOT-PROD-015: 日本法令索引の採用保留境界](15-japanese-law-index-adoption-boundary.md)
 - [SOT-SCN-014: 国会会議録の発言を検索する](../10-scenarios/14-search-diet-speeches.md)
 - [SOT-MODEL-034: ParliamentSpeech](../20-model/34-parliament-speech.md)
-- [SOT-IF-061: `legislative-history` 拡張パックの専門公開面](../40-interfaces/61-legislative-history-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-IF-063: 国立国会図書館の国会発言検索 API 情報源](../40-interfaces/63-source-ndl-diet-speech-api.md)
 - [SOT-ARCH-019: 拡張パックの有効化境界](../30-architecture/19-extension-pack-activation-boundary.md)
 - [SOT-ARCH-041: 拡張パックの専門公開面の段階採用](../30-architecture/41-staged-specialist-extension-surface.md)

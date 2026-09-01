@@ -81,6 +81,7 @@ func TestDefaultProviderConfigurationAddsLegislativeHistoryOnlyWhenEnabled(t *te
 
 	got, err := New(Values{
 		Transport:      string(Default().Transport()),
+		ToolExposure:   string(Default().ToolExposure()),
 		RequestTimeout: Default().RequestTimeout(),
 		ListenAddress:  Default().ListenAddress(),
 		AllowedOrigins: Default().AllowedOrigins(),
@@ -90,7 +91,7 @@ func TestDefaultProviderConfigurationAddsLegislativeHistoryOnlyWhenEnabled(t *te
 		},
 	})
 	if err != nil {
-		t.Fatalf("SOT-IF-061/SOT-IF-065: New() のエラー = %v", err)
+		t.Fatalf("SOT-IF-077/SOT-IF-065: New() のエラー = %v", err)
 	}
 	if _, exists := got.Provider("ndl-diet-speech-api"); !exists {
 		t.Fatal("SOT-IF-065: legislative-history 有効時に provider が追加されません")
@@ -702,6 +703,7 @@ providerRoutes:
 func validProviderValues() Values {
 	return Values{
 		Transport:      string(TransportStdio),
+		ToolExposure:   string(ToolExposureCompact),
 		RequestTimeout: 30 * time.Second,
 		ListenAddress:  "127.0.0.1:8080",
 		AllowedOrigins: make([]string, 0),

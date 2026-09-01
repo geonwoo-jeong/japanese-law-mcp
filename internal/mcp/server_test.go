@@ -133,28 +133,22 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	if tools.Tools == nil {
 		t.Fatal("ツール一覧が null です")
 	}
-	if len(tools.Tools) != 8 {
-		t.Fatalf("ツール数 = %d, want 8", len(tools.Tools))
+	wantToolNames := []string{
+		"compare_law_versions",
+		"get_article",
+		"get_law",
+		"list_law_revisions",
+		"list_law_updates",
+		"query_legal_information",
+		"search_law_content",
+		"search_laws",
 	}
-	if tools.Tools[0].Name != "compare_law_versions" ||
-		tools.Tools[1].Name != "get_article" ||
-		tools.Tools[2].Name != "get_law" ||
-		tools.Tools[3].Name != "list_law_revisions" ||
-		tools.Tools[4].Name != "list_law_updates" ||
-		tools.Tools[5].Name != "query_legal_information" ||
-		tools.Tools[6].Name != "search_law_content" ||
-		tools.Tools[7].Name != "search_laws" {
-		t.Fatalf(
-			"tool names = %q, %q, %q, %q, %q, %q, %q, %q",
-			tools.Tools[0].Name,
-			tools.Tools[1].Name,
-			tools.Tools[2].Name,
-			tools.Tools[3].Name,
-			tools.Tools[4].Name,
-			tools.Tools[5].Name,
-			tools.Tools[6].Name,
-			tools.Tools[7].Name,
-		)
+	toolNames := make([]string, len(tools.Tools))
+	for index, tool := range tools.Tools {
+		toolNames[index] = tool.Name
+	}
+	if !reflect.DeepEqual(toolNames, wantToolNames) {
+		t.Fatalf("tool names = %#v, want %#v", toolNames, wantToolNames)
 	}
 	for _, tool := range tools.Tools {
 		if tool.InputSchema == nil || tool.OutputSchema == nil {
@@ -198,6 +192,47 @@ func TestNewServerAdvertisesInitialContract(t *testing.T) {
 	}
 }
 
+func TestLegacyServersAllowPartialDependencies(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		newServer func() *sdk.Server
+	}{
+		{
+			name: "stateful",
+			newServer: func() *sdk.Server {
+				return NewServerWithDependencies(
+					"test-version",
+					Dependencies{SearchLaws: stubSearchLawsPort{}},
+				)
+			},
+		},
+		{
+			name: "sessionless",
+			newServer: func() *sdk.Server {
+				return NewSessionlessServerWithDependencies(
+					"test-version",
+					Dependencies{SearchLaws: stubSearchLawsPort{}},
+				)
+			},
+		},
+	}
+	for _, testCase := range tests {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			if names := listToolNames(t, testCase.newServer()); !reflect.DeepEqual(
+				names,
+				[]string{"search_laws"},
+			) {
+				t.Fatalf("tool names = %#v, want [search_laws]", names)
+			}
+		})
+	}
+}
+
 func TestJudicialCitationsToolIsRegisteredAtomically(t *testing.T) {
 	t.Parallel()
 
@@ -208,19 +243,19 @@ func TestJudicialCitationsToolIsRegisteredAtomically(t *testing.T) {
 		t.Fatalf("judicial-citations dependencies を作成できません: %v", err)
 	}
 	judicialCases := mustJudicialCitationCasesDependencies(t)
+	if _, err := NewServerWithDependenciesAndExposure(
+		"test-version",
+		Dependencies{JudicialCitations: complete},
+		ToolExposureFull,
+	); err == nil {
+		t.Fatal("judicial-cases のない judicial-citations を受理しました")
+	}
 	tests := []struct {
 		name         string
 		dependencies Dependencies
 		wantNames    []string
 	}{
 		{name: "disabled", dependencies: Dependencies{}, wantNames: []string{}},
-		{
-			name: "citations without cases",
-			dependencies: Dependencies{
-				JudicialCitations: complete,
-			},
-			wantNames: []string{},
-		},
 		{
 			name: "cases without citations",
 			dependencies: Dependencies{
@@ -243,19 +278,6 @@ func TestJudicialCitationsToolIsRegisteredAtomically(t *testing.T) {
 				"trace_judicial_citations",
 			},
 		},
-		{
-			name: "partial internal value",
-			dependencies: Dependencies{
-				JudicialCases: judicialCases,
-				JudicialCitations: JudicialCitationsDependencies{
-					initialized: true,
-				},
-			},
-			wantNames: []string{
-				"get_judicial_case",
-				"search_judicial_cases",
-			},
-		},
 	}
 	for _, testCase := range tests {
 		testCase := testCase
@@ -266,11 +288,9 @@ func TestJudicialCitationsToolIsRegisteredAtomically(t *testing.T) {
 			defer cancel()
 			serverTransport, clientTransport := sdk.NewInMemoryTransports()
 			serverResult := make(chan error, 1)
+			server := NewServerWithDependencies("test-version", testCase.dependencies)
 			go func() {
-				serverResult <- NewServerWithDependencies(
-					"test-version",
-					testCase.dependencies,
-				).Run(ctx, serverTransport)
+				serverResult <- server.Run(ctx, serverTransport)
 			}()
 
 			client := sdk.NewClient(
@@ -358,14 +378,6 @@ func TestJudicialCasesToolsAreRegisteredAtomically(t *testing.T) {
 				"search_judicial_cases",
 			},
 		},
-		{
-			name: "partial internal value",
-			dependencies: JudicialCasesDependencies{
-				search:      stubSearchJudicialCasesPort{},
-				initialized: true,
-			},
-			wantNames: []string{},
-		},
 	}
 	for _, testCase := range tests {
 		testCase := testCase
@@ -376,11 +388,12 @@ func TestJudicialCasesToolsAreRegisteredAtomically(t *testing.T) {
 			defer cancel()
 			serverTransport, clientTransport := sdk.NewInMemoryTransports()
 			serverResult := make(chan error, 1)
+			server := NewServerWithDependencies(
+				"test-version",
+				Dependencies{JudicialCases: testCase.dependencies},
+			)
 			go func() {
-				serverResult <- NewServerWithDependencies(
-					"test-version",
-					Dependencies{JudicialCases: testCase.dependencies},
-				).Run(ctx, serverTransport)
+				serverResult <- server.Run(ctx, serverTransport)
 			}()
 
 			client := sdk.NewClient(
@@ -488,13 +501,6 @@ func TestLegislativeHistoryToolIsRegisteredAtomically(t *testing.T) {
 			dependencies: complete,
 			wantNames:    []string{"search_diet_speeches"},
 		},
-		{
-			name: "partial internal value",
-			dependencies: LegislativeHistoryDependencies{
-				initialized: true,
-			},
-			wantNames: []string{},
-		},
 	}
 	for _, testCase := range tests {
 		testCase := testCase
@@ -504,11 +510,12 @@ func TestLegislativeHistoryToolIsRegisteredAtomically(t *testing.T) {
 			defer cancel()
 			serverTransport, clientTransport := sdk.NewInMemoryTransports()
 			serverResult := make(chan error, 1)
+			server := NewServerWithDependencies(
+				"test-version",
+				Dependencies{LegislativeHistory: testCase.dependencies},
+			)
 			go func() {
-				serverResult <- NewServerWithDependencies(
-					"test-version",
-					Dependencies{LegislativeHistory: testCase.dependencies},
-				).Run(ctx, serverTransport)
+				serverResult <- server.Run(ctx, serverTransport)
 			}()
 			client := sdk.NewClient(
 				&sdk.Implementation{Name: "test-client", Version: "test-version"},
@@ -527,7 +534,7 @@ func TestLegislativeHistoryToolIsRegisteredAtomically(t *testing.T) {
 				names[index] = tool.Name
 			}
 			if !reflect.DeepEqual(names, testCase.wantNames) {
-				t.Fatalf("SOT-IF-061: tool names = %#v, want %#v", names, testCase.wantNames)
+				t.Fatalf("SOT-IF-077: tool names = %#v, want %#v", names, testCase.wantNames)
 			}
 			if closeErr := session.Close(); closeErr != nil {
 				t.Fatalf("MCP セッションを終了できません: %v", closeErr)
@@ -593,11 +600,12 @@ func TestSearchLawsToolReturnsStructuredSuccess(t *testing.T) {
 
 	serverTransport, clientTransport := sdk.NewInMemoryTransports()
 	serverResult := make(chan error, 1)
+	server := NewServerWithDependencies(
+		"test-version",
+		Dependencies{SearchLaws: stubSearchLawsPort{}},
+	)
 	go func() {
-		serverResult <- NewServerWithDependencies(
-			"test-version",
-			Dependencies{SearchLaws: stubSearchLawsPort{}},
-		).Run(ctx, serverTransport)
+		serverResult <- server.Run(ctx, serverTransport)
 	}()
 
 	client := sdk.NewClient(&sdk.Implementation{Name: "test-client", Version: "test-version"}, nil)
@@ -668,11 +676,12 @@ func TestSearchLawsToolReturnsErrorResult(t *testing.T) {
 
 	serverTransport, clientTransport := sdk.NewInMemoryTransports()
 	serverResult := make(chan error, 1)
+	server := NewServerWithDependencies(
+		"test-version",
+		Dependencies{SearchLaws: errorSearchLawsPort{}},
+	)
 	go func() {
-		serverResult <- NewServerWithDependencies(
-			"test-version",
-			Dependencies{SearchLaws: errorSearchLawsPort{}},
-		).Run(ctx, serverTransport)
+		serverResult <- server.Run(ctx, serverTransport)
 	}()
 
 	client := sdk.NewClient(&sdk.Implementation{Name: "test-client", Version: "test-version"}, nil)

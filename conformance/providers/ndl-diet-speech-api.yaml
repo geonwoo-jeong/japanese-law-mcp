@@ -5,7 +5,7 @@ rows:
     majorVersion: 1
     operation: "GET /api/speech"
     interfaceSotIds:
-      - SOT-IF-061
+      - SOT-IF-077
       - SOT-IF-062
       - SOT-IF-063
       - SOT-IF-064

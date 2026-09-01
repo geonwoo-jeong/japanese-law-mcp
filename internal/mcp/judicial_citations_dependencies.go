@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/judicialcitationtrace"
-	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // JudicialCitationsDependencies は、判例引用追跡ツールの公開単位を保持する。
@@ -28,7 +27,7 @@ func NewJudicialCitationsDependencies(
 	}, nil
 }
 
-func (d JudicialCitationsDependencies) addTools(server *sdk.Server) {
+func (d JudicialCitationsDependencies) addTools(server toolRegistrar) {
 	if !d.ready() {
 		return
 	}
@@ -37,6 +36,10 @@ func (d JudicialCitationsDependencies) addTools(server *sdk.Server) {
 
 func (d JudicialCitationsDependencies) ready() bool {
 	return d.initialized && !isNilJudicialCitationTracePort(d.trace)
+}
+
+func (d JudicialCitationsDependencies) configured() bool {
+	return d.initialized || !isNilJudicialCitationTracePort(d.trace)
 }
 
 func isNilJudicialCitationTracePort(trace judicialcitationtrace.Port) bool {

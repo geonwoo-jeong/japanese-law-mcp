@@ -145,7 +145,7 @@ decision、reason、selection、meaning、step および外部呼出し境界に
 
 - [SOT-ARCH-019: 拡張パックの有効化境界](19-extension-pack-activation-boundary.md)
 - [SOT-ARCH-022: 統合照会の計画パイプライン](22-unified-query-planning-pipeline.md)
-- [SOT-ARCH-024: 統合照会の内部境界と公開境界](24-unified-query-internal-public-boundary.md)
+- [SOT-ARCH-044: MCP 公開ツールと専門操作 registry の境界](44-mcp-tool-operation-registry-boundary.md)
 - [SOT-ARCH-031: 統合照会の意図根拠レイヤ](31-unified-query-intent-evidence-layer.md)
 - [SOT-ARCH-037: 統合照会の正規化済み限定分岐保持](37-unified-query-normalized-branch-retention.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](../50-engineering/24-unified-query-evaluation-gate.md)

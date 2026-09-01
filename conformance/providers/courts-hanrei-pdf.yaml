@@ -5,7 +5,7 @@ rows:
     majorVersion: 1
     operation: "GET /assets/hanrei/{document}.pdf"
     interfaceSotIds:
-      - SOT-IF-067
+      - SOT-IF-077
       - SOT-IF-068
       - SOT-IF-070
       - SOT-IF-071

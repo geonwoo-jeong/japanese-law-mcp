@@ -43,3 +43,4 @@
 - [41-staged-specialist-extension-surface.md](41-staged-specialist-extension-surface.md)
 - [42-judicial-citations-pack-dependency.md](42-judicial-citations-pack-dependency.md)
 - [43-on-demand-judicial-citation-assembly.md](43-on-demand-judicial-citation-assembly.md)
+- [44-mcp-tool-operation-registry-boundary.md](44-mcp-tool-operation-registry-boundary.md)

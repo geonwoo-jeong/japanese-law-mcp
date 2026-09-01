@@ -71,15 +71,19 @@ func diagnosticOperation(
 func knownDiagnosticOperation(operation string) string {
 	switch operation {
 	case "compare_law_versions",
+		"discover_legal_tools",
+		"execute_legal_tool",
 		"get_article",
 		"get_judicial_case",
 		"get_law",
 		"list_law_revisions",
 		"list_law_updates",
 		"query_legal_information",
+		"search_diet_speeches",
 		"search_judicial_cases",
 		"search_law_content",
-		"search_laws":
+		"search_laws",
+		"trace_judicial_citations":
 		return operation
 	default:
 		return diagnosticToolCallMethod

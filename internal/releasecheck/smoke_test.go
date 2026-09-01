@@ -56,6 +56,32 @@ func TestValidateInitializeResult(t *testing.T) {
 			},
 			wantErr: "tools capability",
 		},
+		"resources capability あり": {
+			result: &sdk.InitializeResult{
+				ProtocolVersion: protocolVersion,
+				ServerInfo: &sdk.Implementation{
+					Name: projectName, Version: "1.2.3",
+				},
+				Capabilities: &sdk.ServerCapabilities{
+					Tools:     &sdk.ToolCapabilities{},
+					Resources: &sdk.ResourceCapabilities{},
+				},
+			},
+			wantErr: "resources capability",
+		},
+		"prompts capability あり": {
+			result: &sdk.InitializeResult{
+				ProtocolVersion: protocolVersion,
+				ServerInfo: &sdk.Implementation{
+					Name: projectName, Version: "1.2.3",
+				},
+				Capabilities: &sdk.ServerCapabilities{
+					Tools:   &sdk.ToolCapabilities{},
+					Prompts: &sdk.PromptCapabilities{},
+				},
+			},
+			wantErr: "prompts capability",
+		},
 	}
 	for name, test := range tests {
 		test := test
@@ -103,87 +129,147 @@ func TestIsolatedEnvironment(t *testing.T) {
 	}
 }
 
-func TestSmokeScenariosCoverOptionalExtensionPacks(t *testing.T) {
+func TestSmokeScenariosCoverCompactAndFullExposure(t *testing.T) {
 	t.Parallel()
 
 	scenarios := smokeScenarios()
-	if len(scenarios) != 6 {
-		t.Fatalf("smoke scenario 数 = %d, want 6", len(scenarios))
+	if len(scenarios) != 8 {
+		t.Fatalf("smoke scenario 数 = %d, want 8", len(scenarios))
 	}
 
-	expected := map[string][]string{
+	type expectedScenario struct {
+		toolNames           []string
+		specialistToolNames []string
+		compact             bool
+		fullConfig          bool
+	}
+	compactTools := []string{
+		"discover_legal_tools",
+		"execute_legal_tool",
+		"query_legal_information",
+	}
+	coreSpecialists := []string{
+		"compare_law_versions",
+		"get_article",
+		"get_law",
+		"list_law_revisions",
+		"list_law_updates",
+		"search_law_content",
+		"search_laws",
+	}
+	expected := map[string]expectedScenario{
 		"default": {
-			"compare_law_versions",
-			"get_article",
-			"get_law",
-			"list_law_revisions",
-			"list_law_updates",
-			"query_legal_information",
-			"search_law_content",
-			"search_laws",
+			toolNames:           compactTools,
+			specialistToolNames: coreSpecialists,
+			compact:             true,
 		},
 		"judicial-cases": {
-			"compare_law_versions",
-			"get_article",
-			"get_judicial_case",
-			"get_law",
-			"list_law_revisions",
-			"list_law_updates",
-			"query_legal_information",
-			"search_judicial_cases",
-			"search_law_content",
-			"search_laws",
+			toolNames: compactTools,
+			specialistToolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+			},
+			compact: true,
 		},
 		"legislative-history": {
-			"compare_law_versions",
-			"get_article",
-			"get_law",
-			"list_law_revisions",
-			"list_law_updates",
-			"query_legal_information",
-			"search_diet_speeches",
-			"search_law_content",
-			"search_laws",
+			toolNames: compactTools,
+			specialistToolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"search_diet_speeches",
+				"search_law_content",
+				"search_laws",
+			},
+			compact: true,
 		},
 		"judicial-cases-and-legislative-history": {
-			"compare_law_versions",
-			"get_article",
-			"get_judicial_case",
-			"get_law",
-			"list_law_revisions",
-			"list_law_updates",
-			"query_legal_information",
-			"search_diet_speeches",
-			"search_judicial_cases",
-			"search_law_content",
-			"search_laws",
+			toolNames: compactTools,
+			specialistToolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"search_diet_speeches",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+			},
+			compact: true,
 		},
 		"judicial-citations": {
-			"compare_law_versions",
-			"get_article",
-			"get_judicial_case",
-			"get_law",
-			"list_law_revisions",
-			"list_law_updates",
-			"query_legal_information",
-			"search_judicial_cases",
-			"search_law_content",
-			"search_laws",
-			"trace_judicial_citations",
+			toolNames: compactTools,
+			specialistToolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+				"trace_judicial_citations",
+			},
+			compact: true,
 		},
 		"all-extension-packs": {
-			"compare_law_versions",
-			"get_article",
-			"get_judicial_case",
-			"get_law",
-			"list_law_revisions",
-			"list_law_updates",
-			"query_legal_information",
-			"search_diet_speeches",
-			"search_judicial_cases",
-			"search_law_content",
-			"search_laws",
-			"trace_judicial_citations",
+			toolNames: compactTools,
+			specialistToolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"search_diet_speeches",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+				"trace_judicial_citations",
+			},
+			compact: true,
+		},
+		"full-default": {
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_law_content",
+				"search_laws",
+			},
+			fullConfig: true,
+		},
+		"full-all-extension-packs": {
+			toolNames: []string{
+				"compare_law_versions",
+				"get_article",
+				"get_judicial_case",
+				"get_law",
+				"list_law_revisions",
+				"list_law_updates",
+				"query_legal_information",
+				"search_diet_speeches",
+				"search_judicial_cases",
+				"search_law_content",
+				"search_laws",
+				"trace_judicial_citations",
+			},
+			fullConfig: true,
 		},
 	}
 
@@ -192,12 +278,42 @@ func TestSmokeScenariosCoverOptionalExtensionPacks(t *testing.T) {
 		if !exists {
 			t.Fatalf("未知の scenario が含まれています: %q", scenario.name)
 		}
-		if !slices.Equal(scenario.toolNames, want) {
+		if !slices.Equal(scenario.toolNames, want.toolNames) {
 			t.Fatalf(
 				"scenario %q の tool 一覧 = %v, want %v",
 				scenario.name,
 				scenario.toolNames,
-				want,
+				want.toolNames,
+			)
+		}
+		if !slices.Equal(
+			scenario.specialistToolNames,
+			want.specialistToolNames,
+		) {
+			t.Fatalf(
+				"scenario %q の専門 tool 一覧 = %v, want %v",
+				scenario.name,
+				scenario.specialistToolNames,
+				want.specialistToolNames,
+			)
+		}
+		if scenario.compact != want.compact {
+			t.Fatalf(
+				"scenario %q の compact = %t, want %t",
+				scenario.name,
+				scenario.compact,
+				want.compact,
+			)
+		}
+		if got := strings.Contains(
+			scenario.configYAML,
+			"toolExposure: full",
+		); got != want.fullConfig {
+			t.Fatalf(
+				"scenario %q の full 設定有無 = %t, want %t",
+				scenario.name,
+				got,
+				want.fullConfig,
 			)
 		}
 		delete(expected, scenario.name)

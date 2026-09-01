@@ -38,12 +38,12 @@
 
 ## 確認
 
-pack 無効時の未登録、有効時の schema、入力検証、固定 notice、空結果、`ref` と provenance の公開、検索から詳細への往復および全エラー対応を MCP 契約テストで確認する。
+pack 無効時に専門操作を利用可能にしないこと、有効時に `compact` の発見と実行および `full` の直接呼出しで同じ schema、入力検証、固定 notice、空結果、`ref` と provenance の公開、検索から詳細への往復および全エラー対応になることを MCP 契約テストで確認する。
 
 ## 関連
 
 - [SOT-PROD-010: 裁判例拡張パック](../00-product/10-judicial-cases-extension-pack.md)
-- [SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化](67-judicial-citations-pack-activation.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 - [SOT-IF-041: `judicial-decision.search` capability v1](41-judicial-decision-search-capability.md)
 - [SOT-IF-007: MCP ツール結果](07-mcp-tool-result.md)
 - [SOT-IF-027: 公開情報源エラー契約](27-public-source-error-contract.md)

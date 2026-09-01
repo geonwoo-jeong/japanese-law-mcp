@@ -274,7 +274,7 @@ func TestAssembleLegalQueryExecutionResultRechecksExecutionAgainstSuppliedPlan(
 		differentInputPlan,
 		execution,
 	); err == nil {
-		t.Fatal("SOT-ARCH-024: logical input が異なる plan と execution を受理しました")
+		t.Fatal("SOT-MODEL-024: logical input が異なる plan と execution を受理しました")
 	}
 }
 

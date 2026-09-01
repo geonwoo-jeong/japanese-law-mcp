@@ -68,12 +68,29 @@ func TestServerRunnerUsesStdio(t *testing.T) {
 	}
 }
 
+func TestMapToolExposure(t *testing.T) {
+	t.Parallel()
+
+	compact, err := mapToolExposure(config.ToolExposureCompact)
+	if err != nil || compact != projectmcp.ToolExposureCompact {
+		t.Fatalf("SOT-IF-077: compact の対応 = %q, %v", compact, err)
+	}
+	full, err := mapToolExposure(config.ToolExposureFull)
+	if err != nil || full != projectmcp.ToolExposureFull {
+		t.Fatalf("SOT-IF-077: full の対応 = %q, %v", full, err)
+	}
+	if _, err := mapToolExposure(config.ToolExposure("unknown")); err == nil {
+		t.Fatal("SOT-IF-077: 未知の公開方式を MCP 層へ渡しました")
+	}
+}
+
 func TestServerRunnerUsesStreamableHTTP(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 	values := config.Values{
 		Transport:      string(config.TransportStreamableHTTP),
+		ToolExposure:   string(config.ToolExposureCompact),
 		RequestTimeout: config.Default().RequestTimeout(),
 		ListenAddress:  config.Default().ListenAddress(),
 		AllowedOrigins: []string{"https://example.com"},
@@ -694,7 +711,9 @@ func TestServerRunnerStartsCompleteJudicialCasesPack(t *testing.T) {
 func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
 	t.Parallel()
 
-	cfg, err := config.New(withJudicialCasesEnabled())
+	values := withJudicialCasesEnabled()
+	values.ToolExposure = string(config.ToolExposureFull)
+	cfg, err := config.New(values)
 	if err != nil {
 		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
 	}
@@ -767,7 +786,9 @@ func TestPublicServerIncludesJudicialCasesToolsAsOneSet(t *testing.T) {
 func TestPublicServerIncludesLegislativeHistoryToolAsOneSet(t *testing.T) {
 	t.Parallel()
 
-	cfg, err := config.New(withLegislativeHistoryEnabled())
+	values := withLegislativeHistoryEnabled()
+	values.ToolExposure = string(config.ToolExposureFull)
+	cfg, err := config.New(values)
 	if err != nil {
 		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
 	}
@@ -813,7 +834,7 @@ func TestPublicServerIncludesLegislativeHistoryToolAsOneSet(t *testing.T) {
 		"search_laws",
 	}
 	if !reflect.DeepEqual(names, want) {
-		t.Fatalf("SOT-IF-061: tool names = %#v, want %#v", names, want)
+		t.Fatalf("SOT-IF-077: tool names = %#v, want %#v", names, want)
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("MCP セッションを終了できません: %v", err)
@@ -831,7 +852,9 @@ func TestPublicServerIncludesLegislativeHistoryToolAsOneSet(t *testing.T) {
 func TestPublicServerIncludesJudicialCitationsToolAsOneSet(t *testing.T) {
 	t.Parallel()
 
-	cfg, err := config.New(withJudicialCitationsEnabled())
+	values := withJudicialCitationsEnabled()
+	values.ToolExposure = string(config.ToolExposureFull)
+	cfg, err := config.New(values)
 	if err != nil {
 		t.Fatalf("構造上有効なテスト設定を生成できません: %v", err)
 	}
@@ -879,7 +902,7 @@ func TestPublicServerIncludesJudicialCitationsToolAsOneSet(t *testing.T) {
 		"trace_judicial_citations",
 	}
 	if !reflect.DeepEqual(names, want) {
-		t.Fatalf("SOT-IF-067/SOT-IF-075: tool names = %#v, want %#v", names, want)
+		t.Fatalf("SOT-IF-077/SOT-IF-075: tool names = %#v, want %#v", names, want)
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("MCP セッションを終了できません: %v", err)
@@ -963,6 +986,33 @@ providers:
 	}
 }
 
+func TestToolExposureHasNoCommandLineFlag(t *testing.T) {
+	t.Parallel()
+
+	called := false
+	var stderr bytes.Buffer
+	code := cli.Execute(cli.Options{
+		Context:       context.Background(),
+		Args:          []string{"--tool-exposure=full"},
+		Stdin:         strings.NewReader(""),
+		Stdout:        &bytes.Buffer{},
+		Stderr:        &stderr,
+		Version:       "test-version",
+		UserConfigDir: func() (string, error) { return t.TempDir(), nil },
+		Run: func(context.Context, config.Config) error {
+			called = true
+			return nil
+		},
+	})
+
+	if code != cli.ExitUsage {
+		t.Fatalf("SOT-IF-077: 終了コード = %d、stderr = %q", code, stderr.String())
+	}
+	if called {
+		t.Fatal("SOT-IF-077: 非公開の --tool-exposure で transport を開始しました")
+	}
+}
+
 func TestExecutableServesMCPOverStdio(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -989,19 +1039,43 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	if err != nil {
 		t.Fatalf("子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 8 ||
-		tools.Tools[0].Name != "compare_law_versions" ||
-		tools.Tools[1].Name != "get_article" ||
-		tools.Tools[2].Name != "get_law" ||
-		tools.Tools[3].Name != "list_law_revisions" ||
-		tools.Tools[4].Name != "list_law_updates" ||
-		tools.Tools[5].Name != "query_legal_information" ||
-		tools.Tools[6].Name != "search_law_content" ||
-		tools.Tools[7].Name != "search_laws" {
+	if tools.Tools == nil || len(tools.Tools) != 3 ||
+		tools.Tools[0].Name != "discover_legal_tools" ||
+		tools.Tools[1].Name != "execute_legal_tool" ||
+		tools.Tools[2].Name != "query_legal_information" {
 		t.Fatalf(
-			"公開ツール一覧 = %#v, want 法令コア八ツール",
+			"SOT-IF-077: 公開ツール一覧 = %#v, want compact 三ツール",
 			tools.Tools,
 		)
+	}
+	if _, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name:      "get_law",
+		Arguments: map[string]any{},
+	}); err == nil {
+		t.Fatal("SOT-IF-077: compact で非公開の get_law を直接呼び出せました")
+	}
+	discoveryResult, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name:      "discover_legal_tools",
+		Arguments: map[string]any{"limit": 16},
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-077: ツール探索を呼び出せません: %v", err)
+	}
+	if discoveryResult == nil || discoveryResult.IsError {
+		t.Fatalf("SOT-IF-077: ツール探索が失敗しました: %#v", discoveryResult)
+	}
+	dispatchResult, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name: "execute_legal_tool",
+		Arguments: map[string]any{
+			"toolName":  "get_law",
+			"arguments": map[string]any{},
+		},
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-077: ツール実行を呼び出せません: %v", err)
+	}
+	if dispatchResult == nil || !dispatchResult.IsError {
+		t.Fatalf("SOT-IF-077: 入力不足の get_law 実行結果 = %#v, want tool error", dispatchResult)
 	}
 	queryResult, err := session.CallTool(ctx, &sdk.CallToolParams{
 		Name: "query_legal_information",
@@ -1036,6 +1110,85 @@ func TestExecutableServesMCPOverStdio(t *testing.T) {
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("子プロセスの MCP セッションを終了できません: %v\n標準エラー:\n%s", err, stderr.String())
+	}
+}
+
+func TestExecutableFullConfigPreservesAllDirectToolsOverStdio(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	configRoot := t.TempDir()
+	configDirectory := filepath.Join(configRoot, "japanese-law-mcp")
+	if err := os.MkdirAll(configDirectory, 0o700); err != nil {
+		t.Fatalf("設定ディレクトリを作成できません: %v", err)
+	}
+	configBody := `toolExposure: full
+extensionPacks:
+  judicial-cases:
+    enabled: true
+  judicial-citations:
+    enabled: true
+  legislative-history:
+    enabled: true
+`
+	if err := os.WriteFile(
+		filepath.Join(configDirectory, "config.yaml"),
+		[]byte(configBody),
+		0o600,
+	); err != nil {
+		t.Fatalf("full 設定を書き込めません: %v", err)
+	}
+
+	command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestMCPServerProcess$") //nolint:gosec // SOT-ENG-015: テスト自身を固定引数で子プロセスとして起動する。
+	command.Env = isolatedServerEnvironment(configRoot)
+	var stderr synchronizedBuffer
+	command.Stderr = &stderr
+
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-agent", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, &sdk.CommandTransport{Command: command}, nil)
+	if err != nil {
+		t.Fatalf("full MCP サーバーへ接続できません: %v\n標準エラー:\n%s", err, stderr.String())
+	}
+	tools, err := session.ListTools(ctx, nil)
+	if err != nil {
+		t.Fatalf("full ツール一覧を取得できません: %v", err)
+	}
+	names := make([]string, len(tools.Tools))
+	for index, tool := range tools.Tools {
+		names[index] = tool.Name
+	}
+	want := []string{
+		"compare_law_versions",
+		"get_article",
+		"get_judicial_case",
+		"get_law",
+		"list_law_revisions",
+		"list_law_updates",
+		"query_legal_information",
+		"search_diet_speeches",
+		"search_judicial_cases",
+		"search_law_content",
+		"search_laws",
+		"trace_judicial_citations",
+	}
+	if !reflect.DeepEqual(names, want) {
+		t.Fatalf("SOT-IF-077: full 公開ツール一覧 = %#v, want %#v", names, want)
+	}
+	directResult, err := session.CallTool(ctx, &sdk.CallToolParams{
+		Name:      "get_law",
+		Arguments: map[string]any{},
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-077: full の直接ツールを呼び出せません: %v", err)
+	}
+	if directResult == nil || !directResult.IsError {
+		t.Fatalf("SOT-IF-077: 入力不足の直接 get_law 結果 = %#v, want tool error", directResult)
+	}
+	if err := session.Close(); err != nil {
+		t.Fatalf("full MCP セッションを終了できません: %v\n標準エラー:\n%s", err, stderr.String())
 	}
 }
 
@@ -1121,26 +1274,24 @@ func TestExecutableServesMCPOverStreamableHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HTTP 子プロセスからツール一覧を取得できません: %v", err)
 	}
-	if tools.Tools == nil || len(tools.Tools) != 8 ||
-		tools.Tools[0].Name != "compare_law_versions" ||
-		tools.Tools[1].Name != "get_article" ||
-		tools.Tools[2].Name != "get_law" ||
-		tools.Tools[3].Name != "list_law_revisions" ||
-		tools.Tools[4].Name != "list_law_updates" ||
-		tools.Tools[5].Name != "query_legal_information" ||
-		tools.Tools[6].Name != "search_law_content" ||
-		tools.Tools[7].Name != "search_laws" {
-		t.Fatalf("HTTP 公開ツール一覧 = %#v", tools.Tools)
+	if tools.Tools == nil || len(tools.Tools) != 3 ||
+		tools.Tools[0].Name != "discover_legal_tools" ||
+		tools.Tools[1].Name != "execute_legal_tool" ||
+		tools.Tools[2].Name != "query_legal_information" {
+		t.Fatalf("SOT-IF-077: HTTP 公開ツール一覧 = %#v", tools.Tools)
 	}
 	callResult, err := session.CallTool(ctx, &sdk.CallToolParams{
-		Name:      "get_law",
-		Arguments: map[string]any{},
+		Name: "execute_legal_tool",
+		Arguments: map[string]any{
+			"toolName":  "get_law",
+			"arguments": map[string]any{},
+		},
 	})
 	if err != nil {
-		t.Fatalf("HTTP 経由で get_law を呼び出せません: %v", err)
+		t.Fatalf("SOT-IF-077: HTTP 経由で get_law を実行できません: %v", err)
 	}
 	if !callResult.IsError {
-		t.Fatalf("入力不足の get_law 結果 = %#v, want tool error", callResult)
+		t.Fatalf("SOT-IF-077: 入力不足の get_law 結果 = %#v, want tool error", callResult)
 	}
 	if err := session.Close(); err != nil {
 		t.Fatalf("HTTP MCP セッションを終了できません: %v", err)
@@ -1239,6 +1390,7 @@ func defaultTestConfigValues() config.Values {
 	defaults := config.Default()
 	return config.Values{
 		Transport:      string(defaults.Transport()),
+		ToolExposure:   string(defaults.ToolExposure()),
 		RequestTimeout: defaults.RequestTimeout(),
 		ListenAddress:  defaults.ListenAddress(),
 		AllowedOrigins: defaults.AllowedOrigins(),

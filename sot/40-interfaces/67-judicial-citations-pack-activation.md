@@ -1,6 +1,8 @@
 # SOT-IF-067: `judicial-cases` と `judicial-citations` の有効化
 
-- 状態: 有効
+- 状態: 廃止
+- 廃止理由: 拡張パックの有効化と専門操作の公開方法を、共通の `compact`、`full` 契約として一体で定義するため
+- 後継: [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](77-mcp-tool-exposure-and-extension-packs.md)
 
 ## 規定
 

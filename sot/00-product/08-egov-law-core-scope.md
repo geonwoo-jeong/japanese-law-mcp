@@ -8,7 +8,7 @@ Japanese Law MCP の既定の製品範囲は、e-Gov の公式法令情報を根
 
 ## コアの境界
 
-法令コアは、次の採用済み能力と、それらを公開する MCP ツールで構成する。
+法令コアは、次の採用済み能力と、それらを実行する専門操作で構成する。専門操作を MCP から直接公開するか、発見と実行を通じて提供するかは `SOT-IF-077` に従う。
 
 | 能力 | 利用目的 |
 |---|---|
@@ -26,7 +26,7 @@ Japanese Law MCP の既定の製品範囲は、e-Gov の公式法令情報を根
 
 ## 確認
 
-既定設定で公開する各 MCP ツールが、表に示した能力の有効なシナリオ、モデル、情報源 mapping および検証方法へ到達できることを確認する。
+既定設定で利用可能な各専門操作が、表に示した能力の有効なシナリオ、モデル、情報源 mapping および検証方法へ到達でき、`SOT-IF-077` の公開方式から同じ契約で実行できることを確認する。
 
 ## 関連
 
@@ -39,4 +39,5 @@ Japanese Law MCP の既定の製品範囲は、e-Gov の公式法令情報を根
 - [SOT-IF-035: e-Gov 法令 API Version 1](../40-interfaces/35-source-egov-law-api-v1.md)
 - [SOT-IF-060: e-Gov 法令版間比較のマッピングと組込み採用](../40-interfaces/60-egov-law-version-comparison-mapping-and-adoption.md)
 - [SOT-IF-057: e-Gov 法令改正履歴のマッピングと組込み採用](../40-interfaces/57-egov-law-revision-mapping-and-adoption.md)
+- [SOT-IF-077: MCP ツール公開方式と拡張パック有効化](../40-interfaces/77-mcp-tool-exposure-and-extension-packs.md)
 - [利用シナリオ SOT](../10-scenarios/00-index.md)

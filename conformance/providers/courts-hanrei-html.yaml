@@ -5,7 +5,7 @@ rows:
     majorVersion: 1
     operation: "GET /hanrei/search1/index.html"
     interfaceSotIds:
-      - SOT-IF-067
+      - SOT-IF-077
       - SOT-IF-069
       - SOT-IF-072
       - SOT-IF-073
@@ -70,7 +70,7 @@ rows:
     majorVersion: 1
     operation: "GET /hanrei/{decisionId}/detail{categoryNumber}/index.html"
     interfaceSotIds:
-      - SOT-IF-067
+      - SOT-IF-077
       - SOT-IF-042
       - SOT-IF-072
       - SOT-IF-045
@@ -137,7 +137,7 @@ rows:
     majorVersion: 1
     operation: "GET /hanrei/search1/index.html"
     interfaceSotIds:
-      - SOT-IF-067
+      - SOT-IF-077
       - SOT-IF-041
       - SOT-IF-072
       - SOT-IF-044
