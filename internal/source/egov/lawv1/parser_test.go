@@ -62,6 +62,24 @@ func TestParserはXMLnode上限の直前と超過を検証する(t *testing.T) {
 	assertSourceErrorCode(t, err, model.SourceErrorCodeSourceResponseTooLarge)
 }
 
+func TestParserは更新法令項目数をXMLnode数と別に制限する(t *testing.T) {
+	t.Parallel()
+
+	exact := minimalResponseWithItems(maximumUpdateItems)
+	if _, err := parseResponse(
+		context.Background(),
+		[]byte(exact),
+	); err != nil {
+		t.Fatalf("項目数が上限と等しい XML を拒否しました: %v", err)
+	}
+	over := minimalResponseWithItems(maximumUpdateItems + 1)
+	response, err := parseResponse(context.Background(), []byte(over))
+	assertSourceErrorCode(t, err, model.SourceErrorCodeSourceResponseTooLarge)
+	if len(response.items) != 0 {
+		t.Fatalf("上限超過で %d 件の部分結果を返しました", len(response.items))
+	}
+}
+
 func TestXMLnode数は全構造単位を一つのcounterで数える(t *testing.T) {
 	t.Parallel()
 
@@ -138,6 +156,19 @@ func minimalResponseWithComments(count int) string {
 	)
 	for range count {
 		body.WriteString(`<!--x-->`)
+	}
+	body.WriteString(`</ApplData></DataRoot>`)
+	return body.String()
+}
+
+func minimalResponseWithItems(count int) string {
+	var body strings.Builder
+	body.WriteString(
+		`<DataRoot><Result><Code>0</Code><Message/></Result>` +
+			`<ApplData><Date>20230201</Date>`,
+	)
+	for range count {
+		body.WriteString(`<LawNameListInfo/>`)
 	}
 	body.WriteString(`</ApplData></DataRoot>`)
 	return body.String()

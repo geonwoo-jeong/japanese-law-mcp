@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -43,8 +44,12 @@ func run(
 	stderr io.Writer,
 	execute func(context.Context, options) ([]byte, error),
 ) int {
-	current, err := parseOptions(args, stderr)
+	current, err := parseOptions(args, io.Discard)
 	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			writeUsage(stdout)
+			return 0
+		}
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
@@ -64,6 +69,14 @@ func run(
 		return 1
 	}
 	return 0
+}
+
+func writeUsage(output io.Writer) {
+	_, _ = fmt.Fprintln(
+		output,
+		"使用方法: legal-query-eval "+
+			"--adoption <testdata/legalquery/adoptions/current.json> --format json",
+	)
 }
 
 func parseOptions(args []string, stderr io.Writer) (options, error) {

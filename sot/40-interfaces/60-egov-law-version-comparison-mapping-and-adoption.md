@@ -44,7 +44,11 @@ e-Gov 法令 API Version 2 の
 
 別の `Article`、`Paragraph`、表、引用構造、`AmendProvision`、
 `NewProvision`、別表又は改正法附則の内側にある `Article` は独立した比較対象に
-しない。対象の `Article.Num` は `SOT-MODEL-018` の正規形へ対応させる。
+しない。対象の単一条の `Article.Num` は `SOT-MODEL-018` の正規形へ対応させる。
+一つの `Article` が `38:84` のような連続する削除条の範囲を示す場合は、両端を
+同じ正規形として検証し、`SOT-MODEL-033` の `start:end` へ対応させる。範囲は
+元の一つの `Article` に対応する一つの比較対象として保持し、個別条へ展開しない。
+空の端点、複数の `:`、同一の端点又は逆順の範囲は `invalid_source_response` とする。
 一つの版で同じ `provision + articleNumber` が複数になる場合は
 `invalid_source_response` とする。
 
@@ -103,7 +107,8 @@ JSON 化した成功結果 12 MiB を上限とする。一単位でも超えた�
 
 公式 OpenAPI `2.1.139` の endpoint、XML media type と版選択条件、及び公式の
 法令標準 XML の `MainProvision`、`SupplProvision`、`AmendLawNum`、
-`Article` と階層要素を契約 fixture で確認する。保存済み公式契約との不一致は
+`Article`、単一条と削除条範囲の `Num`、及び階層要素を契約 fixture で確認する。
+保存済み公式契約との不一致は
 `source_contract_changed`、個別 runtime 応答又は条同一性の不正は
 `invalid_source_response` とする。
 
@@ -131,7 +136,8 @@ profile、辞書、候補、評価 corpus、既存 route、pack 条件及び pro
 `revisionId` と `asOf`、同版比較、追加、削除、位置だけの変更、文字列変更、
 構造だけの変更、本則と原始附則、改正法附則の除外、nested Article の除外、
 重複同一性、空文字の条、空白差、順序、全件数、各 Citation、derived provenance、
-二回取得の開始間隔、同時実行、全資源上限、error normalization、descriptor、
+二回取得の開始間隔、同時実行、単一条と削除条範囲の共存、範囲の一単位保持、
+全資源上限、error normalization、descriptor、
 binding、既定 route、八・十ツール、両 transport の schema 及び MCP smoke test を
 fixture と fake transport で確認する。
 

@@ -88,7 +88,7 @@ func (l LawVersionArticleLocation) Validate() error {
 	default:
 		return fmt.Errorf("provision は main または supplementary でなければなりません")
 	}
-	if err := validateLawArticleNumber(l.articleNumber); err != nil {
+	if err := validateLawVersionArticleNumber(l.articleNumber); err != nil {
 		return err
 	}
 	for _, value := range []string{

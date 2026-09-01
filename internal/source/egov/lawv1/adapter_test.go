@@ -95,6 +95,50 @@ func TestListは公式五件fixtureを損失なく対応する(t *testing.T) {
 	}
 }
 
+func TestListは二百八件の完全一覧を資源上限内で返す(t *testing.T) {
+	t.Parallel()
+
+	const (
+		itemCount              = 208
+		observedStructureUnits = 6007
+	)
+	body := syntheticUpdateListResponse("20260624", itemCount)
+	if structureUnits := countXMLStructureUnits(t, body); structureUnits < observedStructureUnits {
+		t.Fatalf(
+			"XML 構造単位 = %d、期待する下限は %d です",
+			structureUnits,
+			observedStructureUnits,
+		)
+	}
+	adapter := mustTestAdapter(t, func(*http.Request) (*http.Response, error) {
+		return testResponse(
+			http.StatusOK,
+			body,
+			map[string]string{"Content-Type": "text/xml;charset=UTF-8"},
+		), nil
+	}, time.Now(), make(chan struct{}, 1))
+
+	page, err := adapter.List(
+		context.Background(),
+		mustRequest(t, "2026-06-24"),
+	)
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+	if len(page.Items()) != itemCount ||
+		page.Page().ReturnedCount() != itemCount {
+		t.Fatalf(
+			"items = %d, returnedCount = %d",
+			len(page.Items()),
+			page.Page().ReturnedCount(),
+		)
+	}
+	total, exists := page.Page().TotalCount()
+	if !exists || total != itemCount {
+		t.Fatalf("totalCount = %d, %t", total, exists)
+	}
+}
+
 func TestListは404Code1の該当なしを空一覧にする(t *testing.T) {
 	t.Parallel()
 

@@ -15,15 +15,17 @@ import (
 )
 
 const (
-	maximumXMLNodes = 2000
-	maximumXMLDepth = 4
-	parseTimeout    = 2 * time.Second
+	maximumUpdateItems = 512
+	maximumXMLNodes    = 16 * 1024
+	maximumXMLDepth    = 4
+	parseTimeout       = 2 * time.Second
 )
 
 var (
 	errXMLContract = errors.New("XML 構造が確認済みの契約と一致しません")
 	errXMLUnsafe   = errors.New("安全でない XML 構造です")
 	errXMLNodes    = errors.New("XML node 数が上限を超えました")
+	errUpdateItems = errors.New("更新法令項目数が上限を超えました")
 )
 
 type xmlCapture struct {
@@ -38,6 +40,7 @@ type xmlParserState struct {
 	rootCount      int
 	resultCount    int
 	applDataCount  int
+	itemCount      int
 	resultSeen     map[string]struct{}
 	applDataSeen   map[string]struct{}
 	itemSeen       map[string]struct{}
@@ -261,6 +264,10 @@ func (s *xmlParserState) startContainerField(
 			s.capture = &xmlCapture{name: name, depth: 3}
 			return nil
 		case "LawNameListInfo":
+			if s.itemCount >= maximumUpdateItems {
+				return errUpdateItems
+			}
+			s.itemCount++
 			s.currentItem = &updateListItem{}
 			s.itemSeen = make(map[string]struct{})
 			return nil
@@ -420,7 +427,7 @@ func classifyParserError(
 	switch {
 	case errors.Is(err, errXMLUnsafe):
 		return newSourceError(model.SourceErrorCodeUnsafeSourceContent, "")
-	case errors.Is(err, errXMLNodes):
+	case errors.Is(err, errXMLNodes), errors.Is(err, errUpdateItems):
 		return newSourceError(model.SourceErrorCodeSourceResponseTooLarge, "")
 	default:
 		return newSourceError(model.SourceErrorCodeSourceContractChanged, "")

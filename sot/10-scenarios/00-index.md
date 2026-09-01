@@ -15,3 +15,4 @@
 - [13-compare-law-versions.md](13-compare-law-versions.md)
 - [14-search-diet-speeches.md](14-search-diet-speeches.md)
 - [15-trace-judicial-citations.md](15-trace-judicial-citations.md)
+- [16-list-law-updates-v2.md](16-list-law-updates-v2.md)

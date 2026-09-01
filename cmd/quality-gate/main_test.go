@@ -99,6 +99,33 @@ func TestRunReportsGateFailures(t *testing.T) {
 	}
 }
 
+// SOT-IF-021: ヘルプは正常終了し、検査処理を開始しない。
+func TestRunTreatsHelpAsSuccessWithoutRunningGate(t *testing.T) {
+	t.Parallel()
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	code := run(
+		[]string{"--help"},
+		&stdout,
+		&stderr,
+		func(qualitygate.Options) error {
+			t.Fatal("ヘルプ表示でゲートが実行されました")
+			return nil
+		},
+	)
+
+	if code != 0 {
+		t.Fatalf("終了コード = %d, want 0", code)
+	}
+	if !strings.Contains(stdout.String(), "使用方法") {
+		t.Fatalf("標準出力に使用方法がありません: %q", stdout.String())
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("標準エラー = %q, want empty", stderr.String())
+	}
+}
+
 func TestRunDefaultsGitRepositoryToRepository(t *testing.T) {
 	t.Parallel()
 

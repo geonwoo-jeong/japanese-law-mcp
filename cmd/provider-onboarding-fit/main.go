@@ -35,6 +35,10 @@ func run(
 ) int {
 	baseRef, err := parseBaseRef(args)
 	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			writeUsage(stdout)
+			return 0
+		}
 		_, _ = fmt.Fprintf(stderr, "provider 追加 fitness gate の使用法が不正です: %v\n", err)
 		return 2
 	}
@@ -59,6 +63,13 @@ func run(
 	}
 	_, _ = fmt.Fprintln(stdout, "provider 追加 fitness gate が成功しました")
 	return 0
+}
+
+func writeUsage(output io.Writer) {
+	_, _ = fmt.Fprintln(
+		output,
+		"使用方法: provider-onboarding-fit --base-ref <git-revision>",
+	)
 }
 
 func parseBaseRef(args []string) (string, error) {

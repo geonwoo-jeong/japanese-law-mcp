@@ -3,6 +3,7 @@ package listlawupdates
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ func TestServiceCallsCommonPortWithTimeoutAndProjectsResult(t *testing.T) {
 	}
 	service, err := NewService(lister, time.Second)
 	if err != nil {
-		t.Fatalf("SOT-IF-038: NewService() のエラー = %v", err)
+		t.Fatalf("SOT-IF-076: NewService() のエラー = %v", err)
 	}
 	request, err := NewRequest(RequestValues{Date: date})
 	if err != nil {
@@ -28,23 +29,97 @@ func TestServiceCallsCommonPortWithTimeoutAndProjectsResult(t *testing.T) {
 
 	result, err := service.List(context.Background(), request)
 	if err != nil {
-		t.Fatalf("SOT-IF-038: List() のエラー = %v", err)
+		t.Fatalf("SOT-IF-076: List() のエラー = %v", err)
 	}
 	if lister.calls != 1 || lister.request.Date() != date {
 		t.Fatalf(
-			"SOT-IF-038: provider 呼出し = %d, date = %q",
+			"SOT-IF-076: provider 呼出し = %d, date = %q",
 			lister.calls,
 			lister.request.Date().String(),
 		)
 	}
 	if !lister.hadDeadline {
-		t.Fatal("SOT-ENG-010/SOT-IF-038: request timeout が設定されていない")
+		t.Fatal("SOT-ENG-010/SOT-IF-076: request timeout が設定されていない")
 	}
 	if result.Date() != date ||
 		result.TotalCount() != 1 ||
 		len(result.Items()) != 1 ||
 		result.Items()[0].LawID() != "law-001" {
-		t.Fatalf("SOT-IF-038: Result = %#v", result)
+		t.Fatalf("SOT-IF-076: Result = %#v", result)
+	}
+}
+
+func TestServiceProjectsDefaultLimitAndMakesOmissionExplicit(t *testing.T) {
+	t.Parallel()
+
+	const itemCount = 208
+	date := mustListLawUpdatesDate(t, "2026-06-24")
+	lister := &recordingLawUpdateLister{
+		page: mustCommonLawUpdatePageWithCount(t, date, itemCount),
+	}
+	service, err := NewService(lister, time.Second)
+	if err != nil {
+		t.Fatalf("SOT-IF-076: NewService() のエラー = %v", err)
+	}
+	request, err := NewRequest(RequestValues{Date: date})
+	if err != nil {
+		t.Fatalf("試験用 Request を作成できません: %v", err)
+	}
+
+	result, err := service.List(context.Background(), request)
+	if err != nil {
+		t.Fatalf("SOT-IF-076: List() のエラー = %v", err)
+	}
+	items := result.Items()
+	if result.TotalCount() != itemCount ||
+		result.ReturnedCount() != DefaultLimit ||
+		result.OmittedCount() != itemCount-DefaultLimit ||
+		!result.Truncated() ||
+		len(items) != DefaultLimit {
+		t.Fatalf(
+			"SOT-IF-076: totalCount = %d, returnedCount = %d, omittedCount = %d, truncated = %t, items = %d",
+			result.TotalCount(),
+			result.ReturnedCount(),
+			result.OmittedCount(),
+			result.Truncated(),
+			len(items),
+		)
+	}
+	if items[0].LawID() != "law-001" || items[DefaultLimit-1].LawID() != "law-050" {
+		t.Fatalf("SOT-IF-076: 公開順序 = %q ... %q", items[0].LawID(), items[DefaultLimit-1].LawID())
+	}
+}
+
+func TestServiceHonorsExplicitLimitForCompleteResult(t *testing.T) {
+	t.Parallel()
+
+	const itemCount = 208
+	date := mustListLawUpdatesDate(t, "2026-06-24")
+	lister := &recordingLawUpdateLister{
+		page: mustCommonLawUpdatePageWithCount(t, date, itemCount),
+	}
+	service, err := NewService(lister, time.Second)
+	if err != nil {
+		t.Fatalf("SOT-IF-076: NewService() のエラー = %v", err)
+	}
+	limit := itemCount
+	request, err := NewRequest(RequestValues{Date: date, Limit: &limit})
+	if err != nil {
+		t.Fatalf("試験用 Request を作成できません: %v", err)
+	}
+
+	result, err := service.List(context.Background(), request)
+	if err != nil {
+		t.Fatalf("SOT-IF-076: List() のエラー = %v", err)
+	}
+	items := result.Items()
+	if result.TotalCount() != itemCount ||
+		result.ReturnedCount() != itemCount ||
+		result.OmittedCount() != 0 ||
+		result.Truncated() ||
+		len(items) != itemCount ||
+		items[itemCount-1].LawID() != "law-208" {
+		t.Fatalf("SOT-IF-076: 完全結果 = %#v", result)
 	}
 }
 
@@ -72,7 +147,7 @@ func TestServiceRevalidatesProviderPage(t *testing.T) {
 		ErrInvalidSourceResponse,
 	) {
 		t.Fatalf(
-			"SOT-IF-038: 要求日と異なる provider page のエラー = %v",
+			"SOT-IF-076: 要求日と異なる provider page のエラー = %v",
 			err,
 		)
 	}
@@ -82,7 +157,7 @@ func TestServiceRevalidatesProviderPage(t *testing.T) {
 		err,
 		ErrInvalidSourceResponse,
 	) {
-		t.Fatalf("SOT-IF-038: 無効な provider page のエラー = %v", err)
+		t.Fatalf("SOT-IF-076: 無効な provider page のエラー = %v", err)
 	}
 }
 
@@ -104,7 +179,7 @@ func TestServicePropagatesCancellationAndProviderError(t *testing.T) {
 		err,
 		context.DeadlineExceeded,
 	) {
-		t.Fatalf("SOT-ENG-010/SOT-IF-038: timeout error = %v", err)
+		t.Fatalf("SOT-ENG-010/SOT-IF-076: timeout error = %v", err)
 	}
 
 	want := errors.New("provider failure")
@@ -114,7 +189,7 @@ func TestServicePropagatesCancellationAndProviderError(t *testing.T) {
 		t.Fatalf("NewService() のエラー = %v", err)
 	}
 	if _, err := service.List(context.Background(), request); !errors.Is(err, want) {
-		t.Fatalf("SOT-IF-038: provider error = %v", err)
+		t.Fatalf("SOT-IF-076: provider error = %v", err)
 	}
 }
 
@@ -172,6 +247,15 @@ func mustCommonLawUpdatePage(
 	date model.Date,
 ) lawupdatelist.Page {
 	t.Helper()
+	return mustCommonLawUpdatePageWithCount(t, date, 1)
+}
+
+func mustCommonLawUpdatePageWithCount(
+	t *testing.T,
+	date model.Date,
+	itemCount int,
+) lawupdatelist.Page {
+	t.Helper()
 
 	update := mustListLawUpdate(t, date, "law-001")
 	informationSource, err := model.NewInformationSource(model.InformationSourceValues{
@@ -211,17 +295,26 @@ func mustCommonLawUpdatePage(
 	if err != nil {
 		t.Fatalf("試験用 Provenance を作成できません: %v", err)
 	}
-	resource, err := model.NewSourcedResource(
-		model.SourcedResourceValues[model.LawUpdate]{
-			Ref:        ref,
-			Provenance: []model.Provenance{provenance},
-			Data:       update,
-		},
-	)
-	if err != nil {
-		t.Fatalf("試験用 SourcedResource を作成できません: %v", err)
+	items := make([]model.SourcedResource[model.LawUpdate], itemCount)
+	for index := range items {
+		itemUpdate := mustListLawUpdate(
+			t,
+			date,
+			fmt.Sprintf("law-%03d", index+1),
+		)
+		resource, resourceErr := model.NewSourcedResource(
+			model.SourcedResourceValues[model.LawUpdate]{
+				Ref:        ref,
+				Provenance: []model.Provenance{provenance},
+				Data:       itemUpdate,
+			},
+		)
+		if resourceErr != nil {
+			t.Fatalf("試験用 SourcedResource を作成できません: %v", resourceErr)
+		}
+		items[index] = resource
 	}
-	totalCount := 1
+	totalCount := len(items)
 	sourcePage, err := model.NewSourcePage(model.SourcePageValues{
 		ReturnedCount: totalCount,
 		TotalCount:    &totalCount,
@@ -231,7 +324,7 @@ func mustCommonLawUpdatePage(
 		t.Fatalf("試験用 SourcePage を作成できません: %v", err)
 	}
 	page, err := lawupdatelist.NewPage(lawupdatelist.PageValues{
-		Items: []model.SourcedResource[model.LawUpdate]{resource},
+		Items: items,
 		Page:  sourcePage,
 		Date:  date,
 	})

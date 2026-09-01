@@ -91,7 +91,8 @@ func projectPage(request Request, result lawupdatelist.Page) (Result, error) {
 		)
 	}
 
-	items := make([]model.LawUpdate, len(resources))
+	returnedCount := min(request.Limit(), len(resources))
+	items := make([]model.LawUpdate, returnedCount)
 	for index, resource := range resources {
 		if err := resource.Validate(); err != nil {
 			return Result{}, fmt.Errorf(
@@ -101,7 +102,9 @@ func projectPage(request Request, result lawupdatelist.Page) (Result, error) {
 				err,
 			)
 		}
-		items[index] = resource.Data()
+		if index < returnedCount {
+			items[index] = resource.Data()
+		}
 	}
 	resultValues := ResultValues{
 		Date:       request.Date(),

@@ -7,12 +7,69 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/lawupdatelist"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/google/jsonschema-go/jsonschema"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
+
+func TestListLawUpdatesToolSchemasExposeLimitAndOmissionMetadata(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	serverTransport, clientTransport := sdk.NewInMemoryTransports()
+	server := NewServer("test-version")
+	addListLawUpdatesTool(server, &recordingListLawUpdatesPort{})
+	go func() {
+		_ = server.Run(ctx, serverTransport)
+	}()
+
+	client := sdk.NewClient(
+		&sdk.Implementation{Name: "test-client", Version: "test-version"},
+		nil,
+	)
+	session, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("MCP セッションを初期化できません: %v", err)
+	}
+	defer func() { _ = session.Close() }()
+	tools, err := session.ListTools(ctx, nil)
+	if err != nil {
+		t.Fatalf("tools/list のエラー = %v", err)
+	}
+	if len(tools.Tools) != 1 || tools.Tools[0].Name != "list_law_updates" {
+		t.Fatalf("SOT-IF-076: tools = %#v", tools.Tools)
+	}
+	inputSchema := decodeListLawUpdatesSchema(t, tools.Tools[0].InputSchema)
+	outputSchema := decodeListLawUpdatesSchema(t, tools.Tools[0].OutputSchema)
+	limit := inputSchema.Properties["limit"]
+	if limit == nil ||
+		limit.Minimum == nil || *limit.Minimum != 1 ||
+		limit.Maximum == nil || *limit.Maximum != 512 ||
+		string(limit.Default) != "50" {
+		t.Fatalf("SOT-IF-076: limit schema = %#v", limit)
+	}
+	if !containsString(inputSchema.Required, "date") ||
+		containsString(inputSchema.Required, "limit") {
+		t.Fatalf("SOT-IF-076: input required = %#v", inputSchema.Required)
+	}
+	for _, field := range []string{
+		"date",
+		"totalCount",
+		"returnedCount",
+		"omittedCount",
+		"truncated",
+		"items",
+	} {
+		if !containsString(outputSchema.Required, field) {
+			t.Fatalf("SOT-IF-076: output required に %q がありません: %#v", field, outputSchema.Required)
+		}
+	}
+}
 
 func TestListLawUpdatesToolReturnsAllPublicFields(t *testing.T) {
 	t.Parallel()
@@ -26,16 +83,19 @@ func TestListLawUpdatesToolReturnsAllPublicFields(t *testing.T) {
 		json.RawMessage(`{"date":"2026-07-26"}`),
 	)
 	if err != nil {
-		t.Fatalf("SOT-IF-038: callListLawUpdates() のエラー = %v", err)
+		t.Fatalf("SOT-IF-076: callListLawUpdates() のエラー = %v", err)
 	}
 	if result.IsError {
-		t.Fatalf("SOT-IF-038: list_law_updates がエラーを返した: %#v", result)
+		t.Fatalf("SOT-IF-076: list_law_updates がエラーを返した: %#v", result)
 	}
-	if port.calls != 1 || port.request.Date().String() != "2026-07-26" {
+	if port.calls != 1 ||
+		port.request.Date().String() != "2026-07-26" ||
+		port.request.Limit() != listlawupdates.DefaultLimit {
 		t.Fatalf(
-			"SOT-IF-038: port 呼出し = %d, date = %q",
+			"SOT-IF-076: port 呼出し = %d, date = %q, limit = %d",
 			port.calls,
 			port.request.Date().String(),
+			port.request.Limit(),
 		)
 	}
 
@@ -50,14 +110,18 @@ func TestListLawUpdatesToolReturnsAllPublicFields(t *testing.T) {
 
 	var payload map[string]any
 	if err := json.Unmarshal([]byte(text), &payload); err != nil {
-		t.Fatalf("SOT-IF-038: 成功結果を解析できない: %v", err)
+		t.Fatalf("SOT-IF-076: 成功結果を解析できない: %v", err)
 	}
-	if payload["date"] != "2026-07-26" || payload["totalCount"] != float64(2) {
-		t.Fatalf("SOT-IF-038: 公開件数 = %#v", payload)
+	if payload["date"] != "2026-07-26" ||
+		payload["totalCount"] != float64(2) ||
+		payload["returnedCount"] != float64(2) ||
+		payload["omittedCount"] != float64(0) ||
+		payload["truncated"] != false {
+		t.Fatalf("SOT-IF-076: 公開件数 = %#v", payload)
 	}
 	items, ok := payload["items"].([]any)
 	if !ok || len(items) != 2 {
-		t.Fatalf("SOT-IF-038: items = %#v", payload["items"])
+		t.Fatalf("SOT-IF-076: items = %#v", payload["items"])
 	}
 	full := items[0].(map[string]any)
 	wantFull := map[string]any{
@@ -85,7 +149,7 @@ func TestListLawUpdatesToolReturnsAllPublicFields(t *testing.T) {
 		},
 	}
 	if !reflect.DeepEqual(full, wantFull) {
-		t.Fatalf("SOT-IF-038: 全項目 = %#v, want %#v", full, wantFull)
+		t.Fatalf("SOT-IF-076: 全項目 = %#v, want %#v", full, wantFull)
 	}
 	minimal := items[1].(map[string]any)
 	for _, key := range []string{
@@ -107,8 +171,66 @@ func TestListLawUpdatesToolReturnsAllPublicFields(t *testing.T) {
 		"page",
 	} {
 		if _, exists := minimal[key]; exists {
-			t.Fatalf("SOT-IF-038: 省略または非公開の %s が出力された: %#v", key, minimal)
+			t.Fatalf("SOT-IF-076: 省略または非公開の %s が出力された: %#v", key, minimal)
 		}
+	}
+}
+
+func TestListLawUpdatesToolAcceptsExplicitLimit(t *testing.T) {
+	t.Parallel()
+
+	port := &recordingListLawUpdatesPort{result: mustListLawUpdatesResult(t)}
+	result, err := callListLawUpdates(
+		context.Background(),
+		port,
+		json.RawMessage(`{"date":"2026-07-26","limit":208}`),
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-076: callListLawUpdates() のエラー = %v", err)
+	}
+	if result.IsError || port.calls != 1 || port.request.Limit() != 208 {
+		t.Fatalf(
+			"SOT-IF-076: result = %#v, calls = %d, limit = %d",
+			result,
+			port.calls,
+			port.request.Limit(),
+		)
+	}
+}
+
+func TestListLawUpdatesToolMakesTruncationExplicit(t *testing.T) {
+	t.Parallel()
+
+	complete := mustListLawUpdatesResult(t)
+	truncated, err := listlawupdates.NewResult(listlawupdates.ResultValues{
+		Date:       complete.Date(),
+		TotalCount: 208,
+		Items:      complete.Items(),
+	})
+	if err != nil {
+		t.Fatalf("SOT-IF-076: 試験用省略結果を作成できません: %v", err)
+	}
+	result, err := callListLawUpdates(
+		context.Background(),
+		&recordingListLawUpdatesPort{result: truncated},
+		json.RawMessage(`{"date":"2026-07-26"}`),
+	)
+	if err != nil {
+		t.Fatalf("SOT-IF-076: callListLawUpdates() のエラー = %v", err)
+	}
+	var payload listLawUpdatesOutput
+	if err := json.Unmarshal(
+		[]byte(result.Content[0].(*sdk.TextContent).Text),
+		&payload,
+	); err != nil {
+		t.Fatalf("SOT-IF-076: 省略結果を解析できません: %v", err)
+	}
+	if payload.TotalCount != 208 ||
+		payload.ReturnedCount != 2 ||
+		payload.OmittedCount != 206 ||
+		!payload.Truncated ||
+		len(payload.Items) != 2 {
+		t.Fatalf("SOT-IF-076: 省略結果 = %#v", payload)
 	}
 }
 
@@ -129,8 +251,8 @@ func TestListLawUpdatesToolReturnsNonNilEmptyItems(t *testing.T) {
 		t.Fatalf("callListLawUpdates() のエラー = %v", err)
 	}
 	if got := result.Content[0].(*sdk.TextContent).Text; got !=
-		`{"date":"2026-07-26","totalCount":0,"items":[]}` {
-		t.Fatalf("SOT-IF-038: 空結果 = %s", got)
+		`{"date":"2026-07-26","totalCount":0,"returnedCount":0,"omittedCount":0,"truncated":false,"items":[]}` {
+		t.Fatalf("SOT-IF-076: 空結果 = %s", got)
 	}
 }
 
@@ -138,16 +260,21 @@ func TestListLawUpdatesToolRejectsInvalidInput(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]json.RawMessage{
-		"入力の欠落":       nil,
-		"date の欠落":    json.RawMessage(`{}`),
-		"date の null": json.RawMessage(`{"date":null}`),
-		"date の型":     json.RawMessage(`{"date":20260726}`),
-		"date の形式":    json.RawMessage(`{"date":"2026/07/26"}`),
-		"存在しない日":      json.RawMessage(`{"date":"2026-02-30"}`),
-		"未定義項目":       json.RawMessage(`{"date":"2026-07-26","other":true}`),
-		"配列":          json.RawMessage(`[]`),
-		"文字列":         json.RawMessage(`"2026-07-26"`),
-		"null object": json.RawMessage(`null`),
+		"入力の欠落":        nil,
+		"date の欠落":     json.RawMessage(`{}`),
+		"date の null":  json.RawMessage(`{"date":null}`),
+		"date の型":      json.RawMessage(`{"date":20260726}`),
+		"date の形式":     json.RawMessage(`{"date":"2026/07/26"}`),
+		"存在しない日":       json.RawMessage(`{"date":"2026-02-30"}`),
+		"limit の null": json.RawMessage(`{"date":"2026-07-26","limit":null}`),
+		"limit の型":     json.RawMessage(`{"date":"2026-07-26","limit":"50"}`),
+		"limit の小数":    json.RawMessage(`{"date":"2026-07-26","limit":1.5}`),
+		"limit の下限未満":  json.RawMessage(`{"date":"2026-07-26","limit":0}`),
+		"limit の上限超過":  json.RawMessage(`{"date":"2026-07-26","limit":513}`),
+		"未定義項目":        json.RawMessage(`{"date":"2026-07-26","other":true}`),
+		"配列":           json.RawMessage(`[]`),
+		"文字列":          json.RawMessage(`"2026-07-26"`),
+		"null object":  json.RawMessage(`null`),
 	}
 	for name, arguments := range tests {
 		name, arguments := name, arguments
@@ -416,4 +543,20 @@ func (o listLawUpdatesTestOperation) ValidateSourceOperation() error {
 		return errors.New("試験 operation が定義されていません")
 	}
 	return nil
+}
+
+func decodeListLawUpdatesSchema(
+	t *testing.T,
+	value any,
+) *jsonschema.Schema {
+	t.Helper()
+	payload, err := json.Marshal(value)
+	if err != nil {
+		t.Fatalf("schema を JSON に変換できません: %v", err)
+	}
+	var schema jsonschema.Schema
+	if err := json.Unmarshal(payload, &schema); err != nil {
+		t.Fatalf("schema を解析できません: %v", err)
+	}
+	return &schema
 }

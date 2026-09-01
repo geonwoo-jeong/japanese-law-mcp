@@ -13,7 +13,7 @@ type ResultValues struct {
 	Items      []model.LawUpdate
 }
 
-// Result は、対象日、正確な総件数および更新情報を不変に保持する。
+// Result は、対象日、正確な総件数および上限付き更新情報を不変に保持する。
 type Result struct {
 	date       model.Date
 	totalCount int
@@ -38,9 +38,24 @@ func (r Result) Date() model.Date {
 	return r.date
 }
 
-// TotalCount は、返した更新情報の正確な総件数を返す。
+// TotalCount は、公式一覧にある更新情報の正確な総件数を返す。
 func (r Result) TotalCount() int {
 	return r.totalCount
+}
+
+// ReturnedCount は、公開結果へ含めた更新情報の件数を返す。
+func (r Result) ReturnedCount() int {
+	return len(r.items)
+}
+
+// OmittedCount は、公開結果から省略した更新情報の件数を返す。
+func (r Result) OmittedCount() int {
+	return r.totalCount - len(r.items)
+}
+
+// Truncated は、公開結果から一件以上を省略したかを返す。
+func (r Result) Truncated() bool {
+	return r.OmittedCount() > 0
 }
 
 // Items は、法令更新情報の複製を返す。
@@ -53,8 +68,11 @@ func (r Result) Validate() error {
 	if err := r.date.Validate(); err != nil {
 		return fmt.Errorf("date が有効ではありません: %w", err)
 	}
-	if r.totalCount < 0 || r.totalCount != len(r.items) {
-		return fmt.Errorf("totalCount と items の件数が一致しません")
+	if len(r.items) > MaxLimit {
+		return fmt.Errorf("items は %d 件以下でなければなりません", MaxLimit)
+	}
+	if r.totalCount < 0 || r.totalCount < len(r.items) {
+		return fmt.Errorf("totalCount は items の件数以上でなければなりません")
 	}
 	for index, item := range r.items {
 		if err := item.Validate(); err != nil {

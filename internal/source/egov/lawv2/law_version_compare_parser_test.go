@@ -111,6 +111,49 @@ func TestCompareLawVersionDocumentsClassifiesLocationStructureAndWhitespace(t *t
 	}
 }
 
+func TestCompareLawVersionDocumentsPreservesOfficialDeletedArticleRange(t *testing.T) {
+	t.Parallel()
+
+	limits := defaultLawVersionCompareLimits()
+	content := `<Law><LawBody><MainProvision><Chapter Num="3">
+		<Article Num="37"><ArticleTitle>第三十七条</ArticleTitle></Article>
+		<Article Num="38:84">
+			<ArticleTitle>第三十八条から第八十四条まで</ArticleTitle>
+			<Paragraph Num="1"><ParagraphSentence><Sentence>削除</Sentence></ParagraphSentence></Paragraph>
+		</Article>
+	</Chapter></MainProvision></LawBody></Law>`
+	before := mustParsedLawVersionDocument(t, "revision-before", content, limits)
+	after := mustParsedLawVersionDocument(t, "revision-after", content, limits)
+
+	const identity = "main\x0038:84"
+	parsed, exists := before.articles[identity]
+	if !exists {
+		t.Fatalf("公式削除条範囲の同一性がありません: %v", before.order)
+	}
+	if parsed.article.Location().ArticleNumber() != "38:84" {
+		t.Fatalf("articleNumber = %q", parsed.article.Location().ArticleNumber())
+	}
+	citationLocation, exists := parsed.article.Citation().Location()
+	if !exists || citationLocation != "main:article=38:84" {
+		t.Fatalf("citation.location = %q, %t", citationLocation, exists)
+	}
+
+	comparison, err := compareLawVersionDocuments(context.Background(), before, after, limits)
+	if err != nil {
+		t.Fatalf("削除条範囲を含む版間比較のエラー = %v", err)
+	}
+	if comparison.BeforeArticleCount() != 2 || comparison.AfterArticleCount() != 2 ||
+		comparison.UnchangedCount() != 2 || comparison.TotalCount() != 0 {
+		t.Fatalf(
+			"比較件数 = before:%d after:%d unchanged:%d total:%d",
+			comparison.BeforeArticleCount(),
+			comparison.AfterArticleCount(),
+			comparison.UnchangedCount(),
+			comparison.TotalCount(),
+		)
+	}
+}
+
 func TestParseLawVersionDocumentRejectsDuplicateIdentityAndUnsafeXML(t *testing.T) {
 	t.Parallel()
 
@@ -129,6 +172,10 @@ func TestParseLawVersionDocumentRejectsDuplicateIdentityAndUnsafeXML(t *testing.
 		"未知 namespace": {
 			content: `<Law xmlns="urn:unknown"><LawBody/></Law>`,
 			code:    model.SourceErrorCodeUnsafeSourceContent,
+		},
+		"逆順の条範囲": {
+			content: `<Law><LawBody><MainProvision><Article Num="84:38"/></MainProvision></LawBody></Law>`,
+			code:    model.SourceErrorCodeInvalidSourceResponse,
 		},
 	}
 	for name, test := range tests {

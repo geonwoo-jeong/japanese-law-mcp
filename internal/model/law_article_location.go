@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -106,6 +107,42 @@ func (*LawArticleLocation) UnmarshalJSON(_ []byte) error {
 }
 
 func validateLawArticleNumber(value string) error {
+	if err := validateLawArticleNumberBoundary(value); err != nil {
+		return err
+	}
+	if err := validateLawArticleNumberSegments(value); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateLawVersionArticleNumber(value string) error {
+	if err := validateLawArticleNumberBoundary(value); err != nil {
+		return err
+	}
+
+	separator := strings.IndexByte(value, ':')
+	if separator < 0 {
+		return validateLawArticleNumberSegments(value)
+	}
+	if separator == 0 || separator == len(value)-1 ||
+		strings.IndexByte(value[separator+1:], ':') >= 0 {
+		return fmt.Errorf("articleNumber の条範囲は二つの条番号を一つの : で連結しなければなりません")
+	}
+
+	start := value[:separator]
+	end := value[separator+1:]
+	if validateLawArticleNumberSegments(start) != nil ||
+		validateLawArticleNumberSegments(end) != nil {
+		return fmt.Errorf("articleNumber の条範囲の両端は正の十進整数を _ で連結した正規形でなければなりません")
+	}
+	if compareCanonicalLawArticleNumbers(start, end) >= 0 {
+		return fmt.Errorf("articleNumber の条範囲は開始条番号が終了条番号より前でなければなりません")
+	}
+	return nil
+}
+
+func validateLawArticleNumberBoundary(value string) error {
 	switch {
 	case value == "":
 		return fmt.Errorf("articleNumber は必須です")
@@ -114,7 +151,10 @@ func validateLawArticleNumber(value string) error {
 	case len(value) > maximumLawArticleNumberBytes:
 		return fmt.Errorf("articleNumber は UTF-8 で 64 byte 以下でなければなりません")
 	}
+	return nil
+}
 
+func validateLawArticleNumberSegments(value string) error {
 	segmentStart := true
 	for index := 0; index < len(value); index++ {
 		character := value[index]
@@ -134,6 +174,24 @@ func validateLawArticleNumber(value string) error {
 		return fmt.Errorf("articleNumber は正の十進整数を _ で連結した正規形でなければなりません")
 	}
 	return nil
+}
+
+func compareCanonicalLawArticleNumbers(left, right string) int {
+	leftSegments := strings.Split(left, "_")
+	rightSegments := strings.Split(right, "_")
+	sharedLength := min(len(leftSegments), len(rightSegments))
+	for index := 0; index < sharedLength; index++ {
+		if len(leftSegments[index]) != len(rightSegments[index]) {
+			return len(leftSegments[index]) - len(rightSegments[index])
+		}
+		if leftSegments[index] < rightSegments[index] {
+			return -1
+		}
+		if leftSegments[index] > rightSegments[index] {
+			return 1
+		}
+	}
+	return len(leftSegments) - len(rightSegments)
 }
 
 func cloneOptionalInt(value *int) *int {

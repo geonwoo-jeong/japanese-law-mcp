@@ -9,17 +9,22 @@ import (
 
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/application/listlawupdates"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/model"
+	"github.com/google/jsonschema-go/jsonschema"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 type listLawUpdatesInputSchema struct {
-	Date string `json:"date"`
+	Date  string `json:"date"`
+	Limit int    `json:"limit,omitempty"`
 }
 
 type listLawUpdatesOutput struct {
-	Date       string                     `json:"date"`
-	TotalCount int                        `json:"totalCount"`
-	Items      []listLawUpdatesOutputItem `json:"items"`
+	Date          string                     `json:"date"`
+	TotalCount    int                        `json:"totalCount"`
+	ReturnedCount int                        `json:"returnedCount"`
+	OmittedCount  int                        `json:"omittedCount"`
+	Truncated     bool                       `json:"truncated"`
+	Items         []listLawUpdatesOutputItem `json:"items"`
 }
 
 type listLawUpdatesOutputItem struct {
@@ -53,10 +58,16 @@ func addListLawUpdatesTool(
 	server *sdk.Server,
 	lister listlawupdates.Port,
 ) {
+	inputSchema := mustSchemaFor[listLawUpdatesInputSchema]()
+	inputSchema.Properties["limit"].Minimum = jsonschema.Ptr(1.0)
+	inputSchema.Properties["limit"].Maximum = jsonschema.Ptr(float64(listlawupdates.MaxLimit))
+	inputSchema.Properties["limit"].Default = json.RawMessage(
+		fmt.Sprintf("%d", listlawupdates.DefaultLimit),
+	)
 	server.AddTool(&sdk.Tool{
 		Name:         "list_law_updates",
-		Description:  "指定日に e-Gov の更新一覧へ掲載された法令を取得します。",
-		InputSchema:  mustSchemaFor[listLawUpdatesInputSchema](),
+		Description:  "指定日に e-Gov の更新一覧へ掲載された法令を、総件数と省略件数を明示して取得します。",
+		InputSchema:  inputSchema,
 		OutputSchema: mustSchemaFor[listLawUpdatesOutput](),
 	}, func(ctx context.Context, request *sdk.CallToolRequest) (*sdk.CallToolResult, error) {
 		return callListLawUpdates(ctx, lister, request.Params.Arguments)
@@ -98,7 +109,7 @@ func decodeListLawUpdatesInput(
 		return listlawupdates.Request{}, fmt.Errorf("入力は JSON object でなければなりません")
 	}
 	for key := range fields {
-		if key != "date" {
+		if key != "date" && key != "limit" {
 			return listlawupdates.Request{}, fmt.Errorf("定義していない入力項目は使用できません")
 		}
 	}
@@ -114,7 +125,18 @@ func decodeListLawUpdatesInput(
 	if err != nil {
 		return listlawupdates.Request{}, fmt.Errorf("date は実在する YYYY-MM-DD でなければなりません")
 	}
-	return listlawupdates.NewRequest(listlawupdates.RequestValues{Date: date})
+	values := listlawupdates.RequestValues{Date: date}
+	if rawLimit, exists := fields["limit"]; exists {
+		if isJSONNull(rawLimit) {
+			return listlawupdates.Request{}, fmt.Errorf("limit に null は使用できません")
+		}
+		var limit int
+		if err := json.Unmarshal(rawLimit, &limit); err != nil {
+			return listlawupdates.Request{}, fmt.Errorf("limit は整数でなければなりません")
+		}
+		values.Limit = &limit
+	}
+	return listlawupdates.NewRequest(values)
 }
 
 func mapListLawUpdatesOutput(result listlawupdates.Result) listLawUpdatesOutput {
@@ -136,9 +158,12 @@ func mapListLawUpdatesOutput(result listlawupdates.Result) listLawUpdatesOutput 
 		mapListLawUpdateOptionalFields(update, &items[index])
 	}
 	return listLawUpdatesOutput{
-		Date:       result.Date().String(),
-		TotalCount: result.TotalCount(),
-		Items:      items,
+		Date:          result.Date().String(),
+		TotalCount:    result.TotalCount(),
+		ReturnedCount: result.ReturnedCount(),
+		OmittedCount:  result.OmittedCount(),
+		Truncated:     result.Truncated(),
+		Items:         items,
 	}
 }
 

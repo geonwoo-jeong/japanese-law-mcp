@@ -98,6 +98,7 @@ func TestLawArticleLocationArticleNumberBoundary(t *testing.T) {
 		{name: "全角数字", articleNumber: "１", wantError: true},
 		{name: "漢数字", articleNumber: "一", wantError: true},
 		{name: "別の区切り", articleNumber: "1-2", wantError: true},
+		{name: "範囲表記", articleNumber: "38:84", wantError: true},
 		{name: "UTF-8 として不正", articleNumber: string([]byte{0xff}), wantError: true},
 	}
 	for _, test := range tests {

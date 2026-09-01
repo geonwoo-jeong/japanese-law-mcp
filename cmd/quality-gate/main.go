@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -32,8 +33,12 @@ func run(
 	stderr io.Writer,
 	execute func(qualitygate.Options) error,
 ) int {
-	options, err := parseOptions(args, stderr)
+	options, err := parseOptions(args, io.Discard)
 	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			writeUsage(stdout)
+			return 0
+		}
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
@@ -43,6 +48,14 @@ func run(
 	}
 	_, _ = fmt.Fprintln(stdout, "品質ゲートが成功しました")
 	return 0
+}
+
+func writeUsage(output io.Writer) {
+	_, _ = fmt.Fprintln(
+		output,
+		"使用方法: quality-gate --profile <pre-commit|pre-push|ci> "+
+			"--repository <path> [--git-repository <path>] [--git-range <range> ...]",
+	)
 }
 
 func parseOptions(args []string, stderr io.Writer) (qualitygate.Options, error) {
