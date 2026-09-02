@@ -43,3 +43,4 @@
 - [41-candidate-evaluation-case-failure-mapping.md](41-candidate-evaluation-case-failure-mapping.md)
 - [42-candidate-evaluation-handoff-schema-v3.md](42-candidate-evaluation-handoff-schema-v3.md)
 - [43-candidate-evaluation-readiness-separation.md](43-candidate-evaluation-readiness-separation.md)
+- [44-provider-onboarding-fitness-gate-v2.md](44-provider-onboarding-fitness-gate-v2.md)

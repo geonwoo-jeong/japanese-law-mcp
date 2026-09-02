@@ -195,7 +195,7 @@ func readModulePath(repository string) (string, error) {
 	if !info.Mode().IsRegular() {
 		return "", errors.New("go.mod が通常ファイルではありません")
 	}
-	//nolint:gosec // SOT-ENG-018: target は検証済み repository root と固定名 go.mod の結合結果に限定する。
+	//nolint:gosec // SOT-ENG-044: target は検証済み repository root と固定名 go.mod の結合結果に限定する。
 	file, err := os.Open(target)
 	if err != nil {
 		return "", fmt.Errorf("go.mod を開けません: %w", err)

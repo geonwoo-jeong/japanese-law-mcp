@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -73,6 +74,18 @@ func (client gitClient) collectChangedPaths(
 	resolved comparison,
 	sources changeSources,
 ) ([]string, error) {
+	changes, err := client.collectChanges(ctx, resolved, sources)
+	if err != nil {
+		return nil, err
+	}
+	return append([]string(nil), changes.paths...), nil
+}
+
+func (client gitClient) collectChanges(
+	ctx context.Context,
+	resolved comparison,
+	sources changeSources,
+) (changedPathSet, error) {
 	type pathCommand struct {
 		source    string
 		arguments []string
@@ -127,38 +140,289 @@ func (client gitClient) collectChangedPaths(
 		})
 	}
 
+	changes := changedPathSet{
+		commit:      make(map[string]struct{}),
+		index:       make(map[string]struct{}),
+		workingTree: make(map[string]struct{}),
+		untracked:   make(map[string]struct{}),
+	}
 	unique := make(map[string]struct{})
-	indexPaths := make(map[string]struct{})
 	for _, command := range commands {
 		output, err := client.run(ctx, command.arguments...)
 		if err != nil {
-			return nil, fmt.Errorf("git の変更パスを取得できませんでした: %w", err)
+			return changedPathSet{}, fmt.Errorf(
+				"git の変更パスを取得できませんでした: %w",
+				err,
+			)
 		}
 		paths, err := parseNULPaths(output)
 		if err != nil {
-			return nil, err
+			return changedPathSet{}, err
 		}
 		for _, changedPath := range paths {
 			if command.source == "working-tree" {
-				if _, divergent := indexPaths[changedPath]; divergent {
-					return nil, fmt.Errorf(
+				if _, divergent := changes.index[changedPath]; divergent {
+					return changedPathSet{}, fmt.Errorf(
 						"index と working tree で内容が異なる path は同時に検査できません: %s",
 						changedPath,
 					)
 				}
 			}
-			if command.source == "index" {
-				indexPaths[changedPath] = struct{}{}
+			switch command.source {
+			case "commit":
+				changes.commit[changedPath] = struct{}{}
+			case "index":
+				changes.index[changedPath] = struct{}{}
+			case "working-tree":
+				changes.workingTree[changedPath] = struct{}{}
+			case "untracked":
+				changes.untracked[changedPath] = struct{}{}
 			}
 			unique[changedPath] = struct{}{}
 		}
 	}
-	result := make([]string, 0, len(unique))
+	changes.paths = make([]string, 0, len(unique))
 	for changedPath := range unique {
-		result = append(result, changedPath)
+		changes.paths = append(changes.paths, changedPath)
 	}
-	sort.Strings(result)
-	return result, nil
+	sort.Strings(changes.paths)
+	return changes, nil
+}
+
+func (client gitClient) comparisonPathContents(
+	ctx context.Context,
+	repository string,
+	resolved comparison,
+	changes changedPathSet,
+	changedPath string,
+) ([]byte, []byte, bool, error) {
+	previous, previousExists, err := client.commitPathContent(
+		ctx,
+		resolved.mergeBase,
+		changedPath,
+	)
+	if err != nil {
+		return nil, nil, false, fmt.Errorf(
+			"比較元の path を読み取れません: %s: %w",
+			changedPath,
+			err,
+		)
+	}
+	current, currentExists, err := client.currentPathContent(
+		ctx,
+		repository,
+		resolved.headCommit,
+		changes,
+		changedPath,
+	)
+	if err != nil {
+		return nil, nil, false, fmt.Errorf(
+			"現在の検査対象 path を読み取れません: %s: %w",
+			changedPath,
+			err,
+		)
+	}
+	if !previousExists || !currentExists {
+		return nil, nil, false, nil
+	}
+	return previous, current, true, nil
+}
+
+func (client gitClient) currentPathContent(
+	ctx context.Context,
+	repository, headCommit string,
+	changes changedPathSet,
+	changedPath string,
+) ([]byte, bool, error) {
+	if _, exists := changes.untracked[changedPath]; exists {
+		return readWorkingTreePath(repository, changedPath)
+	}
+	if _, exists := changes.workingTree[changedPath]; exists {
+		return readWorkingTreePath(repository, changedPath)
+	}
+	if _, exists := changes.index[changedPath]; exists {
+		return client.indexPathContent(ctx, changedPath)
+	}
+	if _, exists := changes.commit[changedPath]; exists {
+		return client.commitPathContent(ctx, headCommit, changedPath)
+	}
+	return nil, false, errors.New("現在内容の由来を Git layer から確定できません")
+}
+
+func (client gitClient) commitPathContent(
+	ctx context.Context,
+	commit, repositoryPath string,
+) ([]byte, bool, error) {
+	if _, err := parseOID([]byte(commit)); err != nil {
+		return nil, false, fmt.Errorf("commit object ID が不正です: %w", err)
+	}
+	if err := validateGitPath(repositoryPath); err != nil {
+		return nil, false, err
+	}
+	output, err := client.run(
+		ctx,
+		"ls-tree",
+		"-z",
+		commit,
+		"--",
+		repositoryPath,
+	)
+	if err != nil {
+		return nil, false, err
+	}
+	objectID, exists, err := parseTreeBlob(output, repositoryPath)
+	if err != nil || !exists {
+		return nil, exists, err
+	}
+	content, err := client.run(ctx, "cat-file", "blob", objectID)
+	if err != nil {
+		return nil, false, fmt.Errorf("blob を読み取れません: %w", err)
+	}
+	return content, true, nil
+}
+
+func (client gitClient) indexPathContent(
+	ctx context.Context,
+	repositoryPath string,
+) ([]byte, bool, error) {
+	if err := validateGitPath(repositoryPath); err != nil {
+		return nil, false, err
+	}
+	output, err := client.run(
+		ctx,
+		"ls-files",
+		"--stage",
+		"-z",
+		"--",
+		repositoryPath,
+	)
+	if err != nil {
+		return nil, false, err
+	}
+	objectID, exists, err := parseIndexBlob(output, repositoryPath)
+	if err != nil || !exists {
+		return nil, exists, err
+	}
+	content, err := client.run(ctx, "cat-file", "blob", objectID)
+	if err != nil {
+		return nil, false, fmt.Errorf("index blob を読み取れません: %w", err)
+	}
+	return content, true, nil
+}
+
+func readWorkingTreePath(
+	repository, repositoryPath string,
+) ([]byte, bool, error) {
+	if err := validateGitPath(repositoryPath); err != nil {
+		return nil, false, err
+	}
+	target := filepath.Join(repository, filepath.FromSlash(repositoryPath))
+	info, err := os.Lstat(target)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+	if !info.Mode().IsRegular() {
+		return nil, false, errors.New("通常ファイルではありません")
+	}
+	resolvedParent, err := filepath.EvalSymlinks(filepath.Dir(target))
+	if err != nil {
+		return nil, false, fmt.Errorf("親ディレクトリを解決できません: %w", err)
+	}
+	resolvedRepository, err := filepath.EvalSymlinks(repository)
+	if err != nil {
+		return nil, false, fmt.Errorf("repository を解決できません: %w", err)
+	}
+	relativeParent, err := filepath.Rel(resolvedRepository, resolvedParent)
+	if err != nil || relativeParent == ".." ||
+		strings.HasPrefix(relativeParent, ".."+string(filepath.Separator)) {
+		return nil, false, errors.New("repository 外の path は読み取れません")
+	}
+	content, err := os.ReadFile(target) //nolint:gosec // SOT-ENG-044: Git が列挙し、repository 内と通常ファイルであることを確認した matrix だけを読む。
+	if err != nil {
+		return nil, false, err
+	}
+	return content, true, nil
+}
+
+func parseTreeBlob(
+	output []byte,
+	expectedPath string,
+) (string, bool, error) {
+	metadata, actualPath, exists, err := parseSingleGitEntry(output)
+	if err != nil || !exists {
+		return "", exists, err
+	}
+	if actualPath != expectedPath {
+		return "", false, fmt.Errorf(
+			"git tree の path が一致しません: got=%q want=%q",
+			actualPath,
+			expectedPath,
+		)
+	}
+	fields := strings.Fields(metadata)
+	if len(fields) != 3 || fields[1] != "blob" || !regularGitMode(fields[0]) {
+		return "", false, fmt.Errorf("通常 blob ではありません: %q", metadata)
+	}
+	objectID, err := parseOID([]byte(fields[2]))
+	if err != nil {
+		return "", false, err
+	}
+	return objectID, true, nil
+}
+
+func parseIndexBlob(
+	output []byte,
+	expectedPath string,
+) (string, bool, error) {
+	metadata, actualPath, exists, err := parseSingleGitEntry(output)
+	if err != nil || !exists {
+		return "", exists, err
+	}
+	if actualPath != expectedPath {
+		return "", false, fmt.Errorf(
+			"git index の path が一致しません: got=%q want=%q",
+			actualPath,
+			expectedPath,
+		)
+	}
+	fields := strings.Fields(metadata)
+	if len(fields) != 3 || fields[2] != "0" || !regularGitMode(fields[0]) {
+		return "", false, fmt.Errorf("通常の stage 0 blob ではありません: %q", metadata)
+	}
+	objectID, err := parseOID([]byte(fields[1]))
+	if err != nil {
+		return "", false, err
+	}
+	return objectID, true, nil
+}
+
+func parseSingleGitEntry(output []byte) (string, string, bool, error) {
+	if len(output) == 0 {
+		return "", "", false, nil
+	}
+	if output[len(output)-1] != 0 {
+		return "", "", false, errors.New("git entry が NUL 終端ではありません")
+	}
+	records := bytes.Split(output[:len(output)-1], []byte{0})
+	if len(records) != 1 {
+		return "", "", false, errors.New("git entry が一つに確定しません")
+	}
+	metadata, pathBytes, found := bytes.Cut(records[0], []byte{'\t'})
+	if !found {
+		return "", "", false, errors.New("git entry の形式が不正です")
+	}
+	repositoryPath := string(pathBytes)
+	if err := validateGitPath(repositoryPath); err != nil {
+		return "", "", false, err
+	}
+	return string(metadata), repositoryPath, true, nil
+}
+
+func regularGitMode(value string) bool {
+	return value == "100644" || value == "100755"
 }
 
 func (client gitClient) treePaths(
@@ -190,7 +454,7 @@ func (client gitClient) treePaths(
 
 func (client gitClient) run(ctx context.Context, arguments ...string) ([]byte, error) {
 	commandArguments := append([]string{"-C", client.repository}, arguments...)
-	//nolint:gosec // SOT-ENG-018: 実行ファイルは git に固定し、値は shell を介さず argv で渡す。
+	//nolint:gosec // SOT-ENG-044: 実行ファイルは git に固定し、値は shell を介さず argv で渡す。
 	command := exec.CommandContext(ctx, "git", commandArguments...)
 	command.Env = environmentWithValue(os.Environ(), "GIT_NO_REPLACE_OBJECTS", "1")
 	output, err := command.Output()

@@ -11,6 +11,33 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/providerconformance"
 )
 
+func classifyInterfaceSOTReferenceOnlyChange(
+	repository, providerID string,
+	previous, current []byte,
+) (interfaceSOTReferenceChange, bool, error) {
+	classified, only, err := providerconformance.ClassifyInterfaceSOTReferenceOnlyChange(
+		repository,
+		providerID,
+		previous,
+		current,
+	)
+	if err != nil || !only {
+		return interfaceSOTReferenceChange{}, only, err
+	}
+	replacements := make(
+		[]interfaceSOTReferenceReplacement,
+		0,
+		len(classified.Replacements),
+	)
+	for _, replacement := range classified.Replacements {
+		replacements = append(replacements, interfaceSOTReferenceReplacement{
+			previousSOTID: replacement.PreviousSOTID,
+			currentSOTID:  replacement.CurrentSOTID,
+		})
+	}
+	return interfaceSOTReferenceChange{replacements: replacements}, true, nil
+}
+
 func loadCanonicalRows(repository string) ([]matrixRow, error) {
 	catalog, err := providerconformance.Load(repository)
 	if err != nil {

@@ -1,14 +1,12 @@
-# SOT-ENG-018: プロバイダー追加 fitness gate
+# SOT-ENG-044: プロバイダー追加 fitness gate v2
 
-- 状態: 廃止
-- 廃止理由: provider の機能変更と、廃止 SOT から直接の後継 SOT への matrix 追跡参照更新を区別して検査するため
-- 後継: [SOT-ENG-044: プロバイダー追加 fitness gate v2](44-provider-onboarding-fitness-gate-v2.md)
+- 状態: 有効
 
 ## 規定
 
 新しい provider または既存 provider の capability binding は、他の provider と共通 interface への不要な変更を伴わず、独立した package、fixture および test として追加できることを `provider-onboarding-fit` で確認する。
 
-この gate は provider 実装の内部構造を完全に証明するものではない。変更範囲の分離、matrix との対応、共通契約テストおよび既存 test の非回帰を確認する。
+この gate は provider 実装の内部構造を完全に証明するものではない。変更範囲の分離、matrix との対応、共通契約 test および既存 test の非回帰を確認する。provider の機能変更と、廃止 SOT から直接の後継 SOT への追跡参照だけを更新する変更は区別する。
 
 ## 適用変更
 
@@ -17,24 +15,44 @@ merge base との差分に次のいずれかが含まれる場合に適用する
 - provider-specific SOT、provider package、fixture または `ProviderDescriptor`
 - capability binding、provider route、provider 設定 schema または conformance matrix
 - provider の追加または変更に伴う composition root の登録
+- conformance matrix の `interfaceSotIds` にある廃止 SOT を直接の後継 SOT へ更新する追跡参照変更
 
 共通 capability、共通 model または能力別 port の意味を変更する変更は、provider の追加と分離する。ただし、最初の provider を実装する前に必要な provider-neutral の registry、route、HTTP、continuation、予算または conformance 基盤は、独立した基盤変更として先に追加できる。
 
+## 検査スナップショット
+
+`--base-ref` と検査対象 `HEAD` の merge base を比較開始点とする。commit 差分、index、working tree および未追跡 file の和集合を検査し、選択した各層の最終内容を使用する。同じ path の index と working tree の内容が異なる場合、VCS 情報を取得できない場合、比較開始点または検査対象を commit として解決できない場合、および内容の由来を一意に決められない場合は成功として扱わない。
+
+Git が返した object ID と repository 相対 path を検証し、shell を介さず固定した Git command の引数として使用する。repository 外の path、symlink または通常 file ではない canonical artifact を読み込まない。
+
+## matrix の追跡参照更新
+
+変更した provider matrix ごとに、merge base の内容と検査スナップショットの内容を `SOT-ENG-017` の同じ canonical schema、strict YAML decoder および row 検証で読み込む。次の条件をすべて満たす場合だけ、その matrix を追跡参照だけの更新として provider の機能変更 target から除外する。
+
+1. 両方の matrix が同じ `schemaVersion` を持ち、schema、provider file 名、row の整列、case partition および重複禁止に適合する。
+2. row の数、順序、および `(providerId, capabilityId, majorVersion, operation)` が一致する。
+3. 各 row の `interfaceSotIds` 以外の全 field が一致する。
+4. 各 `interfaceSotIds` の長さと順序が一致し、同じ位置で一つ以上の ID が変更されている。
+5. 変更前の各 ID は現在の SOT で `廃止` であり、同じ文書の `後継` が変更後の ID を直接指す。
+6. 変更後の各 ID は現在の SOT で `有効` である。
+
+前記の条件を満たす複数 provider の matrix は、一つの変更に含めてよい。対象 provider 数の算定からは除外するが、追跡参照更新も gate の適用変更とし、canonical matrix loader、provider import 検証および全 `implemented` row の conformance test を実行する。
+
+file または row の追加・削除、row の並べ替え、`interfaceSotIds` の追加・削除・並べ替え、直接の後継ではない ID への変更、他 field の変更、schema または YAML の不正、重複 key、重複 tuple、および比較元を読み取れない変更は、追跡参照だけの更新として除外しない。検証不能な内容を追跡参照更新として成功へ緩和しない。
+
+追跡参照だけの matrix 更新と、provider package、provider fixture、provider descriptor、binding、route、provider 設定 schema、共通 model、共通 capability または provider conformance 基盤の変更を同じ変更へ混在させない。混在した場合は、provider の機能変更または基盤変更から追跡参照更新を分離する。
+
+provider 制御変更の path 判定は、descriptor、binding、route、provider 設定 schema または composition root の責任を持つ artifact に限定する。provider、route または binding という文字列を file 名に含むだけの共通 loader、test または一般設定 artifact を、内容を確認せず provider 制御変更とみなさない。
+
 ## 実行
 
-共通コマンドは次とする。
+共通 command は次とする。
 
 ```text
 go run ./cmd/provider-onboarding-fit --base-ref <git-revision>
 ```
 
-`--base-ref` は一回だけ必須とし、commit として解決できる値を受け付ける。command は解決した commit と `HEAD` の merge base を比較開始点とし、commit 差分、index、working tree および未追跡の provider 関連 file を検査する。VCS 情報または比較開始点を取得できない場合は成功として扱わない。
-
-CI はこの command を品質ゲートの前に実行し、`SOT-ENG-017` の canonical
-matrix loader と通常の Go test を再利用する。ローカルの Git hook はこの
-command または provider conformance test を実行しない。開発者が問題を
-切り分ける場合に限り、対象を限定して command または回帰テストを任意に
-実行できる。
+`--base-ref` は一回だけ必須とし、commit として解決できる値を受け付ける。CI はこの command を中央の品質ゲートより先に実行し、`SOT-ENG-017` の canonical matrix loader と通常の Go test を再利用する。ローカルの Git hook はこの command または provider conformance test を実行しない。開発者が問題を切り分ける場合に限り、対象を限定して command または回帰 test を任意に実行できる。
 
 ## 検証
 
@@ -48,8 +66,9 @@ gate は次を確認する。
 6. 新しい binding が同じ `(capabilityId, majorVersion)` の共通 conformance suite に合格する。
 7. 変更前から存在する provider の unit・integration・conformance test が合格する。
 8. 新しい provider または既存 provider の新しい binding は、別の有効な SOT で公開採用を決めない限り、組込み provider、無設定時の enabled set、既存 route の key と値、および primary route を変更しない。disabled provider では factory の呼出しと credential の解決を行わない。
+9. 追跡参照だけの matrix 更新では、変更した全 ID が現在の SOT lifecycle と直接の後継関係に一致する。
 
-検証には schema、import、package path および matrix reference の静的確認と、通常の Go test を使用する。provider factory の関数 object、全 SSA dataflow、全 call graph、fixture の内部 counter または `go test -json` event の完全一致は必須としない。
+検証には schema、import、package path、matrix snapshot、SOT lifecycle および matrix reference の静的確認と、通常の Go test を使用する。provider factory の関数 object、全 SSA dataflow、全 call graph、fixture の内部 counter または `go test -json` event の完全一致は必須としない。
 
 ## 段階的な実装
 
@@ -89,7 +108,7 @@ repository に canonical schema、matrix loader または `provider-onboarding-f
 
 ## 成功条件
 
-前記の八条件または適用可能な `SOT-ENG-020` の gate が失敗した場合は、provider 変更を完了としない。SOT と matrix だけを準備する変更では、SOT 静的検査と schema test を行い、provider 実装を開始した時点から conformance test を必須にする。
+前記の九条件または適用可能な `SOT-ENG-020` の gate が失敗した場合は、provider 変更を完了としない。SOT と matrix だけを準備する変更では、SOT 静的検査と schema test を行い、provider 実装を開始した時点から conformance test を必須にする。
 
 ## 関連
 

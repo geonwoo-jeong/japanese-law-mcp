@@ -72,7 +72,7 @@ CI は clean checkout した対象 commit で `SOT-ENG-020` の `ci` profile を
   実行する。
 - `minimum-go` job は最小 Go version で build できることだけを確認し、
   権威 gate と同じ全 test または `go vet` を重複実行しない。
-- `SOT-ENG-018` の適用変更では、event metadata が提供する base ref で
+- `SOT-ENG-044` の適用変更では、event metadata が提供する base ref で
   provider onboarding fitness を先に実行する。
 
 CI が外部 database、全履歴または固定 tool へ到達できない場合は、成功へ
@@ -109,7 +109,7 @@ private cache および改変した hook の拒否を確認する。
 
 ## 関連
 
-- [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
+- [SOT-ENG-044: プロバイダー追加 fitness gate v2](44-provider-onboarding-fitness-gate-v2.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-020: 変更の検証ゲート](20-verification-gate.md)
 - [SOT-DEL-004: リリース整合性](../60-delivery/04-release-consistency.md)

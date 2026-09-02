@@ -130,6 +130,6 @@ CI の権威ある品質ゲートは次を確認する。ローカルでは対�
 - [SOT-ENG-008: SOT lifecycle](08-sot-lifecycle.md)
 - [SOT-ENG-013: プロバイダー契約の検証](13-provider-contract-verification.md)
 - [SOT-ENG-016: プロバイダー資源予算](16-provider-resource-budgets.md)
-- [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
+- [SOT-ENG-044: プロバイダー追加 fitness gate v2](44-provider-onboarding-fitness-gate-v2.md)
 - [SOT-IF-014: ProviderDescriptor](../40-interfaces/14-provider-descriptor.md)
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)

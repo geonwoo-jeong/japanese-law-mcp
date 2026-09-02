@@ -60,8 +60,19 @@ func evaluateNormalChanges(
 	paths []string,
 	rows []matrixRow,
 ) (bool, error) {
+	return evaluateNormalChangesWithTraceOnlyMatrices(paths, rows, nil)
+}
+
+func evaluateNormalChangesWithTraceOnlyMatrices(
+	paths []string,
+	rows []matrixRow,
+	traceOnlyMatrixPaths map[string]struct{},
+) (bool, error) {
 	packages, err := collectProviderPackages(rows)
 	if err != nil {
+		return false, err
+	}
+	if err := validateTraceOnlyMatrixIsolation(paths, traceOnlyMatrixPaths); err != nil {
 		return false, err
 	}
 	matrixTargets := make(map[string]struct{})
@@ -72,7 +83,8 @@ func evaluateNormalChanges(
 		if providerConformanceInfrastructurePath(changedPath) {
 			infrastructureChanged = true
 		}
-		if providerID, ok := matrixProviderID(changedPath); ok {
+		_, traceOnlyMatrix := traceOnlyMatrixPaths[changedPath]
+		if providerID, ok := matrixProviderID(changedPath); ok && !traceOnlyMatrix {
 			matrixTargets[providerID] = struct{}{}
 		}
 		if !hasPathPrefix(changedPath, "internal/source") {
@@ -153,6 +165,48 @@ func evaluateNormalChanges(
 	return true, nil
 }
 
+func validateTraceOnlyMatrixIsolation(
+	paths []string,
+	traceOnlyMatrixPaths map[string]struct{},
+) error {
+	if len(traceOnlyMatrixPaths) == 0 {
+		return nil
+	}
+	changed := make(map[string]struct{}, len(paths))
+	for _, changedPath := range paths {
+		changed[changedPath] = struct{}{}
+	}
+	for traceOnlyPath := range traceOnlyMatrixPaths {
+		if _, exists := changed[traceOnlyPath]; !exists {
+			return fmt.Errorf(
+				"変更されていない matrix が SOT 参照更新に分類されました: %s",
+				traceOnlyPath,
+			)
+		}
+		if _, matrixPath := matrixProviderID(traceOnlyPath); !matrixPath {
+			return fmt.Errorf(
+				"provider matrix ではない path が SOT 参照更新に分類されました: %s",
+				traceOnlyPath,
+			)
+		}
+	}
+	for _, changedPath := range paths {
+		if _, traceOnly := traceOnlyMatrixPaths[changedPath]; traceOnly {
+			continue
+		}
+		if hasPathPrefix(changedPath, "internal/source") ||
+			providerControlPath(changedPath) ||
+			commonContractPath(changedPath) ||
+			providerConformanceInfrastructurePath(changedPath) {
+			return fmt.Errorf(
+				"matrix の SOT 参照更新を provider または conformance 変更と混在させられません: %s",
+				changedPath,
+			)
+		}
+	}
+	return nil
+}
+
 func providerConformanceInfrastructurePath(changedPath string) bool {
 	for _, prefix := range []string{
 		"conformance",
@@ -205,25 +259,17 @@ func commonContractPath(changedPath string) bool {
 }
 
 func providerControlPath(changedPath string) bool {
-	if changedPath == "internal/model/provider_descriptor.go" {
+	switch changedPath {
+	case "internal/model/provider_descriptor.go",
+		"internal/application/provider_binding_registry.go",
+		"internal/application/provider_registry.go",
+		"internal/application/provider_routes.go",
+		"internal/application/composition_root.go",
+		"internal/config/provider_config.go":
 		return true
-	}
-	if !hasPathPrefix(changedPath, "internal/application") &&
-		!hasPathPrefix(changedPath, "internal/config") {
+	default:
 		return false
 	}
-	name := strings.ToLower(path.Base(changedPath))
-	for _, marker := range []string{
-		"provider",
-		"route",
-		"binding",
-	} {
-		if strings.Contains(name, marker) {
-			return true
-		}
-	}
-	return strings.Contains(name, "composition") &&
-		path.Dir(changedPath) == "internal/application"
 }
 
 func hasPathPrefix(value, prefix string) bool {

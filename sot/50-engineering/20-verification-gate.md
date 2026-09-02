@@ -17,7 +17,7 @@
 - GitHub Actions の定義がある場合は、その静的解析が成功する。
 - Go の依存関係を変更した場合、または Go コードがある場合は、テスト用パッケージを含む製品コード、および固定済み検証ツールから到達可能な既知の脆弱性検査が、現在の脆弱性データベースに対して成功する。
 - 検査対象のソース状態と取得した Git 全履歴に対する秘密情報検査が成功する。
-- `SOT-ENG-018` が定義する適用変更または初回導入を含む場合は、CI で `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` と中央の品質ゲートが順に成功する。
+- `SOT-ENG-044` が定義する適用変更または初回導入を含む場合は、CI で `go run ./cmd/provider-onboarding-fit --base-ref <git-revision>` と中央の品質ゲートが順に成功する。
 - 統合照会の application、profile、辞書、planner model、公開 interface、評価 corpus、baseline または evaluator を変更した場合は、`SOT-ENG-024` の固定 corpus、最小件数、baseline および全受入基準を標準 command で検証する。
 
 ## 実行
@@ -32,7 +32,7 @@ go run ./cmd/quality-gate --profile=ci --repository=. --git-repository=.
 
 統合照会の標準評価 command を導入した clean checkout では、中央の品質ゲートが `SOT-ENG-024` の固定引数で定義された command を同じ検査スナップショット内で呼び出す。利用者の実照会または外部ネットワークを評価入力にしない。初回導入までは command が存在するものとして成功扱いせず、初回導入では command、baseline、中央品質ゲートへの接続および全受入基準の成功を同じ変更で完了する。
 
-`SOT-ENG-018` の適用変更または初回導入では、CI の clean checkout した対象
+`SOT-ENG-044` の適用変更または初回導入では、CI の clean checkout した対象
 commit に対して provider 固有の比較を行う command と中央の標準コマンドを
 次の順に実行し、両方の成功を変更完了の条件とする。ローカルの Git hook では
 この provider 固有 command と、それが起動する conformance test を
@@ -65,7 +65,7 @@ SOT ID へ到達できることを確認する。
 ## 関連
 
 - [SOT-ENG-004: SOT に結び付く検証](04-sot-linked-verification.md)
-- [SOT-ENG-018: プロバイダー追加 fitness gate](18-provider-onboarding-fitness-gate.md)
+- [SOT-ENG-044: プロバイダー追加 fitness gate v2](44-provider-onboarding-fitness-gate-v2.md)
 - [SOT-ENG-019: 静的解析とコーディングスタイル](19-static-analysis-and-coding-style.md)
 - [SOT-ENG-027: 省資源の段階的検証](27-resource-aware-verification-stages.md)
 - [SOT-ENG-024: 統合照会の評価コーパスと受入基準](24-unified-query-evaluation-gate.md)

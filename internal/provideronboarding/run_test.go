@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-// SOT-ENG-018: 初回導入では canonical loader と通常 test を再利用する。
+// SOT-ENG-044: 初回導入では canonical loader と通常 test を再利用する。
 func TestRunBootstrapLoadsMatrixAndRunsProviderConformanceTests(t *testing.T) {
 	t.Parallel()
 
@@ -287,6 +287,132 @@ func TestRunNormalProviderChangeRunsConformanceTest(t *testing.T) {
 	}
 }
 
+func TestRunAllowsMultipleTraceabilityMatricesAndRunsConformanceTest(t *testing.T) {
+	t.Parallel()
+
+	repository, base := newTraceabilityMatrixRepository(t)
+	writeTestFile(
+		t,
+		repository,
+		"internal/config/provider_loader.go",
+		"package config\n\nconst toolExposureChanged = true\n",
+	)
+	writeTestFile(
+		t,
+		repository,
+		"internal/config/provider_config_test.go",
+		"package config\n\nconst defaultArgumentChanged = true\n",
+	)
+	classifierCalls := 0
+	testCalled := false
+	err := runWithDependencies(
+		t.Context(),
+		testOptions(repository, base),
+		dependencies{
+			load: func(string) ([]matrixRow, error) {
+				return traceabilityMatrixRows(), nil
+			},
+			classify: func(
+				_ string,
+				providerID string,
+				previous, current []byte,
+			) (interfaceSOTReferenceChange, bool, error) {
+				classifierCalls++
+				if !strings.Contains(string(previous), "SOT-IF-061") ||
+					!strings.Contains(string(current), "SOT-IF-077") {
+					t.Fatalf(
+						"classifier の snapshot が不正です: provider=%s before=%q after=%q",
+						providerID,
+						previous,
+						current,
+					)
+				}
+				return interfaceSOTReferenceChange{
+					replacements: []interfaceSOTReferenceReplacement{{
+						previousSOTID: "SOT-IF-061",
+						currentSOTID:  "SOT-IF-077",
+					}},
+				}, true, nil
+			},
+			test: func(context.Context, string, io.Writer, io.Writer) error {
+				testCalled = true
+				return nil
+			},
+		},
+	)
+	if err != nil {
+		t.Fatalf("複数 provider の追跡可能性更新が失敗しました: %v", err)
+	}
+	if classifierCalls != 2 {
+		t.Fatalf("matrix classifier 呼出し回数 = %d, want 2", classifierCalls)
+	}
+	if !testCalled {
+		t.Fatal("追跡可能性更新で conformance test が実行されませんでした")
+	}
+}
+
+func TestRunRejectsTraceabilityMatricesMixedWithProviderOrConformanceChange(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		path string
+		body string
+	}{
+		{
+			name: "provider source",
+			path: "internal/source/a/provider.go",
+			body: "package a\n\nconst changed = true\n",
+		},
+		{
+			name: "conformance infrastructure",
+			path: canonicalLoaderPath,
+			body: "package providerconformance\n\nconst changed = true\n",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			repository, base := newTraceabilityMatrixRepository(t)
+			writeTestFile(t, repository, test.path, test.body)
+			testCalled := false
+			err := runWithDependencies(
+				t.Context(),
+				testOptions(repository, base),
+				dependencies{
+					load: func(string) ([]matrixRow, error) {
+						return traceabilityMatrixRows(), nil
+					},
+					classify: func(
+						string,
+						string,
+						[]byte,
+						[]byte,
+					) (interfaceSOTReferenceChange, bool, error) {
+						return interfaceSOTReferenceChange{
+							replacements: []interfaceSOTReferenceReplacement{{
+								previousSOTID: "SOT-IF-061",
+								currentSOTID:  "SOT-IF-077",
+							}},
+						}, true, nil
+					},
+					test: func(context.Context, string, io.Writer, io.Writer) error {
+						testCalled = true
+						return nil
+					},
+				},
+			)
+			if err == nil || !strings.Contains(err.Error(), test.path) {
+				t.Fatalf("混在変更 %s が拒否されませんでした: %v", test.path, err)
+			}
+			if testCalled {
+				t.Fatal("混在変更の静的検査失敗後に conformance test が実行されました")
+			}
+		})
+	}
+}
+
 func TestRunTreatsInvalidBaseRefAsUsageError(t *testing.T) {
 	t.Parallel()
 
@@ -356,6 +482,56 @@ func newBootstrapRepository(t *testing.T) (string, string) {
 	return repository, base
 }
 
+func newTraceabilityMatrixRepository(t *testing.T) (string, string) {
+	t.Helper()
+
+	repository := newTestGitRepository(t, map[string]string{
+		"go.mod":                                  "module github.com/example/project\n\ngo 1.25.0\n",
+		canonicalSchemaPath:                       "{}\n",
+		canonicalLoaderPath:                       "package providerconformance\n",
+		canonicalCommandPath:                      "package main\n",
+		"internal/source/a/provider.go":           "package a\n",
+		"internal/source/b/provider.go":           "package b\n",
+		"internal/config/provider_loader.go":      "package config\n",
+		"internal/config/provider_config_test.go": "package config\n",
+		"conformance/providers/provider-a.yaml":   "interfaceSotIds:\n  - SOT-IF-061\n",
+		"conformance/providers/provider-b.yaml":   "interfaceSotIds:\n  - SOT-IF-061\n",
+	})
+	base := gitOutput(t, repository, "rev-parse", "HEAD")
+	writeSOTReferenceFixture(
+		t,
+		repository,
+		"廃止",
+		"- 後継: [SOT-IF-077: 後継規定](77-current.md)\n",
+		"有効",
+		false,
+	)
+	for _, providerID := range []string{"provider-a", "provider-b"} {
+		writeTestFile(
+			t,
+			repository,
+			"conformance/providers/"+providerID+".yaml",
+			"interfaceSotIds:\n  - SOT-IF-077\n",
+		)
+	}
+	return repository, base
+}
+
+func traceabilityMatrixRows() []matrixRow {
+	return []matrixRow{
+		{
+			providerID:    "provider-a",
+			implementedBy: "internal/source/a",
+			status:        "implemented",
+		},
+		{
+			providerID:    "provider-b",
+			implementedBy: "internal/source/b",
+			status:        "implemented",
+		},
+	}
+}
+
 func testOptions(repository, base string) Options {
 	return Options{
 		Repository:         repository,
@@ -371,7 +547,7 @@ func testOptions(repository, base string) Options {
 }
 
 func testCommand(ctx context.Context, repository, name string, args ...string) *exec.Cmd {
-	//nolint:gosec // SOT-ENG-018: テストは固定した git 実行ファイルを argv で起動する。
+	//nolint:gosec // SOT-ENG-044: テストは固定した git 実行ファイルを argv で起動する。
 	command := exec.CommandContext(ctx, name, args...)
 	command.Dir = repository
 	return command

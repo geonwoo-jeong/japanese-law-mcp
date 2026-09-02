@@ -50,7 +50,7 @@ optional field の追加であっても、既存フィールドと重複する�
 
 ## 確認
 
-共通 capability ごとに、`SOT-ENG-018` の `provider-onboarding-fit` で最小の test provider を同じ conformance suite へ binding し、共通モデル、能力別 port および既存プロバイダーパッケージを変更せず登録、route、成功、空結果、失敗および出典を検証できることを確認する。
+共通 capability ごとに、`SOT-ENG-044` の `provider-onboarding-fit` で最小の test provider を同じ conformance suite へ binding し、共通モデル、能力別 port および既存プロバイダーパッケージを変更せず登録、route、成功、空結果、失敗および出典を検証できることを確認する。
 
 新しいプロバイダーの変更では、該当パッケージと composition root 以外の既存プロバイダーパッケージに差分がないこと、および既存 provider の conformance suite がそのまま成功することを検証する。
 
@@ -62,4 +62,4 @@ optional field の追加であっても、既存フィールドと重複する�
 - [SOT-MODEL-013: ProviderCapability](../20-model/13-provider-capability.md)
 - [SOT-ENG-012: プロバイダーパッケージ構成](../50-engineering/12-provider-package-layout.md)
 - [SOT-ENG-017: プロバイダー適合性 matrix](../50-engineering/17-provider-conformance-matrix.md)
-- [SOT-ENG-018: プロバイダー追加 fitness gate](../50-engineering/18-provider-onboarding-fitness-gate.md)
+- [SOT-ENG-044: プロバイダー追加 fitness gate v2](../50-engineering/44-provider-onboarding-fitness-gate-v2.md)

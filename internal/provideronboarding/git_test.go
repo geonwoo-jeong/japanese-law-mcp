@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// SOT-ENG-018: 比較対象は commit、index、working tree、未追跡の和集合とする。
+// SOT-ENG-044: 比較対象は commit、index、working tree、未追跡の和集合とする。
 func TestCollectChangedPathsIncludesEveryRequiredGitLayer(t *testing.T) {
 	t.Parallel()
 
@@ -55,7 +55,7 @@ func TestCollectChangedPathsIncludesEveryRequiredGitLayer(t *testing.T) {
 	}
 }
 
-// SOT-ENG-018: 指定 commit そのものではなく HEAD との merge base を使用する。
+// SOT-ENG-044: 指定 commit そのものではなく HEAD との merge base を使用する。
 func TestResolveComparisonUsesMergeBase(t *testing.T) {
 	t.Parallel()
 
@@ -140,6 +140,197 @@ func TestCollectChangedPathsRejectsDivergentIndexAndWorkingTreeBytes(t *testing.
 	}
 	if !strings.Contains(err.Error(), "conformance/providers/provider-a.yaml") {
 		t.Fatalf("不一致 path を特定できないエラーです: %v", err)
+	}
+}
+
+func TestComparisonPathContentsReadsEffectiveGitLayer(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		prepare    func(*testing.T, string, string)
+		sources    changeSources
+		wantBefore string
+		wantAfter  string
+	}{
+		{
+			name: "commit",
+			prepare: func(t *testing.T, repository, matrixPath string) {
+				writeTestFile(t, repository, matrixPath, "commit\n")
+				gitRun(t, repository, "add", matrixPath)
+				gitCommit(t, repository, "matrix commit")
+			},
+			wantBefore: "base\n",
+			wantAfter:  "commit\n",
+		},
+		{
+			name: "index",
+			prepare: func(t *testing.T, repository, matrixPath string) {
+				writeTestFile(t, repository, matrixPath, "index\n")
+				gitRun(t, repository, "add", matrixPath)
+			},
+			sources:    changeSources{index: true},
+			wantBefore: "base\n",
+			wantAfter:  "index\n",
+		},
+		{
+			name: "working tree",
+			prepare: func(t *testing.T, repository, matrixPath string) {
+				writeTestFile(t, repository, matrixPath, "working\n")
+			},
+			sources:    changeSources{workingTree: true},
+			wantBefore: "base\n",
+			wantAfter:  "working\n",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			const matrixPath = "conformance/providers/provider-a.yaml"
+			repository := newTestGitRepository(t, map[string]string{
+				matrixPath: "base\n",
+			})
+			base := gitOutput(t, repository, "rev-parse", "HEAD")
+			test.prepare(t, repository, matrixPath)
+
+			client := newGitClient(repository)
+			comparison, err := client.resolveComparison(t.Context(), base, "HEAD")
+			if err != nil {
+				t.Fatalf("比較対象を解決できませんでした: %v", err)
+			}
+			changes, err := client.collectChanges(t.Context(), comparison, test.sources)
+			if err != nil {
+				t.Fatalf("変更 layer を収集できませんでした: %v", err)
+			}
+			before, after, both, err := client.comparisonPathContents(
+				t.Context(),
+				repository,
+				comparison,
+				changes,
+				matrixPath,
+			)
+			if err != nil {
+				t.Fatalf("matrix snapshot を読み取れませんでした: %v", err)
+			}
+			if !both || string(before) != test.wantBefore || string(after) != test.wantAfter {
+				t.Fatalf(
+					"matrix snapshot = both:%t before:%q after:%q",
+					both,
+					before,
+					after,
+				)
+			}
+		})
+	}
+}
+
+func TestComparisonPathContentsDoesNotClassifyFileAdditionOrDeletion(t *testing.T) {
+	t.Parallel()
+
+	t.Run("addition", func(t *testing.T) {
+		t.Parallel()
+		repository := newTestGitRepository(t, map[string]string{"README.md": "base\n"})
+		base := gitOutput(t, repository, "rev-parse", "HEAD")
+		const matrixPath = "conformance/providers/provider-a.yaml"
+		writeTestFile(t, repository, matrixPath, "added\n")
+		client := newGitClient(repository)
+		comparison, err := client.resolveComparison(t.Context(), base, "HEAD")
+		if err != nil {
+			t.Fatal(err)
+		}
+		changes, err := client.collectChanges(
+			t.Context(),
+			comparison,
+			changeSources{untracked: true},
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, _, both, err := client.comparisonPathContents(
+			t.Context(),
+			repository,
+			comparison,
+			changes,
+			matrixPath,
+		)
+		if err != nil || both {
+			t.Fatalf("追加 file が両 snapshot に存在しました: both=%t err=%v", both, err)
+		}
+	})
+
+	t.Run("deletion", func(t *testing.T) {
+		t.Parallel()
+		const matrixPath = "conformance/providers/provider-a.yaml"
+		repository := newTestGitRepository(t, map[string]string{matrixPath: "base\n"})
+		base := gitOutput(t, repository, "rev-parse", "HEAD")
+		if err := os.Remove(filepath.Join(repository, filepath.FromSlash(matrixPath))); err != nil {
+			t.Fatal(err)
+		}
+		client := newGitClient(repository)
+		comparison, err := client.resolveComparison(t.Context(), base, "HEAD")
+		if err != nil {
+			t.Fatal(err)
+		}
+		changes, err := client.collectChanges(
+			t.Context(),
+			comparison,
+			changeSources{workingTree: true},
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, _, both, err := client.comparisonPathContents(
+			t.Context(),
+			repository,
+			comparison,
+			changes,
+			matrixPath,
+		)
+		if err != nil || both {
+			t.Fatalf("削除 file が両 snapshot に存在しました: both=%t err=%v", both, err)
+		}
+	})
+}
+
+func TestComparisonPathContentsRejectsWorkingTreeSymlink(t *testing.T) {
+	t.Parallel()
+
+	const matrixPath = "conformance/providers/provider-a.yaml"
+	repository := newTestGitRepository(t, map[string]string{
+		matrixPath:    "base\n",
+		"target.yaml": "target\n",
+	})
+	base := gitOutput(t, repository, "rev-parse", "HEAD")
+	target := filepath.Join(repository, filepath.FromSlash(matrixPath))
+	if err := os.Remove(target); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(repository, "target.yaml"), target); err != nil {
+		t.Fatal(err)
+	}
+	client := newGitClient(repository)
+	comparison, err := client.resolveComparison(t.Context(), base, "HEAD")
+	if err != nil {
+		t.Fatal(err)
+	}
+	changes, err := client.collectChanges(
+		t.Context(),
+		comparison,
+		changeSources{workingTree: true},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, _, err = client.comparisonPathContents(
+		t.Context(),
+		repository,
+		comparison,
+		changes,
+		matrixPath,
+	)
+	if err == nil {
+		t.Fatal("working tree の symlink matrix が許可されました")
 	}
 }
 

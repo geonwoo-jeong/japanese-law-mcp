@@ -10,7 +10,7 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/provideronboarding"
 )
 
-// SOT-ENG-018: --base-ref は一回だけ必須で、位置引数を受け付けない。
+// SOT-ENG-044: --base-ref は一回だけ必須で、位置引数を受け付けない。
 func TestRunRejectsInvalidArgumentsWithUsageExitCode(t *testing.T) {
 	t.Parallel()
 

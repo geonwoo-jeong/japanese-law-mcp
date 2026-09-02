@@ -9,11 +9,12 @@ import (
 	"path/filepath"
 )
 
-// Run は、SOT-ENG-017/018 に基づく provider 追加 fitness gate を実行する。
+// Run は、SOT-ENG-017/044 に基づく provider 追加 fitness gate を実行する。
 func Run(ctx context.Context, options Options) error {
 	return runWithDependencies(ctx, options, dependencies{
-		load: loadCanonicalRows,
-		test: runProviderConformanceTests,
+		load:     loadCanonicalRows,
+		classify: classifyInterfaceSOTReferenceOnlyChange,
+		test:     runProviderConformanceTests,
 	})
 }
 
@@ -27,6 +28,9 @@ func runWithDependencies(
 	}
 	if deps.load == nil || deps.test == nil {
 		return errors.New("provider 追加 fitness gate の依存処理が指定されていません")
+	}
+	if deps.classify == nil {
+		deps.classify = classifyInterfaceSOTReferenceOnlyChange
 	}
 	if options.BaseRef == "" {
 		return ErrInvalidBaseRef
@@ -54,7 +58,7 @@ func runWithDependencies(
 	if err != nil {
 		return err
 	}
-	paths, err := client.collectChangedPaths(ctx, resolved, changeSources{
+	changes, err := client.collectChanges(ctx, resolved, changeSources{
 		index:       options.IncludeIndex,
 		workingTree: options.IncludeWorkingTree,
 		untracked:   options.IncludeUntracked,
@@ -73,9 +77,24 @@ func runWithDependencies(
 	}
 	applicable := bootstrap
 	if bootstrap {
-		err = validateBootstrapChanges(paths, rows)
+		err = validateBootstrapChanges(changes.paths, rows)
 	} else {
-		applicable, err = evaluateNormalChanges(paths, rows)
+		traceOnlyMatrixPaths, classifyErr := classifyTraceOnlyMatrixPaths(
+			ctx,
+			client,
+			repository,
+			resolved,
+			changes,
+			deps.classify,
+		)
+		if classifyErr != nil {
+			return classifyErr
+		}
+		applicable, err = evaluateNormalChangesWithTraceOnlyMatrices(
+			changes.paths,
+			rows,
+			traceOnlyMatrixPaths,
+		)
 	}
 	if err != nil {
 		return err

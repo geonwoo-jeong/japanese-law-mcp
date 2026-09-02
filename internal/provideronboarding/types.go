@@ -35,8 +35,25 @@ type matrixRow struct {
 }
 
 type dependencies struct {
-	load func(string) ([]matrixRow, error)
-	test func(context.Context, string, io.Writer, io.Writer) error
+	load     func(string) ([]matrixRow, error)
+	classify interfaceSOTReferenceClassifier
+	test     func(context.Context, string, io.Writer, io.Writer) error
+}
+
+type interfaceSOTReferenceClassifier func(
+	string,
+	string,
+	[]byte,
+	[]byte,
+) (interfaceSOTReferenceChange, bool, error)
+
+type interfaceSOTReferenceChange struct {
+	replacements []interfaceSOTReferenceReplacement
+}
+
+type interfaceSOTReferenceReplacement struct {
+	previousSOTID string
+	currentSOTID  string
 }
 
 type comparison struct {
@@ -49,4 +66,12 @@ type changeSources struct {
 	index       bool
 	workingTree bool
 	untracked   bool
+}
+
+type changedPathSet struct {
+	paths       []string
+	commit      map[string]struct{}
+	index       map[string]struct{}
+	workingTree map[string]struct{}
+	untracked   map[string]struct{}
 }

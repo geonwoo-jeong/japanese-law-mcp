@@ -1,11 +1,13 @@
 package provideronboarding
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// SOT-ENG-018: 初回導入は列挙された基盤成果物だけを許可する。
+// SOT-ENG-044: 初回導入は列挙された基盤成果物だけを許可する。
 func TestValidateBootstrapChangesAllowsOnlyInitialAllowlist(t *testing.T) {
 	t.Parallel()
 
@@ -65,7 +67,7 @@ func TestValidateBootstrapChangesRequiresAtLeastOnePlannedRow(t *testing.T) {
 	}
 }
 
-// SOT-ENG-018: provider 変更と共通契約の変更を同じ変更単位に混在させない。
+// SOT-ENG-044: provider 変更と共通契約の変更を同じ変更単位に混在させない。
 func TestValidateNormalChangesRejectsCommonContractChanges(t *testing.T) {
 	t.Parallel()
 
@@ -328,9 +330,9 @@ func TestValidateNormalChangesRejectsProviderControlWithoutMatrixTarget(t *testi
 	for _, changedPath := range []string{
 		"internal/model/provider_descriptor.go",
 		"internal/application/provider_routes.go",
-		"internal/application/provider_bindings.go",
-		"internal/application/composition_root.go",
-		"internal/config/provider_schema.go",
+		"internal/application/provider_binding_registry.go",
+		"internal/application/provider_registry.go",
+		"internal/config/provider_config.go",
 	} {
 		if err := validateNormalChanges([]string{changedPath}, rows); err == nil {
 			t.Fatalf("matrix target のない provider 制御変更が許可されました: %s", changedPath)
@@ -354,6 +356,136 @@ func TestValidateNormalChangesRejectsProviderControlWithoutMatrixTarget(t *testi
 		rows,
 	); err != nil {
 		t.Fatalf("provider と無関係な候補合成が provider 制御変更になりました: %v", err)
+	}
+}
+
+func TestProviderControlPathUsesProductionResponsibilityBoundary(t *testing.T) {
+	t.Parallel()
+
+	productionControls := []string{
+		"internal/model/provider_descriptor.go",
+		"internal/application/provider_binding_registry.go",
+		"internal/application/provider_registry.go",
+		"internal/application/provider_routes.go",
+		"internal/config/provider_config.go",
+	}
+	neutralFiles := []string{
+		"internal/config/provider_loader.go",
+		"internal/config/provider_config_test.go",
+		"internal/config/config.go",
+		"internal/config/extension_pack_loader.go",
+		"internal/application/legalquery/candidate_composition_member.go",
+	}
+	allFiles := append(append([]string(nil), productionControls...), neutralFiles...)
+	for _, repositoryPath := range allFiles {
+		localPath := filepath.Join("..", "..", filepath.FromSlash(repositoryPath))
+		info, err := os.Lstat(localPath)
+		if err != nil {
+			t.Fatalf("責任境界を確認する実在 file がありません: %s: %v", repositoryPath, err)
+		}
+		if !info.Mode().IsRegular() {
+			t.Fatalf("責任境界を確認する対象が通常 file ではありません: %s", repositoryPath)
+		}
+	}
+	for _, repositoryPath := range productionControls {
+		if !providerControlPath(repositoryPath) {
+			t.Errorf("provider 制御の production file が対象外です: %s", repositoryPath)
+		}
+	}
+	for _, repositoryPath := range neutralFiles {
+		if providerControlPath(repositoryPath) {
+			t.Errorf("共有または test file が provider 制御に誤分類されました: %s", repositoryPath)
+		}
+	}
+}
+
+func TestEvaluateNormalChangesExcludesOnlyIsolatedTraceabilityMatrices(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{
+		{providerID: "provider-a", implementedBy: "internal/source/a"},
+		{providerID: "provider-b", implementedBy: "internal/source/b"},
+		{providerID: "provider-c", implementedBy: "internal/source/c"},
+	}
+	traceOnly := map[string]struct{}{
+		"conformance/providers/provider-a.yaml": {},
+		"conformance/providers/provider-b.yaml": {},
+		"conformance/providers/provider-c.yaml": {},
+	}
+	paths := []string{
+		"README.md",
+		"conformance/providers/provider-a.yaml",
+		"conformance/providers/provider-b.yaml",
+		"conformance/providers/provider-c.yaml",
+		"internal/config/provider_loader.go",
+		"internal/config/provider_config_test.go",
+		"sot/40-interfaces/77-mcp-tool-exposure-and-extension-packs.md",
+	}
+	applicable, err := evaluateNormalChangesWithTraceOnlyMatrices(paths, rows, traceOnly)
+	if err != nil {
+		t.Fatalf("追跡可能性だけの matrix 更新が拒否されました: %v", err)
+	}
+	if !applicable {
+		t.Fatal("追跡可能性だけの matrix 更新で conformance test が省略されました")
+	}
+}
+
+func TestEvaluateNormalChangesRejectsTraceabilityMatrixMixedWithProviderScope(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{
+		{providerID: "provider-a", implementedBy: "internal/source/a"},
+		{providerID: "provider-b", implementedBy: "internal/source/b"},
+	}
+	tracePath := "conformance/providers/provider-a.yaml"
+	traceOnly := map[string]struct{}{tracePath: {}}
+	for _, forbidden := range []string{
+		"conformance/provider-capability.schema.json",
+		"conformance/providers/provider-b.yaml",
+		"internal/providerconformance/loader_test.go",
+		"internal/provideronboarding/changes.go",
+		"internal/source/a/provider.go",
+		"internal/application/provider_routes.go",
+		"internal/application/lawsearch/port.go",
+	} {
+		forbidden := forbidden
+		t.Run(forbidden, func(t *testing.T) {
+			t.Parallel()
+			_, err := evaluateNormalChangesWithTraceOnlyMatrices(
+				[]string{tracePath, forbidden},
+				rows,
+				traceOnly,
+			)
+			if err == nil || !strings.Contains(err.Error(), forbidden) {
+				t.Fatalf("混在変更 %q が拒否されませんでした: %v", forbidden, err)
+			}
+		})
+	}
+}
+
+func TestEvaluateNormalChangesRejectsInvalidTraceabilityClassification(t *testing.T) {
+	t.Parallel()
+
+	rows := []matrixRow{{
+		providerID:    "provider-a",
+		implementedBy: "internal/source/a",
+	}}
+	for name, traceOnly := range map[string]map[string]struct{}{
+		"unchanged":  {"conformance/providers/provider-b.yaml": {}},
+		"not matrix": {"README.md": {}},
+	} {
+		name := name
+		traceOnly := traceOnly
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if _, err := evaluateNormalChangesWithTraceOnlyMatrices(
+				[]string{"conformance/providers/provider-a.yaml"},
+				rows,
+				traceOnly,
+			); err == nil {
+				t.Fatalf("不正な追跡可能性分類が許可されました: %#v", traceOnly)
+			}
+		})
 	}
 }
 

@@ -60,14 +60,8 @@ type tuple struct {
 
 // Load は canonical schema と全 provider matrix を読み込む。
 func Load(repository string) (Catalog, error) {
-	if repository == "" {
-		return Catalog{}, fmt.Errorf("repository path を指定してください")
-	}
-	root, err := filepath.Abs(repository)
+	root, err := resolveRepositoryRoot(repository)
 	if err != nil {
-		return Catalog{}, fmt.Errorf("repository path を解決できません: %w", err)
-	}
-	if err := requireDirectory(root, "repository"); err != nil {
 		return Catalog{}, err
 	}
 
@@ -134,6 +128,20 @@ func Load(repository string) (Catalog, error) {
 	return Catalog{providers: providers}, nil
 }
 
+func resolveRepositoryRoot(repository string) (string, error) {
+	if repository == "" {
+		return "", fmt.Errorf("repository path を指定してください")
+	}
+	root, err := filepath.Abs(repository)
+	if err != nil {
+		return "", fmt.Errorf("repository path を解決できません: %w", err)
+	}
+	if err := requireDirectory(root, "repository"); err != nil {
+		return "", err
+	}
+	return root, nil
+}
+
 func loadSchema(path string) (*jsonschema.Resolved, error) {
 	data, err := readRegularFile(path, "canonical schema")
 	if err != nil {
@@ -166,6 +174,10 @@ func loadProviderMatrix(path, providerID string, schema *jsonschema.Resolved) (P
 	if err != nil {
 		return ProviderMatrix{}, err
 	}
+	return loadProviderMatrixBytes(data, providerID, schema)
+}
+
+func loadProviderMatrixBytes(data []byte, providerID string, schema *jsonschema.Resolved) (ProviderMatrix, error) {
 	value, err := decodeStrictYAML(data)
 	if err != nil {
 		return ProviderMatrix{}, err

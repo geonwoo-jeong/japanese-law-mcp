@@ -78,7 +78,7 @@ func TestLoadCanonicalRowsUsesProviderConformanceCatalog(t *testing.T) {
 	}
 }
 
-// SOT-ENG-017/018: matrix の implemented target を通常テストとして実行する。
+// SOT-ENG-017/044: matrix の implemented target を通常テストとして実行する。
 func TestRunProviderConformanceTestsUsesImplementedMatrixTargets(t *testing.T) {
 	t.Parallel()
 
