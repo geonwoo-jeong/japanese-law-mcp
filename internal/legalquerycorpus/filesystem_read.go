@@ -11,6 +11,7 @@ import (
 const (
 	corpusSchemaV1Filename = "legal-query-corpus-v1.schema.json"
 	corpusSchemaV2Filename = "legal-query-corpus-v2.schema.json"
+	corpusSchemaV3Filename = "legal-query-corpus-v3.schema.json"
 )
 
 type corpusFixtureReader struct {
@@ -51,6 +52,8 @@ func corpusSchemaFilename(schemaVersion int) (string, error) {
 		return corpusSchemaV1Filename, nil
 	case corpusSchemaVersionV2:
 		return corpusSchemaV2Filename, nil
+	case corpusSchemaVersionV3:
+		return corpusSchemaV3Filename, nil
 	default:
 		return "", fmt.Errorf("corpus schema version は実装済みではありません")
 	}

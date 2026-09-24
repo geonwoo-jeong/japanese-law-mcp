@@ -27,6 +27,11 @@ func BuildEvaluationRequest(
 	if err := validatePreparationSchema(manifest.SchemaVersion); err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}
+	if manifest.SchemaVersion != legalquerycandidateeval.SchemaVersionV5 ||
+		evaluators.CurrentVersion != legalquerycandidateeval.EvaluatorVersionV4 {
+		return legalquerycandidateeval.EvaluationRequest{},
+			legalquerycandidateeval.NewCurrentStaleError(legalquerycandidateeval.StaleReasonCurrentEvaluatorDrift)
+	}
 	if err := verifyCanonicalCandidateManifest(manifest, manifestRaw); err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}
@@ -57,7 +62,8 @@ func BuildEvaluationRequest(
 	if err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}
-	if err := validateCandidateEvaluationCorpus(
+	if err := validateCandidateEvaluationCorpusForSchema(
+		manifest.SchemaVersion,
 		corpus.Manifest().SchemaVersion(),
 		corpus.Manifest().CorpusVersion(),
 	); err != nil {

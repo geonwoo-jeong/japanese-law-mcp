@@ -95,7 +95,7 @@ func (c SemanticCase) CoverageIDs() []string {
 	return cloneStrings(c.coverageIDs)
 }
 
-// DevelopmentAssertionIDs は、v2 development 境界 ID の複製を返す。
+// DevelopmentAssertionIDs は、v2 以降の development 境界 ID の複製を返す。
 func (c SemanticCase) DevelopmentAssertionIDs() []string {
 	return cloneStrings(c.developmentAssertionIDs)
 }
@@ -138,6 +138,9 @@ func (c SemanticCase) Validate() error {
 		return fmt.Errorf("SemanticCase は NewSemanticCase で作成しなければなりません")
 	}
 	if err := c.validateHeader(); err != nil {
+		return err
+	}
+	if err := c.validateFreshSemanticHoldout(); err != nil {
 		return err
 	}
 	if err := validateSemanticCoverage(

@@ -45,3 +45,7 @@
 - [43-candidate-evaluation-readiness-separation.md](43-candidate-evaluation-readiness-separation.md)
 - [44-provider-onboarding-fitness-gate-v2.md](44-provider-onboarding-fitness-gate-v2.md)
 - [45-candidate-evaluation-handoff-schema-v4.md](45-candidate-evaluation-handoff-schema-v4.md)
+- [46-fresh-semantic-holdout-corpus-v3.md](46-fresh-semantic-holdout-corpus-v3.md)
+- [47-candidate-evaluator-v4-source-generation.md](47-candidate-evaluator-v4-source-generation.md)
+- [48-candidate-evaluation-handoff-schema-v5.md](48-candidate-evaluation-handoff-schema-v5.md)
+- [49-candidate-worker-execution-isolation.md](49-candidate-worker-execution-isolation.md)

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// SOT-ENG-045: result の閉じた世代選択は report の schema version を変更しない。
+// SOT-ENG-048: result の閉じた世代選択は report の schema version を変更しない。
 func TestCandidateHandoffは固定世代だけを受理する(t *testing.T) {
 	t.Parallel()
 
@@ -20,7 +20,8 @@ func TestCandidateHandoffは固定世代だけを受理する(t *testing.T) {
 		{name: "version 3", versionField: `"schemaVersion":3,`, accepted: true},
 		{name: "version 4", versionField: `"schemaVersion":4,`, accepted: true},
 		{name: "未知の旧版", versionField: `"schemaVersion":1,`},
-		{name: "未知の新版", versionField: `"schemaVersion":5,`},
+		{name: "version 5", versionField: `"schemaVersion":5,`, accepted: true},
+		{name: "未知の新版", versionField: `"schemaVersion":6,`},
 		{name: "版省略"},
 		{name: "文字列版", versionField: `"schemaVersion":"4",`},
 		{name: "小数版", versionField: `"schemaVersion":4.0,`},

@@ -34,7 +34,7 @@ func validateRootEntries(
 ) (preparationRootLayout, error) {
 	// SOT-ENG-038: Git が空 directory を保持しないため、未評価時の二履歴 root だけは
 	// 不在を論理的な空として扱う。存在する場合は後段で sentinel を含め空以外を拒否する。
-	entries, err := root.ReadDirectory(9, 3*maximumSchemaBytes+maximumPointerBytes)
+	entries, err := root.ReadDirectory(10, 4*maximumSchemaBytes+maximumPointerBytes)
 	if err != nil {
 		return preparationRootLayout{}, fmt.Errorf("candidate evaluation root を列挙できません: %w", err)
 	}
@@ -48,6 +48,7 @@ func validateRootEntries(
 		"schema-v2.json":      {required: true},
 		"schema-v3.json":      {required: true},
 		"schema-v4.json":      {required: true},
+		"schema-v5.json":      {required: true},
 	}
 	seen := make(map[string]struct{}, len(entries))
 	for _, entry := range entries {
@@ -94,7 +95,7 @@ func containsRootEntry(entries map[string]struct{}, name string) bool {
 }
 
 func loadSchemas(root *legalqueryartifact.Repository) (artifactSchemas, error) {
-	// SOT-ENG-045: 同居する三世代の固定 byte を照合してから宣言版で選択する。
+	// SOT-ENG-048: 同居する四世代の固定 byte を照合してから宣言版で選択する。
 	for _, schema := range []struct {
 		name string
 		raw  []byte
@@ -102,6 +103,7 @@ func loadSchemas(root *legalqueryartifact.Repository) (artifactSchemas, error) {
 		{name: "schema-v2.json", raw: CanonicalSchemaV2()},
 		{name: "schema-v3.json", raw: CanonicalSchemaV3()},
 		{name: "schema-v4.json", raw: CanonicalSchemaV4()},
+		{name: "schema-v5.json", raw: CanonicalSchemaV5()},
 	} {
 		raw, err := root.ReadRegular(schema.name, maximumSchemaBytes)
 		if err != nil {

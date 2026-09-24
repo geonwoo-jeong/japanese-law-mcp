@@ -32,7 +32,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 	manifest := corpus.Manifest()
 	request := legalquerycandidateeval.EvaluationRequest{
 		SchemaVersion:              legalquerycandidateeval.SchemaVersionV3,
-		EvaluatorVersion:           evaluators.CurrentVersion,
+		EvaluatorVersion:           evaluators.Version3,
 		CorpusVersion:              manifest.CorpusVersion(),
 		CorpusManifestSHA256:       corpus.SHA256(),
 		HoldoutDigest:              manifest.HoldoutDigest(),
@@ -49,6 +49,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 			reasons,
 			[]legalquerycandidateeval.StaleReason{
 				legalquerycandidateeval.StaleReasonReviewSOTLifecycleDrift,
+				legalquerycandidateeval.StaleReasonCurrentEvaluatorDrift,
 			},
 		) {
 		t.Fatalf("candidate-evaluation-stale-candidate-readiness-fail: 外部参照結果=(%#v,%v)", validation, err)
@@ -61,7 +62,7 @@ func TestReferenceValidatorはRequestの外部参照をManifestだけで再検�
 		t.Fatal("candidate-evaluation-evaluator-version-match: current ではない v2 を新規準備として受理しました")
 	}
 
-	request.EvaluatorVersion = evaluators.CurrentVersion
+	request.EvaluatorVersion = evaluators.Version3
 	request.BaselineVersion = "default-1"
 	if _, err := validator.ValidateEvaluationRequest(
 		context.Background(), []byte("canonical request placeholder\n"), request,
@@ -121,6 +122,7 @@ func TestReferenceValidatorは実際の候補評価Treeを状態対応Loaderで�
 			[]legalquerycandidateeval.StaleReason{
 				legalquerycandidateeval.StaleReasonCandidateContentDrift,
 				legalquerycandidateeval.StaleReasonReviewSOTLifecycleDrift,
+				legalquerycandidateeval.StaleReasonCurrentEvaluatorDrift,
 			},
 		) {
 		t.Fatalf("candidate-evaluation-stale-product-quality-pass: readiness=%q reasons=%v", inspection.ReadinessState(), inspection.StaleReasons())

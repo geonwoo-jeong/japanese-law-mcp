@@ -108,10 +108,11 @@ func BuildContentManifestForSchema(
 
 func validatePreparationSchema(schemaVersion int) error {
 	switch schemaVersion {
-	case legalquerycandidateeval.SchemaVersionV3, legalquerycandidateeval.SchemaVersionV4:
+	case legalquerycandidateeval.SchemaVersionV3, legalquerycandidateeval.SchemaVersionV4,
+		legalquerycandidateeval.SchemaVersionV5:
 		return nil
 	default:
-		return fmt.Errorf("候補準備と readiness は schema version 3 または 4 を必要とします")
+		return fmt.Errorf("候補準備と readiness は schema version 3、4 または 5 を必要とします")
 	}
 }
 

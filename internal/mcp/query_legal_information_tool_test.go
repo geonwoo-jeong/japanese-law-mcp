@@ -208,6 +208,8 @@ func TestQueryLegalInformationToolRejectsInvalidInputBeforeApplication(
 		"query 欠落":                json.RawMessage(`{}`),
 		"query null":              json.RawMessage(`{"query":null}`),
 		"query 型不一致":              json.RawMessage(`{"query":7}`),
+		"query 空文字":               json.RawMessage(`{"query":""}`),
+		"query Unicode 空白だけ":      json.RawMessage(`{"query":"\u3000 \u00a0"}`),
 		"query 空白だけ":              json.RawMessage(`{"query":"　 "}`),
 		"query 制御文字":              json.RawMessage("{\"query\":\"民法\\n\"}"),
 		"query 上限超過":              json.RawMessage(`{"query":"` + tooLong + `"}`),

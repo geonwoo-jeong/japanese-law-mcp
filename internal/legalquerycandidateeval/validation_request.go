@@ -15,6 +15,13 @@ func validateEvaluationRequest(document EvaluationRequest) error {
 		document.EvaluatorVersion != EvaluatorVersionV3 {
 		return fmt.Errorf("schema version %d の evaluatorVersion が固定値と一致しません", document.SchemaVersion)
 	}
+	if document.SchemaVersion == SchemaVersionV5 && document.EvaluatorVersion != EvaluatorVersionV4 {
+		return fmt.Errorf("schema version 5 の evaluatorVersion が固定値と一致しません")
+	}
+	if document.SchemaVersion == SchemaVersionV2 && document.EvaluatorVersion != "legal-query-evaluator-v1" &&
+		document.EvaluatorVersion != "legal-query-evaluator-v2" && document.EvaluatorVersion != EvaluatorVersionV3 {
+		return fmt.Errorf("schema version 2 の evaluatorVersion が履歴の固定集合にありません")
+	}
 	if err := validateRequestCorpus(document); err != nil {
 		return err
 	}

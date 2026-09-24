@@ -15,6 +15,7 @@ type artifactSchemas struct {
 	v2 SchemaV2
 	v3 SchemaV3
 	v4 SchemaV4
+	v5 SchemaV5
 }
 
 func loadCanonicalArtifactSchemas() (artifactSchemas, error) {
@@ -28,6 +29,10 @@ func loadCanonicalArtifactSchemas() (artifactSchemas, error) {
 			return
 		}
 		canonicalSchemas.v4, canonicalSchemasErr = ParseSchemaV4(CanonicalSchemaV4())
+		if canonicalSchemasErr != nil {
+			return
+		}
+		canonicalSchemas.v5, canonicalSchemasErr = ParseSchemaV5(CanonicalSchemaV5())
 	})
 	if canonicalSchemasErr != nil {
 		return artifactSchemas{}, fmt.Errorf("固定済み candidate evaluation schema を初期化できません: %w", canonicalSchemasErr)
@@ -43,6 +48,8 @@ func (s artifactSchemas) validate(schemaVersion int, raw []byte) error {
 		return s.v3.validateRaw(raw)
 	case SchemaVersionV4:
 		return s.v4.validateRaw(raw)
+	case SchemaVersionV5:
+		return s.v5.validateRaw(raw)
 	default:
 		return fmt.Errorf("candidate evaluation schema version が未対応です")
 	}

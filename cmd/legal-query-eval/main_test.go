@@ -229,22 +229,22 @@ func TestCandidateCurrentEvaluator切替はProductionAdoptionを変更しない(
 
 	adoption, err := legalqueryadoption.LoadCurrent(context.Background())
 	if err != nil {
-		t.Fatalf("candidate-evaluation-schema-v3-current-switch-production-neutral: current adoption を読めません: %v", err)
+		t.Fatalf("candidate-evaluation-schema-v5-current-switch-production-neutral: current adoption を読めません: %v", err)
 	}
-	if evaluators.CurrentVersion != evaluators.Version3 ||
+	if evaluators.CurrentVersion != evaluators.Version4 ||
 		adoption.EvaluatorVersion() != evaluators.Version1 {
 		t.Fatalf(
-			"candidate-evaluation-schema-v3-current-switch-production-neutral: candidate=%q production=%q",
+			"candidate-evaluation-schema-v5-current-switch-production-neutral: candidate=%q production=%q",
 			evaluators.CurrentVersion,
 			adoption.EvaluatorVersion(),
 		)
 	}
 	evaluator, err := evaluators.New(adoption.EvaluatorVersion())
 	if err != nil {
-		t.Fatalf("candidate-evaluation-schema-v3-current-switch-production-neutral: production evaluator を構築できません: %v", err)
+		t.Fatalf("candidate-evaluation-schema-v5-current-switch-production-neutral: production evaluator を構築できません: %v", err)
 	}
 	if evaluator.ScoresCandidatePlanningFailure() {
-		t.Fatal("candidate-evaluation-schema-v3-current-switch-production-neutral: production evaluator が候補 failure policy を使用しました")
+		t.Fatal("candidate-evaluation-schema-v5-current-switch-production-neutral: production evaluator が候補 failure policy を使用しました")
 	}
 }
 

@@ -661,6 +661,13 @@ func validEvaluationRequestForSchema(
 		request.HoldoutLeakageGroupDigests = []string{repeatHex('6'), repeatHex('7')}
 		request.BaselineVersion = "default-100"
 	}
+	if manifest.SchemaVersion == SchemaVersionV5 {
+		request.EvaluatorVersion = EvaluatorVersionV4
+		request.CorpusVersion = "corpus-v101"
+		request.HoldoutDigest = repeatHex('8')
+		request.HoldoutLeakageGroupDigests = []string{repeatHex('9')}
+		request.BaselineVersion = "default-101"
+	}
 	request.EvaluationID = mustEvaluationID(t, request)
 	return request
 }

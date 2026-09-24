@@ -161,13 +161,14 @@ func TestSchemaV4Rootは未知Entryと各Schemaの欠損改変を拒否する(t 
 	t.Parallel()
 	for name, canonical := range map[string][]byte{
 		"schema-v2.json": CanonicalSchemaV2(), "schema-v3.json": CanonicalSchemaV3(),
-		"schema-v4.json": CanonicalSchemaV4(), "schema-v5.json": CanonicalSchemaV4(),
+		"schema-v4.json": CanonicalSchemaV4(), "schema-v5.json": CanonicalSchemaV5(),
+		"schema-v6.json": CanonicalSchemaV5(),
 	} {
 		for _, action := range []string{"missing", "changed"} {
 			t.Run(name+"-"+action, func(t *testing.T) {
 				root := t.TempDir()
 				prepareCandidateEvaluationFixture(t, root)
-				if action == "missing" && name != "schema-v5.json" {
+				if action == "missing" && name != "schema-v6.json" {
 					removeCandidateFixture(t, root, filepath.Join("testdata/legalquery/candidate-evaluations", name))
 				} else {
 					writeV4Fixture(t, root, name, append(canonical, '\n'))

@@ -567,6 +567,65 @@ development だけによる校正、content・review・request・pointer の原�
 この基盤変更の権威 CI は親作業からの push 後に確認する。後続の番号付き作業も
 `SOT-ENG-039` に従い、それぞれの commit と権威 CI の成功後にだけ次へ進む。
 
+### 空入力分離と schema version 5 の準備基盤
+
+2026-09-24 の改善作業09で、[SOT-ENG-046](../sot/50-engineering/46-fresh-semantic-holdout-corpus-v3.md)の
+corpus schema 3、[SOT-ENG-047](../sot/50-engineering/47-candidate-evaluator-v4-source-generation.md)の
+exact evaluator v4、[SOT-ENG-048](../sot/50-engineering/48-candidate-evaluation-handoff-schema-v5.md)の
+handoff schema 5 を追加した。空入力の意味家族を fresh holdout から分離し、同 commit の
+入力境界検証へ残す。空入力以外の必須 coverage と受入条件は ENG046 の継承範囲を保つ。
+[corpus の合成検証](../internal/legalquerycorpus/corpus_v3_contract_test.go)から、空文字と
+Unicode 空白、coverage の付替え拒否、残る coverage の個別不足拒否、旧版互換と
+新しい版の loader へ到達できる。
+
+[候補 handoff の世代検証](../internal/legalquerycandidateeval/schema_v5_test.go)、
+[参照構築の検証](../internal/legalquerycandidateprepare/schema_v4_test.go)と
+[bootstrap result reader の検証](../cmd/legal-query-candidate-eval/handoff_schema_test.go)で、
+exact SOT 集合、新旧成果物、予約衝突、版拒否、合成 ready と strict 成功を確認する。
+候補用 current evaluator だけを v4 に進め、旧 schema 3 current の byte を保ち、
+既存の内容・SOT lifecycle の乖離に evaluator drift を加えて stale 拒否を維持する。
+production は `corpus-v9`、`default-1`、evaluator v1 の採用 tuple のままである。
+実 holdout 内容は開かず、新しい corpus、baseline、content、review、request、pointer
+又は report/result は作成していない。
+
+独立した code・security・契約 review は `9 / 10`、blocker `0`、必須修正なしだった。
+ENG049 と v5 の最終 exact review 集合六十一件を含み、Wiki と最終差分の再照合でも
+同じ判定だった。合成 corpus の三契約、空入力の constructor/MCP 一致と application
+非呼出し、v3/v4 の評価写像同値、旧版 routing、handoff の新旧読取りと予約衝突が成功した。
+公式 Go `1.26.5`、`GOMAXPROCS=1`、`go test -p=1 -count=1` を使い、source closure の
+再構築は固定 `GOOS=linux GOARCH=amd64 CGO_ENABLED=0` で確認した。
+実 current の三理由 stale と strict 拒否、worker と出力の非到達、schema 4/5 の
+同世代再構築および production v1 の維持も成功した。対象 lint は `0 issues`、
+`go vet`、SOT 解析、構造・link 検査と開発原則 checksum も成功した。
+
+作業08の hash inventory 四十件のうち三十八件は一致した。差分は v4 の追加と
+候補 current 切替を行った evaluator registry の実装とテスト二件だけであり、
+旧予約成果物の改変ではない。inventory 外の corpus schema 1/2 と handoff schema 4
+の二配置も開始 commit と byte 一致を確認した。
+
+#### 実評価前に残る隔離実装
+
+[SOT-ENG-049](../sot/50-engineering/49-candidate-worker-execution-isolation.md)は
+worker 専用 module を semantic module から分離して固定し、archive と fresh cache に
+両集合の一致検証済み和集合だけを使う後継契約である。これは契約の採用であり、
+実行隔離の実装完了ではない。
+
+ENG038 の verified source tree、fresh module cache と immutable な raw-digest worker
+registry は未実装である。現 bootstrap は
+[元 checkout で worker を go run する経路](../cmd/legal-query-candidate-eval/main.go)を持つ。
+次の改善作業10は registry 基盤と隔離 runner を実装する。今回の schema 5 の合成 ready を
+実評価開始の証拠にしてはならない。
+
+本番 v4 registry の初回 freeze は、development 校正を完了した後、content・review・
+request の原子的準備より前又は同じ変更に置く。暫定 v4 registry は作らず、後で同じ版の
+固定 closure を差し替えない。candidate と重複する source も同じ raw digest を必要とする。
+旧 raw registry を現在の source から捏造せず、証明できない旧 closure による再評価は
+拒否する。既存 tracked artifact の byte replay は固定 schema と binding を検証する
+holdout 非到達の履歴確認として維持し、旧 closure による再評価の実施とは区別する。
+
+この基盤の権威 CI は親作業の push 後に確認する。全件 quality/coverage のローカル
+再実行は行わず、後続の各段階は独立 commit とその権威 CI 成功後に進める。
+
 ## 段階の境界
 
 第二段階と第三段階では、次版の内部実装と development fixture を準備できる。ただし

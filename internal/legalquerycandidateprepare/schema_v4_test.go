@@ -36,19 +36,19 @@ func TestBuildContentManifestForSchemaは世代を明示して内容を固定す
 	if _, err := legalquerycandidateeval.DecodeCandidateContentManifest(prepareCanonicalJSON(t, v4)); err != nil {
 		t.Fatal(err)
 	}
-	for _, version := range []int{0, 2, 5} {
+	for _, version := range []int{0, 2, 6} {
 		if _, err := BuildContentManifestForSchema(t.Context(), root, source, version); err == nil {
 			t.Fatalf("準備できない schema %d を受理しました", version)
 		}
 	}
 }
 
-func TestSchemaV4準備はFixtureなしでRequestの参照を結合する(t *testing.T) {
+func TestSchemaV5準備はFixtureなしでRequestの参照を結合する(t *testing.T) {
 	t.Parallel()
 
-	root := prepareV4ReferenceRoot(t)
+	root := prepareV5ReferenceRoot(t)
 	manifest, err := BuildContentManifestForSchema(
-		t.Context(), candidateRepositoryRoot(t), validSourceSetForTest(t), legalquerycandidateeval.SchemaVersionV4,
+		t.Context(), candidateRepositoryRoot(t), validSourceSetForTest(t), legalquerycandidateeval.SchemaVersionV5,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -59,13 +59,13 @@ func TestSchemaV4準備はFixtureなしでRequestの参照を結合する(t *tes
 		t.Fatal(err)
 	}
 	architecture := mustReviewForTest(t, manifest, manifestRaw, references,
-		legalquerycandidateeval.ReviewScopeArchitecture, "v4-architecture")
+		legalquerycandidateeval.ReviewScopeArchitecture, "v5-architecture")
 	testability := mustReviewForTest(t, manifest, manifestRaw, references,
-		legalquerycandidateeval.ReviewScopeTestability, "v4-testability")
+		legalquerycandidateeval.ReviewScopeTestability, "v5-testability")
 	request, err := BuildEvaluationRequest(t.Context(), root, "corpus-v99", manifest, manifestRaw,
 		architecture, prepareCanonicalJSON(t, architecture), testability, prepareCanonicalJSON(t, testability), "default-99")
 	if err != nil {
-		t.Fatalf("candidate-evaluation-schema-v4-ready-route: request を構成できません: %v", err)
+		t.Fatalf("candidate-evaluation-schema-v5-ready-route: request を構成できません: %v", err)
 	}
 	validator, err := NewReferenceValidator(root)
 	if err != nil {
@@ -75,17 +75,17 @@ func TestSchemaV4準備はFixtureなしでRequestの参照を結合する(t *tes
 	if err != nil || len(validation.StaleReasons) != 0 ||
 		!reflect.DeepEqual(validation.CurrentRequiredReviewSOTs, references) ||
 		request.SchemaVersion != manifest.SchemaVersion ||
-		request.EvaluatorVersion != legalquerycandidateeval.EvaluatorVersionV3 {
-		t.Fatalf("candidate-evaluation-schema-v4-ready-route: 外部参照=(%#v,%v)", validation, err)
+		request.EvaluatorVersion != legalquerycandidateeval.EvaluatorVersionV4 {
+		t.Fatalf("candidate-evaluation-schema-v5-ready-route: 外部参照=(%#v,%v)", validation, err)
 	}
-	for _, version := range []int{0, 2, 5} {
+	for _, version := range []int{0, 2, 6} {
 		invalid := request
 		invalid.SchemaVersion = version
 		if _, err := validator.ValidateEvaluationRequest(t.Context(), nil, invalid); err == nil {
 			t.Fatalf("readiness が schema %d を受理しました", version)
 		}
 	}
-	// SOT-ENG-045: digest は同じでも、参照する review の世代は一致しなければならない。
+	// SOT-ENG-048: digest は同じでも、参照する review の世代は一致しなければならない。
 	wrongReview := architecture
 	wrongReview.SchemaVersion = legalquerycandidateeval.SchemaVersionV3
 	if err := verifyRequestReviews(manifest, manifestRaw, references,
@@ -94,7 +94,7 @@ func TestSchemaV4準備はFixtureなしでRequestの参照を結合する(t *tes
 	}
 }
 
-func TestReferenceValidatorはSchemaV4内容を同じ世代で再構築する(t *testing.T) {
+func TestReferenceValidatorはSchemaV4とV5内容を同じ世代で再構築する(t *testing.T) {
 	if !useExactCandidateToolchain(t) {
 		t.Skip("候補再現用 Go 環境がないため local では実行しません")
 	}
@@ -103,16 +103,18 @@ func TestReferenceValidatorはSchemaV4内容を同じ世代で再構築する(t 
 	if err != nil {
 		t.Fatal(err)
 	}
-	manifest, err := BuildContentManifestForSchema(t.Context(), root, source, legalquerycandidateeval.SchemaVersionV4)
-	if err != nil {
-		t.Fatal(err)
-	}
 	validator, err := NewReferenceValidator(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := validator.ValidateCandidateContent(t.Context(), prepareCanonicalJSON(t, manifest), manifest); err != nil {
-		t.Fatalf("candidate-evaluation-schema-v4-ready-route: v4 内容を再構築できません: %v", err)
+	for _, version := range []int{legalquerycandidateeval.SchemaVersionV4, legalquerycandidateeval.SchemaVersionV5} {
+		manifest, err := BuildContentManifestForSchema(t.Context(), root, source, version)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := validator.ValidateCandidateContent(t.Context(), prepareCanonicalJSON(t, manifest), manifest); err != nil {
+			t.Fatalf("candidate-evaluation-schema-v5-ready-route: schema %d 内容を再構築できません: %v", version, err)
+		}
 	}
 }
 
@@ -125,7 +127,7 @@ func prepareCanonicalJSON(t *testing.T, document any) []byte {
 	return raw
 }
 
-func prepareV4ReferenceRoot(t *testing.T) string {
+func prepareV5ReferenceRoot(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
 	repository := candidateRepositoryRoot(t)
@@ -144,6 +146,7 @@ func prepareV4ReferenceRoot(t *testing.T) string {
 	if err := json.Unmarshal(corpus.RawBytes(), &manifest); err != nil {
 		t.Fatal(err)
 	}
+	manifest["schemaVersion"] = json.RawMessage(`3`)
 	manifest["corpusVersion"] = json.RawMessage(`"corpus-v99"`)
 	manifest["holdoutDigest"] = json.RawMessage(`"` + strings.Repeat("a", 64) + `"`)
 	manifest["holdoutLeakageGroupDigests"] = json.RawMessage(`["` + strings.Repeat("b", 64) + `"]`)

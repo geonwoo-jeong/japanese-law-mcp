@@ -43,7 +43,7 @@ func TestExecutionCaseはheaderとscenarioCatalogを検証する(t *testing.T) {
 			return values
 		},
 		"schemaVersion": func(values ExecutionCaseValues) ExecutionCaseValues {
-			values.SchemaVersion = 3
+			values.SchemaVersion = 4
 			return values
 		},
 		"caseId prefix": func(values ExecutionCaseValues) ExecutionCaseValues {

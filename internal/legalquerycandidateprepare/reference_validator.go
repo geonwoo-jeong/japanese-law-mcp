@@ -144,6 +144,9 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 		return legalquerycandidateeval.RequestReferenceValidation{}, err
 	}
 	manifest := corpus.Manifest()
+	if err := validateCandidateEvaluationCorpusForSchema(document.SchemaVersion, manifest.SchemaVersion(), manifest.CorpusVersion()); err != nil {
+		return legalquerycandidateeval.RequestReferenceValidation{}, err
+	}
 	if document.CorpusVersion != manifest.CorpusVersion() ||
 		document.CorpusManifestSHA256 != corpus.SHA256() ||
 		document.HoldoutDigest != manifest.HoldoutDigest() ||

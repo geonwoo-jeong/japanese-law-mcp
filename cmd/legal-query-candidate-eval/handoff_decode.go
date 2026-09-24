@@ -93,7 +93,7 @@ func decodeCanonicalWorkerResult(raw []byte) (workerResultDocument, error) {
 	}
 	// SOT-ENG-045: bootstrap は固定された handoff 世代だけを受理する。
 	if document.ArtifactKind != "legal_query_candidate_evaluation_result" ||
-		(document.SchemaVersion != 2 && document.SchemaVersion != 3 && document.SchemaVersion != 4) ||
+		(document.SchemaVersion != 2 && document.SchemaVersion != 3 && document.SchemaVersion != 4 && document.SchemaVersion != 5) ||
 		!validEvaluationID(document.EvaluationID) ||
 		len(document.RequestSHA256) != 64 || !lowerHex(document.RequestSHA256) ||
 		(document.Outcome != "passed" && document.Outcome != "failed") ||

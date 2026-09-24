@@ -137,6 +137,9 @@ func evaluatePreparedCandidate(
 		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
 	}
 	manifest := corpus.Manifest()
+	if err := validateCandidateCorpusGeneration(request, manifest.SchemaVersion()); err != nil {
+		return nil, wrapFailure(FailureCodeEvaluateBuild, err)
+	}
 	if manifest.CorpusVersion() != request.CorpusVersion ||
 		manifest.HoldoutDigest() != request.HoldoutDigest ||
 		!slices.Equal(manifest.HoldoutLeakageGroupDigests(), request.HoldoutLeakageGroupDigests) {
@@ -179,9 +182,36 @@ func newCandidateEvaluator(
 		return defaultprofile.NewWithPlanningV2(candidate)
 	case evaluators.Version3:
 		return defaultprofile.NewWithPlanningV3(candidate)
+	case evaluators.Version4:
+		return defaultprofile.NewWithPlanningV4(candidate)
 	default:
 		return nil, fmt.Errorf("candidate evaluator version が未対応です")
 	}
+}
+
+func validateCandidateCorpusGeneration(
+	request legalquerycandidateeval.EvaluationRequest,
+	corpusSchemaVersion int,
+) error {
+	legacyCorpus := corpusSchemaVersion == 1 || corpusSchemaVersion == 2
+	switch request.SchemaVersion {
+	case legalquerycandidateeval.SchemaVersionV2:
+		if legacyCorpus &&
+			(request.EvaluatorVersion == evaluators.Version1 ||
+				request.EvaluatorVersion == evaluators.Version2 ||
+				request.EvaluatorVersion == evaluators.Version3) {
+			return nil
+		}
+	case legalquerycandidateeval.SchemaVersionV3, legalquerycandidateeval.SchemaVersionV4:
+		if legacyCorpus && request.EvaluatorVersion == evaluators.Version3 {
+			return nil
+		}
+	case legalquerycandidateeval.SchemaVersionV5:
+		if corpusSchemaVersion == 3 && request.EvaluatorVersion == evaluators.Version4 {
+			return nil
+		}
+	}
+	return fmt.Errorf("candidate request と corpus の schema 世代が一致しません")
 }
 
 func encodeCandidateReport(

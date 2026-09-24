@@ -47,6 +47,8 @@ func (s corpusSchema) validateAndDecode(
 		return decodeCorpusArtifactV1(data, header.artifactKind)
 	case corpusSchemaVersionV2:
 		return decodeCorpusArtifactV2(data, header.artifactKind)
+	case corpusSchemaVersionV3:
+		return decodeCorpusArtifactV3(data, header.artifactKind)
 	default:
 		return decodedCorpusArtifact{}, fmt.Errorf(
 			"JSON 成果物の schemaVersion は実装済みではありません",
@@ -69,12 +71,28 @@ func decodeCorpusArtifactV2(
 	data []byte,
 	kind ArtifactKind,
 ) (decodedCorpusArtifact, error) {
+	return decodeCorpusArtifactWithAssertions(data, kind)
+}
+
+func decodeCorpusArtifactV3(
+	data []byte,
+	kind ArtifactKind,
+) (decodedCorpusArtifact, error) {
+	return decodeCorpusArtifactWithAssertions(data, kind)
+}
+
+// decodeCorpusArtifactWithAssertions は、同じ field 構造を持つ v2 と v3 を復元する。
+// 選択した schema と constructor が宣言版の制約をそれぞれ検証する。
+func decodeCorpusArtifactWithAssertions(
+	data []byte,
+	kind ArtifactKind,
+) (decodedCorpusArtifact, error) {
 	switch kind {
 	case ArtifactKindCorpusManifest:
 		manifest, err := decodeManifestV2(data)
 		if err != nil {
 			return decodedCorpusArtifact{}, fmt.Errorf(
-				"manifest を v2 成果物へ復元できません: %w",
+				"manifest を成果物へ復元できません: %w",
 				err,
 			)
 		}
@@ -83,7 +101,7 @@ func decodeCorpusArtifactV2(
 		semanticCase, err := decodeSemanticCaseV2(data)
 		if err != nil {
 			return decodedCorpusArtifact{}, fmt.Errorf(
-				"semantic case を v2 成果物へ復元できません: %w",
+				"semantic case を成果物へ復元できません: %w",
 				err,
 			)
 		}
@@ -92,7 +110,7 @@ func decodeCorpusArtifactV2(
 		executionCase, err := decodeExecutionCaseV2(data)
 		if err != nil {
 			return decodedCorpusArtifact{}, fmt.Errorf(
-				"execution case を v2 成果物へ復元できません: %w",
+				"execution case を成果物へ復元できません: %w",
 				err,
 			)
 		}

@@ -8,6 +8,7 @@ import (
 const (
 	corpusSchemaVersionV1 = 1
 	corpusSchemaVersionV2 = 2
+	corpusSchemaVersionV3 = 3
 	// corpusSchemaVersion は、既存 v1 test helper の既定値を維持する。
 	corpusSchemaVersion                = corpusSchemaVersionV1
 	manifestMaximumSeed                = 2147483647
@@ -279,7 +280,7 @@ func (m Manifest) RequiredExecutionScenarioIDs() []string {
 	return cloneStrings(m.requiredExecutionScenarioIDs)
 }
 
-// RequiredDevelopmentAssertionIDs は、v2 development 境界 ID の複製を返す。
+// RequiredDevelopmentAssertionIDs は、v2 以降の development 境界 ID の複製を返す。
 func (m Manifest) RequiredDevelopmentAssertionIDs() []string {
 	return cloneStrings(m.requiredDevelopmentAssertionIDs)
 }
@@ -299,7 +300,7 @@ func (m Manifest) Execution() ManifestSet {
 	return m.execution.clone()
 }
 
-// Validate は、manifest v1 の単一成果物内の構造を確認する。
+// Validate は、manifest の単一成果物内の構造を確認する。
 func (m Manifest) Validate() error {
 	if !m.initialized {
 		return fmt.Errorf("Manifest は NewManifest で作成しなければなりません")
@@ -312,7 +313,7 @@ func (m Manifest) Validate() error {
 	}
 	if !equalStringSequence(
 		m.requiredExecutionScenarioIDs,
-		manifestRequiredExecutionScenarioIDsForVersion(m.corpusVersion),
+		manifestRequiredExecutionScenarioIDsForSchemaAndVersion(m.schemaVersion, m.corpusVersion),
 	) {
 		return fmt.Errorf(
 			"requiredExecutionScenarioIds は corpus version の定義件数を正しい順序で保持しなければなりません",
@@ -349,7 +350,7 @@ func (m Manifest) validateVersionFields() error {
 			return fmt.Errorf("schema version 1 は v2 manifest 項目を保持できません")
 		}
 		return nil
-	case corpusSchemaVersionV2:
+	case corpusSchemaVersionV2, corpusSchemaVersionV3:
 		if err := validateHoldoutLeakageGroupDigestList(
 			m.holdoutLeakageGroupDigests,
 		); err != nil {
@@ -497,8 +498,23 @@ func manifestRequiredExecutionScenarioIDsForVersion(
 	}
 }
 
+func manifestRequiredExecutionScenarioIDsForSchemaAndVersion(
+	schemaVersion int,
+	corpusVersion string,
+) []string {
+	if schemaVersion == corpusSchemaVersionV3 {
+		return manifestRequiredExecutionScenarioIDs()
+	}
+	return manifestRequiredExecutionScenarioIDsForVersion(corpusVersion)
+}
+
 func isSupportedCorpusSchemaVersion(version int) bool {
-	return version == corpusSchemaVersionV1 || version == corpusSchemaVersionV2
+	switch version {
+	case corpusSchemaVersionV1, corpusSchemaVersionV2, corpusSchemaVersionV3:
+		return true
+	default:
+		return false
+	}
 }
 
 func manifestRequiredDevelopmentAssertionIDs() []string {

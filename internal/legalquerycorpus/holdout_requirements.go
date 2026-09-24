@@ -24,9 +24,6 @@ func validateIntegrityHoldoutRequirements(
 	checked integrityCheckedCorpus,
 ) (integrityCheckedCorpus, error) {
 	schemaVersion := checked.manifest.SchemaVersion()
-	if !isSupportedCorpusSchemaVersion(schemaVersion) && len(checked.holdout) > 0 {
-		schemaVersion = checked.holdout[0].SchemaVersion()
-	}
 	if err := validateHoldoutRequirementsForSchemaVersion(
 		schemaVersion,
 		checked.holdout,
@@ -48,6 +45,9 @@ func validateHoldoutRequirementsForSchemaVersion(
 	schemaVersion int,
 	holdout []SemanticCase,
 ) error {
+	if !isSupportedCorpusSchemaVersion(schemaVersion) {
+		return fmt.Errorf("holdout の schemaVersion は実装済みではありません")
+	}
 	if len(holdout) < minimumHoldoutCaseCount {
 		return fmt.Errorf(
 			"holdout は%d件以上でなければなりません",
@@ -117,9 +117,7 @@ func validateHoldoutCoverageCounts(
 	schemaVersion int,
 	counts map[string]int,
 ) error {
-	for _, definition := range semanticCoverageDefinitionsForSchemaVersion(
-		schemaVersion,
-	) {
+	for _, definition := range semanticHoldoutCoverageDefinitions(schemaVersion) {
 		if counts[definition.id] < definition.minimumHoldoutCount {
 			return fmt.Errorf(
 				"holdout の coverageId %q は%d件以上でなければなりません",
@@ -135,9 +133,7 @@ func validateHoldoutSafetyVariantPairs(
 	schemaVersion int,
 	counts map[holdoutSafetyVariantKey]int,
 ) error {
-	for _, definition := range semanticCoverageDefinitionsForSchemaVersion(
-		schemaVersion,
-	) {
+	for _, definition := range semanticHoldoutCoverageDefinitions(schemaVersion) {
 		if !definition.requiresSafetyVariantPair {
 			continue
 		}

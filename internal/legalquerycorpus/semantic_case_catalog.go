@@ -177,7 +177,7 @@ func semanticCoverageDefinitionsForSchemaVersion(
 	switch schemaVersion {
 	case corpusSchemaVersionV1:
 		return semanticCoverageDefinitions()
-	case corpusSchemaVersionV2:
+	case corpusSchemaVersionV2, corpusSchemaVersionV3:
 		return append([]semanticCoverageDefinition{}, semanticCoverageCatalogV2...)
 	default:
 		return nil

@@ -8,9 +8,13 @@ const (
 	SchemaVersionV3 = 3
 	// SchemaVersionV4 は有効な review SOT 集合を結ぶ候補評価成果物の schema 版である。
 	SchemaVersionV4 = 4
+	// SchemaVersionV5 は fresh 意味 holdout と evaluator v4 を結ぶ schema 版である。
+	SchemaVersionV5 = 5
 
 	// EvaluatorVersionV3 は schema v3/v4 request が固定する evaluator 版である。
 	EvaluatorVersionV3 = "legal-query-evaluator-v3"
+	// EvaluatorVersionV4 は schema v5 request が固定する evaluator 版である。
+	EvaluatorVersionV4 = "legal-query-evaluator-v4"
 
 	ArtifactKindPointer           = "legal_query_candidate_evaluation_pointer"
 	ArtifactKindCandidateContent  = "legal_query_candidate_content"

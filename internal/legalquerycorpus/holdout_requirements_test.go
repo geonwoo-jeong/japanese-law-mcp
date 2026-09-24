@@ -61,7 +61,8 @@ func TestIntegrityHoldoutRequirementsは検証済みHoldoutだけを返す(
 ) {
 	holdout := holdoutRequirementsTestValidHoldout(t)
 	got, err := validateIntegrityHoldoutRequirements(integrityCheckedCorpus{
-		holdout: holdout,
+		manifest: Manifest{schemaVersion: corpusSchemaVersionV1},
+		holdout:  holdout,
 	})
 	if err != nil {
 		t.Fatalf("SOT-ENG-024/026: 正常な semantic integrity error = %v", err)
@@ -114,7 +115,8 @@ func TestIntegrityHoldoutRequirementsは失敗時に部分結果を返さない(
 		name, mutate := name, mutate
 		t.Run(name, func(t *testing.T) {
 			checked := integrityCheckedCorpus{
-				holdout: mutate(t, holdoutRequirementsTestValidHoldout(t)),
+				manifest: Manifest{schemaVersion: corpusSchemaVersionV1},
+				holdout:  mutate(t, holdoutRequirementsTestValidHoldout(t)),
 			}
 			got, err := validateIntegrityHoldoutRequirements(checked)
 			if err == nil {
