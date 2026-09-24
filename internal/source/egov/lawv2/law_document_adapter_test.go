@@ -320,6 +320,7 @@ func assertMappedLawDocument(
 	}
 	provenance := result.Provenance()
 	if len(provenance) != 1 ||
+		provenance[0].URL() != data.Citation().URL() ||
 		provenance[0].MediaType() != "application/xml" ||
 		provenance[0].Transformation() !=
 			model.ProvenanceTransformationExtracted {

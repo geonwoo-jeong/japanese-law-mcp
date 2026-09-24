@@ -57,6 +57,7 @@ type lawClient struct {
 
 type fetchedResponse struct {
 	body        []byte
+	requestURL  string
 	retrievedAt time.Time
 }
 
@@ -192,7 +193,7 @@ func (c lawClient) fetchWith(
 		return fetchedResponse{}, fmt.Errorf("context は必須です")
 	}
 	for retry := 0; ; retry++ {
-		response, err := c.do(ctx, spec)
+		response, requestURL, err := c.do(ctx, spec)
 		if err != nil {
 			return fetchedResponse{}, err
 		}
@@ -226,6 +227,7 @@ func (c lawClient) fetchWith(
 			}
 			return fetchedResponse{
 				body:        body,
+				requestURL:  requestURL,
 				retrievedAt: c.dependencies.now().Round(0),
 			}, nil
 		}
@@ -260,11 +262,12 @@ func (c lawClient) fetchWith(
 func (c lawClient) do(
 	ctx context.Context,
 	spec fetchSpec,
-) (*http.Response, error) {
+) (*http.Response, string, error) {
 	httpRequest, err := spec.build(ctx)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	requestURL := httpRequest.URL.String()
 	var response *http.Response
 	var requestErr error
 	if pacingErr := requestpacing.RunAtStart(
@@ -277,34 +280,34 @@ func (c lawClient) do(
 			response, requestErr = c.dependencies.doer.Do(httpRequest)
 		},
 	); pacingErr != nil {
-		return nil, normalizeContextErrorWithFactory(
+		return nil, "", normalizeContextErrorWithFactory(
 			pacingErr,
 			spec.sourceError,
 		)
 	}
 	if requestErr == nil {
 		if response == nil || response.Body == nil {
-			return nil, spec.sourceError(
+			return nil, "", spec.sourceError(
 				model.SourceErrorCodeInvalidSourceResponse,
 				"",
 			)
 		}
-		return response, nil
+		return response, requestURL, nil
 	}
 	if ctxErr := ctx.Err(); ctxErr != nil {
-		return nil, normalizeContextErrorWithFactory(
+		return nil, "", normalizeContextErrorWithFactory(
 			ctxErr,
 			spec.sourceError,
 		)
 	}
 	var networkError net.Error
 	if errors.As(requestErr, &networkError) && networkError.Timeout() {
-		return nil, spec.sourceError(
+		return nil, "", spec.sourceError(
 			model.SourceErrorCodeSourceTimeout,
 			"",
 		)
 	}
-	return nil, spec.sourceError(
+	return nil, "", spec.sourceError(
 		model.SourceErrorCodeSourceUnavailable,
 		"",
 	)

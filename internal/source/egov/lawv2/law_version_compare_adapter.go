@@ -212,10 +212,38 @@ func (a *LawVersionCompareAdapter) fetchComparedLawDocument(
 	if err != nil {
 		return emptyLawDocumentResult(), mapLawVersionCompareError(err)
 	}
-	if err := document.Validate(); err != nil {
+	return withLawVersionRetrievalProvenance(document, fetched)
+}
+
+// SOT-IF-060: 比較の取得経路を SOT-IF-011 の抽出履歴より前に保持する。
+func withLawVersionRetrievalProvenance(
+	document model.SourcedResource[model.LawDocumentRepresentation],
+	fetched fetchedResponse,
+) (model.SourcedResource[model.LawDocumentRepresentation], error) {
+	retrieval, err := model.NewProvenance(model.ProvenanceValues{
+		Source:         informationSource(),
+		ResourceKey:    document.Ref().Key(),
+		URL:            fetched.requestURL,
+		RetrievedAt:    fetched.retrievedAt,
+		MediaType:      lawDocumentMediaType,
+		Transformation: model.ProvenanceTransformationUnchanged,
+	})
+	if err != nil {
 		return emptyLawDocumentResult(), invalidLawVersionCompareResponse()
 	}
-	return document, nil
+	provenance := []model.Provenance{retrieval}
+	provenance = append(provenance, document.Provenance()...)
+	result, err := model.NewSourcedResource(
+		model.SourcedResourceValues[model.LawDocumentRepresentation]{
+			Ref:        document.Ref(),
+			Provenance: provenance,
+			Data:       document.Data(),
+		},
+	)
+	if err != nil {
+		return emptyLawDocumentResult(), invalidLawVersionCompareResponse()
+	}
+	return result, nil
 }
 
 func (a *LawVersionCompareAdapter) acquire(ctx context.Context) error {

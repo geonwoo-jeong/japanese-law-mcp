@@ -25,11 +25,16 @@ func TestLawVersionCompareAdapterComparesTwoVersionsSequentially(t *testing.T) {
 
 	clock := newPacingTestClock()
 	starts := make([]time.Time, 0, 2)
+	retrievedAt := make([]time.Time, 0, 2)
 	requests := make([]*http.Request, 0, 2)
 	adapter := newTestLawVersionCompareAdapter(t, clock, make(chan struct{}, 1), doerFunc(
 		func(request *http.Request) (*http.Response, error) {
 			requests = append(requests, request.Clone(request.Context()))
 			starts = append(starts, clock.Now())
+			if err := clock.Sleep(request.Context(), 100*time.Millisecond); err != nil {
+				return nil, err
+			}
+			retrievedAt = append(retrievedAt, clock.Now())
 			switch {
 			case strings.HasSuffix(request.URL.Path, "/"+lawVersionCompareTestBeforeRevision):
 				return response(
@@ -119,18 +124,11 @@ func TestLawVersionCompareAdapterComparesTwoVersionsSequentially(t *testing.T) {
 		t.Fatalf("removed citation location = %q", location)
 	}
 
-	provenance := result.Provenance()
-	if len(provenance) != 3 {
-		t.Fatalf("provenance = %#v", provenance)
+	if comparison.Before().Law().RevisionID() != lawVersionCompareTestBeforeRevision ||
+		comparison.After().Law().RevisionID() != lawVersionCompareTestAfterRevision {
+		t.Fatalf("SOT-IF-060: 比較前後の版 = %#v", comparison)
 	}
-	final := provenance[len(provenance)-1]
-	if final.Transformation() != model.ProvenanceTransformationDerived {
-		t.Fatalf("final provenance = %#v", final)
-	}
-	inputKeys, exists := final.InputKeys()
-	if !exists || len(inputKeys) != 2 {
-		t.Fatalf("inputKeys = %#v", final)
-	}
+	assertLawVersionComparisonProvenance(t, result, requests, retrievedAt)
 }
 
 func TestLawVersionCompareAdapterUsesSharedBusyGate(t *testing.T) {
@@ -201,10 +199,12 @@ func TestLawVersionCompareAdapterReturnsEmptyResultForSameRevision(t *testing.T)
 		"試験法",
 		`<MainProvision><Article Num="1"><Sentence>同一</Sentence></Article></MainProvision>`,
 	)
-	calls := 0
+	requests := make([]*http.Request, 0, 2)
+	retrievedAt := make([]time.Time, 0, 2)
 	adapter := newTestLawVersionCompareAdapter(t, clock, make(chan struct{}, 1), doerFunc(
-		func(*http.Request) (*http.Response, error) {
-			calls++
+		func(request *http.Request) (*http.Response, error) {
+			requests = append(requests, request.Clone(request.Context()))
+			retrievedAt = append(retrievedAt, clock.Now())
 			return response(
 				http.StatusOK,
 				body,
@@ -225,9 +225,81 @@ func TestLawVersionCompareAdapterReturnsEmptyResultForSameRevision(t *testing.T)
 		t.Fatalf("Compare() のエラー = %v", err)
 	}
 	comparison := result.Data()
-	if calls != 2 || comparison.TotalCount() != 0 ||
+	if len(requests) != 2 || comparison.TotalCount() != 0 ||
 		comparison.UnchangedCount() != 1 || len(comparison.Items()) != 0 {
-		t.Fatalf("同版比較 = calls:%d result:%#v", calls, comparison)
+		t.Fatalf("同版比較 = calls:%d result:%#v", len(requests), comparison)
+	}
+	assertLawVersionComparisonProvenance(t, result, requests, retrievedAt)
+}
+
+func assertLawVersionComparisonProvenance(
+	t *testing.T,
+	result model.SourcedResource[model.LawVersionComparison],
+	requests []*http.Request,
+	retrievedAt []time.Time,
+) {
+	t.Helper()
+
+	provenance := result.Provenance()
+	if len(provenance) != 5 {
+		t.Fatalf("SOT-IF-060: 取得・抽出・比較の provenance = %#v", provenance)
+	}
+	snapshots := []model.LawVersionSnapshot{result.Data().Before(), result.Data().After()}
+	for index, snapshot := range snapshots {
+		retrieval := provenance[index*2]
+		extracted := provenance[index*2+1]
+		assertLawVersionRetrievalProvenance(t, retrieval, extracted, snapshot, requests[index], retrievedAt[index])
+	}
+	final := provenance[len(provenance)-1]
+	methodID, _ := final.MethodID()
+	if final.Transformation() != model.ProvenanceTransformationDerived ||
+		methodID != "SOT-IF-060" || final.MediaType() != "application/xml" ||
+		final.ResourceKey() != result.Ref().Key() ||
+		final.ResourceKey() != provenance[2].ResourceKey() ||
+		final.URL() != snapshots[1].Citation().URL() ||
+		!final.RetrievedAt().Equal(retrievedAt[1]) {
+		t.Fatalf("SOT-IF-060: 比較後版の derived provenance = %#v", final)
+	}
+	inputKeys, exists := final.InputKeys()
+	if !exists || len(inputKeys) != 2 ||
+		inputKeys[0] != provenance[0].ResourceKey() ||
+		inputKeys[1] != provenance[2].ResourceKey() {
+		t.Fatalf("SOT-IF-060: 比較前後の inputKeys = %#v", inputKeys)
+	}
+}
+
+func assertLawVersionRetrievalProvenance(
+	t *testing.T,
+	retrieval model.Provenance,
+	extracted model.Provenance,
+	snapshot model.LawVersionSnapshot,
+	request *http.Request,
+	retrievedAt time.Time,
+) {
+	t.Helper()
+
+	key := retrieval.ResourceKey()
+	versionID, _ := key.VersionID()
+	if retrieval.URL() != request.URL.String() ||
+		!retrieval.RetrievedAt().Equal(retrievedAt) ||
+		retrieval.Transformation() != model.ProvenanceTransformationUnchanged ||
+		retrieval.MediaType() != "application/xml" ||
+		key.SourceID() != providerID || key.ResourceType() != "law" ||
+		key.ResourceID() != snapshot.Law().LawID() || versionID != snapshot.Law().RevisionID() {
+		t.Fatalf("SOT-IF-060/MODEL-012: 実リクエストと版に対応する取得履歴 = %#v", retrieval)
+	}
+	methodID, _ := extracted.MethodID()
+	if extracted.ResourceKey() != key || extracted.URL() != snapshot.Citation().URL() ||
+		!extracted.RetrievedAt().Equal(retrievedAt) ||
+		extracted.Transformation() != model.ProvenanceTransformationExtracted ||
+		methodID != "SOT-IF-011" {
+		t.Fatalf("SOT-IF-011: 既存の抽出履歴 = %#v", extracted)
+	}
+	expectedCitation := "https://laws.e-gov.go.jp/law/" + snapshot.Law().LawID() + "/" +
+		strings.TrimPrefix(versionID, snapshot.Law().LawID()+"_")
+	if snapshot.Citation().URL() != expectedCitation ||
+		snapshot.Citation().RevisionID() != versionID {
+		t.Fatalf("SOT-IF-011/060: 公式 Citation = %#v", snapshot.Citation())
 	}
 }
 
