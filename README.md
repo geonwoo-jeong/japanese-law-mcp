@@ -224,6 +224,8 @@ japanese-law-mcp \
   --allowed-origin=https://client.example
 ```
 
+[SOT-DEL-015](sot/60-delivery/15-browser-cors.md) に従い、許可 Origin の POST 用 OPTIONS preflight に応答し、POST の結果とエラーを browser から読めるようにします。browser client は `credentials: "omit"` を指定し、`Content-Type: application/json`、`Accept: application/json, text/event-stream`、初期化後は `MCP-Protocol-Version: 2025-11-25` を送ります。Origin は厳密一致のため、末尾の `/` を付けず指定してください。browser 固有のローカルネットワーク接続許可は別途必要になる場合があります。
+
 この HTTP 方式は同じ OS 利用者の process を分離する認可境界ではありません。health endpoint、session 再開、稼働監視および外部公開は提供しません。
 
 ## 実行設定

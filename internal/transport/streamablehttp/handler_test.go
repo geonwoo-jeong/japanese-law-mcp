@@ -35,7 +35,6 @@ func TestHandlerRejectsGET(t *testing.T) {
 		"/mcp",
 		nil,
 	)
-	request.Header.Set("Origin", "https://not-allowed.example")
 
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
@@ -43,8 +42,8 @@ func TestHandlerRejectsGET(t *testing.T) {
 	if recorder.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusMethodNotAllowed)
 	}
-	if allow := recorder.Header().Get("Allow"); allow != "POST" {
-		t.Fatalf("Allow = %q, want %q", allow, "POST")
+	if allow := recorder.Header().Get("Allow"); allow != "POST, OPTIONS" {
+		t.Fatalf("Allow = %q, want %q", allow, "POST, OPTIONS")
 	}
 }
 
@@ -60,8 +59,8 @@ func TestHandlerRejectsUnsupportedMethod(t *testing.T) {
 	if recorder.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusMethodNotAllowed)
 	}
-	if allow := recorder.Header().Get("Allow"); allow != "POST" {
-		t.Fatalf("Allow = %q, want %q", allow, "POST")
+	if allow := recorder.Header().Get("Allow"); allow != "POST, OPTIONS" {
+		t.Fatalf("Allow = %q, want %q", allow, "POST, OPTIONS")
 	}
 }
 
@@ -109,6 +108,7 @@ func TestHandlerAllowsRequestWithoutOrigin(t *testing.T) {
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d, body = %q", recorder.Code, http.StatusOK, recorder.Body.String())
 	}
+	assertCORSResponse(t, recorder, "", false)
 }
 
 func TestHandlerCopiesAllowedOrigins(t *testing.T) {
@@ -351,7 +351,7 @@ func TestHandlerLimitsConcurrentToolCallsPerRemoteAddress(t *testing.T) {
 
 	started := make(chan struct{}, 4)
 	release := make(chan struct{})
-	handler := NewHandler(newTestServer(started, release), Options{})
+	handler := NewHandler(newTestServer(started, release), Options{AllowedOrigins: []string{"https://example.test"}})
 
 	var (
 		wg      sync.WaitGroup
@@ -365,6 +365,7 @@ func TestHandlerLimitsConcurrentToolCallsPerRemoteAddress(t *testing.T) {
 			defer wg.Done()
 			request := newJSONRequest(t, http.MethodPost, "/mcp", toolCallRequestBody("wait"))
 			request.Header.Set("Mcp-Protocol-Version", "2025-11-25")
+			request.Header.Set("Origin", "https://example.test")
 			request.RemoteAddr = "127.0.0.1:41000"
 			handler.ServeHTTP(rec, request)
 		}(recorder)
@@ -377,12 +378,15 @@ func TestHandlerLimitsConcurrentToolCallsPerRemoteAddress(t *testing.T) {
 	rejected := httptest.NewRecorder()
 	rejectedRequest := newJSONRequest(t, http.MethodPost, "/mcp", toolCallRequestBody("wait"))
 	rejectedRequest.Header.Set("Mcp-Protocol-Version", "2025-11-25")
+	rejectedRequest.Header.Set("Origin", "https://example.test")
 	rejectedRequest.RemoteAddr = "127.0.0.1:41000"
 	handler.ServeHTTP(rejected, rejectedRequest)
 
 	if rejected.Code != http.StatusTooManyRequests {
 		t.Fatalf("status = %d, want %d", rejected.Code, http.StatusTooManyRequests)
 	}
+
+	assertCORSResponse(t, rejected, "https://example.test", false)
 
 	close(release)
 	wg.Wait()

@@ -14,3 +14,4 @@
 - [12-local-execution-paths.md](12-local-execution-paths.md)
 - [13-local-streamable-http.md](13-local-streamable-http.md)
 - [14-release-please-automation.md](14-release-please-automation.md)
+- [15-browser-cors.md](15-browser-cors.md)

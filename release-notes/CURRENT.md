@@ -17,6 +17,7 @@
 - `SOT-DEL-010`: macOS と Windows のデスクトップ向け実行ファイル
 - `SOT-DEL-013`: loopback 限定の Streamable HTTP
 - `SOT-DEL-014`: Release Please による検証付き公式リリース
+- [SOT-DEL-015](../sot/60-delivery/15-browser-cors.md): 許可した HTTPS Origin への browser CORS。POST 用 preflight と成功・エラー応答の共有を追加し、`allowedOrigins` を設定しても browser が接続できなかった問題を修正する。
 - [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md) と
   [SOT-ENG-033](../sot/50-engineering/33-unified-query-profile-set-adoption-manifest.md)
   に従う標準評価 command、baseline および CI の中央品質ゲートからの評価接続は実装済み。

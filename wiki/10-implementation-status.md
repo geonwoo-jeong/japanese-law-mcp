@@ -12,6 +12,7 @@
 - [SOT-DEL-001](../sot/60-delivery/01-stdio.md) に従う、ローカル子プロセスとして動作する stdio トランスポート
 - [SOT-DEL-013](../sot/60-delivery/13-local-streamable-http.md) と [SOT-DEL-008](../sot/60-delivery/08-http-resource-limits.md) に従う、`127.0.0.0/8` または `::1` の IP literal だけで待ち受ける無状態の Streamable HTTP、`/mcp` の単一 endpoint、Origin 許可リスト、1 MiB の本文上限、接続元 IP ごとの同時 tool 呼出し上限 4、および session ID を発行しない公開ツール
 - MCP クライアントによる初期化とツール一覧取得の契約テスト
+- [SOT-DEL-015](../sot/60-delivery/15-browser-cors.md) に従う、許可 HTTPS Origin の POST 用 CORS preflight、固定 header 許可リスト、資格情報を使わない成功・エラー応答の共有、および Origin と preflight 条件を反映する `Vary`
 - [SOT-PROD-017](../sot/00-product/17-compact-mcp-public-surface.md)、[SOT-SCN-017](../sot/10-scenarios/17-discover-and-execute-legal-tool.md)、[SOT-ARCH-044](../sot/30-architecture/44-mcp-tool-operation-registry-boundary.md) および [SOT-IF-077](../sot/40-interfaces/77-mcp-tool-exposure-and-extension-packs.md) に従う、既定の `compact` で直接公開する三ツール、有効な専門操作だけを名前順に検索して正確な schema と省略件数を返す `discover_legal_tools`、全 JSON object の重複 key と 65536 byte 上限を検証して既存 handler の結果を変更せず返す `execute_legal_tool`、専門名の直接呼出し拒否、従来の八から十二ツールを直接公開する設定ファイル限定の `full`、ならびに stdio と Streamable HTTP の同一構成
 - [SOT-ENG-019](../sot/50-engineering/19-static-analysis-and-coding-style.md) と [SOT-ENG-020](../sot/50-engineering/20-verification-gate.md) に従う、バージョン固定した Go リンター、SOT 固有解析器、カバレッジ下限、脆弱性・秘密情報検査および GitHub Actions の共通品質ゲート
 - [SOT-ENG-027](../sot/50-engineering/27-resource-aware-verification-stages.md) に従う、Git index の `pre-commit` 検査、送信 tip と ref 範囲に限定した省資源の `pre-push` 検査、ならびにリポジトリローカルな Git フックの導入・確認・解除

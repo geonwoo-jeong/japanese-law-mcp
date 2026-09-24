@@ -12,7 +12,7 @@ import (
 
 const endpointPath = "/mcp"
 
-// NewHandler は、SOT-DEL-013 と SOT-DEL-008 に従う HTTP handler を返す。
+// NewHandler は、SOT-DEL-013、SOT-DEL-008、SOT-DEL-015 に従う HTTP handler を返す。
 func NewHandler(server *sdk.Server, options Options) http.Handler {
 	allowedOrigins := slices.Clone(options.AllowedOrigins)
 	limiter := newConcurrencyLimiter(maxConcurrentToolCalls)
@@ -32,13 +32,24 @@ func NewHandler(server *sdk.Server, options Options) http.Handler {
 			http.NotFound(writer, request)
 			return
 		}
-		if request.Method != http.MethodPost {
-			writer.Header().Set("Allow", http.MethodPost)
-			http.Error(writer, "POST 以外の HTTP method は使用できません", http.StatusMethodNotAllowed)
-			return
+		writer.Header().Add("Vary", "Origin")
+		if request.Method == http.MethodOptions {
+			writer.Header().Add("Vary", "Access-Control-Request-Method, Access-Control-Request-Headers")
 		}
 		if !originAllowed(request.Header, allowedOrigins) {
 			http.Error(writer, "この Origin からの接続は許可されていません", http.StatusForbidden)
+			return
+		}
+		if request.Method == http.MethodOptions {
+			servePreflight(writer, request)
+			return
+		}
+		if origin := request.Header.Get("Origin"); origin != "" {
+			writer.Header().Set("Access-Control-Allow-Origin", origin)
+		}
+		if request.Method != http.MethodPost {
+			writer.Header().Set("Allow", "POST, OPTIONS")
+			http.Error(writer, "POST と CORS preflight の OPTIONS 以外は使用できません", http.StatusMethodNotAllowed)
 			return
 		}
 		if hasSessionHeader(request.Header) {
