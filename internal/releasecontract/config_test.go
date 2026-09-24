@@ -272,10 +272,7 @@ func assertPackageJob(t *testing.T, job workflowJob) {
 		checkout.With["ref"] != "${{ needs.release-please.outputs.sha }}" {
 		t.Fatalf("checkout inputs = %#v", checkout.With)
 	}
-	setup := requireActionStep(t, job.Steps, setupGoAction)
-	if setup.With["go-version"] != releaseGoVersion {
-		t.Fatalf("Go version = %#v", setup.With["go-version"])
-	}
+	assertPackageToolchains(t, job)
 	releaser := requireActionStep(t, job.Steps, goReleaser)
 	if releaser.With["distribution"] != "goreleaser" ||
 		releaser.With["version"] != "v2.17.0" ||
@@ -329,6 +326,53 @@ func assertPackageJob(t *testing.T, job workflowJob) {
 			t.Fatalf("release-check に repository がありません: %q", step.Run)
 		}
 	}
+}
+
+// SOT-DEL-004/014/SOT-ENG-020/027/038: 通常 CI と同じ候補再現環境を品質ゲート前に準備する。
+func assertPackageToolchains(t *testing.T, job workflowJob) {
+	t.Helper()
+
+	var quality releaseWorkflow
+	readYAML(t, ".github/workflows/quality.yml", &quality)
+	verify := quality.Jobs["verify"]
+	if job.RunsOn != verify.RunsOn {
+		t.Fatalf("候補再現環境の runner が通常 CI と一致しません: %q", job.RunsOn)
+	}
+	for name, want := range verify.Env {
+		if got, exists := job.Env[name]; !exists || got != want {
+			t.Fatalf("候補再現環境の %s が通常 CI と一致しません", name)
+		}
+	}
+	qualityIndex := requireRunStep(t, job.Steps, "go run ./cmd/quality-gate")
+	verifyIndex := requireRunStep(t, verify.Steps, "go run ./cmd/quality-gate")
+	if job.Steps[qualityIndex].Run != verify.Steps[verifyIndex].Run {
+		t.Fatal("リリースの品質ゲート command が通常 CI と一致しません")
+	}
+	previous := indexActionStep(job.Steps, checkoutAction)
+	for _, id := range []string{"candidate-go", "record-candidate-go", "primary-go"} {
+		index := requireStepIndexByID(t, job.Steps, id)
+		wantIndex := requireStepIndexByID(t, verify.Steps, id)
+		if !reflect.DeepEqual(job.Steps[index], verify.Steps[wantIndex]) {
+			t.Fatalf("Go 環境準備 %q が通常 CI と一致しません", id)
+		}
+		if index <= previous || index >= qualityIndex {
+			t.Fatalf("Go 環境準備 %q の順序が不正です: %d", id, index)
+		}
+		previous = index
+	}
+	if job.Steps[previous].With["go-version"] != releaseGoVersion {
+		t.Fatalf("primary Go version = %#v", job.Steps[previous].With["go-version"])
+	}
+}
+
+func requireStepIndexByID(t *testing.T, steps []workflowStep, id string) int {
+	t.Helper()
+
+	index := slices.IndexFunc(steps, func(step workflowStep) bool { return step.ID == id })
+	if index < 0 {
+		t.Fatalf("step %q がありません", id)
+	}
+	return index
 }
 
 func assertSmokeJob(t *testing.T, job workflowJob) {
@@ -600,12 +644,13 @@ type workflowJob struct {
 }
 
 type workflowStep struct {
-	ID   string            `yaml:"id"`
-	Uses string            `yaml:"uses"`
-	If   string            `yaml:"if"`
-	Run  string            `yaml:"run"`
-	Env  map[string]string `yaml:"env"`
-	With map[string]any    `yaml:"with"`
+	ID    string            `yaml:"id"`
+	Uses  string            `yaml:"uses"`
+	If    string            `yaml:"if"`
+	Run   string            `yaml:"run"`
+	Shell string            `yaml:"shell"`
+	Env   map[string]string `yaml:"env"`
+	With  map[string]any    `yaml:"with"`
 }
 
 type releasePleaseConfig struct {
