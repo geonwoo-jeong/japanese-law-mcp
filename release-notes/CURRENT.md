@@ -17,12 +17,22 @@
 - `SOT-DEL-010`: macOS と Windows のデスクトップ向け実行ファイル
 - `SOT-DEL-013`: loopback 限定の Streamable HTTP
 - `SOT-DEL-014`: Release Please による検証付き公式リリース
+- [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md) と
+  [SOT-ENG-033](../sot/50-engineering/33-unified-query-profile-set-adoption-manifest.md)
+  に従う標準評価 command、baseline および CI の中央品質ゲートからの評価接続は実装済み。
+  `legal-query-eval` は `testdata/legalquery/adoptions/current.json` が指す採用済み
+  `corpus-v9`、`default-1` および `legal-query-evaluator-v1` を評価する。
 
 ## 未実装の SOT 差分
 
-- [SOT-ENG-024](../sot/50-engineering/24-unified-query-evaluation-gate.md) と
-  [SOT-ENG-025](../sot/50-engineering/25-unified-query-package-layout.md) が定める、
-  統一評価 command、baseline および中央品質ゲートへの評価接続は未実装。
+- [SOT-ENG-039](../sot/50-engineering/39-content-bound-unified-query-rollout-stages.md)
+  が定める次版候補 profile set の production への原子的採用は未完了。候補 set 自体は実装済み。
+  候補評価の current は schema version 3、`corpus-v16`、予約名 `default-8` の
+  result を持たない request であり、
+  [SOT-ENG-043](../sot/50-engineering/43-candidate-evaluation-readiness-separation.md)
+  に従って `stale` として隔離する。評価再開には新 schema 世代の採用と新しい候補準備が
+  必要であり、公開既定と採用済み baseline は切り替えていない。経緯と残作業は
+  [統合照会の意図判定導入順](../wiki/30-unified-query-intent-rollout.md)で追跡する。
 
 ## 互換性のない変更
 

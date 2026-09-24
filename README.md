@@ -20,7 +20,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 決定的な入力で専門操作を使う場合は、まず `discover_legal_tools` を呼び出します。
 
 ```json
-{"query":"法令の改正履歴","limit":5}
+{"query":"改正履歴","limit":5}
 ```
 
 応答の `tools` は名前順で、各項目に `name`、`description`、`inputSchema` および `outputSchema` を含みます。`totalCount`、`returnedCount`、`omittedCount` および `truncated` により、候補が省略されたかを判別できます。次に、返された `name` と schema に適合する入力を `execute_legal_tool` へ渡します。
@@ -28,7 +28,7 @@ Japanese Law MCP は、日本の公式法情報を AI エージェントや LLM 
 ```json
 {
   "toolName": "list_law_revisions",
-  "arguments": {"lawId": "322AC0000000049"}
+  "arguments": {"lawIdOrNumber": "322AC0000000049"}
 }
 ```
 

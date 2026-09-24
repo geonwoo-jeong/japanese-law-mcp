@@ -90,15 +90,28 @@
 - e-Gov 法令 API Version 2 を使用する MCP `search_laws`、`get_law`、`get_article`、`search_law_content`、`list_law_revisions` および `compare_law_versions` と、[SOT-IF-076](../sot/40-interfaces/76-mcp-list-law-updates-v2.md) に従い e-Gov 法令 API Version 1 の一日分の正確な総件数、返却件数および省略件数を明示する MCP `list_law_updates` の公開 facade と stdio 経由の提供
 - [SOT-DEL-004](../sot/60-delivery/04-release-consistency.md)、[SOT-DEL-007](../sot/60-delivery/07-interface-change-disclosure.md)、[SOT-DEL-010](../sot/60-delivery/10-desktop-binaries.md)、[SOT-DEL-011](../sot/60-delivery/11-local-distributions.md)、[SOT-DEL-012](../sot/60-delivery/12-local-execution-paths.md) および [SOT-DEL-014](../sot/60-delivery/14-release-please-automation.md) に従う、`main` の Conventional Commits から Release PR、tag および draft release を管理する Release Please、macOS・Windows の amd64・arm64 向け四 archive、SHA-256 checksum、版・生成元 metadata、必須リリース情報、公開前の配布物検査および各対象環境での実行確認を備えた公式ローカル配布処理
 
-## 未実装
+## 候補実装済み・production 未採用
 
 - [SOT-ARCH-037](../sot/30-architecture/37-unified-query-normalized-branch-retention.md)
   に従う profile-private evidence cluster、core と
   `judicial-cases` の限定分岐、production と同じ固定順で組み立てる
-  test 専用 version 2 profile set、relation 対応 corpus・baseline・検索例の
-  原子的切替、next profile set の production 採用、および後続の provider 契約更新。
-  現在地と着手順は
-  [統合照会の意図判定導入順](30-unified-query-intent-rollout.md) で追跡する
+  version 2 metadata の次版候補 profile set は実装済み。
+  [候補構成](../internal/legalquerycandidateprofile/profile_set.go)は test と候補評価専用の
+  経路から使用し、production と標準評価は従来の active set を維持する。
+- [SOT-ENG-042](../sot/50-engineering/42-candidate-evaluation-handoff-schema-v3.md)
+  の schema version 3、`legal-query-evaluator-v3`、`corpus-v16` および
+  予約名 `default-8` の候補 request は準備済みだが、対応する result はない。
+  [SOT-ENG-043](../sot/50-engineering/43-candidate-evaluation-readiness-separation.md)
+  に従う完全性検査と readiness 分離も実装済みであり、現在の request は
+  `stale` として評価を拒否する。廃止された `SOT-IF-040` を含む exact SOT 集合を
+  変更するため、新 schema 世代を採用してから、新しい候補内容、独立 review 二件、
+  request および pointer を準備する必要がある。
+- [SOT-ENG-033](../sot/50-engineering/33-unified-query-profile-set-adoption-manifest.md)
+  と [SOT-ENG-039](../sot/50-engineering/39-content-bound-unified-query-rollout-stages.md)
+  に従う relation 対応 corpus・baseline・検索例の原子的切替と、次版 profile set の
+  production 採用は未完了。採用済み tuple は `corpus-v9`、`default-1` および
+  `legal-query-evaluator-v1` のままである。現在地と過去の候補準備・評価記録は
+  [統合照会の意図判定導入順](30-unified-query-intent-rollout.md)で追跡する。
 
 ## 現在の起動面
 

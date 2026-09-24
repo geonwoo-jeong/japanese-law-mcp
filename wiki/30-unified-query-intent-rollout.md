@@ -5,6 +5,30 @@ Wiki である。公開動作または採用済み契約の定義元にはしな
 
 ## 現在地
 
+標準評価 command、baseline、採用 manifest および CI の中央品質ゲートへの接続は
+実装済みである。採用済み状態と候補評価の準備状態は、別々の pointer で管理する。
+
+| 対象 | 現在の参照先 | 状態 |
+|---|---|---|
+| [production 採用 pointer](../testdata/legalquery/adoptions/current.json) | `corpus-v9` / `default-1` / `legal-query-evaluator-v1` | 従来の active profile set を使用する公開既定 |
+| [候補評価 pointer](../testdata/legalquery/candidate-evaluations/current.json) | schema version 3 / `corpus-v16` / 予約名 `default-8` / `legal-query-evaluator-v3` | result を持たない `stale` request。候補評価を開始できない |
+
+private evidence cluster、core と `judicial-cases` の限定分岐、および production と
+同じ固定順を持つ次版候補 set は、[候補構成](../internal/legalquerycandidateprofile/profile_set.go)
+として実装済みである。候補 set は production と標準評価から選択できず、
+relation 対応の意味判定、corpus、baseline および検索例の原子的採用は未完了である。
+
+候補 request の完全性と評価準備の鮮度は
+[SOT-ENG-043](../sot/50-engineering/43-candidate-evaluation-readiness-separation.md)
+に従って分離する。現在の `stale` は評価完了や holdout 消費を意味せず、
+再開には新 schema 世代と新しい候補準備が必要である。詳細は後述の
+「schema version 3 の準備後と現在の stale 状態」に記す。
+
+## 導入履歴（各候補の準備・評価時点）
+
+以下の履歴にある「現行」や `current`、未実装・未評価の記述は、各段階の当時の状態を
+表す。過去の request、予約名および評価記録を現在の実行対象として扱わない。
+
 現行の公開既定は `corpus-v9`、`default-1` および現在の固定 profile set である。
 `SOT-MODEL-030` の `CueTaskRelation` 不変 model、`task_expression` predicate
 対応、cue schema version 3、共通 loader、共通前処理の閉じた role 入力検証、
@@ -107,9 +131,9 @@ architecture 10.0 / 10、testability 8.4 / 10、blocker 0 である。準備 com
 同じ commit に固定した manual dispatch `30682022985` も構造上有効な report と
 result を生成した。
 
-現行の candidate content は
+`default-3` 評価当時の candidate content は
 `candidate-content-sha256-41a5c5dbd5d78492a153c80dc2e1913036097cbb44e0e4f053cd5607ba858945`、
-current request は
+当時の current request は
 `evaluation-sha256-398e801b2d7edd6068f36fa34fe94827d7d44891d59976fdc8630e4d5be7e89c`
 である。result の `outcome` は `failed`、report digest は
 `5d702ccb1b27b34e2007444dd8d25640c08c2ddc46f7aff206324fe9692377ba` である。
@@ -196,10 +220,10 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
 | 3 | 完了 | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
-| 4 | 完了（判定は `failed`） | 現行集合の baseline schema・初回採用 manifest・adoption 基準 command、新規 holdout を含む `corpus-v10`、development だけで校正した次版固定 profile set および `default-3` 候補を順に準備し、閉じた CI handoff で一回の holdout 採用判定と tracked byte replay を完了した | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039` |
-| 5 | 保留（`default-3` は不合格） | passed の候補が得られた場合だけ、全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
+| 4 | 再準備待ち（現候補は `stale`） | `default-3` の不合格と replay は履歴へ固定済み。後続の schema version 3 / `corpus-v16` / `default-8` request は result がなく、鮮度乖離で隔離中。新 schema 世代を採用し、新しい review・request・pointer を準備する | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039`、`SOT-ENG-042`、`SOT-ENG-043` |
+| 5 | 保留（合格候補なし） | passed の候補が得られた場合だけ、全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 完了 | 6.1 `GET /laws`、6.2 `GET /keyword` および 6.3 `GET /law_data` は、public facade と capability が共有する provider parser、runtime 応答と保存済み契約の分類分離、入力と応答の同一性および安全境界を実装した。6.4 の共通 `lawtarget` resolver と `search_laws`／統合照会 law search facade の page 内安定優先も実装済みである | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
-| 7 | 未着手 | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを現行標準へ同期する | `SOT-SCN-010`、`SOT-ENG-039` |
+| 7 | 未着手（採用後の同期） | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを採用後の標準へ同期する。現在の実装事実を記す文書整備は、この段階の完了を意味しない | `SOT-SCN-010`、`SOT-ENG-039` |
 
 ## 段階 review 記録
 
@@ -236,7 +260,7 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 cache の実効性は、固定 setup-go を使う候補評価 `30682022985` と tracked replay
 `30682972843` で確認した。
 
-## 第 3 段階以降の SOT 文書 review
+## 第 3 段階以降の SOT 文書 review（当時の記録）
 
 以前の第 3・第 4 段階だけを対象にした通過記録は、
 `SOT-ARCH-034`、`SOT-ARCH-035` および `SOT-ENG-037` の追加と、第 5 から
@@ -282,7 +306,7 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 3.4.3 | 完了 | shared-terminal の task/resource 束縛、sidecar 消費、同一 span の別意味、異なる span の同値縮約、topic-local draft の完全順序、限定代替列、五件目での `step_limit_exceeded`、cluster 単位の三件保持 |
 | 3.4.4 | 完了 | step 内根拠正規化後の候補和集合、private mapping の寿命、logical input と入力 `ref` の一致、provider 非依存性、active profile 不変の最終照合 |
 
-## 第 4 段階の内部進捗
+## 第 4 段階の内部進捗と候補履歴
 
 内部順序の定義元は `SOT-ENG-039` とし、ここでは実装状態だけを追跡する。
 
@@ -304,7 +328,8 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 再準備 cycle 4.6 | report 前失敗（同一 ID の再実行禁止） | judicial-cases の raw 同値 draft 縮約修正、`corpus-v13`、二件の content-bound review および `default-6` request を固定した後、一回の remote run が終了 code `12` で停止。report、result および handoff は未生成 |
 | 後続 cycle evaluator v2 | 完了 | v1 の再現意味を不変に保ち、期待 plan と実入力 error、および期待 request error と実受理だけを semantic failure へ写像する exact v2 と unknown version の fail-closed を固定 |
 | 後続 cycle 4.2 | 完了 | `corpus-v14` の独立 holdout、`corpus-v10` から `corpus-v13` との五軸非交差、v13 development・execution byte 継承および四派生観測母集団を固定 |
-| 後続 cycle 4.4 | 準備完了・未評価 | byte 不変の candidate content、二件の新しい review attestation、`legal-query-evaluator-v2`、`corpus-v14`、`default-7` request および current pointer を固定。manual workflow は未実行 |
+| 後続 cycle 4.4 / 4.5 | 準備後に report 前失敗 | `legal-query-evaluator-v2`、`corpus-v14`、`default-7` request を準備後、一回評価は終了 code `12` で停止。report と result は未生成で、同じ予約と評価 ID は再利用しない |
+| schema version 3 準備 | 準備済み・現在は `stale` | `legal-query-evaluator-v3`、`corpus-v16`、`default-8` request と pointer は存在するが、result はない。`SOT-ENG-043` に従って隔離し、新 schema 世代の採用と候補準備を待つ |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -362,7 +387,7 @@ architecture `92 / 100` と testability `80 / 100`、いずれも blocker 0 の�
 新しく結び付けた。`corpus-v12`、`legal-query-evaluator-v1` および未使用予約名
 `default-5` を持つ request は
 `evaluation-sha256-c53a7d0d28ef35bd2aab081680c1112b6aee9e649f19fb789ec2f0e0e35a4a87`
-であり、`current.json` はこの request だけを指す。置換済みの `default-4` request と
+であり、当時の `current.json` はこの request だけを指した。置換済みの `default-4` request と
 参照成果物は変更せず、同 request の holdout digest、leakage group digest および
 baseline reservation を再利用していない。この段階では candidate workflow、holdout、
 report、result、failed report または baseline を実行若しくは生成していない。
@@ -417,7 +442,7 @@ tuple は変更していない。candidate judicial profile は
 testability review は九十六点、いずれも blocker、major および minor 零件で承認した。
 二件の attestation、`corpus-v13`、未使用予約名 `default-6` を結合した未評価 request は
 `evaluation-sha256-21e19fd4121131f60f21928d1ec900c3cff18003748634772504d5f8ea3afc0c`
-であり、`current.json` はこの一件だけを指す。旧 `default-5` request と二件の失敗 run
+であり、当時の `current.json` はこの一件だけを指した。旧 `default-5` request と二件の失敗 run
 は診断履歴として変更せず、同じ ID を再実行しない。
 
 この時点では新 request の holdout 評価、report、result、baseline および production
@@ -466,7 +491,7 @@ testability の環境前提と負例固定検証に minor 二件を残した。
 二件の attestation、`legal-query-evaluator-v2`、`corpus-v14` および未使用予約名
 `default-7` を結合した未評価 request は
 `evaluation-sha256-bf3567625d79634f6be2621e870459bd50221ac041dd146dbcfededec2676cb1`
-であり、`current.json` はこの一件だけを指す。旧 `default-6` request と失敗 run は不変に
+であり、当時の `current.json` はこの一件だけを指した。旧 `default-6` request と失敗 run は不変に
 保持し、同じ ID、baseline、holdout digest または leakage digest を再利用しない。
 この準備変更では holdout、report、result、baseline および production adoption を生成しない。
 準備 commit の権威 CI が成功した後にだけ、同じ commit の manual workflow を一回起動する。
@@ -480,11 +505,36 @@ holdout digest および leakage group digest は再利用せず、この run �
 候補所有の前処理または profile 回収 error だけを一件の定量的失敗へ写像する
 `legal-query-evaluator-v3` の exact routing は準備済みである。schema version 2 の固定 byte を
 変更せず、schema version 3 の閉じた schema、成果物ごとの exact 版判別、世代混在履歴の
-replay および cross-version 参照の拒否も準備した。この共存基盤だけでは version 3 request
-を構築せず、現行候補 source の実 marker、current evaluator および schema version 2 request
-は変更していない。次の変更は `SOT-ENG-042` に従い、実 marker、schema version 3 の content
+replay および cross-version 参照の拒否も準備した。この共存基盤を追加した時点では version 3 request
+をまだ構築せず、当時の候補 source の実 marker、current evaluator および schema version 2 request
+は変更していなかった。当時の次の作業は `SOT-ENG-042` に従い、実 marker、schema version 3 の content
 manifest、二件の新規 review、未使用 corpus と baseline を持つ別 request、および pointer
-を一つの準備単位として作る。holdout 評価と production adoption はその後の別単位である。
+を一つの準備単位として作ることであった。その後の状態は次節に記す。
+
+### schema version 3 の準備後と現在の stale 状態
+
+[SOT-ENG-042](../sot/50-engineering/42-candidate-evaluation-handoff-schema-v3.md)
+に対応する schema version 3 の content manifest、二件の review attestation、
+`legal-query-evaluator-v3`、`corpus-v16` および予約名 `default-8` を結合した
+request は既に存在する。候補評価の `current.json` は
+`evaluation-sha256-9c03b7d2e2af61ca39f867ff00476290d8aaff6cc38b1d4a9203b169d7d406c4`
+を指し、対応する result と `default-8` baseline は存在しない。
+
+現在は候補 source の変化と、固定 review 集合に含まれる `SOT-IF-040` の廃止により、
+`candidate_content_drift` と `review_sot_lifecycle_drift` の `stale` 対象である。
+[実 repository の検証契約](../internal/legalquerycandidateprepare/reference_validator_test.go)も
+この二理由と strict loader の拒否を確認する構成になっている。
+`SOT-ENG-043` に従い、製品品質ゲートは成果物の完全性、閉じた readiness 分類と
+stale 時の非到達性を検査し、候補評価側は `ready` になるまで非ゼロ終了で拒否する。
+`stale` は第 4.4 段階の再準備完了、第 4.5 段階への進行、評価済みまたは
+holdout 消費を意味しない。
+
+再開には、別の有効な SOT で新 schema version と exact SOT 集合を先に採用し、
+新しい candidate content、独立 review 二件、request および pointer を一つの準備単位で
+追加する必要がある。schema version 3 の配列内で `SOT-IF-040` を `SOT-IF-077` に
+置換せず、既存の schema、manifest、review、request、result および report は不変に保つ。
+`corpus-v16`、`default-8`、予約済み holdout digest および leakage group digest は
+後続準備へ再利用しない。新しい候補の評価と production 採用は、再準備後の別単位である。
 
 ## 段階の境界
 
@@ -507,7 +557,7 @@ profile set、`legal-query-evaluator-v1`、report byte および外部呼出し�
 development 集合だけで次版固定 set を校正する。次に `SOT-ENG-038` の閉じた
 content manifest、二件の review attestation、request と pointer、候補 set を
 直接構成する CI 専用入口、候補 writer、
-初回の `default-2` 予約名と、再準備後の現行 `default-3` 予約名および出力先を
+未使用の baseline 予約名と出力先を
 別変更で準備する。これらを標準 command、製品 CLI、
 設定、MCP、transport または中央品質ゲートの現行参照先にしない。
 request は exact evaluator version、corpus manifest が持つ
@@ -533,7 +583,7 @@ manifest の追加と current pointer の切替を全採用要素と同じ変更
 第五段階だけが、relation 依存の意味判定を production composition root へ採用する
 段階である。profile 実装だけ、corpus だけ、baseline だけ、採用 manifest だけ、
 検索例だけを先に現行標準へ切り替えない。標準 command が読む
-`baselines/default.json` は、準備済み `default-3` version file と同じ byte へ
+`baselines/default.json` は、合格した候補の version file と同じ byte へ
 同じ採用変更で切り替える。adoption manifest、合格 request、標準 command および
 rollback 先はそれぞれ同じ exact evaluator version を指し、current evaluator への
 fallback を許可しない。合格 request の candidate content と production の
