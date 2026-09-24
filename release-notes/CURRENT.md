@@ -1,4 +1,4 @@
-# Japanese Law MCP v0.0.0 <!-- x-release-please-version -->
+# Japanese Law MCP v1.0.0 <!-- x-release-please-version -->
 
 ## 提供する SOT
 
