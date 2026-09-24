@@ -34,7 +34,7 @@ func validateRootEntries(
 ) (preparationRootLayout, error) {
 	// SOT-ENG-038: Git が空 directory を保持しないため、未評価時の二履歴 root だけは
 	// 不在を論理的な空として扱う。存在する場合は後段で sentinel を含め空以外を拒否する。
-	entries, err := root.ReadDirectory(8, 2*maximumSchemaBytes+maximumPointerBytes)
+	entries, err := root.ReadDirectory(9, 3*maximumSchemaBytes+maximumPointerBytes)
 	if err != nil {
 		return preparationRootLayout{}, fmt.Errorf("candidate evaluation root を列挙できません: %w", err)
 	}
@@ -47,6 +47,7 @@ func validateRootEntries(
 		"review-attestations": {directory: true, required: true},
 		"schema-v2.json":      {required: true},
 		"schema-v3.json":      {required: true},
+		"schema-v4.json":      {required: true},
 	}
 	seen := make(map[string]struct{}, len(entries))
 	for _, entry := range entries {
@@ -93,29 +94,24 @@ func containsRootEntry(entries map[string]struct{}, name string) bool {
 }
 
 func loadSchemas(root *legalqueryartifact.Repository) (artifactSchemas, error) {
-	v2Raw, err := root.ReadRegular("schema-v2.json", maximumSchemaBytes)
-	if err != nil {
-		return artifactSchemas{}, fmt.Errorf("candidate evaluation schema v2 を読めません: %w", err)
+	// SOT-ENG-045: 同居する三世代の固定 byte を照合してから宣言版で選択する。
+	for _, schema := range []struct {
+		name string
+		raw  []byte
+	}{
+		{name: "schema-v2.json", raw: CanonicalSchemaV2()},
+		{name: "schema-v3.json", raw: CanonicalSchemaV3()},
+		{name: "schema-v4.json", raw: CanonicalSchemaV4()},
+	} {
+		raw, err := root.ReadRegular(schema.name, maximumSchemaBytes)
+		if err != nil {
+			return artifactSchemas{}, fmt.Errorf("candidate evaluation %s を読めません: %w", schema.name, err)
+		}
+		if !bytes.Equal(raw, schema.raw) {
+			return artifactSchemas{}, fmt.Errorf("candidate evaluation %s が固定済み schema と一致しません", schema.name)
+		}
 	}
-	if !bytes.Equal(v2Raw, CanonicalSchemaV2()) {
-		return artifactSchemas{}, fmt.Errorf("candidate evaluation schema が固定済み schema v2 と一致しません")
-	}
-	v3Raw, err := root.ReadRegular("schema-v3.json", maximumSchemaBytes)
-	if err != nil {
-		return artifactSchemas{}, fmt.Errorf("candidate evaluation schema v3 を読めません: %w", err)
-	}
-	if !bytes.Equal(v3Raw, CanonicalSchemaV3()) {
-		return artifactSchemas{}, fmt.Errorf("candidate evaluation schema が固定済み schema v3 と一致しません")
-	}
-	v2, err := ParseSchemaV2(v2Raw)
-	if err != nil {
-		return artifactSchemas{}, err
-	}
-	v3, err := ParseSchemaV3(v3Raw)
-	if err != nil {
-		return artifactSchemas{}, err
-	}
-	return artifactSchemas{v2: v2, v3: v3}, nil
+	return loadCanonicalArtifactSchemas()
 }
 
 func loadPointer(

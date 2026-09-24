@@ -220,7 +220,7 @@ production adoption は引き続き `corpus-v9`、`default-1` および現行 pr
 | 1 | 完了 | relation の不変 model、cue schema version 3、共通 loader および固定 profile set の構造整合を準備し、v2 の role 対応へ更新する | `SOT-MODEL-030`、`SOT-ENG-030` |
 | 2 | 完了 | positive task cue の role をそろえ、共通前処理で relation を生成し、各 profile 内で意図根拠レイヤと対象外候補 scope を適用できるようにする | `SOT-MODEL-025`、`SOT-MODEL-026`、`SOT-MODEL-030`、`SOT-ARCH-031`、`SOT-ENG-028`、`SOT-ENG-031`、`SOT-ENG-032` |
 | 3 | 完了 | profile metadata schema version 2、共有末尾 sidecar、private evidence cluster、core の sidecar 適用、裁判例の独立適用および test 専用固定 profile set を順に完成させる | `SOT-MODEL-031`、`SOT-ARCH-025`、`SOT-ARCH-031`、`SOT-ARCH-036`、`SOT-ARCH-037`、`SOT-ARCH-038`、`SOT-ARCH-039`、`SOT-ENG-035` |
-| 4 | 再準備待ち（現候補は `stale`） | `default-3` の不合格と replay は履歴へ固定済み。後続の schema version 3 / `corpus-v16` / `default-8` request は result がなく、鮮度乖離で隔離中。新 schema 世代を採用し、新しい review・request・pointer を準備する | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039`、`SOT-ENG-042`、`SOT-ENG-043` |
+| 4 | 再準備待ち（現候補は `stale`） | `default-3` の不合格と replay は履歴へ固定済み。後続の schema version 3 / `corpus-v16` / `default-8` request は result がなく、鮮度乖離で隔離中。schema version 4 基盤を実装済み。新しい corpus・校正・review・request・pointer を後続で準備する | `SOT-ARCH-033`、`SOT-ENG-024`、`SOT-ENG-026`、`SOT-ENG-033`、`SOT-ENG-036`、`SOT-ENG-038`、`SOT-ENG-039`、`SOT-ENG-042`、`SOT-ENG-043`、`SOT-ENG-045` |
 | 5 | 保留（合格候補なし） | passed の候補が得られた場合だけ、全採用要素と current tuple を一変更で公開既定へ切り替え、公開 notice、questions、非実行時の外部呼出しゼロおよび MCP response parity を固定検証する | `SOT-ARCH-033`、`SOT-MODEL-024`、`SOT-IF-051`、`SOT-ENG-024`、`SOT-ENG-029`、`SOT-ENG-033` |
 | 6 | 完了 | 6.1 `GET /laws`、6.2 `GET /keyword` および 6.3 `GET /law_data` は、public facade と capability が共有する provider parser、runtime 応答と保存済み契約の分類分離、入力と応答の同一性および安全境界を実装した。6.4 の共通 `lawtarget` resolver と `search_laws`／統合照会 law search facade の page 内安定優先も実装済みである | `SOT-IF-011`、`SOT-IF-052`、`SOT-IF-053`、`SOT-IF-054`、`SOT-ARCH-030` |
 | 7 | 未着手（採用後の同期） | code や評価成果物を変えず、前段の同一変更義務に含まれない scenario、help および説明文書だけを採用後の標準へ同期する。現在の実装事実を記す文書整備は、この段階の完了を意味しない | `SOT-SCN-010`、`SOT-ENG-039` |
@@ -329,7 +329,7 @@ handoff 境界の準備実装、三件の report 前停止への修正、新し�
 | 後続 cycle evaluator v2 | 完了 | v1 の再現意味を不変に保ち、期待 plan と実入力 error、および期待 request error と実受理だけを semantic failure へ写像する exact v2 と unknown version の fail-closed を固定 |
 | 後続 cycle 4.2 | 完了 | `corpus-v14` の独立 holdout、`corpus-v10` から `corpus-v13` との五軸非交差、v13 development・execution byte 継承および四派生観測母集団を固定 |
 | 後続 cycle 4.4 / 4.5 | 準備後に report 前失敗 | `legal-query-evaluator-v2`、`corpus-v14`、`default-7` request を準備後、一回評価は終了 code `12` で停止。report と result は未生成で、同じ予約と評価 ID は再利用しない |
-| schema version 3 準備 | 準備済み・現在は `stale` | `legal-query-evaluator-v3`、`corpus-v16`、`default-8` request と pointer は存在するが、result はない。`SOT-ENG-043` に従って隔離し、新 schema 世代の採用と候補準備を待つ |
+| schema version 3 準備 | 準備済み・現在は `stale` | `legal-query-evaluator-v3`、`corpus-v16`、`default-8` request と pointer は存在するが、result はない。`SOT-ENG-043` に従って隔離し、schema version 4 基盤を使う後続候補の準備を待つ |
 
 ### `default-4` の不確定終了と診断契約
 
@@ -529,12 +529,43 @@ stale 時の非到達性を検査し、候補評価側は `ready` になるま�
 `stale` は第 4.4 段階の再準備完了、第 4.5 段階への進行、評価済みまたは
 holdout 消費を意味しない。
 
-再開には、別の有効な SOT で新 schema version と exact SOT 集合を先に採用し、
+再開には、後述の schema version 4 基盤に続けて、
 新しい candidate content、独立 review 二件、request および pointer を一つの準備単位で
 追加する必要がある。schema version 3 の配列内で `SOT-IF-040` を `SOT-IF-077` に
 置換せず、既存の schema、manifest、review、request、result および report は不変に保つ。
 `corpus-v16`、`default-8`、予約済み holdout digest および leakage group digest は
 後続準備へ再利用しない。新しい候補の評価と production 採用は、再準備後の別単位である。
+
+### schema version 4 の準備基盤
+
+2026-09-24 の改善作業08で、
+[SOT-ENG-045](../sot/50-engineering/45-candidate-evaluation-handoff-schema-v4.md)を追加し、
+[schema と loader](../internal/legalquerycandidateeval/schema_canonical.go)、
+[明示した世代の constructor](../internal/legalquerycandidateprepare/content_manifest.go)、
+[reference validator](../internal/legalquerycandidateprepare/reference_validator.go)および
+[bootstrap result reader](../cmd/legal-query-candidate-eval/handoff_decode.go)を実装した。
+v4 の exact SOT 集合と evaluator binding は同 SOT を定義元とし、旧 v2/v3 の schema、
+配列、成果物と予約履歴は変更していない。current pointer は前節の v3 のままである。
+
+合成契約では、v4 の五 artifact、三世代 root、旧世代 replay、予約衝突、版と schema
+byte の拒否、および v4 constructor と readiness の経路を確認する。
+[世代分離の検証](../internal/legalquerycandidateeval/schema_v4_test.go)、
+[準備経路の検証](../internal/legalquerycandidateprepare/schema_v4_test.go)、
+[bootstrap の検証](../cmd/legal-query-candidate-eval/handoff_schema_test.go)から実行内容へ
+到達できる。実 current は既存の検証入口で完全性と stale 拒否を確認し、holdout 内容や
+一件別の評価結果を参照する作業、実 candidate 評価は行わない。
+
+独立した実装・security review は `9.0 / 10`、blocker は `0`、必須修正はなかった。
+対象の合成契約と固定 Go `1.26.5` による実 current の二理由 stale・strict 拒否、
+v4 内容の同世代再構築、および worker の holdout 前の準備拒否が成功した。
+対象 package の固定 lint、`go vet`、SOT 解析、構造・link 検査と開発原則 checksum も
+成功した。全件 test と coverage のローカル再実行は行っていない。
+
+今回の基盤だけでは第 4.4 段階の再準備は完了していない。新しい corpus の作成、
+development だけによる校正、content・review・request・pointer の原子的固定、
+一回評価および production 採用は残っている。新しい予約成果物は作成していない。
+この基盤変更の権威 CI は親作業からの push 後に確認する。後続の番号付き作業も
+`SOT-ENG-039` に従い、それぞれの commit と権威 CI の成功後にだけ次へ進む。
 
 ## 段階の境界
 

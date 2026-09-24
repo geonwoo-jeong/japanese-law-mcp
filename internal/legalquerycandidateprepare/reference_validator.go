@@ -49,11 +49,14 @@ func (v ReferenceValidator) ValidateCandidateContent(
 	if v.repositoryRoot == "" {
 		return fmt.Errorf("候補参照 validator が初期化されていません")
 	}
+	if err := validatePreparationSchema(document.SchemaVersion); err != nil {
+		return err
+	}
 	sourceSet, err := BuildSemanticSourceSet(ctx, v.repositoryRoot)
 	if err != nil {
 		return err
 	}
-	expected, err := BuildContentManifest(ctx, v.repositoryRoot, sourceSet)
+	expected, err := BuildContentManifestForSchema(ctx, v.repositoryRoot, sourceSet, document.SchemaVersion)
 	if err != nil {
 		return err
 	}
@@ -100,9 +103,8 @@ func (v ReferenceValidator) ValidateEvaluationRequest(
 			return legalquerycandidateeval.RequestReferenceValidation{}, err
 		}
 	}
-	if document.SchemaVersion != legalquerycandidateeval.SchemaVersionV3 {
-		return legalquerycandidateeval.RequestReferenceValidation{},
-			fmt.Errorf("新しい evaluation request は schema version 3 を必要とします")
+	if err := validatePreparationSchema(document.SchemaVersion); err != nil {
+		return legalquerycandidateeval.RequestReferenceValidation{}, err
 	}
 	adoption, err := legalqueryadoption.LoadCurrentFromRoot(ctx, v.repositoryRoot)
 	if err != nil {

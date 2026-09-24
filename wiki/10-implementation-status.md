@@ -105,8 +105,13 @@
   [SOT-ENG-043](../sot/50-engineering/43-candidate-evaluation-readiness-separation.md)
   に従う完全性検査と readiness 分離も実装済みであり、現在の request は
   `stale` として評価を拒否する。廃止された `SOT-IF-040` を含む exact SOT 集合を
-  変更するため、新 schema 世代を採用してから、新しい候補内容、独立 review 二件、
-  request および pointer を準備する必要がある。
+  変更する後続準備は、次項の schema version 4 基盤を使用する。
+- [SOT-ENG-045](../sot/50-engineering/45-candidate-evaluation-handoff-schema-v4.md)
+  の schema version 4、三世代同居 loader、明示した世代ごとの constructor、
+  reference validator および bootstrap result reader を実装した。既存 v3 current の
+  byte と stale 拒否は維持する。新しい corpus、校正、候補内容・独立 review 二件・
+  request・pointer の原子的準備、一回評価および production 採用は未実施。
+  この基盤変更の権威 CI 成功後に、後続作業を独立した変更単位で進める。
 - [SOT-ENG-033](../sot/50-engineering/33-unified-query-profile-set-adoption-manifest.md)
   と [SOT-ENG-039](../sot/50-engineering/39-content-bound-unified-query-rollout-stages.md)
   に従う relation 対応 corpus・baseline・検索例の原子的切替と、次版 profile set の

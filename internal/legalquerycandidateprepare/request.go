@@ -24,6 +24,9 @@ func BuildEvaluationRequest(
 	testabilityRaw []byte,
 	baselineVersion string,
 ) (legalquerycandidateeval.EvaluationRequest, error) {
+	if err := validatePreparationSchema(manifest.SchemaVersion); err != nil {
+		return legalquerycandidateeval.EvaluationRequest{}, err
+	}
 	if err := verifyCanonicalCandidateManifest(manifest, manifestRaw); err != nil {
 		return legalquerycandidateeval.EvaluationRequest{}, err
 	}
@@ -138,6 +141,8 @@ func verifyRequestReviews(
 	manifestDigest := legalquerycandidateeval.RawSHA256(manifestRaw)
 	if architecture.ReviewScope != legalquerycandidateeval.ReviewScopeArchitecture ||
 		testability.ReviewScope != legalquerycandidateeval.ReviewScopeTestability ||
+		architecture.SchemaVersion != manifest.SchemaVersion ||
+		testability.SchemaVersion != manifest.SchemaVersion ||
 		architecture.ReviewerAuthorityID == testability.ReviewerAuthorityID ||
 		architecture.CandidateContentID != manifest.CandidateContentID ||
 		testability.CandidateContentID != manifest.CandidateContentID ||

@@ -82,6 +82,21 @@ func RequiredReviewSOTIDsForSchema(schemaVersion int) ([]string, error) {
 		ids = append(ids, additionalRequiredReviewSOTIDsV3[:]...)
 		slices.Sort(ids)
 		return ids, nil
+	case SchemaVersionV4:
+		// SOT-ENG-045: 旧世代の集合を変更せず、後継の有効集合を構成する。
+		previous, err := RequiredReviewSOTIDsForSchema(SchemaVersionV3)
+		if err != nil {
+			return nil, err
+		}
+		ids := make([]string, 0, len(previous)+2)
+		for _, id := range previous {
+			if id != "SOT-IF-040" {
+				ids = append(ids, id)
+			}
+		}
+		ids = append(ids, "SOT-IF-077", "SOT-ENG-043", "SOT-ENG-045")
+		slices.Sort(ids)
+		return ids, nil
 	default:
 		return nil, fmt.Errorf("candidate evaluation schema version が未対応です")
 	}

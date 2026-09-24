@@ -36,12 +36,25 @@ var candidateProfileSources = [...]profileArtifactSource{
 	},
 }
 
-// BuildContentManifest は、候補 profile、辞書、composition と source set を固定する。
+// BuildContentManifest は、既存の schema v3 経路で候補内容を固定する。
 func BuildContentManifest(
 	ctx context.Context,
 	repositoryRoot string,
 	sourceSet legalquerycandidateeval.SemanticSourceSet,
 ) (legalquerycandidateeval.CandidateContentManifest, error) {
+	return BuildContentManifestForSchema(ctx, repositoryRoot, sourceSet, legalquerycandidateeval.SchemaVersionV3)
+}
+
+// BuildContentManifestForSchema は、SOT-ENG-045 の明示した世代で候補内容を固定する。
+func BuildContentManifestForSchema(
+	ctx context.Context,
+	repositoryRoot string,
+	sourceSet legalquerycandidateeval.SemanticSourceSet,
+	schemaVersion int,
+) (legalquerycandidateeval.CandidateContentManifest, error) {
+	if err := validatePreparationSchema(schemaVersion); err != nil {
+		return legalquerycandidateeval.CandidateContentManifest{}, err
+	}
 	if ctx == nil {
 		return legalquerycandidateeval.CandidateContentManifest{},
 			fmt.Errorf("候補準備 context は nil にできません")
@@ -78,7 +91,7 @@ func BuildContentManifest(
 	}
 	manifest := legalquerycandidateeval.CandidateContentManifest{
 		ArtifactKind:      legalquerycandidateeval.ArtifactKindCandidateContent,
-		SchemaVersion:     legalquerycandidateeval.SchemaVersionV3,
+		SchemaVersion:     schemaVersion,
 		ProfileSet:        profileSet,
 		ProfileArtifacts:  profiles,
 		LexiconArtifacts:  lexicons,
@@ -91,6 +104,15 @@ func BuildContentManifest(
 		return legalquerycandidateeval.CandidateContentManifest{}, err
 	}
 	return manifest, nil
+}
+
+func validatePreparationSchema(schemaVersion int) error {
+	switch schemaVersion {
+	case legalquerycandidateeval.SchemaVersionV3, legalquerycandidateeval.SchemaVersionV4:
+		return nil
+	default:
+		return fmt.Errorf("候補準備と readiness は schema version 3 または 4 を必要とします")
+	}
 }
 
 func buildProfileArtifacts(

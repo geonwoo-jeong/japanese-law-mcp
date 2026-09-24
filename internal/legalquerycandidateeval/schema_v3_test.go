@@ -138,7 +138,7 @@ func TestDecodeのSchemaVersion判別はFailClosedである(t *testing.T) {
 
 	raw := mustCanonicalJSON(t, manifestWithID(t))
 	tests := map[string][]byte{
-		"unknown":  bytes.Replace(raw, []byte(`"schemaVersion":2`), []byte(`"schemaVersion":4`), 1),
+		"unknown":  bytes.Replace(raw, []byte(`"schemaVersion":2`), []byte(`"schemaVersion":5`), 1),
 		"missing":  bytes.Replace(raw, []byte(`"schemaVersion":2,`), nil, 1),
 		"string":   bytes.Replace(raw, []byte(`"schemaVersion":2`), []byte(`"schemaVersion":"2"`), 1),
 		"fraction": bytes.Replace(raw, []byte(`"schemaVersion":2`), []byte(`"schemaVersion":2.5`), 1),
@@ -654,6 +654,12 @@ func validEvaluationRequestForSchema(
 			},
 		},
 		BaselineVersion: "default-99",
+	}
+	if manifest.SchemaVersion == SchemaVersionV4 {
+		request.CorpusVersion = "corpus-v100"
+		request.HoldoutDigest = repeatHex('5')
+		request.HoldoutLeakageGroupDigests = []string{repeatHex('6'), repeatHex('7')}
+		request.BaselineVersion = "default-100"
 	}
 	request.EvaluationID = mustEvaluationID(t, request)
 	return request

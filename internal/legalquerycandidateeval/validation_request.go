@@ -11,8 +11,9 @@ func validateEvaluationRequest(document EvaluationRequest) error {
 	if !evaluatorVersionPattern.MatchString(document.EvaluatorVersion) || len(document.EvaluatorVersion) > 64 {
 		return fmt.Errorf("evaluatorVersion が不正です")
 	}
-	if document.SchemaVersion == SchemaVersionV3 && document.EvaluatorVersion != EvaluatorVersionV3 {
-		return fmt.Errorf("schema version 3 の evaluatorVersion が固定値と一致しません")
+	if (document.SchemaVersion == SchemaVersionV3 || document.SchemaVersion == SchemaVersionV4) &&
+		document.EvaluatorVersion != EvaluatorVersionV3 {
+		return fmt.Errorf("schema version %d の evaluatorVersion が固定値と一致しません", document.SchemaVersion)
 	}
 	if err := validateRequestCorpus(document); err != nil {
 		return err

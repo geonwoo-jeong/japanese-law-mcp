@@ -8,6 +8,9 @@ var (
 
 	//go:embed schema-v3.json
 	canonicalSchemaV3 []byte
+
+	//go:embed schema-v4.json
+	canonicalSchemaV4 []byte
 )
 
 // CanonicalSchemaV2 は内部参照だけを持つ schema v2 の複製を返す。
@@ -18,4 +21,9 @@ func CanonicalSchemaV2() []byte {
 // CanonicalSchemaV3 は内部参照だけを持つ schema v3 の複製を返す。
 func CanonicalSchemaV3() []byte {
 	return append([]byte(nil), canonicalSchemaV3...)
+}
+
+// CanonicalSchemaV4 は内部参照だけを持つ schema v4 の複製を返す。
+func CanonicalSchemaV4() []byte {
+	return append([]byte(nil), canonicalSchemaV4...)
 }

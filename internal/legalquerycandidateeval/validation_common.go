@@ -32,7 +32,8 @@ func validatePointer(document PointerDocument) error {
 }
 
 func isSupportedSchemaVersion(schemaVersion int) bool {
-	return schemaVersion == SchemaVersionV2 || schemaVersion == SchemaVersionV3
+	return schemaVersion == SchemaVersionV2 || schemaVersion == SchemaVersionV3 ||
+		schemaVersion == SchemaVersionV4
 }
 
 func validateSHA256(name, value string) error {

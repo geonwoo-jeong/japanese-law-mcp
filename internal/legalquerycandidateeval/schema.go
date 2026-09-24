@@ -22,6 +22,11 @@ type SchemaV3 struct {
 	resolved *jsonschema.Resolved
 }
 
+// SchemaV4 は外部参照を持たない解決済み JSON Schema である。
+type SchemaV4 struct {
+	resolved *jsonschema.Resolved
+}
+
 // ParseSchemaV2 は Draft 2020-12 schema を同一 document 内だけで解決する。
 func ParseSchemaV2(raw []byte) (SchemaV2, error) {
 	resolved, err := parseSchema(raw)
@@ -38,6 +43,15 @@ func ParseSchemaV3(raw []byte) (SchemaV3, error) {
 		return SchemaV3{}, err
 	}
 	return SchemaV3{resolved: resolved}, nil
+}
+
+// ParseSchemaV4 は Draft 2020-12 schema を同一 document 内だけで解決する。
+func ParseSchemaV4(raw []byte) (SchemaV4, error) {
+	resolved, err := parseSchema(raw)
+	if err != nil {
+		return SchemaV4{}, err
+	}
+	return SchemaV4{resolved: resolved}, nil
 }
 
 func parseSchema(raw []byte) (*jsonschema.Resolved, error) {
@@ -96,6 +110,21 @@ func (s SchemaV3) Validate(ctx context.Context, raw []byte) error {
 func (s SchemaV3) validateRaw(raw []byte) error {
 	if err := validateResolvedSchema(s.resolved, raw); err != nil {
 		return fmt.Errorf("candidate evaluation 成果物が schema v3 に適合しません")
+	}
+	return nil
+}
+
+// Validate は一 artifact を解決済み schema に照合する。
+func (s SchemaV4) Validate(ctx context.Context, raw []byte) error {
+	if err := checkContext(ctx); err != nil {
+		return err
+	}
+	return s.validateRaw(raw)
+}
+
+func (s SchemaV4) validateRaw(raw []byte) error {
+	if err := validateResolvedSchema(s.resolved, raw); err != nil {
+		return fmt.Errorf("candidate evaluation 成果物が schema v4 に適合しません")
 	}
 	return nil
 }
