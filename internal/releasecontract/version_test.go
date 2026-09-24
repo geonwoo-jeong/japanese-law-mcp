@@ -21,7 +21,7 @@ func validateReleasePleaseVersion(
 	if !exists || len(manifest) != 1 {
 		return fmt.Errorf("release manifest にはルートの版だけが必要です: %#v", manifest)
 	}
-	current, err := os.ReadFile(notesPath)
+	current, err := os.ReadFile(notesPath) // #nosec G304 -- SOT-ENG-019: テストが構築したリポジトリ内の固定パスか一時 fixture だけを読む。
 	if err != nil {
 		return fmt.Errorf("現在のリリース契約を読み込めません: %w", err)
 	}
