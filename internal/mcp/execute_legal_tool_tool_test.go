@@ -51,45 +51,43 @@ func TestExecuteLegalToolMatchesFullDirectResultForEverySpecialist(t *testing.T)
 		{name: "search_laws", arguments: json.RawMessage(`{"query":"民法"}`)},
 		{name: "trace_judicial_citations", arguments: canonicalTraceJudicialCitationsInput()},
 	}
-	withMCPClientSession(t, full, func(fullContext context.Context, fullSession *sdk.ClientSession) {
-		withMCPClientSession(t, compact, func(compactContext context.Context, compactSession *sdk.ClientSession) {
-			for _, testCase := range tests {
-				fullResult, fullErr := fullSession.CallTool(
-					fullContext,
-					&sdk.CallToolParams{
-						Name:      testCase.name,
-						Arguments: decodeExecuteParityArguments(t, testCase.arguments),
+	withPairedMCPClientSessions(t, full, compact, func(ctx context.Context, fullSession, compactSession *sdk.ClientSession) {
+		for _, testCase := range tests {
+			fullResult, fullErr := fullSession.CallTool(
+				ctx,
+				&sdk.CallToolParams{
+					Name:      testCase.name,
+					Arguments: decodeExecuteParityArguments(t, testCase.arguments),
+				},
+			)
+			compactResult, compactErr := compactSession.CallTool(
+				ctx,
+				&sdk.CallToolParams{
+					Name: executeLegalToolToolName,
+					Arguments: map[string]any{
+						"toolName":  testCase.name,
+						"arguments": decodeExecuteParityArguments(t, testCase.arguments),
 					},
-				)
-				compactResult, compactErr := compactSession.CallTool(
-					compactContext,
-					&sdk.CallToolParams{
-						Name: executeLegalToolToolName,
-						Arguments: map[string]any{
-							"toolName":  testCase.name,
-							"arguments": decodeExecuteParityArguments(t, testCase.arguments),
-						},
-					},
-				)
-				if (fullErr == nil) != (compactErr == nil) {
-					t.Fatalf("%s errors = %v / %v", testCase.name, fullErr, compactErr)
-				}
-				if fullErr != nil {
-					continue
-				}
-				fullJSON, marshalErr := json.Marshal(fullResult)
-				if marshalErr != nil {
-					t.Fatalf("%s full result marshal = %v", testCase.name, marshalErr)
-				}
-				compactJSON, marshalErr := json.Marshal(compactResult)
-				if marshalErr != nil {
-					t.Fatalf("%s compact result marshal = %v", testCase.name, marshalErr)
-				}
-				if string(fullJSON) != string(compactJSON) {
-					t.Fatalf("%s result mismatch:\nfull=%s\ncompact=%s", testCase.name, fullJSON, compactJSON)
-				}
+				},
+			)
+			if (fullErr == nil) != (compactErr == nil) {
+				t.Fatalf("%s errors = %v / %v", testCase.name, fullErr, compactErr)
 			}
-		})
+			if fullErr != nil {
+				continue
+			}
+			fullJSON, marshalErr := json.Marshal(fullResult)
+			if marshalErr != nil {
+				t.Fatalf("%s full result marshal = %v", testCase.name, marshalErr)
+			}
+			compactJSON, marshalErr := json.Marshal(compactResult)
+			if marshalErr != nil {
+				t.Fatalf("%s compact result marshal = %v", testCase.name, marshalErr)
+			}
+			if string(fullJSON) != string(compactJSON) {
+				t.Fatalf("%s result mismatch:\nfull=%s\ncompact=%s", testCase.name, fullJSON, compactJSON)
+			}
+		}
 	})
 }
 
@@ -110,39 +108,37 @@ func TestExecuteLegalToolMatchesFullDirectInputErrorForEverySpecialist(t *testin
 		"search_laws",
 		"trace_judicial_citations",
 	}
-	withMCPClientSession(t, full, func(fullContext context.Context, fullSession *sdk.ClientSession) {
-		withMCPClientSession(t, compact, func(compactContext context.Context, compactSession *sdk.ClientSession) {
-			for _, name := range names {
-				fullResult, fullErr := fullSession.CallTool(
-					fullContext,
-					&sdk.CallToolParams{Name: name, Arguments: map[string]any{}},
-				)
-				compactResult, compactErr := compactSession.CallTool(
-					compactContext,
-					&sdk.CallToolParams{
-						Name: executeLegalToolToolName,
-						Arguments: map[string]any{
-							"toolName":  name,
-							"arguments": map[string]any{},
-						},
+	withPairedMCPClientSessions(t, full, compact, func(ctx context.Context, fullSession, compactSession *sdk.ClientSession) {
+		for _, name := range names {
+			fullResult, fullErr := fullSession.CallTool(
+				ctx,
+				&sdk.CallToolParams{Name: name, Arguments: map[string]any{}},
+			)
+			compactResult, compactErr := compactSession.CallTool(
+				ctx,
+				&sdk.CallToolParams{
+					Name: executeLegalToolToolName,
+					Arguments: map[string]any{
+						"toolName":  name,
+						"arguments": map[string]any{},
 					},
-				)
-				if fullErr != nil || compactErr != nil {
-					t.Fatalf("%s errors = %v / %v", name, fullErr, compactErr)
-				}
-				fullJSON, marshalErr := json.Marshal(fullResult)
-				if marshalErr != nil {
-					t.Fatalf("%s full result marshal = %v", name, marshalErr)
-				}
-				compactJSON, marshalErr := json.Marshal(compactResult)
-				if marshalErr != nil {
-					t.Fatalf("%s compact result marshal = %v", name, marshalErr)
-				}
-				if string(fullJSON) != string(compactJSON) {
-					t.Fatalf("%s input error mismatch:\nfull=%s\ncompact=%s", name, fullJSON, compactJSON)
-				}
+				},
+			)
+			if fullErr != nil || compactErr != nil {
+				t.Fatalf("%s errors = %v / %v", name, fullErr, compactErr)
 			}
-		})
+			fullJSON, marshalErr := json.Marshal(fullResult)
+			if marshalErr != nil {
+				t.Fatalf("%s full result marshal = %v", name, marshalErr)
+			}
+			compactJSON, marshalErr := json.Marshal(compactResult)
+			if marshalErr != nil {
+				t.Fatalf("%s compact result marshal = %v", name, marshalErr)
+			}
+			if string(fullJSON) != string(compactJSON) {
+				t.Fatalf("%s input error mismatch:\nfull=%s\ncompact=%s", name, fullJSON, compactJSON)
+			}
+		}
 	})
 }
 
@@ -460,11 +456,8 @@ func TestMetaToolArgumentByteLimitsAcceptExactBoundary(t *testing.T) {
 		t.Fatalf("discover boundary result = %#v, error = %v", discoverResult, err)
 	}
 
-	executeBase := []byte(`{"toolName":"synthetic_operation","arguments":{}}`)
-	executeRaw := append(
-		executeBase,
-		[]byte(strings.Repeat(" ", executeLegalToolMaxArgumentsBytes-len(executeBase)))...,
-	)
+	const executeBase = `{"toolName":"synthetic_operation","arguments":{}}`
+	executeRaw := []byte(executeBase + strings.Repeat(" ", executeLegalToolMaxArgumentsBytes-len(executeBase)))
 	if len(executeRaw) != executeLegalToolMaxArgumentsBytes {
 		t.Fatalf("execute boundary bytes = %d", len(executeRaw))
 	}
