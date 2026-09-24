@@ -90,15 +90,12 @@ func TestGoReleaserContract(t *testing.T) {
 	}
 }
 
-// SOT-DEL-014: Release Please が更新する版、変更履歴およびリリース契約を固定する。
+// SOT-DEL-004/SOT-DEL-014: Release Please の設定と更新される版の整合性を検証する。
 func TestReleasePleaseConfigurationContract(t *testing.T) {
 	t.Parallel()
 
 	var manifest map[string]string
 	readJSON(t, ".release-please-manifest.json", &manifest)
-	if !reflect.DeepEqual(manifest, map[string]string{".": "0.0.0"}) {
-		t.Fatalf("release manifest = %#v", manifest)
-	}
 
 	var config releasePleaseConfig
 	readJSON(t, "release-please-config.json", &config)
@@ -154,15 +151,14 @@ func TestReleasePleaseConfigurationContract(t *testing.T) {
 		},
 	)
 
-	current, err := os.ReadFile(filepath.Join(repositoryRoot(t), "release-notes", "CURRENT.md"))
-	if err != nil {
-		t.Fatalf("現在のリリース契約を読み込めません: %v", err)
-	}
-	if !strings.Contains(
-		string(current),
-		"# Japanese Law MCP v0.0.0 <!-- x-release-please-version -->",
-	) {
-		t.Fatalf("現在のリリース契約に版更新注釈がありません: %s", current)
+	repository := repositoryRoot(t)
+	if err := validateReleasePleaseVersion(
+		t.Context(),
+		manifest,
+		filepath.Join(repository, "release-notes", "CURRENT.md"),
+		repository,
+	); err != nil {
+		t.Fatalf("Release Please の版が整合していません: %v", err)
 	}
 }
 
