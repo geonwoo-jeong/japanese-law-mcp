@@ -17,7 +17,7 @@ func TestValidateDistribution(t *testing.T) {
 	t.Parallel()
 
 	dist := newValidDistribution(t, "v1.2.3", testCommit)
-	if err := validateDistribution(dist, "v1.2.3", testCommit); err != nil {
+	if err := validateDistribution(dist, "v1.2.3", testCommit, testArchiveNotices()); err != nil {
 		t.Fatalf("validateDistribution() のエラー = %v", err)
 	}
 }
@@ -134,7 +134,7 @@ func TestValidateDistributionRejectsInvalidArtifacts(t *testing.T) {
 
 			fixture := newDistributionFixture(t, "v1.2.3", testCommit)
 			test.mutate(t, fixture)
-			err := validateDistribution(fixture.dir, "v1.2.3", testCommit)
+			err := validateDistribution(fixture.dir, "v1.2.3", testCommit, testArchiveNotices())
 			if err == nil || !strings.Contains(err.Error(), test.wantErr) {
 				t.Fatalf("validateDistribution() のエラー = %v, want %q", err, test.wantErr)
 			}
@@ -166,14 +166,8 @@ func newDistributionFixture(t *testing.T, tag, commit string) *distributionFixtu
 	for _, target := range targets {
 		names = append(names, target.archiveName)
 		path := filepath.Join(dir, target.archiveName)
-		entry := testArchiveEntry{
-			name: target.binaryName, content: "binary", typeflag: 0, mode: 0o755,
-		}
-		if target.format == "zip" {
-			writeTestZip(t, path, []testArchiveEntry{entry})
-		} else {
-			writeTestTarGz(t, path, []testArchiveEntry{entry})
-		}
+		entries := testArchiveEntries(target.binaryName, "binary")
+		writeTestArchive(t, path, target.format, entries)
 		sum := fileSHA256(t, path)
 		checksums = append(checksums, sum+"  "+target.archiveName)
 		artifacts = append(artifacts, goreleaserArtifact{

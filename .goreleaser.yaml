@@ -34,7 +34,22 @@ archives:
         formats:
           - zip
     files:
-      - none*
+      - src: internal/nlp/kagome/data/IPA-LICENSE
+        strip_parent: true
+        info:
+          mode: 0644
+      - src: internal/nlp/kagome/data/IPA-NOTICE.txt
+        strip_parent: true
+        info:
+          mode: 0644
+      - src: third_party/modelcontextprotocol-go-sdk-patch/MCP-SDK-LICENSE
+        strip_parent: true
+        info:
+          mode: 0644
+      - src: third_party/modelcontextprotocol-go-sdk-patch/MCP-SDK-PATCH.json
+        strip_parent: true
+        info:
+          mode: 0644
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"

@@ -65,7 +65,15 @@ func TestGoReleaserContract(t *testing.T) {
 	if archive.NameTemplate != "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}" {
 		t.Fatalf("archive name_template = %q", archive.NameTemplate)
 	}
-	assertStringSet(t, "archive files", archive.Files, []string{"none*"})
+	expectedFiles := []releaseArchiveFile{
+		{Src: "internal/nlp/kagome/data/IPA-LICENSE", StripParent: true, Info: releaseArchiveFileInfo{Mode: 0o644}},
+		{Src: "internal/nlp/kagome/data/IPA-NOTICE.txt", StripParent: true, Info: releaseArchiveFileInfo{Mode: 0o644}},
+		{Src: "third_party/modelcontextprotocol-go-sdk-patch/MCP-SDK-LICENSE", StripParent: true, Info: releaseArchiveFileInfo{Mode: 0o644}},
+		{Src: "third_party/modelcontextprotocol-go-sdk-patch/MCP-SDK-PATCH.json", StripParent: true, Info: releaseArchiveFileInfo{Mode: 0o644}},
+	}
+	if !reflect.DeepEqual(archive.Files, expectedFiles) {
+		t.Fatalf("archive files = %#v", archive.Files)
+	}
 	if len(archive.FormatOverrides) != 1 ||
 		archive.FormatOverrides[0].GOOS != "windows" ||
 		!reflect.DeepEqual(archive.FormatOverrides[0].Formats, []string{"zip"}) {
@@ -586,11 +594,21 @@ type releaseBuild struct {
 }
 
 type releaseArchive struct {
-	IDs             []string         `yaml:"ids"`
-	Formats         []string         `yaml:"formats"`
-	NameTemplate    string           `yaml:"name_template"`
-	FormatOverrides []formatOverride `yaml:"format_overrides"`
-	Files           []string         `yaml:"files"`
+	IDs             []string             `yaml:"ids"`
+	Formats         []string             `yaml:"formats"`
+	NameTemplate    string               `yaml:"name_template"`
+	FormatOverrides []formatOverride     `yaml:"format_overrides"`
+	Files           []releaseArchiveFile `yaml:"files"`
+}
+
+type releaseArchiveFile struct {
+	Src         string                 `yaml:"src"`
+	StripParent bool                   `yaml:"strip_parent"`
+	Info        releaseArchiveFileInfo `yaml:"info"`
+}
+
+type releaseArchiveFileInfo struct {
+	Mode uint32 `yaml:"mode"`
 }
 
 type formatOverride struct {

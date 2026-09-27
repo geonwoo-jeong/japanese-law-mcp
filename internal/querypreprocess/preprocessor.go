@@ -122,8 +122,9 @@ func New(values Values) (*Preprocessor, error) {
 
 	lawsByID := make(map[string]lawnamelexicon.Entry, len(values.LawNames))
 	lawResolverEntries := make([]searchquery.EntryValues, 0, len(values.LawNames))
-	normalizedTerms := newRuneTrie[dictionaryTarget]()
-	identifiers := newRuneTrie[identifierTarget]()
+	normalizedCapacity, identifierCapacity := preprocessorTrieCapacities(values)
+	normalizedTerms := newRuneTrieWithCapacity[dictionaryTarget](normalizedCapacity)
+	identifiers := newRuneTrieWithCapacity[identifierTarget](identifierCapacity)
 	for index, entry := range values.LawNames {
 		if err := validateLawEntry(entry); err != nil {
 			return nil, fmt.Errorf("lawNames[%d]: %w", index, err)

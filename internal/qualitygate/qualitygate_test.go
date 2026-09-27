@@ -273,8 +273,12 @@ func TestBuildPlanCIAddsAllVulnerabilityAndHistoryChecks(t *testing.T) {
 		t.Fatalf("CI の省資源テスト設定がありません: %q", got)
 	}
 	wantSuffix := []string{
+		"compact-ipa-check|SOT-ENG-051|" + snapshot + "|go|run|./cmd/compact-ipa-generate|--repository=.|--check",
+		"sdk-patch-check|SOT-ENG-052|" + snapshot + "|go|run|./cmd/sdk-patch-check|--repository=.",
+		"sdk-json-test|SOT-ENG-052|" + filepath.Join(snapshot, "third_party", "modelcontextprotocol-go-sdk") + "|go|test|-p=1|-count=1|./internal/json",
 		"legal-query-eval|SOT-ENG-024|" + snapshot + "|go|run|./cmd/legal-query-eval|--adoption=./testdata/legalquery/adoptions/current.json|--format=json",
 		"product-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|-modfile=tools/go.mod|govulncheck|-test|./...",
+		"sdk-upstream-vulnerabilities|SOT-ENG-052|" + snapshot + "|go|tool|-modfile=tools/go.mod|govulncheck|-mode=query|-format=json|github.com/modelcontextprotocol/go-sdk@v1.6.1",
 		"tool-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|govulncheck|github.com/golangci/golangci-lint/v2/cmd/golangci-lint|github.com/rhysd/actionlint/cmd/actionlint|golang.org/x/vuln/cmd/govulncheck",
 		"gitleaks-vulnerabilities|SOT-ENG-020|" + snapshot + "|go|tool|govulncheck|github.com/zricethezav/gitleaks/v8",
 		"history-completeness|SOT-ENG-027|/repo|git|rev-parse|--is-shallow-repository",
@@ -289,6 +293,52 @@ func TestBuildPlanCIAddsAllVulnerabilityAndHistoryChecks(t *testing.T) {
 	history := steps[len(steps)-1]
 	if history.command == nil || history.command.preserveGitObjects {
 		t.Fatal("CI 全履歴検査が ambient Git object 環境を保存しています")
+	}
+}
+
+// SOT-ENG-051/SOT-ENG-027: 実資産の再生成照合は CI だけで実行する。
+func TestBuildPlanCompactIPACheckIsCIOnly(t *testing.T) {
+	t.Parallel()
+
+	for _, profile := range []Profile{ProfilePreCommit, ProfilePrePush, ProfileCI} {
+		t.Run(string(profile), func(t *testing.T) {
+			t.Parallel()
+
+			snapshot := writeValidPrinciples(t)
+			input := planInput{
+				profile: profile, repository: "/repo", snapshot: snapshot,
+				changedPaths: []string{
+					"internal/nlp/kagome/data/ipa-tokenization.dict",
+					"cmd/compact-ipa-generate/main.go",
+				},
+			}
+			if profile == ProfilePrePush {
+				input.gitRanges = []string{"main..HEAD"}
+			}
+			steps, err := buildPlan(input)
+			if err != nil {
+				t.Fatalf("計画の作成に失敗しました: %v", err)
+			}
+			count := 0
+			for _, current := range steps {
+				if current.key != "compact-ipa-check" {
+					continue
+				}
+				count++
+				if current.sotID != "SOT-ENG-051" || current.command == nil ||
+					current.command.dir != snapshot || !current.command.network ||
+					current.command.goFlags != readonlyGoFlags {
+					t.Fatalf("IPA 再生成照合の実行条件が一致しません: %#v", current)
+				}
+			}
+			want := 0
+			if profile == ProfileCI {
+				want = 1
+			}
+			if count != want {
+				t.Fatalf("IPA 再生成照合の数 = %d, want %d", count, want)
+			}
+		})
 	}
 }
 

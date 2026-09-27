@@ -26,10 +26,15 @@ type Resolver interface {
 	LogicalInputResolver
 }
 
+// DirectMatcher は、分離済み法令名を形態素解析せずに照合する。
+type DirectMatcher interface {
+	ResolveDirectMatches(context.Context, string) ([]searchquery.Match, error)
+}
+
 // PreprocessResolver は、共通前処理の位置付き法令名事実を対象へ縮約する。
 type PreprocessResolver struct {
 	preprocessor legalquery.QueryPreprocessor
-	direct       *searchquery.Resolver
+	direct       DirectMatcher
 }
 
 var _ Resolver = PreprocessResolver{}
@@ -39,7 +44,7 @@ func NewPreprocessResolver(
 	preprocessor legalquery.QueryPreprocessor,
 	entries []lawnamelexicon.Entry,
 ) (PreprocessResolver, error) {
-	if isNilPreprocessor(preprocessor) {
+	if isNilDependency(preprocessor) {
 		return PreprocessResolver{}, fmt.Errorf("法令対象の共通前処理器は必須です")
 	}
 	directEntries := make([]searchquery.EntryValues, len(entries))
@@ -57,6 +62,17 @@ func NewPreprocessResolver(
 			err,
 		)
 	}
+	return NewPreprocessResolverWithDirectMatcher(preprocessor, direct)
+}
+
+// NewPreprocessResolverWithDirectMatcher は、構築済みの不変な法令名索引を共有する。
+func NewPreprocessResolverWithDirectMatcher(
+	preprocessor legalquery.QueryPreprocessor,
+	direct DirectMatcher,
+) (PreprocessResolver, error) {
+	if isNilDependency(preprocessor) || isNilDependency(direct) {
+		return PreprocessResolver{}, fmt.Errorf("前処理器と法令名の直接照合器は必須です")
+	}
 	return PreprocessResolver{preprocessor: preprocessor, direct: direct}, nil
 }
 
@@ -71,7 +87,7 @@ func (r PreprocessResolver) Resolve(
 	if err := ctx.Err(); err != nil {
 		return ResolvedLawTarget{}, false, err
 	}
-	if isNilPreprocessor(r.preprocessor) || r.direct == nil {
+	if isNilDependency(r.preprocessor) || isNilDependency(r.direct) {
 		return ResolvedLawTarget{}, false, fmt.Errorf("法令対象 resolver は初期化されていません")
 	}
 	request, compatible := preprocessRequest(query)
@@ -129,10 +145,10 @@ func (r PreprocessResolver) ResolveLogicalInput(
 	if err := ctx.Err(); err != nil {
 		return ResolvedLawTarget{}, false, err
 	}
-	if r.direct == nil {
+	if isNilDependency(r.direct) {
 		return ResolvedLawTarget{}, false, fmt.Errorf("法令対象 resolver は初期化されていません")
 	}
-	matches, err := r.direct.ResolveMatches(ctx, query)
+	matches, err := r.direct.ResolveDirectMatches(ctx, query)
 	if err != nil {
 		return ResolvedLawTarget{}, false, err
 	}
@@ -164,7 +180,7 @@ func (directOnlyAnalyzer) RegisteredTerms(
 	return []string{}, nil
 }
 
-func isNilPreprocessor(value legalquery.QueryPreprocessor) bool {
+func isNilDependency(value any) bool {
 	if value == nil {
 		return true
 	}

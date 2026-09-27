@@ -65,6 +65,7 @@ type target struct {
 }
 
 type fuzzyTerm struct {
-	value   string
-	targets []target
+	value     string
+	targets   []target
+	signature [2]uint64
 }

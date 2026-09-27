@@ -31,7 +31,6 @@ import (
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/buildinfo"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/cli"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/config"
-	"github.com/geonwoo-jeong/japanese-law-mcp/internal/lawnamelexicon"
 	projectmcp "github.com/geonwoo-jeong/japanese-law-mcp/internal/mcp"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanrei"
 	"github.com/geonwoo-jeong/japanese-law-mcp/internal/source/courts/hanreipdf"
@@ -298,13 +297,13 @@ var loadLawNameQueryResolver = sync.OnceValues(
 		if err != nil {
 			return nil, err
 		}
-		lexicon, err := lawnamelexicon.LoadEmbedded()
-		if err != nil {
-			return nil, err
+		direct, ok := planning.preprocessor.(lawtarget.DirectMatcher)
+		if !ok {
+			return nil, fmt.Errorf("共通前処理器が法令名の直接照合に対応していません")
 		}
-		return lawtarget.NewPreprocessResolver(
+		return lawtarget.NewPreprocessResolverWithDirectMatcher(
 			planning.preprocessor,
-			lexicon.Entries(),
+			direct,
 		)
 	},
 )

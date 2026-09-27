@@ -39,7 +39,7 @@ type goreleaserArtifactExtra struct {
 	Format   string   `json:"Format"`
 }
 
-func validateDistribution(dist, tag, commit string) error {
+func validateDistribution(dist, tag, commit string, notices archiveNotices) error {
 	version := strings.TrimPrefix(tag, "v")
 	targets := releaseTargets(version)
 	checksums, err := validateChecksums(dist, version, targets)
@@ -60,6 +60,7 @@ func validateDistribution(dist, tag, commit string) error {
 			target.archivePath(dist),
 			target.format,
 			target.binaryName,
+			notices,
 		); err != nil {
 			return fmt.Errorf("%s の検証に失敗しました: %w", target.archiveName, err)
 		}

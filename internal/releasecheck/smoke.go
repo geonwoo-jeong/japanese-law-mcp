@@ -51,6 +51,7 @@ func smokeTarget(
 	archivePath string,
 	target releaseTarget,
 	version string,
+	notices archiveNotices,
 ) (returnErr error) {
 	smokeCtx, cancel := context.WithTimeout(ctx, smokeTimeout)
 	defer cancel()
@@ -84,6 +85,7 @@ func smokeTarget(
 		archivePath,
 		target,
 		binaryDirectory,
+		notices,
 	)
 	if err != nil {
 		return fmt.Errorf("配布アーカイブを安全に展開できません: %w", err)

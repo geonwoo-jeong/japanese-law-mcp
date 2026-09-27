@@ -53,10 +53,12 @@ func TestCheckWithDistribution(t *testing.T) {
 なし
 `))
 	dist := newValidDistribution(t, "v1.2.3", testCommit)
+	repository := writeTestSOTRepository(t)
+	writeTestArchiveNotices(t, repository)
 	if err := Check(context.Background(), Request{
 		ReleaseNotes: notes,
 		Tag:          "v1.2.3",
-		Repository:   writeTestSOTRepository(t),
+		Repository:   repository,
 		Dist:         dist,
 		Commit:       testCommit,
 	}); err != nil {
@@ -142,9 +144,7 @@ func TestSmokeTargetWithOfficialBinary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build した実行ファイルを読めません: %v", err)
 	}
-	writeTestTarGz(t, archive, []testArchiveEntry{{
-		name: "japanese-law-mcp", content: string(content), typeflag: 0, mode: 0o755,
-	}})
+	writeTestTarGz(t, archive, testArchiveEntries("japanese-law-mcp", string(content)))
 
 	err = smokeTarget(ctx, archive, releaseTarget{
 		goos:        "darwin",
@@ -152,7 +152,7 @@ func TestSmokeTargetWithOfficialBinary(t *testing.T) {
 		format:      "tar.gz",
 		binaryName:  "japanese-law-mcp",
 		archiveName: filepath.Base(archive),
-	}, "1.2.3")
+	}, "1.2.3", testArchiveNotices())
 	if err != nil {
 		t.Fatalf("smokeTarget() のエラー = %v", err)
 	}

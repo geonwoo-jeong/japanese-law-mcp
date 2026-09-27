@@ -77,10 +77,15 @@ func Check(ctx context.Context, request Request) error {
 	if request.Dist == "" {
 		return nil
 	}
+	notices, err := loadArchiveNotices(request.Repository)
+	if err != nil {
+		return err
+	}
 	if err := validateDistribution(
 		request.Dist,
 		request.Tag,
 		request.Commit,
+		notices,
 	); err != nil {
 		return err
 	}
@@ -91,5 +96,5 @@ func Check(ctx context.Context, request Request) error {
 	version := strings.TrimPrefix(request.Tag, "v")
 	target, _ := findReleaseTarget(request.TargetOS, request.TargetArch, version)
 	archivePath := target.archivePath(request.Dist)
-	return smokeTarget(ctx, archivePath, target, version)
+	return smokeTarget(ctx, archivePath, target, version, notices)
 }

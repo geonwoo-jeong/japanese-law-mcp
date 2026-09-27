@@ -87,8 +87,7 @@ func collectProfileCandidatesForMetadata(
 			err,
 		)
 	}
-	if queryProfileMetadataSignature(currentMetadata) !=
-		queryProfileMetadataSignature(metadata) {
+	if !queryProfileMetadataEqual(currentMetadata, metadata) {
 		return CandidateGeneration{}, fmt.Errorf(
 			"profile metadata が候補生成中に変更されました",
 		)

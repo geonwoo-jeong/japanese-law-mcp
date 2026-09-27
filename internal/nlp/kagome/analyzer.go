@@ -9,7 +9,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/ikawaha/kagome-dict/dict"
-	"github.com/ikawaha/kagome-dict/ipa"
 	"github.com/ikawaha/kagome/v2/tokenizer"
 )
 
@@ -22,6 +21,7 @@ const (
 // Analyzer は、Kagome user dictionary の登録語だけを抽出する。
 type Analyzer struct {
 	tokenizer *tokenizer.Tokenizer
+	knownPOS  compactPOSTable
 	gate      chan struct{}
 }
 
@@ -102,8 +102,12 @@ func NewAnalyzer(terms []string) (*Analyzer, error) {
 			err,
 		)
 	}
+	compact, err := loadCompactIPADictionary()
+	if err != nil {
+		return nil, err
+	}
 	kagomeTokenizer, err := tokenizer.New(
-		ipa.Dict(),
+		compact.dictionary,
 		tokenizer.UserDict(userDictionary),
 		tokenizer.OmitBosEos(),
 	)
@@ -112,6 +116,7 @@ func NewAnalyzer(terms []string) (*Analyzer, error) {
 	}
 	return &Analyzer{
 		tokenizer: kagomeTokenizer,
+		knownPOS:  compact.pos,
 		gate:      make(chan struct{}, 1),
 	}, nil
 }
@@ -155,13 +160,17 @@ func (a *Analyzer) AnalyzeTokenOccurrences(
 		if token.Surface == "" {
 			continue
 		}
+		pos, err := a.knownPOS.tokenPOS(token)
+		if err != nil {
+			return nil, err
+		}
 		startByte := token.Position
 		occurrences = append(occurrences, TokenOccurrence{
 			surface:        token.Surface,
 			startByte:      startByte,
 			endByte:        startByte + len(token.Surface),
 			userDictionary: token.Class == tokenizer.USER,
-			partOfSpeech:   append([]string(nil), token.POS()...),
+			partOfSpeech:   pos,
 		})
 	}
 	return occurrences, nil

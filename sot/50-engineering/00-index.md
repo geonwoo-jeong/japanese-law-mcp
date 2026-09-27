@@ -49,3 +49,6 @@
 - [47-candidate-evaluator-v4-source-generation.md](47-candidate-evaluator-v4-source-generation.md)
 - [48-candidate-evaluation-handoff-schema-v5.md](48-candidate-evaluation-handoff-schema-v5.md)
 - [49-candidate-worker-execution-isolation.md](49-candidate-worker-execution-isolation.md)
+- [50-compact-ipa-generated-artifact.md](50-compact-ipa-generated-artifact.md)
+- [51-compact-ipa-generated-artifact-v2.md](51-compact-ipa-generated-artifact-v2.md)
+- [52-patched-mcp-sdk-artifact.md](52-patched-mcp-sdk-artifact.md)

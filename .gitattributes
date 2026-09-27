@@ -3,3 +3,21 @@
 *.sha256 text eol=lf
 .githooks/* text eol=lf
 testdata/legalquery/**/*.json text eol=lf
+
+# SOT-ENG-019・SOT-ENG-052: 固定した上流原文と patch の文脈行を保持する。
+# 対象 path の既存の空白形式だけを許可し、SDK source の全 byte 照合は維持する。
+third_party/modelcontextprotocol-go-sdk-patch/json-unmarshal.patch whitespace=-blank-at-eol,-space-before-tab
+third_party/modelcontextprotocol-go-sdk/.github/ISSUE_TEMPLATE/bug_report.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/.github/workflows/conformance.yml whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/.github/workflows/publish-docs.yml whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/design/design.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/docs/client.md whitespace=-blank-at-eof,-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/docs/protocol.md whitespace=-blank-at-eof,-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/docs/rough_edges.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/docs/server.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/examples/server/sequentialthinking/README.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/internal/docs/client.src.md whitespace=-blank-at-eof,-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/internal/docs/protocol.src.md whitespace=-blank-at-eof,-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/internal/docs/rough_edges.src.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/internal/docs/server.src.md whitespace=-blank-at-eol
+third_party/modelcontextprotocol-go-sdk/mkdocs.yaml whitespace=-blank-at-eol

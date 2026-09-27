@@ -11,11 +11,11 @@ import (
 // ComparisonKey は、表示値を変更せずに辞書照合と重複判定だけで使う比較キーを返す。
 func ComparisonKey(value string) string {
 	normalized := norm.NFKC.String(value)
-	var builder strings.Builder
-	builder.Grow(len(normalized))
-	for _, current := range normalized {
+	// SOT-ARCH-021、SOT-ARCH-030: 比較規則を保ち、変更がない不変文字列を共有する。
+	// Map は、不正 UTF-8 を range と同じ U+FFFD に置換する。
+	return strings.Map(func(current rune) rune {
 		if unicode.IsSpace(current) || unicode.IsPunct(current) {
-			continue
+			return -1
 		}
 		switch {
 		case current >= 'A' && current <= 'Z':
@@ -27,7 +27,6 @@ func ComparisonKey(value string) string {
 		case current == '\u30fe':
 			current = '\u309e'
 		}
-		builder.WriteRune(current)
-	}
-	return builder.String()
+		return current
+	}, normalized)
 }

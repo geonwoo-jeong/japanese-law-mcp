@@ -9,6 +9,7 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"sync"
 )
 
 const (
@@ -42,9 +43,14 @@ type Lexicon struct {
 	terms   []string
 }
 
-// LoadEmbedded は、バイナリへ組み込んだ公式・補足辞書を読み込む。
-func LoadEmbedded() (*Lexicon, error) {
+var loadEmbedded = sync.OnceValues(func() (*Lexicon, error) {
 	return Load(embeddedOfficial, embeddedSupplemental)
+})
+
+// LoadEmbedded は、組込み辞書を一度だけ検証し、変更されない実体を共有する。
+// SOT-ARCH-021: 共有するのは起動時の辞書だけで、公開 getter は複製を返す。
+func LoadEmbedded() (*Lexicon, error) {
+	return loadEmbedded()
 }
 
 // Load は、公式・補足 JSON を厳格に検証して一つの辞書を構築する。

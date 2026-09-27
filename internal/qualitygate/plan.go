@@ -88,8 +88,12 @@ func buildPrePushPlan(input planInput) []step {
 func buildCIPlan(input planInput) []step {
 	steps := buildSnapshotPlan(input.snapshot, ciCachePolicySteps(input.repository), true)
 	steps = append(steps,
+		compactIPACheckStep(input.snapshot),
+		sdkPatchCheckStep(input.snapshot),
+		sdkJSONTestStep(input.snapshot),
 		legalQueryEvaluationStep(input.snapshot),
 		productVulnerabilityStep(input.snapshot),
+		sdkUpstreamVulnerabilityStep(input.snapshot),
 		commonToolVulnerabilityStep(input.snapshot),
 		gitleaksVulnerabilityStep(input.snapshot),
 		historyCompletenessStep(input.repository),
@@ -104,6 +108,22 @@ func buildCIPlan(input planInput) []step {
 		),
 	)
 	return steps
+}
+
+func compactIPACheckStep(snapshot string) step {
+	return commandStep(
+		"compact-ipa-check",
+		"IPA 辞書生成物の再現性",
+		"SOT-ENG-051",
+		goCommand(
+			snapshot,
+			true,
+			"run",
+			"./cmd/compact-ipa-generate",
+			"--repository=.",
+			"--check",
+		),
+	)
 }
 
 func legalQueryEvaluationStep(snapshot string) step {

@@ -106,8 +106,7 @@ func (s QueryProfileSet) Validate() error {
 		return fmt.Errorf("profile set の profiles と metadata の件数が一致しません")
 	}
 	for index := range s.metadata {
-		if queryProfileMetadataSignature(s.metadata[index]) !=
-			queryProfileMetadataSignature(rebuilt.metadata[index]) {
+		if !queryProfileMetadataEqual(s.metadata[index], rebuilt.metadata[index]) {
 			return fmt.Errorf(
 				"profiles[%d] の metadata が構築時と一致しません",
 				index,
@@ -162,8 +161,7 @@ func (s QueryProfileSet) Collect(
 				err,
 			)
 		}
-		if queryProfileMetadataSignature(currentMetadata) !=
-			queryProfileMetadataSignature(s.metadata[index]) {
+		if !queryProfileMetadataEqual(currentMetadata, s.metadata[index]) {
 			return QueryProfileSetResult{}, fmt.Errorf(
 				"profiles[%d] の metadata が構築後に変更されました",
 				index,

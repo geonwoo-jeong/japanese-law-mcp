@@ -1,0 +1,128 @@
+{
+  "formatVersion": 1,
+  "module": {
+    "path": "github.com/ikawaha/kagome-dict/ipa",
+    "version": "v1.2.6",
+    "sum": "h1:Bcvm4jgxAAnTIKb6ckqUKBiFDN0wuanFfycMuYt7xGQ=",
+    "goModSum": "h1:ONdTMUAKMCq9yx4s69QRtPcJLEMVM0BNNYQrMCJLWb0="
+  },
+  "generator": {
+    "path": "cmd/compact-ipa-generate",
+    "sources": [
+      {
+        "path": "cmd/compact-ipa-generate/main.go",
+        "sha256": "0ecb3023fac39ba415a4ce8f2708017d7d9f36f512aec07319550c17e8208b99",
+        "bytes": 1766
+      },
+      {
+        "path": "internal/compactipagenerate/generate.go",
+        "sha256": "69959d67ccaab6827afb9c74289ff2dde5668e4492303c154945ac702f483905",
+        "bytes": 6159
+      },
+      {
+        "path": "internal/compactipagenerate/pos.go",
+        "sha256": "449f694652cd30579ccd7e40f1fa841256975bc778d9e650eaad818796bb1df6",
+        "bytes": 2445
+      },
+      {
+        "path": "internal/compactipagenerate/source.go",
+        "sha256": "cc16005dafb2b2de7327affee3df0275bea271705eb0e67ee2ec24c970389e63",
+        "bytes": 7640
+      },
+      {
+        "path": "internal/compactipagenerate/transform.go",
+        "sha256": "c49134e4949b5d28f75990246adf8bd2e03284f3e1d96d75e987f756f6fa6e05",
+        "bytes": 4257
+      },
+      {
+        "path": "internal/compactipagenerate/write.go",
+        "sha256": "8ba8eb1aa8d6945ad42ac420875fecd0187208495d605aadcae90d2c9bd0c7ca",
+        "bytes": 3421
+      }
+    ],
+    "toolchain": "go1.26.6"
+  },
+  "inputs": [
+    {
+      "path": "ipa.dict",
+      "sha256": "19bacdfe1a33ba50054d77192f062f1696089a48a9d8e20863b716ff4af6adf3",
+      "bytes": 11691526
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "6a004a9f1c6e57225e074a978c26694ff1eb082dedd01f7d617cbd7b08903b38",
+      "bytes": 1064
+    },
+    {
+      "path": "NOTICE.txt",
+      "sha256": "21c15454b69fa7b1b73e8fd5685c5e0692ae02d0680f32ea2f12dc0933b3f05c",
+      "bytes": 4116
+    }
+  ],
+  "outputs": [
+    {
+      "path": "internal/nlp/kagome/data/ipa-tokenization.dict",
+      "sha256": "6e3fef35eb78dd92487378d6561fa2160f6d5b9b288d8f39ef06a87849a1a3be",
+      "bytes": 8034285
+    },
+    {
+      "path": "internal/nlp/kagome/data/ipa-pos.bin",
+      "sha256": "cb7e48aa64adbb202cf0979a19470ebb850409dcf6c634756b6f158c078db8f2",
+      "bytes": 785664
+    },
+    {
+      "path": "internal/nlp/kagome/data/IPA-LICENSE",
+      "sha256": "6a004a9f1c6e57225e074a978c26694ff1eb082dedd01f7d617cbd7b08903b38",
+      "bytes": 1064
+    },
+    {
+      "path": "internal/nlp/kagome/data/IPA-NOTICE.txt",
+      "sha256": "21c15454b69fa7b1b73e8fd5685c5e0692ae02d0680f32ea2f12dc0933b3f05c",
+      "bytes": 4116
+    }
+  ],
+  "retainedEntries": [
+    {
+      "path": "morph.dict",
+      "sha256": "83b90b396a55b42c5ec4b2bfbf46a40c26ec53047398115a02f3718e60b549f7",
+      "bytes": 2352770
+    },
+    {
+      "path": "content.meta",
+      "sha256": "bef35bcd680fe32442ea0154b3977eb3bba9136f6898fb2c64f59bcd6ef71c57",
+      "bytes": 158
+    },
+    {
+      "path": "index.dict",
+      "sha256": "bdd187ac7c415dba37c8b8d6a0ec08d9c234f76fd20422e94dd3832a210fcec9",
+      "bytes": 11220688
+    },
+    {
+      "path": "connection.dict",
+      "sha256": "f7fa1907e299274e5f2ccd6620e1833dabb1bab3b0b3b42c6af91f556c9aafe4",
+      "bytes": 3463728
+    },
+    {
+      "path": "chardef.dict",
+      "sha256": "a4f9c2862b79117e4fcb378f07c3a09892ebf6d7457be055f3027a5483ecd786",
+      "bytes": 65821
+    },
+    {
+      "path": "unk.dict",
+      "sha256": "09ebb390341980b7f1c5ced6533f8c679b5608a5dd99e39fe4490d4a262f88c3",
+      "bytes": 1739
+    },
+    {
+      "path": "dict.info",
+      "sha256": "c166b56e6b946e790d9ba1bd62393d873fae7cd916661e17002e74f47cec472d",
+      "bytes": 44
+    }
+  ],
+  "excludedEntries": [
+    "content.dict",
+    "pos.dict"
+  ],
+  "words": 392127,
+  "classes": 69,
+  "names": 62
+}

@@ -31,7 +31,6 @@ func NewResolver(entries []EntryValues, analyzer Analyzer) (*Resolver, error) {
 
 	exact := make(map[string][]target)
 	normalized := make(map[string][]target)
-	fuzzyValues := make(map[string][]target)
 	resourceIDs := make(map[string]struct{}, len(entries))
 	for entryIndex, entry := range entries {
 		if err := validateEntry(entry); err != nil {
@@ -61,18 +60,16 @@ func NewResolver(entries []EntryValues, analyzer Analyzer) (*Resolver, error) {
 				normalized[key],
 				currentTarget,
 			)
-			fuzzyValues[key] = appendUniqueTarget(
-				fuzzyValues[key],
-				currentTarget,
-			)
 		}
 	}
 
+	// SOT-ARCH-021: fuzzy の登録順を保存してから、正規化索引を公開順へ整列する。
+	fuzzy := buildFuzzyIndex(normalized)
 	return &Resolver{
 		analyzer:   analyzer,
 		exact:      sortTargetIndex(exact),
 		normalized: sortTargetIndex(normalized),
-		fuzzy:      buildFuzzyIndex(fuzzyValues),
+		fuzzy:      fuzzy,
 	}, nil
 }
 
@@ -216,12 +213,19 @@ func (r *Resolver) resolveFuzzyTargets(
 		return nil, nil
 	}
 
+	var querySignature [2]uint64
+	signatureReady := false
 	bestDistance := 4
 	var bestTerm fuzzyTerm
 	ambiguousTerm := false
 	checked := 0
 	for length := max(3, len(queryRunes)-3); length <= len(queryRunes)+3; length++ {
-		for _, term := range r.fuzzy[length] {
+		terms := r.fuzzy[length]
+		if !signatureReady && len(terms) > 0 {
+			querySignature = fuzzyRuneSignature(query)
+			signatureReady = true
+		}
+		for _, term := range terms {
 			checked++
 			if checked%64 == 0 {
 				if err := ctx.Err(); err != nil {
@@ -230,6 +234,9 @@ func (r *Resolver) resolveFuzzyTargets(
 			}
 			maximum := fuzzyMaximum(length)
 			if maximum == 0 {
+				continue
+			}
+			if !fuzzySignatureMatches(querySignature, term.signature, maximum) {
 				continue
 			}
 			distance := boundedDamerauLevenshtein(
@@ -307,10 +314,15 @@ func validateTerm(name string, value string) error {
 func buildFuzzyIndex(values map[string][]target) map[int][]fuzzyTerm {
 	index := make(map[int][]fuzzyTerm)
 	for value, targets := range values {
+		// 整列で順序が変わる行だけ複製し、その他は構築後に不変な非公開配列を共有する。
+		if !slices.IsSortedFunc(targets, compareTargets) {
+			targets = slices.Clone(targets)
+		}
 		length := len([]rune(value))
 		index[length] = append(index[length], fuzzyTerm{
-			value:   value,
-			targets: append([]target(nil), targets...),
+			value:     value,
+			targets:   targets,
+			signature: fuzzyRuneSignature(value),
 		})
 	}
 	for length := range index {

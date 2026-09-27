@@ -1,0 +1,14 @@
+--- a/internal/json/json.go
++++ b/internal/json/json.go
+@@ -28,5 +28,11 @@
+ }
+ 
+ func Unmarshal(data []byte, v any) error {
++	// 小さい完全な一値だけ、固定版 Decoder の32KiB bufferを実長copyへ置き換える。
++	// 旧 Decoder と同じ raw token を複製し、error と入力の所有権を維持する。
++	if len(data) < 32768 && json.Valid(data) {
++		_, err := json.Parse(bytes.Clone(bytes.Trim(data, " \t\r\n")), v, json.DontMatchCaseInsensitiveStructFields)
++		return err
++	}
+ 	return NewDecoder(bytes.NewReader(data)).Decode(v)
+ }
